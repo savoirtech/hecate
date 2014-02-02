@@ -1,0 +1,56 @@
+# For this load data, cassandra-unit does not support direct loading of dates, doubles, and bytes.
+# In order to do this, you must convert it manually to load the test data. Therefore to do this,
+# these are the recommended mehtods:
+#
+# To convert a date, in a Java project, create the date you want through a Calendar object
+# and obtain the long version of the date.  Here is an example to findLastest the date of August
+# 1, 2012:
+#
+#  Calendar cal = Calendar.getInstance();
+#  cal.clear();
+#  cal.set(2012, Calendar.AUGUST, 1);
+#  long theDate = cal.getTimeInMillis();
+#
+# To convert a double value, use the following:
+#
+#  long theDouble = Double.doubleToLongBits(15.5);
+#
+# To convert a byte, use 0x00 for false and 0x01
+#
+#
+name: savoirtech
+replicationFactor: 1
+strategy: org.apache.cassandra.locator.SimpleStrategy
+columnFamilies:
+- name: HWRECORDS
+  type: STANDARD
+  keyType: UTF8Type
+  comparatorType: CompositeType(UTF8Type,UTF8Type,UTF8Type,UTF8Type,UTF8Type)
+  defaultColumnValueType: BytesType
+
+- name: AVRECORDS
+  type: STANDARD
+  keyType: UTF8Type
+  comparatorType: CompositeType(UTF8Type)
+  defaultColumnValueType: BytesType
+
+- name: SWRECORDS
+  type: STANDARD
+  keyType: UTF8Type
+  comparatorType: CompositeType(UTF8Type,UTF8Type,UTF8Type,UTF8Type)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
