@@ -62,8 +62,6 @@ And a DAO to utilize the Java Object.
 ```Java
 public class SegmentPersistenceTest {
 
-
-
     @Before
     public void start() throws ConfigurationException, IOException, TTransportException {
         Map<String, String> credentials = new HashMap<String, String>();
