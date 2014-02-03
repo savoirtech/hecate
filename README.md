@@ -57,7 +57,7 @@ public class Segment {
 }
 ```
 
-And a DAO to utilize the Java
+And a DAO to utilize the Java Object.
 
 ```Java
 public class SegmentPersistenceTest {
