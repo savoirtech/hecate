@@ -20,10 +20,16 @@
 
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
     <groupId>com.savoirtech.hecate</groupId>
     <artifactId>hecate-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <name>Savoirtech Project Hecate ::: Parent</name>
     <description>Savoirtech Project Hecate ::: Parent</description>
@@ -32,6 +38,13 @@
         <module>hecate-core</module>
         <module>hecate-testing</module>
     </modules>
+
+    <scm>
+        <url>https://github.com/savoirtech/hecate</url>
+        <connection>scm:git:git@github.com:savoirtech/hecate.git</connection>
+        <developerConnection>scm:git:git@github.com:savoirtech/hecate.git</developerConnection>
+        <tag>MASTER</tag>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -47,8 +60,6 @@
         <!-- turn down the default DEBUG logLevel. Override on the command line if you want -->
         <dist.name>savoirtech-${project.version}</dist.name>
         <!-- dependency versions -->
-
-
 
         <cassandra-thrift-version>1.2.0</cassandra-thrift-version>
 
@@ -88,7 +99,6 @@
         <xerces-version>2.11.0</xerces-version>
 
         <!-- Pax EXAM Related -->
-
 
         <!-- OSGi bundles properties -->
         <savoirtech.osgi.import.savoirtech.version>

@@ -4,7 +4,7 @@
     <parent>
         <artifactId>hecate-parent</artifactId>
         <groupId>com.savoirtech.hecate</groupId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>com.savoirtech.hecate</groupId>
             <artifactId>hecate-core</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
