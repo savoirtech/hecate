@@ -31,7 +31,7 @@ import org.junit.Before;
 
 public abstract class AbstractCassandraTest {
 
-    public static final String CLUSTER = "BlazentCluster";
+    public static final String CLUSTER = "Cluster";
     public static final String KEYSPACE = "tycho";
     public static final String HOST = "localhost:9175";
     //Column Family
