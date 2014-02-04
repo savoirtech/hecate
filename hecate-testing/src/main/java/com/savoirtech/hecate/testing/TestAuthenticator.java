@@ -33,6 +33,12 @@ public class TestAuthenticator implements IAuthenticator {
         return null;
     }
 
+    /**
+     *
+     * @param credentials
+     * @return
+     * @throws AuthenticationException
+     */
     @Override
     public AuthenticatedUser authenticate(Map<? extends CharSequence, ? extends CharSequence> credentials) throws AuthenticationException {
 

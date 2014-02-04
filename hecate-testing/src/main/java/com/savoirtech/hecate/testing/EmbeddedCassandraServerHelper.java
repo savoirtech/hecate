@@ -82,6 +82,15 @@ public class EmbeddedCassandraServerHelper {
         startEmbeddedCassandra(yamlFile, tmpDir);
     }
 
+    /**
+     *
+     * @param yamlFile
+     * @param tmpDir
+     * @param creds
+     * @throws TTransportException
+     * @throws IOException
+     * @throws ConfigurationException
+     */
     public static void startEmbeddedCassandra(String yamlFile, String tmpDir,
                                               Map<String, String> creds) throws TTransportException, IOException, ConfigurationException {
         if (cassandraDaemon != null) {
