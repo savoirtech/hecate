@@ -340,7 +340,7 @@
                 <version>2.4.2</version>
                 <configuration>
                     <useReleaseProfile>false</useReleaseProfile>
-                    <preparationGoals>clean install</preparationGoals>
+                    <preparationGoals>clean install package source:jar javadoc:jar</preparationGoals>
                     <goals>deploy</goals>
                     <arguments>-Prelease,deploy</arguments>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
