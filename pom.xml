@@ -36,7 +36,7 @@
     <groupId>com.savoirtech.hecate</groupId>
     <artifactId>hecate-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.10</version>
+    <version>1.0.11-SNAPSHOT</version>
 
     <name>Savoirtech Project Hecate ::: Parent</name>
     <description>Savoirtech Project Hecate ::: Parent</description>
@@ -50,7 +50,7 @@
         <url>https://github.com/savoirtech/hecate</url>
         <connection>scm:git:git@github.com:savoirtech/hecate.git</connection>
         <developerConnection>scm:git:git@github.com:savoirtech/hecate.git</developerConnection>
-        <tag>hecate-parent-1.0.10</tag>
+        <tag>hecate-parent-1.0.8</tag>
     </scm>
 
     <properties>
