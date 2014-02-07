@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -30,11 +31,11 @@ import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 import me.prettyprint.hector.api.factory.HFactory;
-import org.apache.cassandra.config.ConfigurationException;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.commitlog.CommitLog;
+import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.io.util.FileUtils;
-import org.apache.cassandra.thrift.CassandraDaemon;
+import org.apache.cassandra.service.CassandraDaemon;
 import org.apache.commons.lang.StringUtils;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
@@ -53,7 +54,7 @@ public class EmbeddedCassandraServerHelper {
     public static final String DEFAULT_TMP_DIR = "target/embeddedCassandra";
     public static final String DEFAULT_CASSANDRA_YML_FILE = "cu-cassandra.yaml";
     public static final String DEFAULT_LOG4J_CONFIG_FILE = "/log4j-embedded-cassandra.properties";
-    private static final String INTERNAL_CASSANDRA_KEYSPACE = "system";
+    private static final List<String> INTERNAL_CASSANDRA_KEYSPACE = Arrays.asList(new String[]{"system", "system_auth","system_traces"});
 
     private static CassandraDaemon cassandraDaemon = null;
     static ExecutorService executor;
@@ -187,7 +188,10 @@ public class EmbeddedCassandraServerHelper {
         for (KeyspaceDefinition keyspaceDefinition : keyspaces) {
             String keyspaceName = keyspaceDefinition.getName();
 
-            if (!INTERNAL_CASSANDRA_KEYSPACE.equals(keyspaceName)) {
+            log.info(" " + keyspaceName + " " + INTERNAL_CASSANDRA_KEYSPACE.contains(keyspaceName));
+            ;
+            if (!INTERNAL_CASSANDRA_KEYSPACE.contains(keyspaceName)) {
+                log.info("Dropping " + keyspaceName);
                 cluster.dropKeyspace(keyspaceName);
             }
         }
@@ -263,11 +267,7 @@ public class EmbeddedCassandraServerHelper {
     }
 
     public static void mkdirs() {
-        try {
-            DatabaseDescriptor.createAllDirectories();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        DatabaseDescriptor.createAllDirectories();
     }
 }
 

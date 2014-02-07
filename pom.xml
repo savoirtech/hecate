@@ -78,12 +78,12 @@
         <commons-lang3-version>3.1</commons-lang3-version>
 
         <commons-pool-version>1.6</commons-pool-version>
-        <concurrentLinkedHashMap-version>1.2</concurrentLinkedHashMap-version>
+        <concurrentLinkedHashMap-version>1.4</concurrentLinkedHashMap-version>
         <compiler-fork-version>1.6</compiler-fork-version>
         <!-- updating to guava 14 requires updated hector libraries in cassandra-pojo-library AbstractComposite.java -->
         <!-- https://github.com/hector-client/hector/commit/47617b183c5ae28f0e8ce800ac1d86b6625c69b6 -->
         <guava-version>13.0.1</guava-version>
-        <hectorcore-version>1.1-0</hectorcore-version>
+        <hectorcore-version>1.1-4</hectorcore-version>
         <httpclient-version>4.2.3</httpclient-version>
         <httpcore-version>4.2.3</httpcore-version>
         <jamm-version>0.2.5</jamm-version>

@@ -17,24 +17,23 @@
 package com.savoirtech.hecate.core;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.cassandra.auth.AuthenticatedUser;
 import org.apache.cassandra.auth.IAuthenticator;
-import org.apache.cassandra.config.ConfigurationException;
-import org.apache.cassandra.thrift.AuthenticationException;
+import org.apache.cassandra.auth.IResource;
+import org.apache.cassandra.exceptions.AuthenticationException;
+import org.apache.cassandra.exceptions.InvalidRequestException;
 
 public class TestAuthenticator implements IAuthenticator {
 
     public static final String SECURE_USER = "admin";
     public static final String SECURE_PASSWORD = "secret";
 
-    @Override
-    public AuthenticatedUser defaultUser() {
-        return null;
-    }
+
 
     @Override
-    public AuthenticatedUser authenticate(Map<? extends CharSequence, ? extends CharSequence> credentials) throws AuthenticationException {
+    public AuthenticatedUser authenticate(Map<String,String> credentials) throws AuthenticationException {
 
         String username = null;
         CharSequence user = credentials.get(IAuthenticator.USERNAME_KEY);
@@ -66,7 +65,49 @@ public class TestAuthenticator implements IAuthenticator {
     }
 
     @Override
-    public void validateConfiguration() throws ConfigurationException {
+    public boolean requireAuthentication() {
+        return false;  //TODO
+    }
+
+    @Override
+    public Set<Option> supportedOptions() {
+        return null;  //TODO
+    }
+
+    @Override
+    public Set<Option> alterableOptions() {
+        return null;  //TODO
+    }
+
+
+
+    @Override
+    public void create(String s, Map<Option, Object> optionObjectMap) throws InvalidRequestException {
+        //TODO
+    }
+
+    @Override
+    public void alter(String s, Map<Option, Object> optionObjectMap) throws InvalidRequestException {
+        //TODO
+    }
+
+    @Override
+    public void drop(String s) throws InvalidRequestException {
+        //TODO
+    }
+
+    @Override
+    public Set<? extends IResource> protectedResources() {
+        return null;  //TODO
+    }
+
+    @Override
+    public void validateConfiguration() {
+    }
+
+    @Override
+    public void setup() {
+        //TODO
     }
 
     static String authenticationErrorMessage(String username) {

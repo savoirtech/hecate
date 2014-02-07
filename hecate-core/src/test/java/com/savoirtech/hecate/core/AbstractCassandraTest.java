@@ -20,10 +20,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
+import me.prettyprint.cassandra.locking.HLockManagerImpl;
 import me.prettyprint.cassandra.model.AllOneConsistencyLevelPolicy;
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.cassandra.service.FailoverPolicy;
 import me.prettyprint.hector.api.ConsistencyLevelPolicy;
+import me.prettyprint.hector.api.factory.HFactory;
+import me.prettyprint.hector.api.locking.HLockManager;
+import me.prettyprint.hector.api.locking.HLockManagerConfigurator;
 import org.apache.cassandra.auth.IAuthenticator;
 import org.cassandraunit.dataset.yaml.ClassPathYamlDataSet;
 import org.junit.After;
@@ -57,6 +61,11 @@ public abstract class AbstractCassandraTest {
 
         keyspaceConfigurator = new CassandraKeyspaceConfigurator(getHost(), KEYSPACE, getFailoverPolicy(), getConsistencyLevelPolicy(),
             getCredentials());
+
+        HLockManagerConfigurator hLockManagerConfigurator = new HLockManagerConfigurator();
+        hLockManagerConfigurator.setReplicationFactor(1);
+        HLockManager hLockManager = new HLockManagerImpl(HFactory.getOrCreateCluster(CLUSTER, KEYSPACE), hLockManagerConfigurator);
+        hLockManager.init();
     }
 
     @After
