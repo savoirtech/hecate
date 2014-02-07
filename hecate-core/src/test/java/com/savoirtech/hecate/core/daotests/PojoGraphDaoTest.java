@@ -28,7 +28,7 @@ import static junit.framework.Assert.assertTrue;
 public class PojoGraphDaoTest extends AbstractCassandraTest {
 
     @Test
-    public void grabDao() {
+    public void genericCollectionsToCF() {
 
         DaoPool<PojoObjectGraphDao> daoDaoPool = new DaoPool<>("cmp", keyspaceConfigurator, PojoObjectGraphDao.class);
         ColumnFamilyDao dao = daoDaoPool.getPojoDao(String.class, Top.class, "REDIRECT", null);
@@ -49,7 +49,7 @@ public class PojoGraphDaoTest extends AbstractCassandraTest {
     }
 
     @Test
-    public void StringTest() {
+    public void stringTest() {
 
         DaoPool<PojoObjectGraphDao> daoDaoPool = new DaoPool<>("cmp", keyspaceConfigurator, PojoObjectGraphDao.class);
         ColumnFamilyDao dao = daoDaoPool.getPojoDao(String.class, TopWithString.class, "REDIRECT", null);
