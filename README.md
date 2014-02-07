@@ -97,9 +97,14 @@ Pojo graph indexing
 
 This feature will recursively traverse and persist the dao 
 layer adding fields and column families as needed.
+The Dao relies on generics and collection declaration.
+It is not suggested you use this pojo on larger object graphs
+or circular references.
 
 ```Java
-@Test
+public class PojoGraphDaoTest extends AbstractCassandraTest {
+
+    @Test
     public void genericCollectionsToCF() {
 
         DaoPool<PojoObjectGraphDao> daoDaoPool = new DaoPool<>("cmp", keyspaceConfigurator, PojoObjectGraphDao.class);
@@ -142,7 +147,8 @@ layer adding fields and column families as needed.
         assertTrue(newTop.getMoreKids().size() == 1);
         assertTrue(newTop.getStrings().size() == 1);
     }
-    ```
-    
+}
+```
+
 
 
