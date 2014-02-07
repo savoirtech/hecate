@@ -44,6 +44,8 @@ public abstract class AbstractCassandraTest {
     public Map<String, String> credentials = new HashMap<String, String>();
     public CassandraKeyspaceConfigurator keyspaceConfigurator;
 
+    public HLockManager hLockManager;
+
     protected AbstractCassandraTest() {
         credentials.put(IAuthenticator.USERNAME_KEY, "admin");
         credentials.put(IAuthenticator.PASSWORD_KEY, "secret");
@@ -64,7 +66,7 @@ public abstract class AbstractCassandraTest {
 
         HLockManagerConfigurator hLockManagerConfigurator = new HLockManagerConfigurator();
         hLockManagerConfigurator.setReplicationFactor(1);
-        HLockManager hLockManager = new HLockManagerImpl(HFactory.getOrCreateCluster(CLUSTER, KEYSPACE), hLockManagerConfigurator);
+        hLockManager = new HLockManagerImpl(HFactory.getOrCreateCluster(CLUSTER, KEYSPACE), hLockManagerConfigurator);
         hLockManager.init();
     }
 
