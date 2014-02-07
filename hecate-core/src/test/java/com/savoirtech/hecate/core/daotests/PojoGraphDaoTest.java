@@ -41,12 +41,33 @@ public class PojoGraphDaoTest extends AbstractCassandraTest {
         top.getChildren().add(child);
         top.getMoreKids().add(child);
 
-        dao.save(top.getId(),top);
+        dao.save(top.getId(), top);
 
         Top newTop = (Top) dao.find("A");
 
-        assertTrue(newTop.getMoreKids().size()==1);
+        assertTrue(newTop.getMoreKids().size() == 1);
+    }
 
+    @Test
+    public void StringTest() {
 
+        DaoPool<PojoObjectGraphDao> daoDaoPool = new DaoPool<>("cmp", keyspaceConfigurator, PojoObjectGraphDao.class);
+        ColumnFamilyDao dao = daoDaoPool.getPojoDao(String.class, TopWithString.class, "REDIRECT", null);
+
+        TopWithString top = new TopWithString();
+        top.setId("A");
+        Child child = new Child();
+        child.setId("A");
+
+        top.getChildren().add(child);
+        top.getMoreKids().add(child);
+        top.getStrings().add("A");
+
+        dao.save(top.getId(), top);
+
+        TopWithString newTop = (TopWithString) dao.find("A");
+
+        assertTrue(newTop.getMoreKids().size() == 1);
+        assertTrue(newTop.getStrings().size() == 1);
     }
 }

@@ -52,6 +52,21 @@ import org.apache.commons.lang.StringUtils;
 
 public final class HectorHelper {
 
+    final static List<String> primitivesAndWrappers = Arrays.asList("java.lang.String");
+
+    /**
+
+     byte	Byte	byte or String
+     short	Short	short or String
+     int	Integer	int or String
+     long	Long	long or String
+     float	Float	float, double or String
+     double	Double	double or String
+     char	Character	char
+     boolean	Boolean
+
+     */
+
     /**
      * Instantiates a new hector helper.
      */
@@ -368,7 +383,7 @@ public final class HectorHelper {
             }
         }
 
-        return null;
+        throw new IllegalArgumentException("Your store class doesn't have a @CassandraId, cannot determine id field.");
     }
 
     /**
@@ -399,17 +414,25 @@ public final class HectorHelper {
 
                     Integer counter = 0;
 
+                    ParameterizedType listType = (ParameterizedType) field.getGenericType();
+                    Class<?> listClass = (Class<?>) listType.getActualTypeArguments()[0];
+
                     for (Object o : list) {
+                        if (primitivesAndWrappers.contains(listClass.getName())) {
 
-                        Object idKey = getIdValue(o.getClass(), o);
+                            HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter,
+                                (String) o, StringSerializer.get(), StringSerializer.get());
+                            columns.add(column);
+                            counter++;
+                        } else {
+                            Object idKey = getIdValue(o.getClass(), o);
+                            ColumnFamilyDao innerDao = pool.getPojoDao(String.class, o.getClass(), field.getName(), null);
+                            innerDao.save(idKey, o);
 
-                        ColumnFamilyDao innerDao = pool.getPojoDao(String.class, o.getClass(), field.getName(), null);
-                        innerDao.save(idKey, o);
-
-                        o = null;
-                        HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter, idKey,
-                            StringSerializer.get(), SerializerTypeInferer.getSerializer(idKey));
-                        columns.add(column);
+                            HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter, idKey,
+                                StringSerializer.get(), SerializerTypeInferer.getSerializer(idKey));
+                            columns.add(column);
+                        }
 
                         counter++;
 
