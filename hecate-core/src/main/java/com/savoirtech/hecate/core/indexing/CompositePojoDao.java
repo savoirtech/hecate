@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.core.record;
+package com.savoirtech.hecate.core.indexing;
 
-import java.util.LinkedList;
-import java.util.List;
+import com.savoirtech.hecate.core.dao.GenericIteratingDao;
 
-public class CompositeKeyCriteria {
+public interface CompositePojoDao extends GenericIteratingDao<String, CompositeColumnIdentifier, String> {
 
-    private List<CompositeColumnIdentifier> criteriaPermutations = new LinkedList<CompositeColumnIdentifier>();
-
-    public void addIdentifier(CompositeColumnIdentifier compositeColumnIdentifier) {
-        criteriaPermutations.add(compositeColumnIdentifier);
-    }
-
-    public List<CompositeColumnIdentifier> getCriteriaPermutations() {
-        return criteriaPermutations;
-    }
 }

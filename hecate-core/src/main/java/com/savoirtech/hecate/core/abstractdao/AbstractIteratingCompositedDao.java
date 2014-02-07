@@ -17,7 +17,7 @@
 package com.savoirtech.hecate.core.abstractdao;
 
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
-import com.savoirtech.hecate.core.record.CompositeColumnIdentifier;
+import com.savoirtech.hecate.core.indexing.CompositeColumnIdentifier;
 import com.savoirtech.hecate.core.utils.ColumnIterator;
 import com.savoirtech.hecate.core.utils.ColumnRecordIterator;
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
@@ -28,14 +28,14 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.query.SliceQuery;
 
-public abstract class AbstractIteratingRecordDao extends AbstractIteratingColumnFamilyDao<String, CompositeColumnIdentifier, String> {
+public abstract class AbstractIteratingCompositedDao extends AbstractIteratingColumnFamilyDao<String, CompositeColumnIdentifier, String> {
 
     /**
      * Instantiates a new abstract column family dao.
      */
-    public AbstractIteratingRecordDao(String clusterName, CassandraKeyspaceConfigurator keyspaceConfigurator, Class<String> stringClass,
-                                      Class<CompositeColumnIdentifier> nameClass, Class<String> valueClass, String columnFamilyName,
-                                      String comparatorAlias) {
+    public AbstractIteratingCompositedDao(String clusterName, CassandraKeyspaceConfigurator keyspaceConfigurator, Class<String> stringClass,
+                                          Class<CompositeColumnIdentifier> nameClass, Class<String> valueClass, String columnFamilyName,
+                                          String comparatorAlias) {
         super(clusterName, keyspaceConfigurator, stringClass, nameClass, valueClass, columnFamilyName, comparatorAlias);
     }
 

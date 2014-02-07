@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.core.record;
+package com.savoirtech.hecate.core.indexing;
 
+import com.savoirtech.hecate.core.abstractdao.AbstractIteratingCompositedDao;
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
-import com.savoirtech.hecate.core.abstractdao.AbstractIteratingRecordDao;
 
-public class CompositePojoDaoImpl extends AbstractIteratingRecordDao implements CompositePojoDao {
+public class CompositePojoDaoImpl extends AbstractIteratingCompositedDao implements CompositePojoDao {
     //----------------------------------------------------------------------------------------------------------------------
     // Constructors
     //----------------------------------------------------------------------------------------------------------------------

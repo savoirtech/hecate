@@ -16,7 +16,7 @@
 
 package com.savoirtech.hecate.core.utils;
 
-import com.savoirtech.hecate.core.record.CompositeColumnIdentifier;
+import com.savoirtech.hecate.core.indexing.CompositeColumnIdentifier;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.hector.api.beans.Composite;

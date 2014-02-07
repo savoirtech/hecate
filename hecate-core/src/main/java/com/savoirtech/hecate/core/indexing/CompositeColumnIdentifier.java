@@ -14,10 +14,29 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.core.record;
+package com.savoirtech.hecate.core.indexing;
 
-import com.savoirtech.hecate.core.dao.GenericIteratingDao;
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-public interface CompositePojoDao extends GenericIteratingDao<String, CompositeColumnIdentifier, String> {
+public class CompositeColumnIdentifier implements Serializable {
 
+    //Natural sorted Map
+    private Map columns = new LinkedHashMap<String, String>();
+
+    public void addIdentifier(Object k, Object v) {
+        columns.put(k, v);
+    }
+
+    public Map<String, String> getMap() {
+        return columns;
+    }
+
+    @Override
+    public String toString() {
+        return "CompositeColumnIdentifier{" +
+            "columns=" + columns +
+            '}';
+    }
 }

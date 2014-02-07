@@ -14,29 +14,20 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.core.record;
+package com.savoirtech.hecate.core.indexing;
 
-import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
-public class CompositeColumnIdentifier implements Serializable {
+public class CompositeKeyCriteria {
 
-    //Natural sorted Map
-    private Map columns = new LinkedHashMap<String, String>();
+    private List<CompositeColumnIdentifier> criteriaPermutations = new LinkedList<CompositeColumnIdentifier>();
 
-    public void addIdentifier(Object k, Object v) {
-        columns.put(k, v);
+    public void addIdentifier(CompositeColumnIdentifier compositeColumnIdentifier) {
+        criteriaPermutations.add(compositeColumnIdentifier);
     }
 
-    public Map<String, String> getMap() {
-        return columns;
-    }
-
-    @Override
-    public String toString() {
-        return "CompositeColumnIdentifier{" +
-            "columns=" + columns +
-            '}';
+    public List<CompositeColumnIdentifier> getCriteriaPermutations() {
+        return criteriaPermutations;
     }
 }
