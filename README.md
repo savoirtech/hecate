@@ -31,7 +31,7 @@ Starting with the "Fixed DAO"
         cneRecord.setCanton("BOLIVAR");
         cneRecord.setParroquia("CALCETA");
         cneRecord.setRecinto("");
-        cneRecord.setCedula("131042379231");
+        cneRecord.setCedula("13155555231");
         cneRecord.setNombre("MIRANDA GANCHOZO CRISTHIAN ALBERTO");
         cneRecord.setFecha("2011-07-24");
         cneRecord.setCertificado("156-0018");
@@ -44,7 +44,7 @@ Starting with the "Fixed DAO"
         dao.save(cneRecord.getCedula(), col);
 
         //Did it save?
-        CNEColumn getCol = dao.find("131042379231");
+        CNEColumn getCol = dao.find("13155555231");
         assertNotNull(getCol);
         CNE newCne = getCol.getCne();
         assertNotNull(newCne);
