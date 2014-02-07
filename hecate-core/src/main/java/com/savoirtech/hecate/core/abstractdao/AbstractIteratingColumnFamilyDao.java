@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.core.utils;
+package com.savoirtech.hecate.core.abstractdao;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -24,6 +24,7 @@ import com.savoirtech.hecate.core.annotations.CompositeComponent;
 import com.savoirtech.hecate.core.annotations.CompositeComponentProcessor;
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
 import com.savoirtech.hecate.core.config.HectorManager;
+import com.savoirtech.hecate.core.utils.ColumnIterator;
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.cassandra.serializers.StringSerializer;

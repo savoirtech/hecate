@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.core.utils;
+package com.savoirtech.hecate.core.dao;
 
-import com.savoirtech.hecate.core.abstractdao.AbstractAnnotatedColumnFamilyDao;
+import com.savoirtech.hecate.core.abstractdao.AbstractPojoObjectGraphDao;
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
 import com.savoirtech.hecate.core.dao.ColumnFamilyDao;
+import com.savoirtech.hecate.core.utils.DaoPool;
 
-public class AnnotatedColumnImpl extends AbstractAnnotatedColumnFamilyDao implements ColumnFamilyDao {
+public class PojoObjectGraphDao<K, T> extends AbstractPojoObjectGraphDao<K, T> implements ColumnFamilyDao<K, T> {
     /**
      * Instantiates a new abstract column family dao.
      */
-    public AnnotatedColumnImpl(String clusterName, CassandraKeyspaceConfigurator keyspaceConfigurator, Class keyClass, Class typeClass,
-                               String columnFamilyName, String comparatorAlias) {
-        super(clusterName, keyspaceConfigurator, keyClass, typeClass, columnFamilyName, comparatorAlias);
+    public PojoObjectGraphDao(String clusterName, CassandraKeyspaceConfigurator keyspaceConfigurator, Class<K> keyClass, Class<T> typeClass,
+                              String columnFamilyName, String comparatorAlias, DaoPool daoPool) {
+        super(clusterName, keyspaceConfigurator, keyClass, typeClass, columnFamilyName, comparatorAlias, daoPool);
     }
 }

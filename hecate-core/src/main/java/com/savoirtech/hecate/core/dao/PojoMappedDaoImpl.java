@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.core.utils;
+package com.savoirtech.hecate.core.dao;
 
+import com.savoirtech.hecate.core.abstractdao.AbstractPojoMappedColumnFamilyDao;
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
 import com.savoirtech.hecate.core.dao.ColumnFamilyDao;
 

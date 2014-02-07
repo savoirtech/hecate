@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.core.utils;
+package com.savoirtech.hecate.core.abstractdao;
 
 import java.util.HashMap;
 import java.util.HashSet;

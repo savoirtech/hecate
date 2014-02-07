@@ -18,7 +18,7 @@
 # To convert a byte, use 0x00 for false and 0x01
 #
 #
-name: savoirtech
+name: hecate
 replicationFactor: 1
 strategy: org.apache.cassandra.locator.SimpleStrategy
 columnFamilies:

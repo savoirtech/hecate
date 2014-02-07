@@ -18,6 +18,7 @@ package com.savoirtech.hecate.core.config;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -32,8 +33,11 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.savoirtech.hecate.core.annotations.CassandraCollection;
+import com.savoirtech.hecate.core.annotations.CassandraId;
 import com.savoirtech.hecate.core.annotations.CassandraMaps;
+import com.savoirtech.hecate.core.dao.ColumnFamilyDao;
 import com.savoirtech.hecate.core.utils.CassandraAnnotationLogic;
+import com.savoirtech.hecate.core.utils.DaoPool;
 import me.prettyprint.cassandra.serializers.ObjectSerializer;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
@@ -184,6 +188,7 @@ public final class HectorHelper {
      * @return the columns
      */
     public static <T> List<HColumn<String, ?>> getColumnsAndAnnotations(T entity) {
+
         try {
             List<HColumn<String, ?>> columns = new ArrayList<HColumn<String, ?>>();
             Iterable<Field> fields = getFieldsUpTo(entity.getClass(), null);
@@ -267,6 +272,7 @@ public final class HectorHelper {
      * @return the columns
      */
     public static <T> List<HColumn<String, ?>> getColumnsNoAnnotations(T entity) {
+
         try {
             List<HColumn<String, ?>> columns = new ArrayList<HColumn<String, ?>>();
             Iterable<Field> fields = getFieldsUpTo(entity.getClass(), null);
@@ -336,6 +342,127 @@ public final class HectorHelper {
 
                 columns.add(column);
             }
+            return columns;
+        } catch (Exception e) {
+            throw new RuntimeException("Reflection exception", e);
+        }
+    }
+
+    public static List<Field> getAllFields(Class<?> type) {
+        List<Field> fields = new ArrayList<Field>();
+
+        for (Class<?> c = type;c != null;c = c.getSuperclass()) {
+            fields.addAll(Arrays.asList(c.getDeclaredFields()));
+        }
+
+        return fields;
+    }
+
+    public static <I> Object getIdValue(Class<?> typeClass, Object entity) throws IllegalAccessException {
+
+        for (Field field : getAllFields(typeClass)) {
+
+            if (field.isAnnotationPresent(CassandraId.class)) {
+                field.setAccessible(true);
+                return field.get(entity);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the columns.
+     *
+     * @param <T>    the generic type
+     * @param entity the entity
+     * @return the columns
+     */
+    public static <T> List<HColumn<String, ?>> getColumnsGraphAnnotations(T entity, DaoPool pool) {
+
+        try {
+            List<HColumn<String, ?>> columns = new ArrayList<HColumn<String, ?>>();
+
+            Iterable<Field> fields = getFieldsUpTo(entity.getClass(), null);
+            // Field[] fields = entity.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object value = field.get(entity);
+
+                if (value == null) {
+                    // Field has no value so nothing to store
+                    continue;
+                }
+
+                if (value instanceof Collection) {
+                    Collection list = (Collection) value;
+
+                    Integer counter = 0;
+
+                    for (Object o : list) {
+
+                        Object idKey = getIdValue(o.getClass(), o);
+
+                        ColumnFamilyDao innerDao = pool.getPojoDao(String.class, o.getClass(), field.getName(), null);
+                        innerDao.save(idKey, o);
+
+                        o = null;
+                        HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter, idKey,
+                            StringSerializer.get(), SerializerTypeInferer.getSerializer(idKey));
+                        columns.add(column);
+
+                        counter++;
+
+                        //Save the class and convert to a simple type.
+
+                    }
+                    //We have filled the collection.
+                    continue;
+                }
+
+                if (value instanceof Map) {
+
+                    Map map = (Map) value;
+                    for (Object mapkey : map.keySet()) {
+                        if (!(mapkey instanceof String)) {
+                            throw new RuntimeException("Cannot handle non string keys");
+                        }
+
+                        if (map.get(mapkey) instanceof String) {
+                            HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
+                                (String) map.get(
+                                    //mapkey), StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(mapkey)));
+                                    mapkey), StringSerializer.get(), StringSerializer.get());
+                            columns.add(column);
+                        } else {
+                            if (map.get(mapkey) instanceof Collection) {
+                                List<String> values = (List) map.get(mapkey);
+                                String mapValue = CassandraAnnotationLogic.RECORD_LIST_START + StringUtils.join(values,
+                                    CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
+
+                                HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
+                                    mapValue, StringSerializer.get(), StringSerializer.get());
+
+                                columns.add(column);
+                            }
+                        }
+                    }
+                    //We have filled the map
+                    continue;
+                }
+
+                String name = field.getName();
+
+                Serializer ser = SerializerTypeInferer.getSerializer(value);
+                //If it cannot figure out which serializer, then just use an ObjectSerializer
+                if (ser == null) {
+                    ser = ObjectSerializer.get();
+                }
+                HColumn<String, ?> column = HFactory.createColumn(name, value, StringSerializer.get(), ser);
+
+                columns.add(column);
+            }
+
             return columns;
         } catch (Exception e) {
             throw new RuntimeException("Reflection exception", e);
@@ -462,6 +589,104 @@ public final class HectorHelper {
                             Object val = StringSerializer.get().fromBytes(lisCo.getValue());
 
                             list.add(val);
+                        }
+                    }
+
+                    field.set(t, list);
+                    continue;
+                }
+
+                HColumn<String, byte[]> col = result.get().getColumnByName(name);
+                if (col == null || col.getValue() == null || col.getValueBytes().capacity() == 0 || col.getValue().length == 0) {
+                    // No data for this col
+                    continue;
+                }
+
+                Object val = SerializerTypeInferer.getSerializer(field.getType()).fromBytes(col.getValue());
+                field.set(t, val);
+            }
+        } catch (IllegalAccessException e) {
+            throw new ObjectNotSerializableException("Reflection Error ", e);
+        }
+    }
+
+    /**
+     * Populate entity.
+     *
+     * @param <T>    the generic type
+     * @param t      the t
+     * @param result the result
+     */
+    public static <T> void populateEntityGraph(T t, QueryResult<ColumnSlice<String, byte[]>> result, DaoPool pool) {
+        try {
+            Iterable<Field> fields = getFieldsUpTo(t.getClass(), null);
+            //Field[] fields = t.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                //If the field is final (likely a serialVersionUID), skip it because we can't set it
+                if (Modifier.isFinal(field.getModifiers())) {
+                    continue;
+                }
+                field.setAccessible(true);
+                String name = field.getName();
+                //TODO, this is expensive as we have to traverse the columns.
+
+                if (field.getType().isAssignableFrom(Map.class)) {
+                    Map map = new HashMap<>();
+                    for (HColumn<String, byte[]> mapCo : result.get().getColumns()) {
+
+                        if (mapCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.MAP_PREFIX)) {
+                            String key = mapCo.getName().replaceAll(field.getName() + CassandraAnnotationLogic.MAP_PREFIX, "");
+
+                            Object val = StringSerializer.get().fromBytes(mapCo.getValue());
+
+                            String checkValue = (String) val;
+                            if (checkValue != null && checkValue.startsWith(CassandraAnnotationLogic.RECORD_LIST_START)) {
+                                checkValue = checkValue.replaceFirst(CassandraAnnotationLogic.RECORD_LIST_START, "");
+                                List values = Arrays.asList(checkValue.split(CassandraAnnotationLogic.RECORD_LIST_DELIMITER));
+                                map.put(key, values);
+                            } else {
+
+                                map.put(key, val);
+                            }
+                        }
+                    }
+
+                    field.set(t, map);
+                    continue;
+                }
+
+                if (field.getType().isAssignableFrom(Set.class)) {
+
+                    Set list = new HashSet();
+                    for (HColumn<String, byte[]> lisCo : result.get().getColumns()) {
+
+                        if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.LIST_PREFIX)) {
+
+                            Object val = StringSerializer.get().fromBytes(lisCo.getValue());
+
+                            list.add(val);
+                        }
+                    }
+
+                    field.set(t, list);
+                    continue;
+                }
+
+                if (field.getType().isAssignableFrom(List.class)) {
+
+                    ParameterizedType listType = (ParameterizedType) field.getGenericType();
+                    Class<?> listClass = (Class<?>) listType.getActualTypeArguments()[0];
+
+                    List list = new ArrayList<>();
+
+                    for (HColumn<String, byte[]> lisCo : result.get().getColumns()) {
+
+                        if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.LIST_PREFIX)) {
+
+                            Object val = StringSerializer.get().fromBytes(lisCo.getValue());
+                            ColumnFamilyDao innerDao = pool.getPojoDao(val.getClass(), listClass, field.getName(), null);
+                            Object o = innerDao.find(val);
+                            list.add(o);
                         }
                     }
 
@@ -659,4 +884,17 @@ public final class HectorHelper {
         String[] columnNames = getAllColumnNames(entityClass);
         return columnNames.length;
     }
+
+    /**
+     * Generic DAO that will reflect on the Storage Class and provide a column family row mapped to a Pojo that has annotations.
+     *
+     * @param cluster
+     * @param configurator
+     * @param keyClass
+     * @param storageClass
+     * @param columnFamily
+     * @param comparatorAlias
+     * @return
+     */
+
 }

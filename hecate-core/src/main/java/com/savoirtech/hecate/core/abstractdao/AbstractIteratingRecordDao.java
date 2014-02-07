@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.core.utils;
+package com.savoirtech.hecate.core.abstractdao;
 
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
 import com.savoirtech.hecate.core.record.CompositeColumnIdentifier;
+import com.savoirtech.hecate.core.utils.ColumnIterator;
+import com.savoirtech.hecate.core.utils.ColumnRecordIterator;
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.cassandra.serializers.StringSerializer;

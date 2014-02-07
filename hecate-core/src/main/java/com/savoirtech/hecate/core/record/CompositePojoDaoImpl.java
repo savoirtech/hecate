@@ -17,7 +17,7 @@
 package com.savoirtech.hecate.core.record;
 
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
-import com.savoirtech.hecate.core.utils.AbstractIteratingRecordDao;
+import com.savoirtech.hecate.core.abstractdao.AbstractIteratingRecordDao;
 
 public class CompositePojoDaoImpl extends AbstractIteratingRecordDao implements CompositePojoDao {
     //----------------------------------------------------------------------------------------------------------------------

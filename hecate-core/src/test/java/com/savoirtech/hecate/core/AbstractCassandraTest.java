@@ -32,7 +32,7 @@ import org.junit.Before;
 public abstract class AbstractCassandraTest {
 
     public static final String CLUSTER = "Cluster";
-    public static final String KEYSPACE = "savoirtech";
+    public static final String KEYSPACE = "hecate";
     public static final String HOST = "localhost:9175";
     //Column Family
     public ConsistencyLevelPolicy consistencyLevelPolicy = new AllOneConsistencyLevelPolicy();

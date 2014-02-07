@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.core.utils;
+package com.savoirtech.hecate.core.abstractdao;
 
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +40,7 @@ import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.RangeSlicesQuery;
 import me.prettyprint.hector.api.query.SliceQuery;
 
-public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
+public abstract class AbstractPojoMappedColumnFamilyDao<K, T> {
 
     /**
      * The key space.
@@ -53,11 +53,11 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
     /**
      * The persistent class.
      */
-    private final Class<T> persistentClass;
+    protected final Class<T> persistentClass;
     /**
      * The key type class.
      */
-    private final Class<KeyType> keyTypeClass;
+    protected final Class<K> keyTypeClass;
     /**
      * The all column names.
      */
@@ -66,9 +66,9 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
     /**
      * Instantiates a new abstract column family dao.
      */
-    public AbstractAnnotatedColumnFamilyDao(final String clusterName, final CassandraKeyspaceConfigurator keyspaceConfigurator,
-                                            final Class<KeyType> keyTypeClass, final Class<T> persistentClass, final String columnFamilyName,
-                                            String comparatorAlias) {
+    public AbstractPojoMappedColumnFamilyDao(final String clusterName, final CassandraKeyspaceConfigurator keyspaceConfigurator,
+                                             final Class<K> keyTypeClass, final Class<T> persistentClass, final String columnFamilyName,
+                                             String comparatorAlias) {
         this.keySpace = new HectorManager().getKeyspace(clusterName, keyspaceConfigurator, columnFamilyName, false, comparatorAlias);
         this.keyTypeClass = keyTypeClass;
         this.persistentClass = persistentClass;
@@ -82,11 +82,11 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
      * @param key   the key
      * @param model the model
      */
-    public void save(KeyType key, T model) {
+    public void save(K key, T model) {
 
         Mutator<Object> mutator = HFactory.createMutator(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass));
 
-        for (HColumn<?, ?> column : HectorHelper.getColumnsAndAnnotations(model)) {
+        for (HColumn<?, ?> column : HectorHelper.getColumnsNoAnnotations(model)) {
             mutator.addInsertion(key, columnFamilyName, column);
         }
 
@@ -99,7 +99,7 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
      * @param key the key
      * @return the t
      */
-    public T find(KeyType key) {
+    public T find(K key) {
         SliceQuery<Object, String, byte[]> query = HFactory.createSliceQuery(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass),
             StringSerializer.get(), BytesArraySerializer.get());
 
@@ -129,7 +129,7 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
      * @param key the key
      * @return the t
      */
-    public T findAllColumns(KeyType key) {
+    public T findAllColumns(K key) {
         SliceQuery<Object, String, byte[]> query = HFactory.createSliceQuery(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass),
             StringSerializer.get(), BytesArraySerializer.get());
 
@@ -155,7 +155,7 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
     /**
      * Delete.
      */
-    public void delete(KeyType key) {
+    public void delete(K key) {
         Mutator<Object> mutator = HFactory.createMutator(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass));
         mutator.delete(key, columnFamilyName, null, SerializerTypeInferer.getSerializer(keyTypeClass));
     }
@@ -165,10 +165,10 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
      *
      * @return the keys
      */
-    public Set<KeyType> getKeys() {
+    public Set<K> getKeys() {
         int rows = 0;
         int pagination = 50;
-        Set<KeyType> rowKeys = new HashSet<KeyType>();
+        Set<K> rowKeys = new HashSet<K>();
 
         Row<Object, String, byte[]> lastRow = null;
 
@@ -190,7 +190,7 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
 
             for (Row<Object, String, byte[]> row : orderedRows) {
                 if (!row.getColumnSlice().getColumns().isEmpty()) {
-                    rowKeys.add((KeyType) row.getKey());
+                    rowKeys.add((K) row.getKey());
                 }
             }
 
@@ -208,7 +208,7 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
      * @param rangeTo   the range to
      * @return the sets the
      */
-    public Set<T> findItems(final List<KeyType> keys, final String rangeFrom, final String rangeTo) {
+    public Set<T> findItems(final List<K> keys, final String rangeFrom, final String rangeTo) {
 
         Set<T> items = new HashSet<T>();
 
@@ -236,7 +236,7 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
      * @param key the key
      * @return true, if successful
      */
-    public boolean containsKey(KeyType key) {
+    public boolean containsKey(K key) {
         RangeSlicesQuery<Object, String, byte[]> rangeSlicesQuery = HFactory.createRangeSlicesQuery(keySpace, SerializerTypeInferer.getSerializer(
             keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
         rangeSlicesQuery.setColumnFamily(columnFamilyName);

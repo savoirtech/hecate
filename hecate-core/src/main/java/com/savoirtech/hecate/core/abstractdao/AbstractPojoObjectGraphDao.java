@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.core.utils;
+package com.savoirtech.hecate.core.abstractdao;
 
 import java.util.HashSet;
 import java.util.List;
@@ -22,12 +22,11 @@ import java.util.Set;
 
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
 import com.savoirtech.hecate.core.config.HectorHelper;
-import com.savoirtech.hecate.core.config.HectorManager;
 import com.savoirtech.hecate.core.config.ObjectNotSerializableException;
+import com.savoirtech.hecate.core.utils.DaoPool;
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
-import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.ColumnSlice;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.OrderedRows;
@@ -40,41 +39,35 @@ import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.RangeSlicesQuery;
 import me.prettyprint.hector.api.query.SliceQuery;
 
-public abstract class AbstractPojoMappedColumnFamilyDao<K, T> {
+public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFamilyDao<K, T> {
 
-    /**
-     * The key space.
-     */
-    protected final Keyspace keySpace;
-    /**
-     * The column family name.
-     */
-    protected final String columnFamilyName;
-    /**
-     * The persistent class.
-     */
-    private final Class<T> persistentClass;
-    /**
-     * The key type class.
-     */
-    private final Class<K> keyTypeClass;
     /**
      * The all column names.
      */
     private String[] allColumnNames;
 
+    private final DaoPool daoPool;
+
+    /**
+     * Instantiates a new abstract column family dao.
+     *
+     * @param clusterName
+     * @param keyspaceConfigurator
+     * @param keyTypeClass
+     * @param persistentClass
+     * @param columnFamilyName
+     * @param comparatorAlias
+     */
+    public AbstractPojoObjectGraphDao(String clusterName, CassandraKeyspaceConfigurator keyspaceConfigurator, Class<K> keyTypeClass,
+                                      Class<T> persistentClass, String columnFamilyName, String comparatorAlias, DaoPool daoPool) {
+        super(clusterName, keyspaceConfigurator, keyTypeClass, persistentClass, columnFamilyName, comparatorAlias);
+
+        this.daoPool = daoPool;
+    }
+
     /**
      * Instantiates a new abstract column family dao.
      */
-    public AbstractPojoMappedColumnFamilyDao(final String clusterName, final CassandraKeyspaceConfigurator keyspaceConfigurator,
-                                             final Class<K> keyTypeClass, final Class<T> persistentClass, final String columnFamilyName,
-                                             String comparatorAlias) {
-        this.keySpace = new HectorManager().getKeyspace(clusterName, keyspaceConfigurator, columnFamilyName, false, comparatorAlias);
-        this.keyTypeClass = keyTypeClass;
-        this.persistentClass = persistentClass;
-        this.columnFamilyName = columnFamilyName;
-        this.allColumnNames = HectorHelper.getAllColumnNames(persistentClass);
-    }
 
     /**
      * Save.
@@ -86,7 +79,7 @@ public abstract class AbstractPojoMappedColumnFamilyDao<K, T> {
 
         Mutator<Object> mutator = HFactory.createMutator(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass));
 
-        for (HColumn<?, ?> column : HectorHelper.getColumnsNoAnnotations(model)) {
+        for (HColumn<?, ?> column : HectorHelper.getColumnsGraphAnnotations(model, daoPool)) {
             mutator.addInsertion(key, columnFamilyName, column);
         }
 
@@ -116,7 +109,7 @@ public abstract class AbstractPojoMappedColumnFamilyDao<K, T> {
 
         try {
             T t = persistentClass.newInstance();
-            HectorHelper.populateEntityAnnotated(t, result);
+            HectorHelper.populateEntityGraph(t, result, daoPool);
             return t;
         } catch (Exception e) {
             throw new ObjectNotSerializableException("Error creating persistent class", e);
