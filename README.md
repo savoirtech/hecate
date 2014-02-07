@@ -44,7 +44,7 @@ Starting with the "Fixed DAO"
         dao.save(cneRecord.getCedula(), col);
 
         //Did it save?
-        CNEColumn getCol = dao.find("131042379231");
+        CNEColumn getCol = dao.find("13155555231");
         assertNotNull(getCol);
         CNE newCne = getCol.getCne();
         assertNotNull(newCne);
