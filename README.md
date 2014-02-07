@@ -126,7 +126,7 @@ public class PojoGraphDaoTest extends AbstractCassandraTest {
     }
 
     @Test
-    public void StringTest() {
+    public void stringTest() {
 
         DaoPool<PojoObjectGraphDao> daoDaoPool = new DaoPool<>("cmp", keyspaceConfigurator, PojoObjectGraphDao.class);
         ColumnFamilyDao dao = daoDaoPool.getPojoDao(String.class, TopWithString.class, "REDIRECT", null);
