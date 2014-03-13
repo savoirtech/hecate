@@ -362,14 +362,14 @@
                 <configuration>
                     <excludeDependencies>${savoirtech.osgi.exclude.dependencies}</excludeDependencies>
                     <instructions>
-                        <Bundle-Name>tycho-${project.artifactId}</Bundle-Name>
+                        <Bundle-Name>savoirtech-${project.artifactId}</Bundle-Name>
                         <Bundle-SymbolicName>${savoirtech.osgi.symbolic.name}</Bundle-SymbolicName>
                         <Bundle-Activator>${savoirtech.osgi.activator}</Bundle-Activator>
                         <Export-Package>${savoirtech.osgi.export}</Export-Package>
                         <Import-Package>${savoirtech.osgi.import}</Import-Package>
                         <DynamicImport-Package>${savoirtech.osgi.dynamic}</DynamicImport-Package>
                         <Private-Package>${savoirtech.osgi.private.pkg}</Private-Package>
-                        <Implementation-Title>Tycho</Implementation-Title>
+                        <Implementation-Title>Hecate</Implementation-Title>
                         <Implementation-Version>${project.version}</Implementation-Version>
                         <_versionpolicy>${savoirtech.osgi.import.default.version}</_versionpolicy>
                         <_failok>${savoirtech.osgi.failok}</_failok>

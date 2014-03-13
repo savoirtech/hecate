@@ -16,19 +16,22 @@
 
     <properties>
 
-        <cengage.osgi.export.pkg>
+        <savoirtech.osgi.export.pkg>
             com.savoirtech.hecate*,
             me.prettyprint*;version="${cassandra-thrift-version}",
             com.eaio.uuid* ;version="${uuid-version}",
-        </cengage.osgi.export.pkg>
+        </savoirtech.osgi.export.pkg>
 
-        <cengage.osgi.import.pkg>
-            !sun.misc,*
-        </cengage.osgi.import.pkg>
-        <cengage.osgi.dynamic>org.osgi.service.blueprint,*</cengage.osgi.dynamic>
-        <cengage.osgi.embed>
+        <savoirtech.osgi.import>
+            !sun.misc,
+            !com.sun*,
+            com.yammer.metrics.core;resolution:=optional,
+            *
+        </savoirtech.osgi.import>
+        <savoirtech.osgi.dynamic>org.osgi.service.blueprint,*</savoirtech.osgi.dynamic>
+        <savoirtech.osgi.embed>
             cassandra-thrift,concurrentlinkedhashmap-lru,hector-core,httpclient,httpcore,jamm,libthrift,speed4j,uuid
-        </cengage.osgi.embed>
+        </savoirtech.osgi.embed>
     </properties>
 
     <dependencies>
