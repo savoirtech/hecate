@@ -243,7 +243,8 @@ public final class HectorHelper {
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
                                 (String) map.get(
                                     //mapkey), StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(mapkey)));
-                                    mapkey), StringSerializer.get(), StringSerializer.get());
+                                    mapkey), StringSerializer.get(), StringSerializer.get()
+                                                                             );
                             columns.add(column);
                         } else {
                             if (map.get(mapkey) instanceof Collection) {
@@ -327,7 +328,8 @@ public final class HectorHelper {
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
                                 (String) map.get(
                                     //mapkey), StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(mapkey)));
-                                    mapkey), StringSerializer.get(), StringSerializer.get());
+                                    mapkey), StringSerializer.get(), StringSerializer.get()
+                                                                             );
                             columns.add(column);
                         } else {
                             if (map.get(mapkey) instanceof Collection) {
@@ -455,7 +457,8 @@ public final class HectorHelper {
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
                                 (String) map.get(
                                     //mapkey), StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(mapkey)));
-                                    mapkey), StringSerializer.get(), StringSerializer.get());
+                                    mapkey), StringSerializer.get(), StringSerializer.get()
+                                                                             );
                             columns.add(column);
                         } else {
                             if (map.get(mapkey) instanceof Collection) {
@@ -873,6 +876,97 @@ public final class HectorHelper {
             } catch (IllegalAccessException e) {
                 throw new ObjectNotSerializableException(e);
             }
+        }
+    }
+
+    public static <T> void deleteGraph(T t, QueryResult<ColumnSlice<String, byte[]>> result, DaoPool pool) {
+        try {
+            Iterable<Field> fields = getFieldsUpTo(t.getClass(), null);
+            //Field[] fields = t.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                //If the field is final (likely a serialVersionUID), skip it because we can't set it
+                if (Modifier.isFinal(field.getModifiers())) {
+                    continue;
+                }
+                field.setAccessible(true);
+                String name = field.getName();
+                //TODO, this is expensive as we have to traverse the columns.
+
+                if (field.getType().isAssignableFrom(Map.class)) {
+                    Map map = new HashMap<>();
+                    for (HColumn<String, byte[]> mapCo : result.get().getColumns()) {
+
+                        if (mapCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.MAP_PREFIX)) {
+                            String key = mapCo.getName().replaceAll(field.getName() + CassandraAnnotationLogic.MAP_PREFIX, "");
+
+                            Object val = StringSerializer.get().fromBytes(mapCo.getValue());
+
+                            String checkValue = (String) val;
+                            if (checkValue != null && checkValue.startsWith(CassandraAnnotationLogic.RECORD_LIST_START)) {
+                                checkValue = checkValue.replaceFirst(CassandraAnnotationLogic.RECORD_LIST_START, "");
+                                List values = Arrays.asList(checkValue.split(CassandraAnnotationLogic.RECORD_LIST_DELIMITER));
+                                map.put(key, values);
+                            } else {
+
+                                map.put(key, val);
+                            }
+                        }
+                    }
+
+                    field.set(t, map);
+                    continue;
+                }
+
+                if (field.getType().isAssignableFrom(Set.class)) {
+
+                    Set list = new HashSet();
+                    for (HColumn<String, byte[]> lisCo : result.get().getColumns()) {
+
+                        if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.LIST_PREFIX)) {
+
+                            Object val = StringSerializer.get().fromBytes(lisCo.getValue());
+
+                            list.add(val);
+                        }
+                    }
+
+                    field.set(t, list);
+                    continue;
+                }
+
+                if (field.getType().isAssignableFrom(List.class)) {
+
+                    ParameterizedType listType = (ParameterizedType) field.getGenericType();
+                    Class<?> listClass = (Class<?>) listType.getActualTypeArguments()[0];
+
+                    List list = new ArrayList<>();
+
+                    for (HColumn<String, byte[]> lisCo : result.get().getColumns()) {
+
+                        if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.LIST_PREFIX)) {
+
+                            Object val = StringSerializer.get().fromBytes(lisCo.getValue());
+                            ColumnFamilyDao innerDao = pool.getPojoDao(val.getClass(), listClass, field.getName(), null);
+
+                            innerDao.delete(val);
+                        }
+                    }
+
+                    field.set(t, list);
+                    continue;
+                }
+
+                HColumn<String, byte[]> col = result.get().getColumnByName(name);
+                if (col == null || col.getValue() == null || col.getValueBytes().capacity() == 0 || col.getValue().length == 0) {
+                    // No data for this col
+                    continue;
+                }
+
+                Object val = SerializerTypeInferer.getSerializer(field.getType()).fromBytes(col.getValue());
+                field.set(t, val);
+            }
+        } catch (IllegalAccessException e) {
+            throw new ObjectNotSerializableException("Reflection Error ", e);
         }
     }
 

@@ -57,7 +57,7 @@ public abstract class AbstractPojoMappedColumnFamilyDao<K, T> {
     /**
      * The key type class.
      */
-    protected final Class<K> keyTypeClass;
+     final Class<K> keyTypeClass;
     /**
      * The all column names.
      */

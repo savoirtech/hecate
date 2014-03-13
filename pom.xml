@@ -44,6 +44,10 @@
     <modules>
         <module>hecate-core</module>
         <module>hecate-testing</module>
+        <!--
+        <module>hecate-hql3</module>
+        -->
+        <module>hecate-hector</module>
     </modules>
 
     <scm>
@@ -83,6 +87,8 @@
         <!-- updating to guava 14 requires updated hector libraries in cassandra-pojo-library AbstractComposite.java -->
         <!-- https://github.com/hector-client/hector/commit/47617b183c5ae28f0e8ce800ac1d86b6625c69b6 -->
         <guava-version>13.0.1</guava-version>
+
+        <datastax-driver-version>2.0.1</datastax-driver-version>
         <hectorcore-version>1.1-4</hectorcore-version>
         <httpclient-version>4.2.3</httpclient-version>
         <httpcore-version>4.2.3</httpcore-version>
@@ -448,6 +454,14 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <!-- CQL3 - Driver -->
+
+            <dependency>
+              <groupId>com.datastax.cassandra</groupId>
+              <artifactId>cassandra-driver-core</artifactId>
+              <version>${datastax-driver-version}</version>
+            </dependency>
 
             <!-- Infrastructure -->
 
