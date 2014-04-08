@@ -308,7 +308,7 @@ public final class HectorHelper {
                     Integer counter = 0;
                     for (Object o : list) {
                         HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter,
-                            (String) o, StringSerializer.get(), StringSerializer.get());
+                            (String) o, StringSerializer.get(), SerializerTypeInferer.getSerializer(o));
                         columns.add(column);
                         counter++;
                     }
@@ -324,24 +324,26 @@ public final class HectorHelper {
                             throw new RuntimeException("Cannot handle non string keys");
                         }
 
-                        if (map.get(mapkey) instanceof String) {
+                        if (map.get(mapkey) instanceof Collection) {
+                            List<String> values = (List) map.get(mapkey);
+                            String mapValue = CassandraAnnotationLogic.RECORD_LIST_START + StringUtils.join(values,
+                                CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
+
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
-                                (String) map.get(
-                                    //mapkey), StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(mapkey)));
-                                    mapkey), StringSerializer.get(), StringSerializer.get()
-                                                                             );
+                                mapValue, StringSerializer.get(), StringSerializer.get());
+
                             columns.add(column);
                         } else {
-                            if (map.get(mapkey) instanceof Collection) {
-                                List<String> values = (List) map.get(mapkey);
-                                String mapValue = CassandraAnnotationLogic.RECORD_LIST_START + StringUtils.join(values,
-                                    CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
 
-                                HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
-                                    mapValue, StringSerializer.get(), StringSerializer.get());
-
-                                columns.add(column);
+                            Serializer ser = SerializerTypeInferer.getSerializer(map.get(mapkey));
+                            //If it cannot figure out which serializer, then just use an ObjectSerializer
+                            if (ser == null) {
+                                ser = ObjectSerializer.get();
                             }
+
+                            HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey, map.get(
+                                mapkey), StringSerializer.get(), ser);
+                            columns.add(column);
                         }
                     }
                     //We have filled the map
@@ -423,7 +425,7 @@ public final class HectorHelper {
                         if (primitivesAndWrappers.contains(listClass.getName())) {
 
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter,
-                                (String) o, StringSerializer.get(), StringSerializer.get());
+                                (String) o, StringSerializer.get(), SerializerTypeInferer.getSerializer(o));
                             columns.add(column);
                             counter++;
                         } else {
@@ -453,24 +455,20 @@ public final class HectorHelper {
                             throw new RuntimeException("Cannot handle non string keys");
                         }
 
-                        if (map.get(mapkey) instanceof String) {
+                        if (map.get(mapkey) instanceof Collection) {
+                            List<String> values = (List) map.get(mapkey);
+                            String mapValue = CassandraAnnotationLogic.RECORD_LIST_START + StringUtils.join(values,
+                                CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
+
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
-                                (String) map.get(
-                                    //mapkey), StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(mapkey)));
-                                    mapkey), StringSerializer.get(), StringSerializer.get()
-                                                                             );
+                                mapValue, StringSerializer.get(), StringSerializer.get());
+
                             columns.add(column);
                         } else {
-                            if (map.get(mapkey) instanceof Collection) {
-                                List<String> values = (List) map.get(mapkey);
-                                String mapValue = CassandraAnnotationLogic.RECORD_LIST_START + StringUtils.join(values,
-                                    CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
 
-                                HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
-                                    mapValue, StringSerializer.get(), StringSerializer.get());
-
-                                columns.add(column);
-                            }
+                            HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
+                                (String) map.get(mapkey), StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(mapkey)));
+                            columns.add(column);
                         }
                     }
                     //We have filled the map
