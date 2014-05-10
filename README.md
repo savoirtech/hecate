@@ -10,12 +10,15 @@ This has become a library that we use frequently at http://savoirtech.com as we 
 new data models, index, and search those.
 
 It is a library that has undergone several iterations and heavy load testing.
-In the simplest DAO solution we hold around 500 req/s against an 8 node VM based cluster.
+In the simplest DAO solution we hold around 5000 req/s against an 8 node VM based cluster.
 (We never got any further than that since the surrounding HW failed)
 
+If you want more of the background on this - https://oracleus.activeevents.com/2013/connect/sessionDetail.ww?SESSION_ID=3674
+
+Since then a CQL mapper and library has been added, still retaining a very simple
+model for quickly building Java applictions without having to worry about Cassandra.
 
 Starting with the "Fixed DAO"
-
 ```Java
 
 @Test
@@ -268,6 +271,40 @@ public class PojoGraphDaoTest extends AbstractCassandraTest {
         assertTrue(newTop.getStrings().size() == 1);
     }
 }
+```
+
+We can do quite similar things with CQL...
+
+```Java
+
+Session session = cluster.connect();
+
+        ResultSet resultSet = null;
+
+        System.out.println("Create statement " + TableCreator.createTable("hecate", "simpletable", SimpleTable.class));
+
+        try {
+            resultSet = session.execute(TableCreator.createTable("hecate", "simpletable", SimpleTable.class));
+        } catch (HecateException e) {
+            e.printStackTrace();
+        }
+
+        assertNotNull(resultSet);
+
+        GenericTableDao dao = new GenericCqlDao(session, "hecate", "simpletable", long.class, SimpleTable.class);
+        SimpleTable pj = new SimpleTable();
+        pj.setId(100l);
+        pj.setName("BOB");
+        pj.setMore("BUBBA");
+        pj.setDate(new Date());
+
+        dao.save(pj);
+        SimpleTable fC = (SimpleTable) dao.find(100l);
+
+        assertNotNull(fC);
+
+        assertEquals("BOB", fC.getName());
+        
 ```
 
 
