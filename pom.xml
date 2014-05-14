@@ -45,6 +45,7 @@
     <modules>
         <module>hecate-core</module>
         <module>hecate-testing</module>
+        <module>hecate-farsandra</module>
 
         <module>hecate-hector</module>
         <module>hecate-cql3</module>

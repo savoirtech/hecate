@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3.farsandra;
+package com.savoirtech.hecate.farsandra;
 
 public interface LineHandler {
   void handleLine(String line);

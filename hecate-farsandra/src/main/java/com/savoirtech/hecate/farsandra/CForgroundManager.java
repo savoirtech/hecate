@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3.farsandra;
+package com.savoirtech.hecate.farsandra;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.savoirtech.hecate.cql3.farsandra.StreamReader;
+import com.savoirtech.hecate.farsandra.StreamReader;
 import org.slf4j.Logger;
 
 public class CForgroundManager {

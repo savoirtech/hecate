@@ -33,7 +33,7 @@ public class TableCreator {
     public static String createTable(String keySpace, String tableName, Class cls) throws HecateException {
 
         StringBuilder builder = new StringBuilder();
-        builder.append("CREATE TABLE ");
+        builder.append("CREATE TABLE IF NOT EXISTS ");
         builder.append(keySpace);
         builder.append(".");
         builder.append(tableName);

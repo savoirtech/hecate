@@ -28,8 +28,8 @@ import com.datastax.driver.core.Session;
 import com.savoirtech.hecate.cql3.HecateException;
 import com.savoirtech.hecate.cql3.entities.CompoundKeyTable;
 import com.savoirtech.hecate.cql3.entities.SimpleTable;
-import com.savoirtech.hecate.cql3.farsandra.Farsandra;
-import com.savoirtech.hecate.cql3.farsandra.LineHandler;
+import com.savoirtech.hecate.farsandra.Farsandra;
+import com.savoirtech.hecate.farsandra.LineHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,7 +97,7 @@ public class TableCreationIntegrationTest {
 
         System.out.println("Create statement " + TableCreator.createTable("hecate", "simpletable", SimpleTable.class));
 
-        session.execute("CREATE KEYSPACE hecate WITH replication " + "= {'class':'SimpleStrategy', 'replication_factor':3};");
+        session.execute("CREATE KEYSPACE IF NOT EXISTS hecate WITH replication " + "= {'class':'SimpleStrategy', 'replication_factor':3};");
         try {
             resultSet = session.execute(TableCreator.createTable("hecate", "simpletable", SimpleTable.class));
         } catch (HecateException e) {

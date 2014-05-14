@@ -46,6 +46,8 @@ public class CollectionTable {
 
     List objectList;
 
+    List<CollectionTable> collectionTables;
+
     String name;
 
     String more;

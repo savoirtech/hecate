@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.datastax.driver.core.Row;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,7 +144,11 @@ public final class FieldMapper {
             Type type = field.getGenericType();
             if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) type;
-                return "list<" + toCassandra.get(getClassName(pt.getActualTypeArguments()[0])) + ">";
+
+                logger.debug(toCassandra.get(getClassName(pt.getActualTypeArguments()[0])));
+                String csType = (StringUtils.isEmpty(toCassandra.get(getClassName(pt.getActualTypeArguments()[0])))) ? "blob" : toCassandra.get(
+                    getClassName(pt.getActualTypeArguments()[0]));
+                return "list<" + csType + ">";
             }
 
             return "list<blob>";

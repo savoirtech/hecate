@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3.farsandra;
+package com.savoirtech.hecate.farsandra;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,8 +22,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.savoirtech.hecate.cql3.farsandra.LineHandler;
 
 public class StreamReader implements Runnable {
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3.farsandra;
+package com.savoirtech.hecate.farsandra;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.savoirtech.hecate.cql3.farsandra.CForgroundManager;
+import com.savoirtech.hecate.farsandra.CForgroundManager;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
