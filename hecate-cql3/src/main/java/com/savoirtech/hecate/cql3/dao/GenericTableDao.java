@@ -31,5 +31,5 @@ public interface GenericTableDao<K, T> {
 
     T find(K key);
 
-    Set<T> findItems(final List<K> keys, final String rangeFrom, final String rangeTo);
+    Set<T> findItems(final List<K> keys);
 }

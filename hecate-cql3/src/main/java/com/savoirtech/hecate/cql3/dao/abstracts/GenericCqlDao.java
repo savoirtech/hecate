@@ -112,7 +112,30 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
     }
 
     @Override
-    public Set<T> findItems(List<K> keys, String rangeFrom, String rangeTo) {
-        return null;  //TODO
+    public Set<T> findItems(List<K> keys) {
+
+        Set<T> items = new HashSet<>();
+        Select.Where select = QueryBuilder.select(ReflectionUtils.fieldNames(mappingClazz)).from(keySpace, tableName).where(QueryBuilder.in(
+            ReflectionUtils.getIdName(mappingClazz), keys.toArray()));
+
+        logger.debug("Find " + select);
+        ResultSet res = session.execute(select);
+        if (res != null) {
+
+            while (res.iterator().hasNext()) {
+                Row row = res.iterator().next();
+                try {
+                    T clz = (T) mappingClazz.newInstance();
+                    ReflectionUtils.populate(clz, row);
+                    items.add(clz);
+                } catch (InstantiationException e) {
+                    logger.error("Could not create class " + mappingClazz + " " + e);
+                } catch (IllegalAccessException e) {
+                    logger.error("Could not access class " + mappingClazz + " " + e);
+                }
+            }
+        }
+
+        return items;
     }
 }
