@@ -36,7 +36,7 @@
     <groupId>com.savoirtech.hecate</groupId>
     <artifactId>hecate-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.24-SNAPSHOT</version>
+    <version>1.0.23-SNAPSHOT</version>
 
     <name>Savoirtech Project Hecate ::: Parent</name>
     <description>Savoirtech Project Hecate ::: Parent</description>
