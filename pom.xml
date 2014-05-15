@@ -124,8 +124,6 @@
         <savoirtech.osgi.import.default.version>[$(version;==;$(@)),$(version;+;$(@)))
         </savoirtech.osgi.import.default.version>
         <savoirtech.osgi.import.defaults>
-            org.springframework.*;version="[2.5,4)",
-            javax.persistence.*;version="[1.1,2)"
         </savoirtech.osgi.import.defaults>
         <savoirtech.osgi.import.before.defaults />
         <savoirtech.osgi.import.additional />
@@ -152,15 +150,6 @@
         </savoirtech.osgi.export.pkg>
         <savoirtech.osgi.import>
             !com.savoirtech.*,
-            org.apache.xalan.xsltc.trax;resolution:=optional,
-            javax.activation;resolution:=optional,
-            javax.xml.bind;resolution:=optional,
-            javax.xml.bind.annotation;resolution:=optional,
-            javax.xml.bind.annotation.adapters;resolution:=optional,
-            javax.xml.stream;resolution:=optional,
-            org.springframework.jmx.export.annotation;resolution:=optional;version="[2.5,4)",
-            org.springframework.jmx.export.assembler;resolution:=optional;version="[2.5,4)",
-            org.springframework.jmx.export.metadata;resolution:=optional;version="[2.5,4)",
             *
         </savoirtech.osgi.import>
         <savoirtech.osgi.dynamic>
