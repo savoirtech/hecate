@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Lists;
+import com.savoirtech.hecate.core.annotations.CFName;
 import com.savoirtech.hecate.core.annotations.CassandraCollection;
 import com.savoirtech.hecate.core.annotations.CassandraId;
 import com.savoirtech.hecate.core.annotations.CassandraMaps;
@@ -430,7 +431,14 @@ public final class HectorHelper {
                             counter++;
                         } else {
                             Object idKey = getIdValue(o.getClass(), o);
-                            ColumnFamilyDao innerDao = pool.getPojoDao(String.class, o.getClass(), field.getName(), null);
+                            ColumnFamilyDao innerDao = null;
+                            if (field.isAnnotationPresent(CFName.class)) {
+                                String annotatedName = field.getAnnotation(CFName.class).name();
+                                innerDao = pool.getPojoDao(String.class, o.getClass(), annotatedName, null);
+                            } else {
+                                innerDao = pool.getPojoDao(String.class, o.getClass(), field.getName(), null);
+                            }
+
                             innerDao.save(idKey, o);
 
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter, idKey,
@@ -708,7 +716,13 @@ public final class HectorHelper {
                         if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.LIST_PREFIX)) {
 
                             Object val = StringSerializer.get().fromBytes(lisCo.getValue());
-                            ColumnFamilyDao innerDao = pool.getPojoDao(val.getClass(), listClass, field.getName(), null);
+                            ColumnFamilyDao innerDao = null;
+                            if (field.isAnnotationPresent(CFName.class)) {
+                                String annotatedName = field.getAnnotation(CFName.class).name();
+                                innerDao = pool.getPojoDao(val.getClass(), listClass, annotatedName, null);
+                            } else {
+                                innerDao = pool.getPojoDao(val.getClass(), listClass, field.getName(), null);
+                            }
                             Object o = innerDao.find(val);
                             list.add(o);
                         }
@@ -944,8 +958,13 @@ public final class HectorHelper {
                         if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.LIST_PREFIX)) {
 
                             Object val = StringSerializer.get().fromBytes(lisCo.getValue());
-                            ColumnFamilyDao innerDao = pool.getPojoDao(val.getClass(), listClass, field.getName(), null);
-
+                            ColumnFamilyDao innerDao = null;
+                            if (field.isAnnotationPresent(CFName.class)) {
+                                String annotatedName = field.getAnnotation(CFName.class).name();
+                                innerDao = pool.getPojoDao(val.getClass(), listClass, annotatedName, null);
+                            } else {
+                                innerDao = pool.getPojoDao(val.getClass(), listClass, field.getName(), null);
+                            }
                             innerDao.delete(val);
                         }
                     }

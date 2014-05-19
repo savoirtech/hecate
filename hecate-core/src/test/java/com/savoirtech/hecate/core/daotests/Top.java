@@ -19,6 +19,7 @@ package com.savoirtech.hecate.core.daotests;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.savoirtech.hecate.core.annotations.CFName;
 import com.savoirtech.hecate.core.annotations.CassandraId;
 
 public class Top {
@@ -26,7 +27,9 @@ public class Top {
     @CassandraId
     String id;
 
+    @CFName(name = "BOB")
     List<Child> children = new ArrayList<>();
+    @CFName(name = "BOB2")
 
     List<Child> moreKids = new ArrayList<>();
 

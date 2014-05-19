@@ -138,4 +138,24 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
 
         return items;
     }
+
+    public Session getSession() {
+        return session;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public String getKeySpace() {
+        return keySpace;
+    }
+
+    public Class getMappingClazz() {
+        return mappingClazz;
+    }
+
+    public Class getKeyClazz() {
+        return keyClazz;
+    }
 }

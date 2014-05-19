@@ -46,6 +46,15 @@ public class PojoGraphDaoTest extends AbstractCassandraTest {
         Top newTop = (Top) dao.find("A");
 
         assertTrue(newTop.getMoreKids().size() == 1);
+
+        System.out.println("Top" + newTop);
+
+        ColumnFamilyDao daoChild = daoDaoPool.getPojoDao(String.class, Child.class, "BOB", null);
+
+        dao.delete("A");
+
+        System.out.println(daoChild.find("A"));
+        assertTrue(daoChild.find("A") == null);
     }
 
     @Test

@@ -146,30 +146,38 @@ public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFa
     }
 
     /**
-        * Delete whole object graph. - Similar to a Cascade.ALL in JPA.
-        */
-       public void deleteGraph(K key, DaoPool daoPool) {
+     * Delete whole object graph. - Similar to a Cascade.ALL in JPA.
+     */
+    public void deleteGraph(K key, DaoPool daoPool)  {
 
-           SliceQuery<Object, String, byte[]> query = HFactory.createSliceQuery(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass),
-               StringSerializer.get(), BytesArraySerializer.get());
+        SliceQuery<Object, String, byte[]> query = HFactory.createSliceQuery(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass),
+            StringSerializer.get(), BytesArraySerializer.get());
 
-           QueryResult<ColumnSlice<String, byte[]>> result = query.setColumnFamily(columnFamilyName).setKey(key).execute();
+        QueryResult<ColumnSlice<String, byte[]>> result = query.setColumnFamily(columnFamilyName).setKey(key).setRange("", "", false,
+            Integer.MAX_VALUE).execute();
 
-           HectorHelper.deleteGraph(keyTypeClass, result, daoPool);
+        try {
+            if (result.get().getColumns().isEmpty()) {
+                return;
+            }
+            T t = persistentClass.newInstance();
+                   HectorHelper.deleteGraph(t, result, daoPool);
 
-           Mutator<Object> mutator = HFactory.createMutator(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass));
-           mutator.delete(key, columnFamilyName, null, SerializerTypeInferer.getSerializer(keyTypeClass));
-       }
+                   Mutator<Object> mutator = HFactory.createMutator(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass));
+                   mutator.delete(key, columnFamilyName, null, SerializerTypeInferer.getSerializer(keyTypeClass));
+        } catch (Exception e) {
+           return;
+        }
 
-       /**
-        * Delete.
-        */
-       public void delete(K key) {
+    }
 
-           Mutator<Object> mutator = HFactory.createMutator(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass));
-           mutator.delete(key, columnFamilyName, null, SerializerTypeInferer.getSerializer(keyTypeClass));
-       }
+    /**
+     * Delete.
+     */
+    public void delete(K key) {
+        deleteGraph(key, daoPool);
 
+    }
 
     /**
      * Gets the keys.
