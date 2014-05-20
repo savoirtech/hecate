@@ -29,6 +29,7 @@ public class TopWithString {
 
     @CFName(name = "BOB")
     List<Child> children = new ArrayList<>();
+
     @CFName(name = "BOB2")
     List<Child> moreKids = new ArrayList<>();
 

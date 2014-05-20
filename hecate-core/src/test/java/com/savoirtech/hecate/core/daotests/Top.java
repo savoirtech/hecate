@@ -17,7 +17,11 @@
 package com.savoirtech.hecate.core.daotests;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.savoirtech.hecate.core.annotations.CFName;
 import com.savoirtech.hecate.core.annotations.CassandraId;
@@ -32,6 +36,18 @@ public class Top {
     @CFName(name = "BOB2")
 
     List<Child> moreKids = new ArrayList<>();
+
+    @CFName(name = "CHILDSET")
+    Set<Child> childSet = new HashSet<>();
+
+    @CFName(name = "CHILDMAP")
+    Map<String, Child> childMap = new HashMap<>();
+
+    Map<String, String> bobs = new HashMap<>();
+
+    List<String> kidIds = new ArrayList<>();
+
+
 
     public List<Child> getMoreKids() {
         return moreKids;
@@ -57,12 +73,48 @@ public class Top {
         this.children = children;
     }
 
+    public Set<Child> getChildSet() {
+        return childSet;
+    }
+
+    public void setChildSet(Set<Child> childSet) {
+        this.childSet = childSet;
+    }
+
+    public Map<String, Child> getChildMap() {
+        return childMap;
+    }
+
+    public void setChildMap(Map<String, Child> childMap) {
+        this.childMap = childMap;
+    }
+
+    public List<String> getKidIds() {
+        return kidIds;
+    }
+
+    public void setKidIds(List<String> kidIds) {
+        this.kidIds = kidIds;
+    }
+
+    public Map<String, String> getBobs() {
+        return bobs;
+    }
+
+    public void setBobs(Map<String, String> bobs) {
+        this.bobs = bobs;
+    }
+
     @Override
     public String toString() {
         return "Top{" +
             "id='" + id + '\'' +
             ", children=" + children +
             ", moreKids=" + moreKids +
+            ", childSet=" + childSet +
+            ", childMap=" + childMap +
+            ", kidIds=" + kidIds +
+            ", bobs=" + bobs +
             '}';
     }
 }

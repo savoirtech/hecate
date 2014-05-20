@@ -37,23 +37,54 @@ public class PojoGraphDaoTest extends AbstractCassandraTest {
         top.setId("A");
         Child child = new Child();
         child.setId("A");
+        top.getKidIds().add("A");
+        top.getKidIds().add("B");
 
         top.getChildren().add(child);
+
         top.getMoreKids().add(child);
+        top.getChildSet().add(child);
+        top.getChildMap().put("A", child);
+        top.getChildSet().add(child);
+
+
+
+        child = new Child();
+        child.setId("B");
+        top.getChildren().add(child);
+        top.getMoreKids().add(child);
+        top.getChildSet().add(child);
+        top.getChildMap().put("B", child);
+
+        top.getBobs().put("A","B") ;
 
         dao.save(top.getId(), top);
 
         Top newTop = (Top) dao.find("A");
 
-        assertTrue(newTop.getMoreKids().size() == 1);
+        assertTrue(newTop.getMoreKids().size() == 2);
 
         System.out.println("Top" + newTop);
+
+        assertTrue(newTop.getKidIds().size() == 2);
 
         ColumnFamilyDao daoChild = daoDaoPool.getPojoDao(String.class, Child.class, "BOB", null);
 
         dao.delete("A");
 
         System.out.println(daoChild.find("A"));
+        assertTrue(daoChild.find("A") == null);
+
+        //CHILDSET
+
+        daoChild = daoDaoPool.getPojoDao(String.class, Child.class, "CHILDSET", null);
+        System.out.println(daoChild.find("A"));
+        assertTrue(daoChild.find("A") == null);
+
+        daoChild = daoDaoPool.getPojoDao(String.class, Child.class, "CHILDMAP", null);
+        System.out.println(daoChild.find("A"));
+
+        System.out.println("TOP " + newTop);
         assertTrue(daoChild.find("A") == null);
     }
 

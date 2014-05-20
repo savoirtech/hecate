@@ -53,7 +53,7 @@ import org.apache.commons.lang.StringUtils;
 
 public final class HectorHelper {
 
-    final static List<String> primitivesAndWrappers = Arrays.asList("java.lang.String");
+    final static List<String> primitivesAndWrappers = Arrays.asList(new String[]{"java.lang.String"});
 
     /**
 
@@ -424,7 +424,6 @@ public final class HectorHelper {
 
                     for (Object o : list) {
                         if (primitivesAndWrappers.contains(listClass.getName())) {
-
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter,
                                 (String) o, StringSerializer.get(), SerializerTypeInferer.getSerializer(o));
                             columns.add(column);
@@ -444,9 +443,8 @@ public final class HectorHelper {
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter, idKey,
                                 StringSerializer.get(), SerializerTypeInferer.getSerializer(idKey));
                             columns.add(column);
+                            counter++;
                         }
-
-                        counter++;
 
                         //Save the class and convert to a simple type.
 
@@ -458,28 +456,60 @@ public final class HectorHelper {
                 if (value instanceof Map) {
 
                     Map map = (Map) value;
-                    for (Object mapkey : map.keySet()) {
-                        if (!(mapkey instanceof String)) {
-                            throw new RuntimeException("Cannot handle non string keys");
+                    Integer counter = 0;
+
+                    ParameterizedType mapType = (ParameterizedType) field.getGenericType();
+                    Class<?> valueClass = (Class<?>) mapType.getActualTypeArguments()[1];
+
+                    if (primitivesAndWrappers.contains(valueClass.getName()) || valueClass.isAssignableFrom(Collection.class)) {
+
+                        for (Object vals : map.entrySet()) {
+                            Map.Entry val = (Map.Entry) vals;
+                            if (!(val.getKey() instanceof String)) {
+                                throw new RuntimeException("Cannot handle non string keys");
+                            }
+
+                            if (val.getValue() instanceof Collection) {
+                                List<String> values = (List) val.getValue();
+                                String mapValue = CassandraAnnotationLogic.RECORD_LIST_START + StringUtils.join(values,
+                                    CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
+
+                                HColumn<String, ?> column = HFactory.createColumn(
+                                    field.getName() + CassandraAnnotationLogic.MAP_PREFIX + val.getKey(), mapValue, StringSerializer.get(),
+                                    StringSerializer.get());
+
+                                columns.add(column);
+                            } else {
+
+                                HColumn<String, ?> column = HFactory.createColumn(
+                                    field.getName() + CassandraAnnotationLogic.MAP_PREFIX + val.getKey(), (String) map.get(val.getKey()),
+                                    StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(val.getKey())));
+                                columns.add(column);
+                            }
                         }
+                    } else {
+                        for (Object vals : map.entrySet()) {
+                            Map.Entry val = (Map.Entry) vals;
+                            if (!(val.getKey() instanceof String)) {
+                                throw new RuntimeException("Cannot handle non string keys");
+                            }
+                            Object o = val.getValue();
 
-                        if (map.get(mapkey) instanceof Collection) {
-                            List<String> values = (List) map.get(mapkey);
-                            String mapValue = CassandraAnnotationLogic.RECORD_LIST_START + StringUtils.join(values,
-                                CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
+                            ColumnFamilyDao innerDao = null;
+                            if (field.isAnnotationPresent(CFName.class)) {
+                                String annotatedName = field.getAnnotation(CFName.class).name();
+                                innerDao = pool.getPojoDao(String.class, o.getClass(), annotatedName, null);
+                            } else {
+                                innerDao = pool.getPojoDao(String.class, o.getClass(), field.getName(), null);
+                            }
 
-                            HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
-                                mapValue, StringSerializer.get(), StringSerializer.get());
-
-                            columns.add(column);
-                        } else {
-
-                            HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
-                                (String) map.get(mapkey), StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(mapkey)));
+                            innerDao.save(val.getKey(), o);
+                            HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + val.getKey(),
+                                (String) val.getKey(), StringSerializer.get(), StringSerializer.get());
                             columns.add(column);
                         }
                     }
-                    //We have filled the map
+
                     continue;
                 }
 
@@ -496,7 +526,9 @@ public final class HectorHelper {
             }
 
             return columns;
-        } catch (Exception e) {
+        } catch (Exception e)
+
+        {
             throw new RuntimeException("Reflection exception", e);
         }
     }
@@ -556,6 +588,7 @@ public final class HectorHelper {
      * @param t      the t
      * @param result the result
      */
+
     public static <T> void populateEntityAnnotated(T t, QueryResult<ColumnSlice<String, byte[]>> result) {
         try {
             Iterable<Field> fields = getFieldsUpTo(t.getClass(), null);
@@ -599,7 +632,7 @@ public final class HectorHelper {
                     Set list = new HashSet();
                     for (HColumn<String, byte[]> lisCo : result.get().getColumns()) {
 
-                        if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.LIST_PREFIX)) {
+                        if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.SET_PREFIX)) {
 
                             Object val = StringSerializer.get().fromBytes(lisCo.getValue());
 
@@ -664,20 +697,37 @@ public final class HectorHelper {
 
                 if (field.getType().isAssignableFrom(Map.class)) {
                     Map map = new HashMap<>();
+
+                    ParameterizedType mapType = (ParameterizedType) field.getGenericType();
+                    Class<?> mapClass = (Class<?>) mapType.getActualTypeArguments()[1];
+
                     for (HColumn<String, byte[]> mapCo : result.get().getColumns()) {
 
                         if (mapCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.MAP_PREFIX)) {
                             String key = mapCo.getName().replaceAll(field.getName() + CassandraAnnotationLogic.MAP_PREFIX, "");
 
                             Object val = StringSerializer.get().fromBytes(mapCo.getValue());
-
+                            System.out.println("LOOKING FOR MAP " + val);
                             String checkValue = (String) val;
-                            if (checkValue != null && checkValue.startsWith(CassandraAnnotationLogic.RECORD_LIST_START)) {
+
+                            if (!primitivesAndWrappers.contains(mapClass.getName())) {
+                                ColumnFamilyDao innerDao = null;
+                                if (field.isAnnotationPresent(CFName.class)) {
+                                    String annotatedName = field.getAnnotation(CFName.class).name();
+                                    innerDao = pool.getPojoDao(val.getClass(), mapClass, annotatedName, null);
+                                } else {
+                                    innerDao = pool.getPojoDao(val.getClass(), mapClass, field.getName(), null);
+                                }
+
+                                System.out.println("LOOKING FOR CHECKVALUE " + checkValue);
+
                                 checkValue = checkValue.replaceFirst(CassandraAnnotationLogic.RECORD_LIST_START, "");
                                 List values = Arrays.asList(checkValue.split(CassandraAnnotationLogic.RECORD_LIST_DELIMITER));
-                                map.put(key, values);
+                                for (Object col : values) {
+                                    Object o = innerDao.find(col);
+                                    map.put(val, o);
+                                }
                             } else {
-
                                 map.put(key, val);
                             }
                         }
@@ -689,14 +739,30 @@ public final class HectorHelper {
 
                 if (field.getType().isAssignableFrom(Set.class)) {
 
+                    ParameterizedType listType = (ParameterizedType) field.getGenericType();
+                    Class<?> listClass = (Class<?>) listType.getActualTypeArguments()[0];
+
                     Set list = new HashSet();
+
                     for (HColumn<String, byte[]> lisCo : result.get().getColumns()) {
 
-                        if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.LIST_PREFIX)) {
+                        if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.SET_PREFIX)) {
 
                             Object val = StringSerializer.get().fromBytes(lisCo.getValue());
 
-                            list.add(val);
+                            if (primitivesAndWrappers.contains(listClass.getName())) {
+                                list.add(val);
+                            } else {
+                                ColumnFamilyDao innerDao = null;
+                                if (field.isAnnotationPresent(CFName.class)) {
+                                    String annotatedName = field.getAnnotation(CFName.class).name();
+                                    innerDao = pool.getPojoDao(val.getClass(), listClass, annotatedName, null);
+                                } else {
+                                    innerDao = pool.getPojoDao(val.getClass(), listClass, field.getName(), null);
+                                }
+                                Object o = innerDao.find(val);
+                                list.add(o);
+                            }
                         }
                     }
 
@@ -716,15 +782,19 @@ public final class HectorHelper {
                         if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.LIST_PREFIX)) {
 
                             Object val = StringSerializer.get().fromBytes(lisCo.getValue());
-                            ColumnFamilyDao innerDao = null;
-                            if (field.isAnnotationPresent(CFName.class)) {
-                                String annotatedName = field.getAnnotation(CFName.class).name();
-                                innerDao = pool.getPojoDao(val.getClass(), listClass, annotatedName, null);
+                            if (primitivesAndWrappers.contains(listClass.getName())) {
+                                list.add(val);
                             } else {
-                                innerDao = pool.getPojoDao(val.getClass(), listClass, field.getName(), null);
+                                ColumnFamilyDao innerDao = null;
+                                if (field.isAnnotationPresent(CFName.class)) {
+                                    String annotatedName = field.getAnnotation(CFName.class).name();
+                                    innerDao = pool.getPojoDao(val.getClass(), listClass, annotatedName, null);
+                                } else {
+                                    innerDao = pool.getPojoDao(val.getClass(), listClass, field.getName(), null);
+                                }
+                                Object o = innerDao.find(val);
+                                list.add(o);
                             }
-                            Object o = innerDao.find(val);
-                            list.add(o);
                         }
                     }
 
@@ -753,6 +823,7 @@ public final class HectorHelper {
      * @param t      the t
      * @param result the result
      */
+
     public static <T> void populateEntity(T t, QueryResult<ColumnSlice<String, byte[]>> result) {
         try {
             Iterable<Field> fields = getFieldsUpTo(t.getClass(), null);
@@ -906,6 +977,10 @@ public final class HectorHelper {
 
                 if (field.getType().isAssignableFrom(Map.class)) {
                     Map map = new HashMap<>();
+
+                    ParameterizedType listType = (ParameterizedType) field.getGenericType();
+                    Class<?> listClass = (Class<?>) listType.getActualTypeArguments()[0];
+
                     for (HColumn<String, byte[]> mapCo : result.get().getColumns()) {
 
                         if (mapCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.MAP_PREFIX)) {
@@ -922,6 +997,15 @@ public final class HectorHelper {
 
                                 map.put(key, val);
                             }
+
+                            ColumnFamilyDao innerDao = null;
+                            if (field.isAnnotationPresent(CFName.class)) {
+                                String annotatedName = field.getAnnotation(CFName.class).name();
+                                innerDao = pool.getPojoDao(val.getClass(), listClass, annotatedName, null);
+                            } else {
+                                innerDao = pool.getPojoDao(val.getClass(), listClass, field.getName(), null);
+                            }
+                            innerDao.delete(val);
                         }
                     }
 
@@ -931,14 +1015,22 @@ public final class HectorHelper {
 
                 if (field.getType().isAssignableFrom(Set.class)) {
 
+                    ParameterizedType listType = (ParameterizedType) field.getGenericType();
+                    Class<?> listClass = (Class<?>) listType.getActualTypeArguments()[0];
                     Set list = new HashSet();
                     for (HColumn<String, byte[]> lisCo : result.get().getColumns()) {
 
-                        if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.LIST_PREFIX)) {
+                        if (lisCo.getName().startsWith(field.getName() + CassandraAnnotationLogic.SET_PREFIX)) {
 
                             Object val = StringSerializer.get().fromBytes(lisCo.getValue());
-
-                            list.add(val);
+                            ColumnFamilyDao innerDao = null;
+                            if (field.isAnnotationPresent(CFName.class)) {
+                                String annotatedName = field.getAnnotation(CFName.class).name();
+                                innerDao = pool.getPojoDao(val.getClass(), listClass, annotatedName, null);
+                            } else {
+                                innerDao = pool.getPojoDao(val.getClass(), listClass, field.getName(), null);
+                            }
+                            innerDao.delete(val);
                         }
                     }
 
