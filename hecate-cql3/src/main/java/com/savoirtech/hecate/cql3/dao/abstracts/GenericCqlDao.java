@@ -79,7 +79,7 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
 
     @Override
     public void save(T pojo) {
-        Insert insert = QueryBuilder.insertInto(keySpace, tableName).values(ReflectionUtils.fieldNames(mappingClazz), ReflectionUtils.fieldValues(
+        Insert insert = QueryBuilder.insertInto(keySpace, tableName).values(ReflectionUtils.columnNames(mappingClazz), ReflectionUtils.fieldValues(
             pojo));
         logger.debug("Save " + insert);
         ResultSet res = session.execute(insert);
@@ -88,7 +88,7 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
 
     @Override
     public T find(K key) {
-        Select.Where select = QueryBuilder.select(ReflectionUtils.fieldNames(mappingClazz)).from(keySpace, tableName).where(QueryBuilder.eq(
+        Select.Where select = QueryBuilder.select(ReflectionUtils.columnNames(mappingClazz)).from(keySpace, tableName).where(QueryBuilder.eq(
             ReflectionUtils.getIdName(mappingClazz), key));
         logger.debug("Find " + select);
         ResultSet res = session.execute(select);
@@ -115,7 +115,7 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
     public Set<T> findItems(List<K> keys) {
 
         Set<T> items = new HashSet<>();
-        Select.Where select = QueryBuilder.select(ReflectionUtils.fieldNames(mappingClazz)).from(keySpace, tableName).where(QueryBuilder.in(
+        Select.Where select = QueryBuilder.select(ReflectionUtils.columnNames(mappingClazz)).from(keySpace, tableName).where(QueryBuilder.in(
             ReflectionUtils.getIdName(mappingClazz), keys.toArray()));
 
         logger.debug("Find " + select);

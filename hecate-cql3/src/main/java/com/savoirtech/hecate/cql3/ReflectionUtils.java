@@ -18,27 +18,32 @@ package com.savoirtech.hecate.cql3;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Row;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.TreeMultimap;
 import com.savoirtech.hecate.cql3.annotations.IdColumn;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 public class ReflectionUtils {
 
     private final static Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);
 
     public static <K> String getIdName(Class clazz) {
-        Map<String,Field> fieldsMap = fieldsMap(clazz);
+        Map<String, Field> fieldsMap = columnNameToField(clazz);
         for (Field field : fieldsMap.values()) {
             if (field.isAnnotationPresent(IdColumn.class)) {
                 return field.getName();
@@ -56,10 +61,10 @@ public class ReflectionUtils {
     }
 
     public static <T> Object[] fieldValues(T pojo) {
-        Map<String, Field> fieldsMap = fieldsMap(pojo.getClass());
+        Map<String, Field> fieldsMap = columnNameToField(pojo.getClass());
         List<Object> vals = new ArrayList<>();
-        for (Map.Entry<String, Field> entry : fieldsMap.entrySet()) {
-            final Field field = entry.getValue();
+        for (String columnName : fieldsMap.keySet()) {
+            final Field field = fieldsMap.get(columnName);
             field.setAccessible(true);
             try {
                 vals.add(field.get(pojo));
@@ -72,11 +77,11 @@ public class ReflectionUtils {
         return vals.toArray(new Object[vals.size()]);
     }
 
-    public static String[] fieldNames(Class mappingClazz) {
+    public static String[] columnNames(Class mappingClazz) {
         List<String> fields = new ArrayList<>();
-        final Map<String,Field> fieldsMap = fieldsMap(mappingClazz);
-        for (Field field : fieldsMap.values()) {
-            fields.add(field.getName());
+        final Map<String, Field> fieldsMap = columnNameToField(mappingClazz);
+        for (String columnName : fieldsMap.keySet()) {
+            fields.add(columnName);
         }
         return fields.toArray(new String[fields.size()]);
     }
@@ -86,7 +91,7 @@ public class ReflectionUtils {
         return !(Modifier.isFinal(mods) || Modifier.isStatic(mods) || Modifier.isTransient(mods));
     }
 
-    private static void collectFields(Set<Field> fields, Class<?> type) {
+    private static void collectFields(List<Field> fields, Class<?> type) {
         for (Field field : type.getDeclaredFields()) {
             if (isPersistable(field)) {
                 fields.add(field);
@@ -98,35 +103,52 @@ public class ReflectionUtils {
         }
     }
 
+    private static final Comparator<Field> FIELD_COMPARATOR = new FieldComparator();
+
     private static final class FieldComparator implements Comparator<Field> {
         @Override
         public int compare(Field o1, Field o2) {
-            return toString(o1).compareTo(toString(o2));
+            return o1.toGenericString().compareTo(o2.toGenericString());
         }
 
-        private String toString(Field field) {
-            return field.getDeclaringClass().getName() + "." + field.getName();
-        }
+
     }
-    public static Set<Field> getFields(Class<?> type) {
-        Set<Field> fields = new TreeSet<>(new FieldComparator());
+
+    private static List<Field> getFields(Class<?> type) {
+        List<Field> fields = new LinkedList<>();
         collectFields(fields, type);
         return fields;
     }
 
-    private static Map<String, Field> fieldsMap(Class<?> type) {
-        final Map<String, Field> fieldsMap = new TreeMap<>();
+    private static Multimap<String, Field> fieldsMap(Class<?> type) {
+        final Multimap<String, Field> fieldsMap = TreeMultimap.create(Ordering.natural(), FIELD_COMPARATOR);
         for (Field field : getFields(type)) {
-            fieldsMap.put(field.getName().toUpperCase(), field);
+            fieldsMap.put(field.getName(), field);
         }
         return fieldsMap;
     }
 
+    public static Map<String, Field> columnNameToField(Class<?> type) {
+        final Multimap<String, Field> fieldsMap = fieldsMap(type);
+        final Map<String,Field> columnNameToField = new TreeMap<>();
+        for (String fieldName : fieldsMap.keySet()) {
+            final Collection<Field> fields = fieldsMap.get(fieldName);
+            if (fields.size() == 1) {
+                columnNameToField.put(StringUtils.lowerCase(fieldName), fields.iterator().next());
+            } else {
+                for (Field field : fields) {
+                    columnNameToField.put(StringUtils.lowerCase(field.getDeclaringClass().getSimpleName() + "_" + field.getName()), field);
+                }
+            }
+        }
+        return columnNameToField;
+    }
+
     public static <T> void populate(T clz, Row row) {
-        final Map<String, Field> fieldsMap = fieldsMap(clz.getClass());
+        final Map<String, Field> fieldsMap = columnNameToField(clz.getClass());
         for (ColumnDefinitions.Definition cf : row.getColumnDefinitions()) {
             logger.debug("Column " + cf.getType().asJavaClass());
-            final Field field = fieldsMap.get(cf.getName().toUpperCase());
+            final Field field = fieldsMap.get(cf.getName());
             if (field != null) {
                 field.setAccessible(true);
                 try {

@@ -17,8 +17,10 @@
 package com.savoirtech.hecate.cql3.table;
 
 import java.lang.reflect.Field;
+import java.sql.Ref;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import com.savoirtech.hecate.cql3.FieldMapper;
 import com.savoirtech.hecate.cql3.HecateException;
@@ -48,12 +50,14 @@ public class TableCreator {
             idFound = true;
         }
         StringBuilder flds = new StringBuilder();
-        for (Field field: ReflectionUtils.getFields(cls)) {
+        for (Map.Entry<String, Field> entry : ReflectionUtils.columnNameToField(cls).entrySet()) {
+            final String columnName = entry.getKey();
+            final Field field = entry.getValue();
             if (flds.length() > 0) {
                 flds.append(", ");
             }
 
-            flds.append(field.getName());
+            flds.append(columnName);
             flds.append(" ");
 
             flds.append(FieldMapper.getCassandraType(field));
