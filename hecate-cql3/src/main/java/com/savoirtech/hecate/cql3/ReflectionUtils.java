@@ -16,48 +16,56 @@
 
 package com.savoirtech.hecate.cql3;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Row;
 import com.google.common.collect.Lists;
 import com.savoirtech.hecate.cql3.annotations.IdColumn;
+import org.apache.commons.collections4.map.ListOrderedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class ReflectionUtils {
 
     private final static Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);
 
     public static <K> String getIdName(Class clazz) {
-
-        for (Field fied : getFieldsUpTo(clazz, null)) {
-
-            if (fied.isAnnotationPresent(IdColumn.class)) {
-                return fied.getName();
+        Map<String,Field> fieldsMap = fieldsMap(clazz);
+        for (Field field : fieldsMap.values()) {
+            if (field.isAnnotationPresent(IdColumn.class)) {
+                return field.getName();
             }
         }
-
         return null;
     }
 
-    public static Field getFieldType(String id) {return null;}
+    public static Field getFieldType(String id) {
+        return null;
+    }
 
-    public static <K> K extractFieldValue(String fieldName, Field fieldType, Row row) {return null;}
+    public static <K> K extractFieldValue(String fieldName, Field fieldType, Row row) {
+        return null;
+    }
 
     public static <T> Object[] fieldValues(T pojo) {
-        List vals = new ArrayList();
-        for (Field field : getFieldsUpTo(pojo.getClass(), null)) {
+        Map<String, Field> fieldsMap = fieldsMap(pojo.getClass());
+        List<Object> vals = new ArrayList<>();
+        for (Map.Entry<String, Field> entry : fieldsMap.entrySet()) {
+            final Field field = entry.getValue();
+            field.setAccessible(true);
             try {
-                field.setAccessible(true);
-                Object value = field.get(pojo);
-                vals.add(value);
-            } catch (IllegalAccessException e) {
-                logger.error("Could not access field " + e);
+                vals.add(field.get(pojo));
+            }
+            catch (IllegalAccessException e) {
+                logger.error("Could not access field.", e);
+                vals.add(null);
             }
         }
         return vals.toArray(new Object[vals.size()]);
@@ -65,48 +73,51 @@ public class ReflectionUtils {
 
     public static String[] fieldNames(Class mappingClazz) {
         List<String> fields = new ArrayList<>();
-        for (Field field : getFieldsUpTo(mappingClazz, null)) {
+        final Map<String,Field> fieldsMap = fieldsMap(mappingClazz);
+        for (Field field : fieldsMap.values()) {
             fields.add(field.getName());
         }
         return fields.toArray(new String[fields.size()]);
     }
 
-    @SuppressWarnings("unchecked")
-    static <T> T[] newArray(Class<T> type, int length) {
-        return (T[]) Array.newInstance(type, length);
+    private static boolean isPersistable(Field field) {
+        final int mods = field.getModifiers();
+        return !(Modifier.isFinal(mods) || Modifier.isStatic(mods) || Modifier.isTransient(mods));
     }
 
-    public static Iterable<Field> getFieldsUpTo(Class<?> startClass, Class<?> exclusiveParent) {
-
-        List<Field> currentClassFields = Lists.newArrayList(startClass.getDeclaredFields());
-        Class<?> parentClass = startClass.getSuperclass();
-
-        if (parentClass != null && (exclusiveParent == null || !(parentClass.equals(exclusiveParent)))) {
-            List<Field> parentClassFields = (List<Field>) getFieldsUpTo(parentClass, exclusiveParent);
-            currentClassFields.addAll(parentClassFields);
+    private static void collectFields(Map<String, Field> fieldsMap, Class<?> type) {
+        for (Field field : type.getDeclaredFields()) {
+            if (isPersistable(field)) {
+                fieldsMap.put(field.getName().toUpperCase(), field);
+            }
         }
+        final Class<?> superclass = type.getSuperclass();
+        if (superclass != null) {
+            collectFields(fieldsMap, superclass);
+        }
+    }
 
-        return currentClassFields;
+    public static Map<String, Field> fieldsMap(Class<?> type) {
+        final Map<String, Field> fieldsMap = new TreeMap<>();
+        collectFields(fieldsMap, type);
+        return fieldsMap;
     }
 
     public static <T> void populate(T clz, Row row) {
-
+        final Map<String, Field> fieldsMap = fieldsMap(clz.getClass());
         for (ColumnDefinitions.Definition cf : row.getColumnDefinitions()) {
             logger.debug("Column " + cf.getType().asJavaClass());
-
-            List<String> fields = Arrays.asList(fieldNames(clz.getClass()));
-            try {
-                for (String fname : fields) {
-                    if (fname.equalsIgnoreCase(cf.getName())) {
-                        Field field = clz.getClass().getDeclaredField(fname);
-                        field.setAccessible(true);
-                        field.set(clz, FieldMapper.getJavaObject(cf.getType().getName().name(), cf.getName(), row));
-                    }
+            final Field field = fieldsMap.get(cf.getName().toUpperCase());
+            if (field != null) {
+                field.setAccessible(true);
+                try {
+                    field.set(clz, FieldMapper.getJavaObject(cf, row));
                 }
-            } catch (NoSuchFieldException e) {
-                logger.error("Trying to access a field that doesn't exist " + e);
-            } catch (IllegalAccessException e) {
-                logger.error("Access problem " + e);
+                catch (IllegalAccessException e) {
+                    logger.error("Access problem", e);
+                }
+            } else {
+                logger.error("Unable to find field matching column {}.", cf.getName());
             }
         }
     }

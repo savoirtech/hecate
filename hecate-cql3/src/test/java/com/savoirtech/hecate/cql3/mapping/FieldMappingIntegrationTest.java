@@ -32,6 +32,7 @@ import com.savoirtech.hecate.cql3.dao.GenericTableDao;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericCqlDao;
 import com.savoirtech.hecate.cql3.entities.CollectionTable;
 import com.savoirtech.hecate.cql3.entities.SimpleTable;
+import com.savoirtech.hecate.cql3.entities.SubclassTable;
 import com.savoirtech.hecate.cql3.table.TableCreator;
 import com.savoirtech.hecate.farsandra.Farsandra;
 import com.savoirtech.hecate.farsandra.LineHandler;
@@ -142,6 +143,46 @@ public class FieldMappingIntegrationTest {
 
         //Start the insert.
 
+    }
+
+    @Test
+    public void testWithNestedEntityHierarchy() throws HecateException {
+        cluster = Cluster.builder().addContactPoint("127.0.0.1").build();
+        Metadata metadata = cluster.getMetadata();
+        System.out.printf("Connected to cluster: %s\n", metadata.getClusterName());
+        for (Host host : metadata.getAllHosts()) {
+            System.out.printf("Datatacenter: %s; Host: %s; Rack: %s\n", host.getDatacenter(), host.getAddress(), host.getRack());
+        }
+
+        Session session = cluster.connect();
+
+        ResultSet resultSet = null;
+
+        System.out.println("Create statement " + TableCreator.createTable("hecate", "subclasstable", SubclassTable.class));
+
+        try {
+            resultSet = session.execute(TableCreator.createTable("hecate", "subclasstable", SubclassTable.class));
+        } catch (HecateException e) {
+            e.printStackTrace();
+        }
+
+        assertNotNull(resultSet);
+
+        GenericTableDao<Long,SubclassTable> dao = new GenericCqlDao<>(session, "hecate", "subclasstable", long.class, SubclassTable.class);
+        SubclassTable pj = new SubclassTable();
+        pj.setId(100l);
+        pj.setName("BOB");
+        pj.setMore("BUBBA");
+        pj.setDate(new Date());
+        pj.setSubclassField("Subclass Data");
+        dao.save(pj);
+        SubclassTable fC = dao.find(100l);
+
+        assertNotNull(fC);
+
+        assertEquals("BOB", fC.getName());
+        assertEquals("Subclass Data", fC.getSubclassField());
+        //Start the insert.
     }
 
     @Test

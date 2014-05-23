@@ -48,7 +48,7 @@ public class TableCreator {
             idFound = true;
         }
         StringBuilder flds = new StringBuilder();
-        for (Field field : ReflectionUtils.getFieldsUpTo(cls, null)) {
+        for (Field field: ReflectionUtils.fieldsMap(cls).values()) {
             if (flds.length() > 0) {
                 flds.append(",");
             }

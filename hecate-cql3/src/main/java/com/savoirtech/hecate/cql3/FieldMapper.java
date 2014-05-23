@@ -16,6 +16,12 @@
 
 package com.savoirtech.hecate.cql3;
 
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.Row;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -26,14 +32,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.datastax.driver.core.Row;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public final class FieldMapper {
 
-    private FieldMapper() {}
+    private FieldMapper() {
+    }
 
     private final static Logger logger = LoggerFactory.getLogger(FieldMapper.class);
 
@@ -67,58 +69,36 @@ public final class FieldMapper {
         }
     }
 
-    public static Object getJavaObject(String type, String column, Row row) {
+    public static Object getJavaObject(ColumnDefinitions.Definition definition, Row row) {
+        final String columnName = definition.getName();
+        switch (definition.getType().getName()) {
+            case TEXT:
+            case VARCHAR:
+                return row.getString(columnName);
+            case BIGINT:
+                return row.getLong(columnName);
+            case BOOLEAN:
+                return row.getBool(columnName);
+            case DOUBLE:
+                return row.getDouble(columnName);
+            case FLOAT:
+                return row.getFloat(columnName);
+            case INT:
+                return row.getInt(columnName);
+            case LIST:
+                return row.getList(columnName, Object.class);
+            case SET:
+                return row.getSet(columnName, Object.class);
+            case MAP:
+                return row.getMap(columnName, Object.class, Object.class);
+            case UUID:
+                return row.getUUID(columnName);
+            case TIMESTAMP:
+                return row.getDate(columnName);
+            default:
+                return row.getBytes(columnName);
 
-        if ("TEXT".equalsIgnoreCase(type)) {
-            return row.getString(column);
         }
-
-        if ("VARCHAR".equalsIgnoreCase(type)) {
-            return row.getString(column);
-        }
-
-        if ("BIGINT".equalsIgnoreCase(type)) {
-            return row.getLong(column);
-        }
-
-        if ("BOOLEAN".equalsIgnoreCase(type)) {
-            return row.getBool(column);
-        }
-
-        if ("DOUBLE".equalsIgnoreCase(type)) {
-            return row.getDouble(column);
-        }
-
-        if ("FLOAT".equalsIgnoreCase(type)) {
-            return row.getFloat(column);
-        }
-
-        if ("INT".equalsIgnoreCase(type)) {
-            return row.getInt(column);
-        }
-
-        if (type.startsWith("LIST")) {
-
-            return row.getList(column, Object.class);
-        }
-
-        if (type.startsWith("SET")) {
-            return row.getSet(column, Object.class);
-        }
-
-        if (type.startsWith("MAP")) {
-            return row.getMap(column, Object.class, Object.class);
-        }
-
-        if ("UUID".equalsIgnoreCase(type)) {
-            return row.getUUID(column);
-        }
-
-        if ("TIMESTAMP".equalsIgnoreCase(type)) {
-            return row.getDate(column);
-        }
-
-        return row.getBytes(column);
     }
 
     private static String getClassName(Type type) {
@@ -147,7 +127,7 @@ public final class FieldMapper {
 
                 logger.debug(toCassandra.get(getClassName(pt.getActualTypeArguments()[0])));
                 String csType = (StringUtils.isEmpty(toCassandra.get(getClassName(pt.getActualTypeArguments()[0])))) ? "blob" : toCassandra.get(
-                    getClassName(pt.getActualTypeArguments()[0]));
+                        getClassName(pt.getActualTypeArguments()[0]));
                 return "list<" + csType + ">";
             }
 
@@ -172,7 +152,7 @@ public final class FieldMapper {
             if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) type;
                 return "map<" + toCassandra.get(getClassName(pt.getActualTypeArguments()[0])) + "," +
-                    toCassandra.get(getClassName(pt.getActualTypeArguments()[1])) + ">";
+                        toCassandra.get(getClassName(pt.getActualTypeArguments()[1])) + ">";
             }
 
             return "map<blob,blob>";
