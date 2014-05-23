@@ -18,19 +18,20 @@ package com.savoirtech.hecate.cql3;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Row;
-import com.google.common.collect.Lists;
 import com.savoirtech.hecate.cql3.annotations.IdColumn;
-import org.apache.commons.collections4.map.ListOrderedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class ReflectionUtils {
 
@@ -85,21 +86,39 @@ public class ReflectionUtils {
         return !(Modifier.isFinal(mods) || Modifier.isStatic(mods) || Modifier.isTransient(mods));
     }
 
-    private static void collectFields(Map<String, Field> fieldsMap, Class<?> type) {
+    private static void collectFields(Set<Field> fields, Class<?> type) {
         for (Field field : type.getDeclaredFields()) {
             if (isPersistable(field)) {
-                fieldsMap.put(field.getName().toUpperCase(), field);
+                fields.add(field);
             }
         }
         final Class<?> superclass = type.getSuperclass();
         if (superclass != null) {
-            collectFields(fieldsMap, superclass);
+            collectFields(fields, superclass);
         }
     }
 
-    public static Map<String, Field> fieldsMap(Class<?> type) {
+    private static final class FieldComparator implements Comparator<Field> {
+        @Override
+        public int compare(Field o1, Field o2) {
+            return toString(o1).compareTo(toString(o2));
+        }
+
+        private String toString(Field field) {
+            return field.getDeclaringClass().getName() + "." + field.getName();
+        }
+    }
+    public static Set<Field> getFields(Class<?> type) {
+        Set<Field> fields = new TreeSet<>(new FieldComparator());
+        collectFields(fields, type);
+        return fields;
+    }
+
+    private static Map<String, Field> fieldsMap(Class<?> type) {
         final Map<String, Field> fieldsMap = new TreeMap<>();
-        collectFields(fieldsMap, type);
+        for (Field field : getFields(type)) {
+            fieldsMap.put(field.getName().toUpperCase(), field);
+        }
         return fieldsMap;
     }
 

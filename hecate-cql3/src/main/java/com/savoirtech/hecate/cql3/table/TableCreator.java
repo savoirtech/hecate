@@ -37,7 +37,7 @@ public class TableCreator {
         builder.append(keySpace);
         builder.append(".");
         builder.append(tableName);
-        builder.append(" ( ");
+        builder.append(" (");
         boolean idFound = false;
 
         //Look for compound primary key annotation.
@@ -48,9 +48,9 @@ public class TableCreator {
             idFound = true;
         }
         StringBuilder flds = new StringBuilder();
-        for (Field field: ReflectionUtils.fieldsMap(cls).values()) {
+        for (Field field: ReflectionUtils.getFields(cls)) {
             if (flds.length() > 0) {
-                flds.append(",");
+                flds.append(", ");
             }
 
             flds.append(field.getName());
@@ -88,7 +88,7 @@ public class TableCreator {
             builder.append(keyBuilder);
             builder.append(")");
         }
-        builder.append(" );");
+        builder.append(");");
 
         return builder.toString();
     }

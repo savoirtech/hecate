@@ -30,11 +30,11 @@ public class TableCreatorTest {
     public void testCreateTable() throws HecateException {
 
         String create = TableCreator.createTable("keySpace", "tableName", SimpleTable.class);
-        assertEquals("CREATE TABLE IF NOT EXISTS keySpace.tableName ( aBoolean BOOLEAN,aDouble DOUBLE,aFloat FLOAT," +
-                "date TIMESTAMP,id BIGINT PRIMARY KEY,more TEXT,name TEXT,uuid UUID );", create);
+        assertEquals("CREATE TABLE IF NOT EXISTS keySpace.tableName (aBoolean BOOLEAN, aDouble DOUBLE, aFloat FLOAT, " +
+                "date TIMESTAMP, id BIGINT PRIMARY KEY, more TEXT, name TEXT, uuid UUID);", create);
 
         create = TableCreator.createTable("keySpace", "tableName", CompoundKeyTable.class);
-        assertEquals("CREATE TABLE IF NOT EXISTS keySpace.tableName ( id BIGINT,more TEXT,name TEXT, PRIMARY KEY (id,name) );", create);
+        assertEquals("CREATE TABLE IF NOT EXISTS keySpace.tableName (id BIGINT, more TEXT, name TEXT, PRIMARY KEY (id,name));", create);
     }
 
     @Test
