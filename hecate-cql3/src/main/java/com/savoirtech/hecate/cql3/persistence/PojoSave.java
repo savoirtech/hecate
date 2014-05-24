@@ -28,7 +28,7 @@ public class PojoSave<P> extends PojoPersistenceStatement<P> {
         for (ColumnDescriptor columnDescriptor : pojoDescriptor.getColumns()) {
             insert.value(columnDescriptor.getColumnName(), QueryBuilder.bindMarker());
         }
-        LOGGER.info("{}.save():: {}", pojoDescriptor.getPojoType().getSimpleName(), insert);
+        LOGGER.info("{}.save(): {}", pojoDescriptor.getPojoType().getSimpleName(), insert);
         return insert;
     }
 

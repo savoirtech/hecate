@@ -25,7 +25,7 @@ public class PojoDelete<P> extends PojoPersistenceStatement<P> {
 
     private static <P> Delete.Where createDelete(String table, PojoDescriptor<P> pojoDescriptor) {
         final Delete.Where delete = delete().from(table).where(eq(pojoDescriptor.getIdentifierColumn().getColumnName(), bindMarker()));
-        LOGGER.info("{}.delete():: {}", pojoDescriptor.getPojoType().getSimpleName(), delete);
+        LOGGER.info("{}.delete(): {}", pojoDescriptor.getPojoType().getSimpleName(), delete);
         return delete;
     }
 
