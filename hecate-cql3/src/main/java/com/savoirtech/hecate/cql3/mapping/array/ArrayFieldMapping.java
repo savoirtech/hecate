@@ -45,13 +45,12 @@ public class ArrayFieldMapping extends ListBasedMapping {
     @Override
     protected List<Object> toCassandraList(Object fieldValue) {
         final List<Object> elements = arrayToList(fieldValue);
-        final List<Object> cassandraList = mapToCassandraValues(elements);
-        return cassandraList;
+        return mapToCassandraValues(elements);
     }
 
     private List<Object> arrayToList(Object array) {
         final int length = Array.getLength(array);
-        final List<Object> elements = new ArrayList<Object>(length);
+        final List<Object> elements = new ArrayList<>(length);
         for (int i = 0; i < length; ++i) {
             elements.add(Array.get(array, i));
         }
