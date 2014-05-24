@@ -147,6 +147,9 @@ public class PojoGraphTesting {
         assertNotNull(fC);
 
         assertEquals(100l, fC.getId());
+        assertEquals("MAP", fC.getChildMap().get("A").getName());
+
+        assertEquals("V", fC.getChild().getName());
 
         System.out.println("The stored class returned " + fC);
 
