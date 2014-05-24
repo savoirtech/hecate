@@ -1,15 +1,9 @@
 package com.savoirtech.hecate.cql3.type.def;
 
+import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.type.ColumnType;
 import com.savoirtech.hecate.cql3.type.ColumnTypeRegistry;
-import com.savoirtech.hecate.cql3.type.natives.BooleanType;
-import com.savoirtech.hecate.cql3.type.natives.DateType;
-import com.savoirtech.hecate.cql3.type.natives.DoubleType;
-import com.savoirtech.hecate.cql3.type.natives.FloatType;
-import com.savoirtech.hecate.cql3.type.natives.IntegerType;
-import com.savoirtech.hecate.cql3.type.natives.LongType;
-import com.savoirtech.hecate.cql3.type.natives.UuidType;
-import com.savoirtech.hecate.cql3.type.natives.VarcharType;
+import com.savoirtech.hecate.cql3.type.NativeType;
 import org.apache.commons.lang3.ClassUtils;
 
 import java.util.Date;
@@ -29,14 +23,14 @@ public class DefaultColumnTypeRegistry implements ColumnTypeRegistry {
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultColumnTypeRegistry() {
-        addColumnType(Boolean.class, new BooleanType());
-        addColumnType(Date.class, new DateType());
-        addColumnType(Double.class, new DoubleType());
-        addColumnType(Float.class, new FloatType());
-        addColumnType(Integer.class, new IntegerType());
-        addColumnType(Long.class, new LongType());
-        addColumnType(UUID.class, new UuidType());
-        addColumnType(String.class, new VarcharType());
+        addColumnType(Boolean.class, new NativeType<Boolean>(DataType.cboolean()));
+        addColumnType(Date.class, new NativeType<Date>(DataType.timestamp()));
+        addColumnType(Double.class, new NativeType<Double>(DataType.cdouble()));
+        addColumnType(Float.class, new NativeType<Float>(DataType.cfloat()));
+        addColumnType(Integer.class, new NativeType<Integer>(DataType.cint()));
+        addColumnType(Long.class, new NativeType<Long>(DataType.bigint()));
+        addColumnType(UUID.class, new NativeType<UUID>(DataType.uuid()));
+        addColumnType(String.class, new NativeType<String>(DataType.varchar()));
     }
 
 //----------------------------------------------------------------------------------------------------------------------

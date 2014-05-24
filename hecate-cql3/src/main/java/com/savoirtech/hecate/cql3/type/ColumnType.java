@@ -1,7 +1,6 @@
 package com.savoirtech.hecate.cql3.type;
 
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
 
 
 public interface ColumnType<T> {
@@ -24,7 +23,7 @@ public interface ColumnType<T> {
      * @param columnIndex the column index
      * @return the column value
      */
-    T extractValue(Row row, int columnIndex);
+    //T extractValue(Row row, int columnIndex);
 
     /**
      * Converts the parameter to a value suitable to be used by Cassandra.
