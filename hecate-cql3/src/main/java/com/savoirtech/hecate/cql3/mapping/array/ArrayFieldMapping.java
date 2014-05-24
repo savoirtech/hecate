@@ -25,7 +25,7 @@ public class ArrayFieldMapping extends ListBasedMapping {
 
     @Override
     public DataType columnType() {
-        return DataType.list(columnType.getDataType());
+        return DataType.list(elementType.getDataType());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ public class ArrayFieldMapping extends ListBasedMapping {
         final Object array = Array.newInstance(getFieldType().getComponentType(), cassandraList.size());
         final int length = Array.getLength(array);
         for (int i = 0; i < length; ++i) {
-            Array.set(array, i, columnType.fromCassandraValue(cassandraList.get(i)));
+            Array.set(array, i, elementType.fromCassandraValue(cassandraList.get(i)));
         }
         return array;
     }

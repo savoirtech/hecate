@@ -1,36 +1,29 @@
-package com.savoirtech.hecate.cql3.mapping;
+package com.savoirtech.hecate.cql3.mapping.set;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
+import com.savoirtech.hecate.cql3.mapping.AbstractFieldMapping;
 import com.savoirtech.hecate.cql3.type.ColumnType;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-public abstract class ListBasedMapping extends AbstractFieldMapping {
+public class SetFieldMapping extends AbstractFieldMapping {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected final ColumnType<Object> elementType;
+    private final ColumnType<Object> elementType;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected ListBasedMapping(Field field, ColumnType<Object> elementType) {
+    public SetFieldMapping(Field field, ColumnType<Object> elementType) {
         super(field);
         this.elementType = elementType;
     }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Abstract Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    protected abstract Object fromCassandraList(List<Object> cassandraList);
-
-    protected abstract List<Object> toCassandraList(Object fieldValue);
 
 //----------------------------------------------------------------------------------------------------------------------
 // FieldMapping Implementation
@@ -38,42 +31,44 @@ public abstract class ListBasedMapping extends AbstractFieldMapping {
 
     @Override
     public DataType columnType() {
-        return DataType.list(elementType.getDataType());
+        return DataType.set(elementType.getDataType());
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void populateFromRow(Object root, Row row, int columnIndex) {
-        final List<Object> list = (List<Object>) row.getList(columnIndex, elementType.getDataType().asJavaClass());
-        if (list == null) {
+        final Set<Object> cassandraValues = (Set<Object>) row.getSet(columnIndex, elementType.getDataType().asJavaClass());
+        if (cassandraValues == null) {
             setFieldValue(root, null);
         } else {
-            setFieldValue(root, fromCassandraList(list));
+            setFieldValue(root, fromCassandraValues(cassandraValues));
         }
     }
 
     @Override
-    public Object rawCassandraValue(Object value) {
-        return value == null ? null : toCassandraList(value);
+    @SuppressWarnings("unchecked")
+    public Object rawCassandraValue(Object rawValue) {
+        if (rawValue == null) {
+            return null;
+        } else {
+            final Set<Object> values = (Set<Object>) rawValue;
+            final Set<Object> cassandraValues = new HashSet<>();
+            for (Object value : values) {
+                cassandraValues.add(elementType.toCassandraValue(value));
+            }
+            return cassandraValues;
+        }
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected List<Object> mapFromCassandraValues(List<Object> cassandraValues) {
-        List<Object> values = new ArrayList<>(cassandraValues.size());
+    private Set<Object> fromCassandraValues(Set<Object> cassandraValues) {
+        final Set<Object> values = new HashSet<>();
         for (Object cassandraValue : cassandraValues) {
             values.add(elementType.fromCassandraValue(cassandraValue));
         }
         return values;
-    }
-
-    protected List<Object> mapToCassandraValues(List<Object> values) {
-        final List<Object> cassandraList = new ArrayList<>(values.size());
-        for (Object originalValue : values) {
-            cassandraList.add(elementType.toCassandraValue(originalValue));
-        }
-        return cassandraList;
     }
 }

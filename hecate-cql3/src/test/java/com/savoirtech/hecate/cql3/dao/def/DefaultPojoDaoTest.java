@@ -1,5 +1,6 @@
 package com.savoirtech.hecate.cql3.dao.def;
 
+import com.google.common.collect.Sets;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.entities.SimplePojo;
 import com.savoirtech.hecate.cql3.test.CassandraTestCase;
@@ -77,14 +78,29 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
         final SimplePojo pojo = new SimplePojo();
-        pojo.setStrings(Arrays.asList("one", "two", "three"));
+        pojo.setListOfStrings(Arrays.asList("one", "two", "three"));
         dao.save(pojo);
         final SimplePojo found = dao.findByKey(pojo.getId());
-        assertNotNull(found.getStrings());
-        assertEquals(3, found.getStrings().size());
-        assertEquals("one", found.getStrings().get(0));
-        assertEquals("two", found.getStrings().get(1));
-        assertEquals("three", found.getStrings().get(2));
+        assertNotNull(found.getListOfStrings());
+        assertEquals(3, found.getListOfStrings().size());
+        assertEquals("one", found.getListOfStrings().get(0));
+        assertEquals("two", found.getListOfStrings().get(1));
+        assertEquals("three", found.getListOfStrings().get(2));
 
+    }
+
+    @Test
+    public void testWithSetField() {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setSetOfStrings(Sets.newHashSet("one", "two", "three"));
+        dao.save(pojo);
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found.getSetOfStrings());
+        assertEquals(3, found.getSetOfStrings().size());
+        assertTrue(found.getSetOfStrings().contains("one"));
+        assertTrue(found.getSetOfStrings().contains("two"));
+        assertTrue(found.getSetOfStrings().contains("three"));
     }
 }

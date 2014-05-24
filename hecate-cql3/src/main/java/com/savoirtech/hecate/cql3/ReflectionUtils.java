@@ -46,7 +46,8 @@ import java.util.Set;
 public class ReflectionUtils {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ReflectionUtils.class);
-    private static final TypeVariable<Class<List>> LIST_ELEMENT_TYPE = List.class.getTypeParameters()[0];
+    private static final TypeVariable<Class<List>> LIST_ELEMENT_TYPE_VAR = List.class.getTypeParameters()[0];
+    private static final TypeVariable<Class<Set>> SET_ELEMENT_TYPE_VAR = Set.class.getTypeParameters()[0];
 
     public static <K> String getIdName(Class clazz) {
 
@@ -270,10 +271,20 @@ public class ReflectionUtils {
         }
     }
 
+    public static Class<?> setElementType(Type type) {
+        final Map<TypeVariable<?>, Type> arguments = TypeUtils.getTypeArguments(type, Set.class);
+        for (Map.Entry<TypeVariable<?>, Type> entry : arguments.entrySet()) {
+            if (SET_ELEMENT_TYPE_VAR.equals(entry.getKey())) {
+                return TypeUtils.getRawType(entry.getValue(), type);
+            }
+        }
+        return null;
+    }
+
     public static Class<?> listElementType(Type type) {
         final Map<TypeVariable<?>, Type> arguments = TypeUtils.getTypeArguments(type, List.class);
         for (Map.Entry<TypeVariable<?>, Type> entry : arguments.entrySet()) {
-            if (LIST_ELEMENT_TYPE.equals(entry.getKey())) {
+            if (LIST_ELEMENT_TYPE_VAR.equals(entry.getKey())) {
                 return TypeUtils.getRawType(entry.getValue(), type);
             }
         }
