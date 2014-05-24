@@ -5,25 +5,30 @@ import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.meta.PojoDescriptor;
 import com.savoirtech.hecate.cql3.persistence.PojoDelete;
 import com.savoirtech.hecate.cql3.persistence.PojoFindByKey;
-import com.savoirtech.hecate.cql3.persistence.PojoInsert;
+import com.savoirtech.hecate.cql3.persistence.PojoFindByKeys;
+import com.savoirtech.hecate.cql3.persistence.PojoSave;
+
+import java.util.List;
 
 public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final PojoInsert<P> insert;
-    private final PojoFindByKey<P, Object> findByKey;
+    private final PojoSave<P> save;
+    private final PojoFindByKey<P, K> findByKey;
     private final PojoDelete<P> delete;
+    private final PojoFindByKeys<P, K> findByKeys;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoDao(Session session, String tableName, PojoDescriptor<P> descriptor) {
-        this.insert = new PojoInsert<>(session, tableName, descriptor);
+        this.save = new PojoSave<>(session, tableName, descriptor);
         this.findByKey = new PojoFindByKey<>(session, tableName, descriptor);
         this.delete = new PojoDelete<>(session, tableName, descriptor);
+        this.findByKeys = new PojoFindByKeys<>(session, tableName, descriptor);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -46,6 +51,11 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 
     @Override
     public void save(P pojo) {
-        insert.execute(pojo);
+        save.execute(pojo);
+    }
+
+    @Override
+    public List<P> findByKeys(Iterable<K> keys) {
+        return findByKeys.execute(keys);
     }
 }

@@ -39,6 +39,6 @@ public class PojoFindByKey<P, K> extends PojoPersistenceStatement<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     public P find(K key) {
-        return one(execute(identifierColumn().getMapping().rawCassandraValue(key)));
+        return one(executeWithArgs(identifierColumn().getMapping().rawCassandraValue(key)));
     }
 }

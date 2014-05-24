@@ -8,21 +8,19 @@ import com.savoirtech.hecate.cql3.meta.PojoDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PojoInsert<P> extends PojoPersistenceStatement<P> {
+public class PojoSave<P> extends PojoPersistenceStatement<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PojoInsert.class);
-    private final PojoDescriptor<P> pojoDescriptor;
+    private static final Logger LOGGER = LoggerFactory.getLogger(PojoSave.class);
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoInsert(Session session, String table, PojoDescriptor<P> pojoDescriptor) {
+    public PojoSave(Session session, String table, PojoDescriptor<P> pojoDescriptor) {
         super(session, createInsert(table, pojoDescriptor), pojoDescriptor);
-        this.pojoDescriptor = pojoDescriptor;
     }
 
     private static <P> Insert createInsert(String table, PojoDescriptor<P> pojoDescriptor) {
@@ -39,6 +37,6 @@ public class PojoInsert<P> extends PojoPersistenceStatement<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     public void execute(P pojo) {
-        execute(cassandraValues(pojo, pojoDescriptor.getColumns()));
+        executeWithList(cassandraValues(pojo, allColumns()));
     }
 }

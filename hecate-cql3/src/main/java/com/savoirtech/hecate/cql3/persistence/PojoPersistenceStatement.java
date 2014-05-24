@@ -17,14 +17,28 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PojoPersistenceStatement<P> {
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
+
     private static final Logger LOGGER = LoggerFactory.getLogger(PojoPersistenceStatement.class);
 
     private final Session session;
     private final PreparedStatement preparedStatement;
     private final PojoDescriptor<P> pojoDescriptor;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Static Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    protected static <P> Select.Selection pojoSelect(PojoDescriptor<P> pojoDescriptor) {
+        final Select.Selection select = QueryBuilder.select();
+        for (ColumnDescriptor columnDescriptor : pojoDescriptor.getColumns()) {
+            select.column(columnDescriptor.getColumnName());
+        }
+        return select;
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
@@ -35,34 +49,12 @@ public class PojoPersistenceStatement<P> {
         this.pojoDescriptor = pojoDescriptor;
     }
 
-    protected static <P> Select.Selection pojoSelect(PojoDescriptor<P> pojoDescriptor) {
-        final Select.Selection select = QueryBuilder.select();
-        for (ColumnDescriptor columnDescriptor : pojoDescriptor.getColumns()) {
-            select.column(columnDescriptor.getColumnName());
-        }
-        return select;
-    }
-
-    protected ResultSet execute(Object... parameters) {
-        return execute(Arrays.asList(parameters));
-    }
-
-    protected P one(ResultSet resultSet) {
-        Row row = resultSet.one();
-        return row == null ? null : mapPojoFromRow(row);
-    }
-
-    protected ResultSet execute(List<Object> parameters) {
-        LOGGER.debug("CQL: {} with parameters {}...", preparedStatement.getQueryString(), parameters);
-        return session.execute(preparedStatement.bind(parameters.toArray(new Object[parameters.size()])));
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     protected List<ColumnDescriptor> allColumns() {
         return pojoDescriptor.getColumns();
-    }
-
-    protected ColumnDescriptor identifierColumn() {
-        return pojoDescriptor.getIdentifierColumn();
     }
 
     protected Object cassandraValue(P pojo, ColumnDescriptor descriptor) {
@@ -77,6 +69,28 @@ public class PojoPersistenceStatement<P> {
         return values;
     }
 
+    protected ResultSet executeWithArgs(Object... parameters) {
+        return executeWithList(Arrays.asList(parameters));
+    }
+
+    protected ResultSet executeWithList(List<Object> parameters) {
+        LOGGER.debug("CQL: {} with parameters {}...", preparedStatement.getQueryString(), parameters);
+        return session.execute(preparedStatement.bind(parameters.toArray(new Object[parameters.size()])));
+    }
+
+    protected ColumnDescriptor identifierColumn() {
+        return pojoDescriptor.getIdentifierColumn();
+    }
+
+    protected List<P> list(ResultSet resultSet) {
+        List<Row> rows = resultSet.all();
+        final List<P> pojos = new ArrayList<>(rows.size());
+        for (Row row : rows) {
+            pojos.add(mapPojoFromRow(row));
+        }
+        return pojos;
+    }
+
     protected P mapPojoFromRow(Row row) {
         P pojo = pojoDescriptor.newInstance();
         int columnIndex = 0;
@@ -85,5 +99,10 @@ public class PojoPersistenceStatement<P> {
             columnIndex++;
         }
         return pojo;
+    }
+
+    protected P one(ResultSet resultSet) {
+        Row row = resultSet.one();
+        return row == null ? null : mapPojoFromRow(row);
     }
 }
