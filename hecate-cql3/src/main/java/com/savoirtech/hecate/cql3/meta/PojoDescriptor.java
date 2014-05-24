@@ -1,5 +1,6 @@
 package com.savoirtech.hecate.cql3.meta;
 
+import com.savoirtech.hecate.cql3.ReflectionUtils;
 import com.savoirtech.hecate.cql3.mapping.FieldMapping;
 
 import java.util.Collections;
@@ -52,5 +53,9 @@ public class PojoDescriptor<P> {
 
     public List<ColumnDescriptor> getColumns() {
         return Collections.unmodifiableList(columns);
+    }
+
+    public P newInstance() {
+        return ReflectionUtils.instantiate(pojoType);
     }
 }

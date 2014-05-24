@@ -15,9 +15,14 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
     @Test
     public void testSave() throws Exception {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
-        final PojoDao<Object, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
         final SimplePojo pojo = new SimplePojo();
         pojo.setName("name");
         dao.save(pojo);
+
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found);
+        assertEquals("name", found.getName());
+        assertEquals(pojo.getId(), found.getId());
     }
 }

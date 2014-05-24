@@ -19,7 +19,6 @@ package com.savoirtech.hecate.cql3;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Row;
 import com.google.common.collect.Lists;
-import com.savoirtech.hecate.cql3.annotations.ColumnName;
 import com.savoirtech.hecate.cql3.annotations.IdColumn;
 import com.savoirtech.hecate.cql3.annotations.TableName;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericCqlDao;
@@ -41,7 +40,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 public class ReflectionUtils {
 
@@ -284,6 +282,18 @@ public class ReflectionUtils {
             }
         }
         return vals.toArray(new Object[vals.size()]);
+    }
+
+    public static <P> P instantiate(Class<P> type) {
+        try {
+            return type.newInstance();
+        }
+        catch (InstantiationException e) {
+            throw new HecateException(String.format("Unable to instantiate object of type %s.", type.getName()), e);
+        }
+        catch (IllegalAccessException e) {
+            throw new HecateException(String.format("Default constructor not accessible for class %s.", type.getName()), e);
+        }
     }
 
     public static <T> Object[] pojofieldValues(T pojo) {
