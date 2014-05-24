@@ -19,7 +19,7 @@ public class UuidType extends NullSafeColumnType<UUID> {
     }
 
     @Override
-    public UUID getColumnValue(Row row, int columnIndex) {
+    public UUID getValue(Row row, int columnIndex) {
         return row.getUUID(columnIndex);
     }
 
@@ -28,7 +28,7 @@ public class UuidType extends NullSafeColumnType<UUID> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected void nullSafeSet(BoundStatement statement, int index, UUID value) {
-        statement.setUUID(index, value);
+    protected void nullSafeSet(BoundStatement statement, int parameterIndex, UUID value) {
+        statement.setUUID(parameterIndex, value);
     }
 }

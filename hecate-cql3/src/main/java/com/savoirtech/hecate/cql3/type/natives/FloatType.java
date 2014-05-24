@@ -17,7 +17,7 @@ public class FloatType extends NullSafeColumnType<Float> {
     }
 
     @Override
-    public Float getColumnValue(Row row, int columnIndex) {
+    public Float getValue(Row row, int columnIndex) {
         return row.getFloat(columnIndex);
     }
 
@@ -26,7 +26,7 @@ public class FloatType extends NullSafeColumnType<Float> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected void nullSafeSet(BoundStatement statement, int index, Float value) {
-        statement.setFloat(index, value);
+    protected void nullSafeSet(BoundStatement statement, int parameterIndex, Float value) {
+        statement.setFloat(parameterIndex, value);
     }
 }

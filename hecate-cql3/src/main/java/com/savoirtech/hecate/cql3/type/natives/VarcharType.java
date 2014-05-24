@@ -17,7 +17,7 @@ public class VarcharType extends NullSafeColumnType<String> {
     }
 
     @Override
-    public String getColumnValue(Row row, int columnIndex) {
+    public String getValue(Row row, int columnIndex) {
         return row.getString(columnIndex);
     }
 
@@ -26,7 +26,7 @@ public class VarcharType extends NullSafeColumnType<String> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected void nullSafeSet(BoundStatement statement, int index, String value) {
-        statement.setString(index, value);
+    protected void nullSafeSet(BoundStatement statement, int parameterIndex, String value) {
+        statement.setString(parameterIndex, value);
     }
 }

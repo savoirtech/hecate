@@ -17,7 +17,7 @@ public class DoubleType extends NullSafeColumnType<Double> {
     }
 
     @Override
-    public Double getColumnValue(Row row, int columnIndex) {
+    public Double getValue(Row row, int columnIndex) {
         return row.getDouble(columnIndex);
     }
 
@@ -26,7 +26,7 @@ public class DoubleType extends NullSafeColumnType<Double> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void nullSafeSet(BoundStatement statement, int columnIndex, Double value) {
-        statement.setDouble(columnIndex, value);
+    public void nullSafeSet(BoundStatement statement, int parameterIndex, Double value) {
+        statement.setDouble(parameterIndex, value);
     }
 }

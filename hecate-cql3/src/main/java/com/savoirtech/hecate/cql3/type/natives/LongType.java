@@ -16,7 +16,7 @@ public class LongType extends NullSafeColumnType<Long> {
     }
 
     @Override
-    public Long getColumnValue(Row row, int columnIndex) {
+    public Long getValue(Row row, int columnIndex) {
         return row.getLong(columnIndex);
     }
 
@@ -25,7 +25,7 @@ public class LongType extends NullSafeColumnType<Long> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected void nullSafeSet(BoundStatement statement, int index, Long value) {
-        statement.setLong(index, value);
+    protected void nullSafeSet(BoundStatement statement, int parameterIndex, Long value) {
+        statement.setLong(parameterIndex, value);
     }
 }

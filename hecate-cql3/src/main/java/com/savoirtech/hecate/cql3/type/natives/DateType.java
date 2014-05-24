@@ -19,7 +19,7 @@ public class DateType extends NullSafeColumnType<Date> {
 
     @Override
     public Date
-    getColumnValue(Row row, int columnIndex) {
+    getValue(Row row, int columnIndex) {
         return row.getDate(columnIndex);
     }
 
@@ -28,7 +28,7 @@ public class DateType extends NullSafeColumnType<Date> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void nullSafeSet(BoundStatement statement, int columnIndex, Date value) {
-        statement.setDate(columnIndex, value);
+    public void nullSafeSet(BoundStatement statement, int parameterIndex, Date value) {
+        statement.setDate(parameterIndex, value);
     }
 }

@@ -7,16 +7,16 @@ public abstract class NullSafeColumnType<T> implements ColumnType<T> {
 // Abstract Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected abstract void nullSafeSet(BoundStatement statement, int index, T value);
+    protected abstract void nullSafeSet(BoundStatement statement, int parameterIndex, T value);
 
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public final void setColumnValue(BoundStatement statement, int columnIndex, T value) {
+    public final void setValue(BoundStatement statement, int parameterIndex, T value) {
         if (value != null) {
-            nullSafeSet(statement, columnIndex, value);
+            nullSafeSet(statement, parameterIndex, value);
         }
     }
 }

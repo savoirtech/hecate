@@ -17,7 +17,7 @@ public class IntegerType extends NullSafeColumnType<Integer> {
     }
 
     @Override
-    public Integer getColumnValue(Row row, int columnIndex) {
+    public Integer getValue(Row row, int columnIndex) {
         return row.getInt(columnIndex);
     }
 
@@ -26,7 +26,7 @@ public class IntegerType extends NullSafeColumnType<Integer> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected void nullSafeSet(BoundStatement statement, int index, Integer value) {
-        statement.setInt(index, value);
+    protected void nullSafeSet(BoundStatement statement, int parameterIndex, Integer value) {
+        statement.setInt(parameterIndex, value);
     }
 }

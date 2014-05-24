@@ -17,7 +17,7 @@ public class BooleanType extends NullSafeColumnType<Boolean> {
     }
 
     @Override
-    public Boolean getColumnValue(Row row, int columnIndex) {
+    public Boolean getValue(Row row, int columnIndex) {
         return row.getBool(columnIndex);
     }
 
@@ -26,7 +26,7 @@ public class BooleanType extends NullSafeColumnType<Boolean> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected void nullSafeSet(BoundStatement statement, int index, Boolean value) {
-        statement.setBool(index, value);
+    protected void nullSafeSet(BoundStatement statement, int parameterIndex, Boolean value) {
+        statement.setBool(parameterIndex, value);
     }
 }
