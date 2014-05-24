@@ -1,12 +1,9 @@
 package com.savoirtech.hecate.cql3.type;
 
-public abstract class SimpleColumnType implements ColumnType {
+public interface ColumnTypeRegistry {
 //----------------------------------------------------------------------------------------------------------------------
-// ColumnType Implementation
+// Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Override
-    public Object getColumnValue(Object fieldValue) {
-        return fieldValue;
-    }
+    <T> ColumnType<T> getColumnType(Class<T> type);
 }

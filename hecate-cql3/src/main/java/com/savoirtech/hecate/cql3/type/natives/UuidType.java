@@ -1,10 +1,13 @@
 package com.savoirtech.hecate.cql3.type.natives;
 
+import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
-import com.savoirtech.hecate.cql3.type.SimpleColumnType;
+import com.savoirtech.hecate.cql3.type.NullSafeColumnType;
 
-public class UuidType extends SimpleColumnType {
+import java.util.UUID;
+
+public class UuidType extends NullSafeColumnType<UUID> {
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
@@ -16,7 +19,16 @@ public class UuidType extends SimpleColumnType {
     }
 
     @Override
-    public Object getFieldValue(Row row, int columnIndex) {
+    public UUID getColumnValue(Row row, int columnIndex) {
         return row.getUUID(columnIndex);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    protected void nullSafeSet(BoundStatement statement, int index, UUID value) {
+        statement.setUUID(index, value);
     }
 }
