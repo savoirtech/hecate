@@ -1,7 +1,5 @@
 package com.savoirtech.hecate.cql3.persistence;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -10,14 +8,12 @@ import com.savoirtech.hecate.cql3.meta.PojoDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PojoInsert<P> {
+public class PojoInsert<P> extends PojoPersistenceStatement<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PojoInsert.class);
-    private final Session session;
-    private final PreparedStatement preparedStatement;
     private final PojoDescriptor<P> pojoDescriptor;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -25,9 +21,8 @@ public class PojoInsert<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     public PojoInsert(Session session, String table, PojoDescriptor<P> pojoDescriptor) {
-        this.session = session;
+        super(session, createInsert(table, pojoDescriptor), pojoDescriptor);
         this.pojoDescriptor = pojoDescriptor;
-        this.preparedStatement = session.prepare(createInsert(table, pojoDescriptor));
     }
 
     private static <P> Insert createInsert(String table, PojoDescriptor<P> pojoDescriptor) {
@@ -35,7 +30,7 @@ public class PojoInsert<P> {
         for (ColumnDescriptor columnDescriptor : pojoDescriptor.getColumns()) {
             insert.value(columnDescriptor.getColumnName(), QueryBuilder.bindMarker());
         }
-        LOGGER.info("Insert statement for entity type {} in table {}: {}", pojoDescriptor.getPojoType().getSimpleName(), table, insert);
+        LOGGER.info("{}.save():: {}", pojoDescriptor.getPojoType().getSimpleName(), insert);
         return insert;
     }
 
@@ -44,12 +39,6 @@ public class PojoInsert<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     public void execute(P pojo) {
-        BoundStatement boundStatement = preparedStatement.bind();
-        int parameterIndex = 0;
-        for (ColumnDescriptor columnDescriptor : pojoDescriptor.getColumns()) {
-            columnDescriptor.getMapping().bindTo(pojo, boundStatement, parameterIndex);
-            parameterIndex++;
-        }
-        session.execute(boundStatement);
+        execute(collectValues(pojo, pojoDescriptor.getColumns()));
     }
 }

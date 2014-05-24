@@ -1,6 +1,5 @@
 package com.savoirtech.hecate.cql3.mapping;
 
-import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
 
@@ -9,9 +8,11 @@ public interface FieldMapping {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void bindTo(Object root, BoundStatement statement, int parameterIndex);
+    Object fieldCassandraValue(Object pojo);
 
     DataType columnType();
 
-    void extractFrom(Object root, Row row, int columnIndex);
+    void populateFromRow(Object root, Row row, int columnIndex);
+
+    Object rawCassandraValue(Object value);
 }

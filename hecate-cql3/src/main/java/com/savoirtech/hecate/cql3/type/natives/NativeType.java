@@ -1,21 +1,14 @@
 package com.savoirtech.hecate.cql3.type.natives;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
+import com.savoirtech.hecate.cql3.type.ColumnType;
 
-public class LongType extends NativeType<Long> {
+public abstract class NativeType<T> implements ColumnType<T> {
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
-    public Long extractValue(Row row, int columnIndex) {
-        return row.getLong(columnIndex);
-    }
-
-    @Override
-    public DataType getDataType() {
-        return DataType.bigint();
+    public Object cassandraValue(T value) {
+        return value;
     }
 }

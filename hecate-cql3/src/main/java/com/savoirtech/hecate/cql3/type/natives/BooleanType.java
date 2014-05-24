@@ -1,15 +1,12 @@
 package com.savoirtech.hecate.cql3.type.natives;
 
-import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
-import com.savoirtech.hecate.cql3.type.NullSafeColumnType;
 
-public class BooleanType extends NullSafeColumnType<Boolean> {
+public class BooleanType extends NativeType<Boolean> {
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
-
 
     @Override
     public DataType getDataType() {
@@ -17,16 +14,7 @@ public class BooleanType extends NullSafeColumnType<Boolean> {
     }
 
     @Override
-    public Boolean getValue(Row row, int columnIndex) {
+    public Boolean extractValue(Row row, int columnIndex) {
         return row.getBool(columnIndex);
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    @Override
-    protected void nullSafeSet(BoundStatement statement, int parameterIndex, Boolean value) {
-        statement.setBool(parameterIndex, value);
     }
 }

@@ -1,6 +1,5 @@
 package com.savoirtech.hecate.cql3.type;
 
-import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
 
@@ -23,14 +22,12 @@ public interface ColumnType<T> {
      * @param columnIndex the column index
      * @return the column value
      */
-    T getValue(Row row, int columnIndex);
-    
+    T extractValue(Row row, int columnIndex);
+
     /**
-     * Sets the specified parameter value.  Subclasses must perform the conversion to a Cassandra-supported type in
-     * order to call the proper setter on the {@link com.datastax.driver.core.BoundStatement}.
-     * @param statement the statement
-     * @param parameterIndex the parameter index
-     * @param value the parameter value
+     * Converts the parameter to a value suitable to be used by Cassandra.
+     * @param value the original value
+     * @return a value suitable to be used by Cassandra
      */
-    void setValue(BoundStatement statement, int parameterIndex, T value);
+    Object cassandraValue(T value);
 }

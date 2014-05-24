@@ -1,6 +1,5 @@
 package com.savoirtech.hecate.cql3.mapping.scalar;
 
-import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
 import com.savoirtech.hecate.cql3.mapping.AbstractFieldMapping;
@@ -28,8 +27,9 @@ public class ScalarMapping extends AbstractFieldMapping {
 // FieldMapping Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    public void bindTo(Object root, BoundStatement statement, int parameterIndex) {
-        columnType.setValue(statement, parameterIndex, getFieldValue(root));
+    @Override
+    public Object fieldCassandraValue(Object pojo) {
+        return columnType.cassandraValue(getFieldValue(pojo));
     }
 
     @Override
@@ -37,7 +37,12 @@ public class ScalarMapping extends AbstractFieldMapping {
         return columnType.getDataType();
     }
 
-    public void extractFrom(Object root, Row row, int columnIndex) {
-        setFieldValue(root, columnType.getValue(row, columnIndex));
+    public void populateFromRow(Object root, Row row, int columnIndex) {
+        setFieldValue(root, columnType.extractValue(row, columnIndex));
+    }
+
+    @Override
+    public Object rawCassandraValue(Object value) {
+        return columnType.cassandraValue(value);
     }
 }
