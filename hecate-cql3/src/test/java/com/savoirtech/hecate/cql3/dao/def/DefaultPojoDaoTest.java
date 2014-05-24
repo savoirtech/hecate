@@ -71,4 +71,20 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         final SimplePojo found = dao.findByKey(pojo.getId());
         assertArrayEquals(pojo.getInts(), found.getInts());
     }
+
+    @Test
+    public void testWithListField() {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setStrings(Arrays.asList("one", "two", "three"));
+        dao.save(pojo);
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found.getStrings());
+        assertEquals(3, found.getStrings().size());
+        assertEquals("one", found.getStrings().get(0));
+        assertEquals("two", found.getStrings().get(1));
+        assertEquals("three", found.getStrings().get(2));
+
+    }
 }

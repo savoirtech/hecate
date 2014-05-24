@@ -24,6 +24,7 @@ import com.savoirtech.hecate.cql3.annotations.TableName;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericCqlDao;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericPojoGraphDao;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -44,6 +46,7 @@ import java.util.Set;
 public class ReflectionUtils {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ReflectionUtils.class);
+    private static final TypeVariable<Class<List>> LIST_ELEMENT_TYPE = List.class.getTypeParameters()[0];
 
     public static <K> String getIdName(Class clazz) {
 
@@ -266,6 +269,17 @@ public class ReflectionUtils {
             return field.getName();
         }
     }
+
+    public static Class<?> listElementType(Type type) {
+        final Map<TypeVariable<?>, Type> arguments = TypeUtils.getTypeArguments(type, List.class);
+        for (Map.Entry<TypeVariable<?>, Type> entry : arguments.entrySet()) {
+            if (LIST_ELEMENT_TYPE.equals(entry.getKey())) {
+                return TypeUtils.getRawType(entry.getValue(), type);
+            }
+        }
+        return null;
+    }
+
 
     public static <T> Object[] fieldValues(T pojo) {
         List vals = new ArrayList();

@@ -2,6 +2,7 @@ package com.savoirtech.hecate.cql3.entities;
 
 import com.savoirtech.hecate.cql3.annotations.IdColumn;
 
+import java.util.List;
 import java.util.UUID;
 
 public class SimplePojo {
@@ -15,6 +16,8 @@ public class SimplePojo {
     private String name;
 
     private int[] ints;
+
+    private List<String> strings;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
@@ -42,6 +45,14 @@ public class SimplePojo {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<String> getStrings() {
+        return strings;
+    }
+
+    public void setStrings(List<String> strings) {
+        this.strings = strings;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
