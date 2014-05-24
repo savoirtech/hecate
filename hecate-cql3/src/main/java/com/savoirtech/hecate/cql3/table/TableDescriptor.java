@@ -14,8 +14,32 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3.reflection;
+package com.savoirtech.hecate.cql3.table;
 
-public final class ReflectionUtils {
-    private ReflectionUtils() {}
+public class TableDescriptor {
+
+
+    private String pk;
+    private String createStatement;
+
+    public TableDescriptor(String pk, String createStatement) {
+        this.pk = pk;
+        this.createStatement = createStatement;
+    }
+
+    public String getPk() {
+        return pk;
+    }
+
+    public void setPk(String pk) {
+        this.pk = pk;
+    }
+
+    public String getCreateStatement() {
+        return createStatement;
+    }
+
+    public void setCreateStatement(String createStatement) {
+        this.createStatement = createStatement;
+    }
 }

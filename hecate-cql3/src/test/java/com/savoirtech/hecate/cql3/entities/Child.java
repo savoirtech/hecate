@@ -14,12 +14,22 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3;
+package com.savoirtech.hecate.cql3.entities;
 
-public class HecateException extends Exception {
-    public HecateException(String s) {super(s);}
+import java.util.UUID;
 
-    public HecateException(Exception e) {
-        super(e);
+import com.savoirtech.hecate.cql3.annotations.IdColumn;
+
+public class Child {
+    public Child() {
     }
+
+    public Child(String name) {
+        this.name = name;
+    }
+
+    @IdColumn
+    String id = UUID.randomUUID().toString();
+
+    String name;
 }

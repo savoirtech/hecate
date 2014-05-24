@@ -31,6 +31,9 @@ public class Top {
     @CassandraId
     String id;
 
+    @CFName(name = "LOOL")
+    Child child;
+
     @CFName(name = "BOB")
     List<Child> children = new ArrayList<>();
     @CFName(name = "BOB2")
@@ -46,8 +49,6 @@ public class Top {
     Map<String, String> bobs = new HashMap<>();
 
     List<String> kidIds = new ArrayList<>();
-
-
 
     public List<Child> getMoreKids() {
         return moreKids;

@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3;
+package com.savoirtech.hecate.cql3.annotations;
 
-public class HecateException extends Exception {
-    public HecateException(String s) {super(s);}
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    public HecateException(Exception e) {
-        super(e);
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface TableName {
+    String name() default "";
 }

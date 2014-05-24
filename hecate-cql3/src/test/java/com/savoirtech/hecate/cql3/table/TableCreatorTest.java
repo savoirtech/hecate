@@ -36,6 +36,7 @@ public class TableCreatorTest {
             "CREATE TABLE IF NOT EXISTS keySpace.tableName ( id BIGINT PRIMARY KEY,name TEXT,more TEXT,date TIMESTAMP,aBoolean BOOLEAN,"
                 + "aDouble DOUBLE,aFloat FLOAT,uuid UUID );"
                                 ));
+
         create = TableCreator.createTable("keySpace", "tableName", CompoundKeyTable.class);
         System.out.println(create);
         assertTrue(create.equals("CREATE TABLE IF NOT EXISTS keySpace.tableName ( id BIGINT,name TEXT,more TEXT, PRIMARY KEY (id,name) );"));
@@ -46,7 +47,7 @@ public class TableCreatorTest {
     public void testConflictingKey() {
         String create = null;
         try {
-            create = TableCreator.createTable("keySpace", "tableName", ConflictKeyTable.class);
+            TableCreator.createTable("keySpace", "tableName", ConflictKeyTable.class);
         } catch (HecateException h) {
             h.printStackTrace();
         }

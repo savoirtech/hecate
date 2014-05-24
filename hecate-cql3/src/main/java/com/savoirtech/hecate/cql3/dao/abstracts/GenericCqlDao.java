@@ -34,13 +34,13 @@ import org.slf4j.LoggerFactory;
 
 public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
 
-    private Session session;
-    private String tableName;
-    private String keySpace;
-    private Class mappingClazz;
-    private Class keyClazz;
+    protected Session session;
+    protected String tableName;
+    protected String keySpace;
+    protected Class mappingClazz;
+    protected Class keyClazz;
 
-    private Logger logger = LoggerFactory.getLogger(GenericCqlDao.class);
+    protected Logger logger = LoggerFactory.getLogger(GenericCqlDao.class);
 
     public GenericCqlDao(Session session, String keySpace, String tableName, Class keyClazz, Class mappingClazz) {
         this.session = session;

@@ -37,9 +37,9 @@ public final class FieldMapper {
 
     private final static Logger logger = LoggerFactory.getLogger(FieldMapper.class);
 
-    private static final Map<String, String> fromCassandra = new HashMap<>();
+    public static final Map<String, String> fromCassandra = new HashMap<>();
 
-    private static final Map<String, String> toCassandra = new HashMap<>();
+    public static final Map<String, String> toCassandra = new HashMap<>();
 
     private static final String TYPE_NAME_PREFIX = "class ";
 
@@ -132,7 +132,16 @@ public final class FieldMapper {
         return className;
     }
 
-    public static String getCassandraType(Field field) {
+    public static String getCassandraTypeForFieldName(String field, Class cls) throws HecateException {
+        for (Field f : ReflectionUtils.getFieldsUpTo(cls, null)) {
+            if (field.equals(f.getName())) {
+                return getCassandraType(f);
+            }
+        }
+        return null;
+    }
+
+    public static String getCassandraType(Field field) throws HecateException {
         String fieldType = toCassandra.get(field.getType().getName());
 
         if (fieldType != null) {
@@ -144,11 +153,18 @@ public final class FieldMapper {
             Type type = field.getGenericType();
             if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) type;
+                String csType = getStorageType(pt.getActualTypeArguments()[0]);
+                if (!csType.equals("blob")) {
+                    return "list<" + csType + ">";
+                } else {
 
-                logger.debug(toCassandra.get(getClassName(pt.getActualTypeArguments()[0])));
-                String csType = (StringUtils.isEmpty(toCassandra.get(getClassName(pt.getActualTypeArguments()[0])))) ? "blob" : toCassandra.get(
-                    getClassName(pt.getActualTypeArguments()[0]));
-                return "list<" + csType + ">";
+                    try {
+                        return "list<" + FieldMapper.getCassandraTypeForFieldName(ReflectionUtils.getIdName(Class.forName(getClassName(
+                            pt.getActualTypeArguments()[0]))), Class.forName(getClassName(pt.getActualTypeArguments()[0]))) + ">";
+                    } catch (ClassNotFoundException e) {
+                        logger.error("Class error " + e);
+                    }
+                }
             }
 
             return "list<blob>";
@@ -159,25 +175,128 @@ public final class FieldMapper {
             Type type = field.getGenericType();
             if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) type;
-                return "set<" + toCassandra.get(getClassName(pt.getActualTypeArguments()[0])) + ">";
+                String csType = getStorageType(pt.getActualTypeArguments()[0]);
+
+                if (!csType.equals("blob")) {
+                    return "set<" + csType + ">";
+                } else {
+
+                    try {
+                        return "set<" + FieldMapper.getCassandraTypeForFieldName(ReflectionUtils.getIdName(Class.forName(getClassName(
+                            pt.getActualTypeArguments()[0]))), Class.forName(getClassName(pt.getActualTypeArguments()[0]))) + ">";
+                    } catch (ClassNotFoundException e) {
+                        logger.error("Class error " + e);
+                    }
+                }
             }
 
             return "set<blob>";
         }
 
-        if (field.getType().isAssignableFrom(Map.class))
-
-        {
+        if (field.getType().isAssignableFrom(Map.class)) {
             Type type = field.getGenericType();
             if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) type;
-                return "map<" + toCassandra.get(getClassName(pt.getActualTypeArguments()[0])) + "," +
-                    toCassandra.get(getClassName(pt.getActualTypeArguments()[1])) + ">";
+                if ("blob".equals(getStorageType(pt.getActualTypeArguments()[0]))) {
+                    throw new HecateException("Complex keys not supported");
+                }
+                if ("blob".equals(getStorageType(pt.getActualTypeArguments()[1]))) {
+                    try {
+                        return "map<" + getStorageType(pt.getActualTypeArguments()[0]) + "," +
+                            FieldMapper.getCassandraTypeForFieldName(ReflectionUtils.getIdName(Class.forName(getClassName(
+                                pt.getActualTypeArguments()[1]))), Class.forName(getClassName(pt.getActualTypeArguments()[1]))) +
+                            ">";
+                    } catch (ClassNotFoundException e) {
+                        logger.error("Class error " + e);
+                    }
+                }
+                return "map<" + getStorageType(pt.getActualTypeArguments()[0]) + "," +
+                    getStorageType(pt.getActualTypeArguments()[1]) + ">";
             }
 
             return "map<blob,blob>";
         }
 
+        System.out.println("Field " + field.getName() + " maps as " + FieldMapper.getCassandraTypeForFieldName(field.getName(), field.getType()));
+
+        return FieldMapper.getCassandraTypeForFieldName(ReflectionUtils.getIdName(field.getType()), field.getType());
+    }
+
+    public static String getRawCassandraType(Field field) throws HecateException {
+        String fieldType = toCassandra.get(field.getType().getName());
+
+        if (fieldType != null) {
+            return fieldType;
+        }
+
+        if (field.getType().isAssignableFrom(List.class)) {
+
+            Type type = field.getGenericType();
+            if (type instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType) type;
+                String csType = getStorageType(pt.getActualTypeArguments()[0]);
+                if (!csType.equals("blob")) {
+                    return "list<" + csType + ">";
+                }
+            }
+
+            return "list<blob>";
+        }
+
+        if (field.getType().isAssignableFrom(Set.class)) {
+
+            Type type = field.getGenericType();
+            if (type instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType) type;
+                String csType = getStorageType(pt.getActualTypeArguments()[0]);
+
+                if (!csType.equals("blob")) {
+                    return "set<" + csType + ">";
+                }
+            }
+
+            return "set<blob>";
+        }
+
+        if (field.getType().isAssignableFrom(Map.class)) {
+            Type type = field.getGenericType();
+            if (type instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType) type;
+                if ("blob".equals(getStorageType(pt.getActualTypeArguments()[0]))) {
+                    throw new HecateException("Complex keys not supported");
+                }
+
+                return "map<" + getStorageType(pt.getActualTypeArguments()[0]) + "," +
+                    getStorageType(pt.getActualTypeArguments()[1]) + ">";
+            }
+
+            return "map<blob,blob>";
+        }
+        //We have an Object, we need to covert the Object's Cassandra ID to a Key value
+        //create a new Table Statement and then add this entity.
+
+        return FieldMapper.getRawCassandraTypeForFieldName(ReflectionUtils.getIdName(field.getType()), field.getType());
+    }
+
+
+
+    private static String getRawCassandraTypeForFieldName(String idName, Class<?> type) throws HecateException {
+        for (Field f : ReflectionUtils.getFieldsUpTo(type, null)) {
+            if (type.equals(f.getName())) {
+                return getRawCassandraType(f);
+            }
+        }
+        return null;
+    }
+
+    private static String getStorageType(Type type) {
+
+        String csClass = toCassandra.get(getClassName(type));
+        if (csClass != null && !StringUtils.isEmpty(csClass)) {
+            return csClass;
+        }
+        //This is actually an Object.
+        //Figure out what the Id Key is and how it'll be used.
         return "blob";
     }
 }

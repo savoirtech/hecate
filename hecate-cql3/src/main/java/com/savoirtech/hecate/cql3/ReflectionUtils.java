@@ -18,14 +18,23 @@ package com.savoirtech.hecate.cql3;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Row;
 import com.google.common.collect.Lists;
 import com.savoirtech.hecate.cql3.annotations.IdColumn;
+import com.savoirtech.hecate.cql3.annotations.TableName;
+import com.savoirtech.hecate.cql3.dao.abstracts.GenericCqlDao;
+import com.savoirtech.hecate.cql3.dao.abstracts.GenericPojoGraphDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,11 +58,201 @@ public class ReflectionUtils {
 
     public static <K> K extractFieldValue(String fieldName, Field fieldType, Row row) {return null;}
 
+    public static class DataDescriptor {
+        String tableName;
+        Object[] values;
+
+        public Object[] getValues() {
+            return values;
+        }
+
+        public String getTableName() {
+            return tableName;
+        }
+
+        @Override
+        public String toString() {
+            return "DataDescriptor{" +
+                "tableName='" + tableName + '\'' +
+                ", values=" + Arrays.toString(values) +
+                '}';
+        }
+    }
+
+    public static <T> Map<Class, Set<DataDescriptor>> valuesForClasses(Map<Class, Set<DataDescriptor>> values, String originalTableName,
+                                                                        T pojo) throws HecateException {
+
+        List vals = new ArrayList();
+
+        DataDescriptor dataDescriptor = new DataDescriptor();
+        dataDescriptor.tableName = originalTableName;
+
+        for (Field field : getFieldsUpTo(pojo.getClass(), null)) {
+            try {
+
+                field.setAccessible(true);
+
+                String csType = FieldMapper.getRawCassandraType(field);
+                boolean fieldProcessed = false;
+                if (csType == null) {
+                    logger.debug("Encountered an Object, we need to convert this object to a new insert value.");
+
+                    Object fieldVal = field.get(pojo);
+                    String id = ReflectionUtils.getIdName(field.getType());
+                    dataDescriptor.tableName = tableName(field);
+
+                    if (fieldVal != null) {
+                        for (Field nestedF : getFieldsUpTo(fieldVal.getClass(), null)) {
+                            nestedF.setAccessible(true);
+                            if (id == null) {
+                                throw new HecateException("Id field not found on object " + fieldVal);
+                            }
+                            if (id.equals(nestedF.getName())) {
+                                vals.add(nestedF.get(fieldVal));
+                                valuesForClasses(values, dataDescriptor.getTableName(), fieldVal);
+                                fieldProcessed = true;
+                            }
+                        }
+                    } else {
+                        vals.add(null);
+                        fieldProcessed = true;
+                    }
+                }
+
+                if ("list<blob>".equalsIgnoreCase(csType)) {
+
+                    logger.debug("Encountered a List, checking generic type");
+                    dataDescriptor.tableName = tableName(field);
+                    List fieldVal = (List) field.get(pojo);
+                    List rawList = new ArrayList();
+                    logger.debug("List " + fieldVal);
+                    for (Object o : fieldVal) {
+                        logger.debug("Object class " + o.getClass());
+                        String id = ReflectionUtils.getIdName(o.getClass());
+                        for (Field nestedF : getFieldsUpTo(o.getClass(), null)) {
+                            logger.debug("Parsing list item " + nestedF);
+                            nestedF.setAccessible(true);
+                            if (id == null) {
+                                throw new HecateException("Id field not found on list item " + fieldVal);
+                            }
+                            if (id.equals(nestedF.getName())) {
+                                logger.debug("Field to use " + field);
+                                rawList.add(nestedF.get(o));
+
+                                valuesForClasses(values, dataDescriptor.getTableName(), o);
+                            }
+                        }
+                    }
+
+                    vals.add(rawList);
+                    fieldProcessed = true;
+                }
+
+                if ("set<blob>".equalsIgnoreCase(csType)) {
+                    logger.debug("Encountered a Set, checking generic type");
+                    dataDescriptor.tableName = tableName(field);
+                    Set fieldVal = (Set) field.get(pojo);
+
+                    Set rawSet = new HashSet();
+                    for (Object o : fieldVal) {
+                        logger.debug("Object class " + o.getClass());
+                        String id = ReflectionUtils.getIdName(o.getClass());
+                        for (Field nestedF : getFieldsUpTo(o.getClass(), null)) {
+                            nestedF.setAccessible(true);
+                            if (id == null) {
+                                throw new HecateException("Id field not found on set item " + fieldVal);
+                            }
+                            if (id.equals(nestedF.getName())) {
+                                rawSet.add(nestedF.get(o));
+                                valuesForClasses(values, dataDescriptor.getTableName(), o);
+                            }
+                        }
+                    }
+                    vals.add(rawSet);
+                    fieldProcessed = true;
+                }
+
+                if (csType != null && csType.toLowerCase().contains("map<") && csType.toLowerCase().contains(",blob>")) {
+                    logger.debug("Encountered a Map, checking generic type");
+                    dataDescriptor.tableName = tableName(field);
+                    Map fieldVal = (Map) field.get(pojo);
+
+                    Map rawMap = new HashMap();
+                    for (Object en : fieldVal.entrySet()) {
+                        Map.Entry o = (Map.Entry) en;
+                        logger.debug("Object class " + o.getValue());
+                        String id = ReflectionUtils.getIdName(o.getValue().getClass());
+                        for (Field nestedF : getFieldsUpTo(o.getValue().getClass(), null)) {
+                            nestedF.setAccessible(true);
+                            if (id == null) {
+                                throw new HecateException("Id field not found on set item " + fieldVal);
+                            }
+                            if (id.equals(nestedF.getName())) {
+                                rawMap.put(o.getKey(), nestedF.get(o.getValue()));
+                                valuesForClasses(values, dataDescriptor.getTableName(), o.getValue());
+                            }
+                        }
+                    }
+                    vals.add(rawMap);
+                    fieldProcessed = true;
+                }
+
+                if (!fieldProcessed) {
+                    Object value = field.get(pojo);
+                    vals.add(value);
+                }
+            } catch (IllegalAccessException e) {
+                logger.error("Could not access field " + e);
+            }
+        }
+        dataDescriptor.values = vals.toArray(new Object[vals.size()]);
+        if (values.containsKey(pojo.getClass()) && values.get(pojo.getClass()) == null || !values.containsKey(pojo.getClass())) {
+            values.put(pojo.getClass(), new HashSet<DataDescriptor>());
+        }
+        values.get(pojo.getClass()).add(dataDescriptor);
+
+        for (Map.Entry<Class, Set<ReflectionUtils.DataDescriptor>> entry : values.entrySet()) {
+            for (DataDescriptor descriptor : entry.getValue()) {
+                logger.debug(dataDescriptor.getTableName()  + "=>" + Arrays.asList(descriptor.getValues()));
+            }
+        }
+        return values;
+    }
+
+    public static String tableName(Field field) {
+        if (field.isAnnotationPresent(TableName.class)) {
+            return field.getAnnotation(TableName.class).name();
+        } else {
+            return field.getName();
+        }
+    }
+
     public static <T> Object[] fieldValues(T pojo) {
         List vals = new ArrayList();
         for (Field field : getFieldsUpTo(pojo.getClass(), null)) {
             try {
                 field.setAccessible(true);
+
+                Object value = field.get(pojo);
+
+                vals.add(value);
+            } catch (IllegalAccessException e) {
+                logger.error("Could not access field " + e);
+            }
+        }
+        return vals.toArray(new Object[vals.size()]);
+    }
+
+    public static <T> Object[] pojofieldValues(T pojo) {
+        List vals = new ArrayList();
+        for (Field field : getFieldsUpTo(pojo.getClass(), null)) {
+            try {
+                field.setAccessible(true);
+
+                //TODO - If this is another object, a collection or a Dictionary
+                //we need to inspect this and generate the appropriate values.
+                //We also need to iterate over each field and create new table inserts.
+
                 Object value = field.get(pojo);
                 vals.add(value);
             } catch (IllegalAccessException e) {
@@ -111,27 +310,119 @@ public class ReflectionUtils {
         }
     }
 
-    /**
-     *
-     // convert object to bytes
-     Date d1 = new Date();
-     System.out.println(d1);
-     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-     ObjectOutputStream oos = new ObjectOutputStream(baos);
-     oos.writeObject(d1);
-     byte[] buf = baos.toByteArray();
+    public static <T> void populateGraph(T clz, Row row, GenericCqlDao dao) throws HecateException {
 
-     // convert back from bytes to object
-     ObjectInputStream ois =
-     new ObjectInputStream(new ByteArrayInputStream(buf));
-     Date d2 = (Date) ois.readObject();
-     ois.close();
+        for (ColumnDefinitions.Definition cf : row.getColumnDefinitions()) {
+            logger.debug("Column " + cf.getType().asJavaClass());
 
-     System.out.println(d2);
-     } catch (IOException ioe) {
-     ioe.printStackTrace();
-     } catch (ClassNotFoundException cnfe) {
-     cnfe.printStackTrace();
-     }
-     */
+            List<String> fields = Arrays.asList(fieldNames(clz.getClass()));
+            try {
+                boolean fieldAdded = false;
+                for (String fname : fields) {
+                    if (fname.equalsIgnoreCase(cf.getName())) {
+                        Field field = clz.getClass().getDeclaredField(fname);
+                        field.setAccessible(true);
+                        logger.debug("Adding in a " + field.toGenericString());
+                        if (FieldMapper.getRawCassandraType(field) == null) {
+                            logger.debug("Looking up " + field.getGenericType() + " with key " + FieldMapper.getJavaObject(
+                                cf.getType().getName().name(), cf.getName(), row) + " from " + dao.getKeySpace() + "." + tableName(field));
+                            Object id = FieldMapper.getJavaObject(cf.getType().getName().name(), cf.getName(), row);
+                            if (id != null) {
+                                Object o = ((GenericPojoGraphDao) dao).findChildRow(id, field.getType(), dao.getKeySpace(), tableName(field));
+                                field.set(clz, o);
+                            }
+                            fieldAdded = true;
+                        }
+
+                        if ("list<blob>".equals(FieldMapper.getRawCassandraType(field))) {
+                            logger.debug("Looking up " + field.getGenericType() + " with key " + FieldMapper.getJavaObject(
+                                cf.getType().getName().name(), cf.getName(), row) + " from " + dao.getKeySpace() + "." + tableName(field));
+
+                            Type type = field.getGenericType();
+                            if (type instanceof ParameterizedType) {
+                                ParameterizedType pt = (ParameterizedType) type;
+                                Class entityClazz = typeToClass(pt.getActualTypeArguments()[0], field.getDeclaringClass().getClassLoader());
+                                List idlist = (List) FieldMapper.getJavaObject(cf.getType().getName().name(), cf.getName(), row);
+                                List entities = new ArrayList();
+                                for (Object id : idlist) {
+                                    if (id != null) {
+                                        logger.debug("Find list item " + id + " from " + dao.getKeySpace() + "." + tableName(field));
+                                        Object o = ((GenericPojoGraphDao) dao).findChildRow(id, entityClazz, dao.getKeySpace(), tableName(field));
+                                        logger.debug("Found entity " + o);
+                                        entities.add(o);
+                                    }
+                                }
+                                field.set(clz, entities);
+                                fieldAdded = true;
+                            }
+                        }
+
+                        if ("set<blob>".equals(FieldMapper.getRawCassandraType(field))) {
+                            logger.debug("Looking up " + field.getGenericType() + " with key " + FieldMapper.getJavaObject(
+                                cf.getType().getName().name(), cf.getName(), row) + " from " + dao.getKeySpace() + "." + tableName(field));
+
+                            Type type = field.getGenericType();
+                            if (type instanceof ParameterizedType) {
+                                ParameterizedType pt = (ParameterizedType) type;
+                                Class entityClazz = typeToClass(pt.getActualTypeArguments()[0], field.getDeclaringClass().getClassLoader());
+                                Set idlist = (Set) FieldMapper.getJavaObject(cf.getType().getName().name(), cf.getName(), row);
+                                Set entities = new HashSet();
+                                for (Object id : idlist) {
+                                    if (id != null) {
+                                        logger.debug("Find set item " + id + " from " + dao.getKeySpace() + "." + tableName(field));
+                                        Object o = ((GenericPojoGraphDao) dao).findChildRow(id, entityClazz, dao.getKeySpace(), tableName(field));
+                                        logger.debug("Found entity " + o);
+                                        entities.add(o);
+                                    }
+                                }
+                                field.set(clz, entities);
+                                fieldAdded = true;
+                            }
+                        }
+
+                        if (FieldMapper.getRawCassandraType(field) != null && FieldMapper.getRawCassandraType(field).toLowerCase().startsWith("map<")
+                            && FieldMapper.getRawCassandraType(field).toLowerCase().contains(",blob>")) {
+                            logger.debug("Looking up " + field.getGenericType() + " with key " + FieldMapper.getJavaObject(
+                                cf.getType().getName().name(), cf.getName(), row) + " from " + dao.getKeySpace() + "." + tableName(field));
+
+                            Type type = field.getGenericType();
+                            if (type instanceof ParameterizedType) {
+                                ParameterizedType pt = (ParameterizedType) type;
+                                Class entityClazz = typeToClass(pt.getActualTypeArguments()[1], field.getDeclaringClass().getClassLoader());
+                                Map idlist = (Map) FieldMapper.getJavaObject(cf.getType().getName().name(), cf.getName(), row);
+                                Map entities = new HashMap();
+                                for (Object ento : idlist.entrySet()) {
+                                    Map.Entry ent = (Map.Entry) ento;
+                                    Object id = ent.getKey();
+                                    if (id != null) {
+                                        logger.debug("Find map item " + id +"=>"+ ent.getValue() + " from " + dao.getKeySpace() + "." + tableName(field));
+                                        Object o = ((GenericPojoGraphDao) dao).findChildRow(ent.getValue(), entityClazz, dao.getKeySpace(), tableName(
+                                            field));
+                                        logger.debug("Found entity " + o);
+                                        entities.put(id, o);
+                                    }
+                                }
+                                field.set(clz, entities);
+                                fieldAdded = true;
+                            }
+                        }
+
+                        if (!fieldAdded) {
+                            field.set(clz, FieldMapper.getJavaObject(cf.getType().getName().name(), cf.getName(), row));
+                        }
+                    }
+                }
+            } catch (NoSuchFieldException e) {
+                logger.error("Trying to access a field that doesn't exist " + e);
+            } catch (IllegalAccessException e) {
+                logger.error("Access problem " + e);
+            } catch (ClassNotFoundException e) {
+                logger.error("Class not found " + e);
+            }
+        }
+    }
+
+    public static Class typeToClass(Type type, ClassLoader cl) throws ClassNotFoundException {
+        return cl.loadClass(type.toString().split(" ")[1]);
+    }
 }
