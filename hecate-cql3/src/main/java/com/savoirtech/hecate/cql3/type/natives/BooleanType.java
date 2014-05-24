@@ -17,4 +17,6 @@ public class BooleanType extends NativeType<Boolean> {
     public Boolean extractValue(Row row, int columnIndex) {
         return row.getBool(columnIndex);
     }
+
+
 }

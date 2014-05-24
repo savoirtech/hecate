@@ -14,6 +14,8 @@ public class SimplePojo {
     
     private String name;
 
+    private int[] ints;
+
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
@@ -24,6 +26,14 @@ public class SimplePojo {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public int[] getInts() {
+        return ints;
+    }
+
+    public void setInts(int[] ints) {
+        this.ints = ints;
     }
 
     public String getName() {

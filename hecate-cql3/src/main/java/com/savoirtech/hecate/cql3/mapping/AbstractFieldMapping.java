@@ -24,6 +24,10 @@ public abstract class AbstractFieldMapping implements FieldMapping {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    protected Class<?> getFieldType() {
+        return field.getType();
+    }
+
     protected Object getFieldValue(Object root) {
         return ReflectionUtils.getFieldValue(field, root);
     }

@@ -5,12 +5,14 @@ import com.savoirtech.hecate.cql3.ReflectionUtils;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.dao.PojoDaoFactory;
 import com.savoirtech.hecate.cql3.mapping.FieldMappingProvider;
+import com.savoirtech.hecate.cql3.mapping.array.ArrayFieldMappingProvider;
 import com.savoirtech.hecate.cql3.mapping.scalar.ScalarMappingProvider;
 import com.savoirtech.hecate.cql3.meta.PojoDescriptor;
 import com.savoirtech.hecate.cql3.naming.NamingConvention;
 import com.savoirtech.hecate.cql3.naming.def.DefaultNamingConvention;
 import com.savoirtech.hecate.cql3.schema.CreateVerifier;
 import com.savoirtech.hecate.cql3.schema.SchemaVerifier;
+import com.savoirtech.hecate.cql3.type.ColumnTypeRegistry;
 import com.savoirtech.hecate.cql3.type.def.DefaultColumnTypeRegistry;
 
 import java.lang.reflect.Field;
@@ -32,9 +34,15 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoDaoFactory(Session session) {
-        this(session,
-                new ScalarMappingProvider(new DefaultColumnTypeRegistry())
-        );
+        this(session, defaultFieldMappingProviders());
+    }
+
+    private static FieldMappingProvider[] defaultFieldMappingProviders() {
+        final ColumnTypeRegistry registry = new DefaultColumnTypeRegistry();
+        return new FieldMappingProvider[]{
+                new ScalarMappingProvider(registry),
+                new ArrayFieldMappingProvider(registry)
+        };
     }
 
     public DefaultPojoDaoFactory(Session session, FieldMappingProvider... fieldMappingProviders) {

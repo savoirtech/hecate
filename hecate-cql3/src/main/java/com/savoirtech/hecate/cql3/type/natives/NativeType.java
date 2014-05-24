@@ -7,8 +7,15 @@ public abstract class NativeType<T> implements ColumnType<T> {
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+
     @Override
-    public Object cassandraValue(T value) {
+    @SuppressWarnings("unchecked")
+    public T fromCassandraValue(Object cassandraValue) {
+        return (T) cassandraValue;
+    }
+
+    @Override
+    public Object toCassandraValue(T value) {
         return value;
     }
 }

@@ -60,4 +60,15 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertTrue(results.contains(pojo1));
         assertTrue(results.contains(pojo2));
     }
+
+    @Test
+    public void testWithArrayField() {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setInts(new int[]{1, 2, 3});
+        dao.save(pojo);
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertArrayEquals(pojo.getInts(), found.getInts());
+    }
 }

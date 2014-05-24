@@ -29,7 +29,7 @@ public class ScalarMapping extends AbstractFieldMapping {
 
     @Override
     public Object fieldCassandraValue(Object pojo) {
-        return columnType.cassandraValue(getFieldValue(pojo));
+        return columnType.toCassandraValue(getFieldValue(pojo));
     }
 
     @Override
@@ -43,6 +43,6 @@ public class ScalarMapping extends AbstractFieldMapping {
 
     @Override
     public Object rawCassandraValue(Object value) {
-        return columnType.cassandraValue(value);
+        return columnType.toCassandraValue(value);
     }
 }
