@@ -16,31 +16,36 @@
 
 package com.savoirtech.hecate.cql3;
 
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.Row;
+import com.google.common.collect.Lists;
+import com.savoirtech.hecate.cql3.annotations.ColumnName;
+import com.savoirtech.hecate.cql3.annotations.IdColumn;
+import com.savoirtech.hecate.cql3.annotations.TableName;
+import com.savoirtech.hecate.cql3.dao.abstracts.GenericCqlDao;
+import com.savoirtech.hecate.cql3.dao.abstracts.GenericPojoGraphDao;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.Row;
-import com.google.common.collect.Lists;
-import com.savoirtech.hecate.cql3.annotations.IdColumn;
-import com.savoirtech.hecate.cql3.annotations.TableName;
-import com.savoirtech.hecate.cql3.dao.abstracts.GenericCqlDao;
-import com.savoirtech.hecate.cql3.dao.abstracts.GenericPojoGraphDao;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.TreeMap;
 
 public class ReflectionUtils {
 
-    private final static Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ReflectionUtils.class);
 
     public static <K> String getIdName(Class clazz) {
 
@@ -54,9 +59,13 @@ public class ReflectionUtils {
         return null;
     }
 
-    public static Field getFieldType(String id) {return null;}
+    public static Field getFieldType(String id) {
+        return null;
+    }
 
-    public static <K> K extractFieldValue(String fieldName, Field fieldType, Row row) {return null;}
+    public static <K> K extractFieldValue(String fieldName, Field fieldType, Row row) {
+        return null;
+    }
 
     public static class DataDescriptor {
         String tableName;
@@ -75,10 +84,10 @@ public class ReflectionUtils {
         @Override
         public String toString() {
             return "DataDescriptor{" +
-                "tableName='" + tableName + '\'' +
-                ", id='" + id + '\'' +
-                ", values=" + Arrays.toString(values) +
-                '}';
+                    "tableName='" + tableName + '\'' +
+                    ", id='" + id + '\'' +
+                    ", values=" + Arrays.toString(values) +
+                    '}';
         }
 
         public void setTableName(String tableName) {
@@ -114,7 +123,7 @@ public class ReflectionUtils {
                 String csType = FieldMapper.getRawCassandraType(field);
                 boolean fieldProcessed = false;
                 if (csType == null) {
-                    logger.debug("Encountered an Object, we need to convert this object to a new insert value.");
+                    LOGGER.debug("Encountered an Object, we need to convert this object to a new insert value.");
 
                     Object fieldVal = field.get(pojo);
                     String id = ReflectionUtils.getIdName(field.getType());
@@ -140,22 +149,22 @@ public class ReflectionUtils {
 
                 if ("list<blob>".equalsIgnoreCase(csType)) {
 
-                    logger.debug("Encountered a List, checking generic type");
+                    LOGGER.debug("Encountered a List, checking generic type");
                     dataDescriptor.tableName = tableName(field);
                     List fieldVal = (List) field.get(pojo);
                     List rawList = new ArrayList();
-                    logger.debug("List " + fieldVal);
+                    LOGGER.debug("List " + fieldVal);
                     for (Object o : fieldVal) {
-                        logger.debug("Object class " + o.getClass());
+                        LOGGER.debug("Object class " + o.getClass());
                         String id = ReflectionUtils.getIdName(o.getClass());
                         for (Field nestedF : getFieldsUpTo(o.getClass(), null)) {
-                            logger.debug("Parsing list item " + nestedF);
+                            LOGGER.debug("Parsing list item " + nestedF);
                             nestedF.setAccessible(true);
                             if (id == null) {
                                 throw new HecateException("Id field not found on list item " + fieldVal);
                             }
                             if (id.equals(nestedF.getName())) {
-                                logger.debug("Field to use " + field);
+                                LOGGER.debug("Field to use " + field);
                                 rawList.add(nestedF.get(o));
                                 valuesForClasses(values, dataDescriptor.getTableName(), o);
                             }
@@ -167,13 +176,13 @@ public class ReflectionUtils {
                 }
 
                 if ("set<blob>".equalsIgnoreCase(csType)) {
-                    logger.debug("Encountered a Set, checking generic type");
+                    LOGGER.debug("Encountered a Set, checking generic type");
                     dataDescriptor.tableName = tableName(field);
                     Set fieldVal = (Set) field.get(pojo);
 
                     Set rawSet = new HashSet();
                     for (Object o : fieldVal) {
-                        logger.debug("Object class " + o.getClass());
+                        LOGGER.debug("Object class " + o.getClass());
                         String id = ReflectionUtils.getIdName(o.getClass());
                         for (Field nestedF : getFieldsUpTo(o.getClass(), null)) {
                             nestedF.setAccessible(true);
@@ -191,7 +200,7 @@ public class ReflectionUtils {
                 }
 
                 if (csType != null && csType.toLowerCase().contains("map<") && csType.toLowerCase().contains(",blob>")) {
-                    logger.debug("Encountered a Map, checking generic type");
+                    LOGGER.debug("Encountered a Map, checking generic type");
                     dataDescriptor.tableName = tableName(field);
                     Map fieldVal = (Map) field.get(pojo);
 
@@ -199,7 +208,7 @@ public class ReflectionUtils {
                     if (fieldVal != null) {
                         for (Object en : fieldVal.entrySet()) {
                             Map.Entry o = (Map.Entry) en;
-                            logger.debug("Object class " + o.getValue());
+                            LOGGER.debug("Object class " + o.getValue());
                             String id = ReflectionUtils.getIdName(o.getValue().getClass());
                             if (id == null) {
                                 throw new HecateException("Id field not found on set item " + fieldVal);
@@ -222,8 +231,9 @@ public class ReflectionUtils {
                     Object value = field.get(pojo);
                     vals.add(value);
                 }
-            } catch (IllegalAccessException e) {
-                logger.error("Could not access field " + e);
+            }
+            catch (IllegalAccessException e) {
+                LOGGER.error("Could not access field " + e);
             }
         }
         dataDescriptor.values = vals.toArray(new Object[vals.size()]);
@@ -234,7 +244,7 @@ public class ReflectionUtils {
 
         for (Map.Entry<Class, Set<ReflectionUtils.DataDescriptor>> entry : values.entrySet()) {
             for (DataDescriptor descriptor : entry.getValue()) {
-                logger.debug(dataDescriptor.getTableName() + "=>" + Arrays.asList(descriptor.getValues()));
+                LOGGER.debug(dataDescriptor.getTableName() + "=>" + Arrays.asList(descriptor.getValues()));
             }
         }
         return values;
@@ -253,7 +263,7 @@ public class ReflectionUtils {
 
     public static String tableName(Field field) {
         if (field.isAnnotationPresent(TableName.class)) {
-            return field.getAnnotation(TableName.class).name();
+            return field.getAnnotation(TableName.class).value();
         } else {
             return field.getName();
         }
@@ -268,8 +278,9 @@ public class ReflectionUtils {
                 Object value = field.get(pojo);
 
                 vals.add(value);
-            } catch (IllegalAccessException e) {
-                logger.error("Could not access field " + e);
+            }
+            catch (IllegalAccessException e) {
+                LOGGER.error("Could not access field " + e);
             }
         }
         return vals.toArray(new Object[vals.size()]);
@@ -287,8 +298,9 @@ public class ReflectionUtils {
 
                 Object value = field.get(pojo);
                 vals.add(value);
-            } catch (IllegalAccessException e) {
-                logger.error("Could not access field " + e);
+            }
+            catch (IllegalAccessException e) {
+                LOGGER.error("Could not access field " + e);
             }
         }
         return vals.toArray(new Object[vals.size()]);
@@ -323,7 +335,7 @@ public class ReflectionUtils {
     public static <T> void populate(T clz, Row row) {
 
         for (ColumnDefinitions.Definition cf : row.getColumnDefinitions()) {
-            logger.debug("Column " + cf.getType().asJavaClass());
+            LOGGER.debug("Column " + cf.getType().asJavaClass());
 
             List<String> fields = Arrays.asList(fieldNames(clz.getClass()));
             try {
@@ -334,10 +346,12 @@ public class ReflectionUtils {
                         field.set(clz, FieldMapper.getJavaObject(cf.getType().getName().name(), cf.getName(), row));
                     }
                 }
-            } catch (NoSuchFieldException e) {
-                logger.error("Trying to access a field that doesn't exist " + e);
-            } catch (IllegalAccessException e) {
-                logger.error("Access problem " + e);
+            }
+            catch (NoSuchFieldException e) {
+                LOGGER.error("Trying to access a field that doesn't exist " + e);
+            }
+            catch (IllegalAccessException e) {
+                LOGGER.error("Access problem " + e);
             }
         }
     }
@@ -345,7 +359,7 @@ public class ReflectionUtils {
     public static <T> void populateGraph(T clz, Row row, GenericCqlDao dao) throws HecateException {
 
         for (ColumnDefinitions.Definition cf : row.getColumnDefinitions()) {
-            logger.debug("Column " + cf.getType().asJavaClass());
+            LOGGER.debug("Column " + cf.getType().asJavaClass());
 
             List<String> fields = Arrays.asList(fieldNames(clz.getClass()));
             try {
@@ -354,10 +368,10 @@ public class ReflectionUtils {
                     if (fname.equalsIgnoreCase(cf.getName())) {
                         Field field = clz.getClass().getDeclaredField(fname);
                         field.setAccessible(true);
-                        logger.debug("Adding in a " + field.toGenericString());
+                        LOGGER.debug("Adding in a " + field.toGenericString());
                         if (FieldMapper.getRawCassandraType(field) == null) {
-                            logger.debug("Looking up " + field.getGenericType() + " with key " + FieldMapper.getJavaObject(
-                                cf.getType().getName().name(), cf.getName(), row) + " from " + dao.getKeySpace() + "." + tableName(field));
+                            LOGGER.debug("Looking up " + field.getGenericType() + " with key " + FieldMapper.getJavaObject(
+                                    cf.getType().getName().name(), cf.getName(), row) + " from " + dao.getKeySpace() + "." + tableName(field));
                             Object id = FieldMapper.getJavaObject(cf.getType().getName().name(), cf.getName(), row);
                             if (id != null) {
                                 Object o = ((GenericPojoGraphDao) dao).findChildRow(id, field.getType(), dao.getKeySpace(), tableName(field));
@@ -367,8 +381,8 @@ public class ReflectionUtils {
                         }
 
                         if ("list<blob>".equals(FieldMapper.getRawCassandraType(field))) {
-                            logger.debug("Looking up " + field.getGenericType() + " with key " + FieldMapper.getJavaObject(
-                                cf.getType().getName().name(), cf.getName(), row) + " from " + dao.getKeySpace() + "." + tableName(field));
+                            LOGGER.debug("Looking up " + field.getGenericType() + " with key " + FieldMapper.getJavaObject(
+                                    cf.getType().getName().name(), cf.getName(), row) + " from " + dao.getKeySpace() + "." + tableName(field));
 
                             Type type = field.getGenericType();
                             if (type instanceof ParameterizedType) {
@@ -378,9 +392,9 @@ public class ReflectionUtils {
                                 List entities = new ArrayList();
                                 for (Object id : idlist) {
                                     if (id != null) {
-                                        logger.debug("Find list item " + id + " from " + dao.getKeySpace() + "." + tableName(field));
+                                        LOGGER.debug("Find list item " + id + " from " + dao.getKeySpace() + "." + tableName(field));
                                         Object o = ((GenericPojoGraphDao) dao).findChildRow(id, entityClazz, dao.getKeySpace(), tableName(field));
-                                        logger.debug("Found entity " + o);
+                                        LOGGER.debug("Found entity " + o);
                                         entities.add(o);
                                     }
                                 }
@@ -390,8 +404,8 @@ public class ReflectionUtils {
                         }
 
                         if ("set<blob>".equals(FieldMapper.getRawCassandraType(field))) {
-                            logger.debug("Looking up " + field.getGenericType() + " with key " + FieldMapper.getJavaObject(
-                                cf.getType().getName().name(), cf.getName(), row) + " from " + dao.getKeySpace() + "." + tableName(field));
+                            LOGGER.debug("Looking up " + field.getGenericType() + " with key " + FieldMapper.getJavaObject(
+                                    cf.getType().getName().name(), cf.getName(), row) + " from " + dao.getKeySpace() + "." + tableName(field));
 
                             Type type = field.getGenericType();
                             if (type instanceof ParameterizedType) {
@@ -401,9 +415,9 @@ public class ReflectionUtils {
                                 Set entities = new HashSet();
                                 for (Object id : idlist) {
                                     if (id != null) {
-                                        logger.debug("Find set item " + id + " from " + dao.getKeySpace() + "." + tableName(field));
+                                        LOGGER.debug("Find set item " + id + " from " + dao.getKeySpace() + "." + tableName(field));
                                         Object o = ((GenericPojoGraphDao) dao).findChildRow(id, entityClazz, dao.getKeySpace(), tableName(field));
-                                        logger.debug("Found entity " + o);
+                                        LOGGER.debug("Found entity " + o);
                                         entities.add(o);
                                     }
                                 }
@@ -413,9 +427,9 @@ public class ReflectionUtils {
                         }
 
                         if (FieldMapper.getRawCassandraType(field) != null && FieldMapper.getRawCassandraType(field).toLowerCase().startsWith("map<")
-                            && FieldMapper.getRawCassandraType(field).toLowerCase().contains(",blob>")) {
-                            logger.debug("Looking up " + field.getGenericType() + " with key " + FieldMapper.getJavaObject(
-                                cf.getType().getName().name(), cf.getName(), row) + " from " + dao.getKeySpace() + "." + tableName(field));
+                                && FieldMapper.getRawCassandraType(field).toLowerCase().contains(",blob>")) {
+                            LOGGER.debug("Looking up " + field.getGenericType() + " with key " + FieldMapper.getJavaObject(
+                                    cf.getType().getName().name(), cf.getName(), row) + " from " + dao.getKeySpace() + "." + tableName(field));
 
                             Type type = field.getGenericType();
                             if (type instanceof ParameterizedType) {
@@ -427,11 +441,11 @@ public class ReflectionUtils {
                                     Map.Entry ent = (Map.Entry) ento;
                                     Object id = ent.getKey();
                                     if (id != null) {
-                                        logger.debug("Find map item " + id + "=>" + ent.getValue() + " from " + dao.getKeySpace() + "." + tableName(
-                                            field));
+                                        LOGGER.debug("Find map item " + id + "=>" + ent.getValue() + " from " + dao.getKeySpace() + "." + tableName(
+                                                field));
                                         Object o = ((GenericPojoGraphDao) dao).findChildRow(ent.getValue(), entityClazz, dao.getKeySpace(), tableName(
-                                            field));
-                                        logger.debug("Found entity " + o);
+                                                field));
+                                        LOGGER.debug("Found entity " + o);
                                         entities.put(id, o);
                                     }
                                 }
@@ -445,17 +459,70 @@ public class ReflectionUtils {
                         }
                     }
                 }
-            } catch (NoSuchFieldException e) {
-                logger.error("Trying to access a field that doesn't exist " + e);
-            } catch (IllegalAccessException e) {
-                logger.error("Access problem " + e);
-            } catch (ClassNotFoundException e) {
-                logger.error("Class not found " + e);
+            }
+            catch (NoSuchFieldException e) {
+                LOGGER.error("Trying to access a field that doesn't exist " + e);
+            }
+            catch (IllegalAccessException e) {
+                LOGGER.error("Access problem " + e);
+            }
+            catch (ClassNotFoundException e) {
+                LOGGER.error("Class not found " + e);
             }
         }
     }
 
     public static Class typeToClass(Type type, ClassLoader cl) throws ClassNotFoundException {
         return cl.loadClass(type.toString().split(" ")[1]);
+    }
+
+
+    public static Object getFieldValue(Field field, Object target) {
+        try {
+            LOGGER.debug("Getting field {} value from object {} (type={})...", field.getName(), target, getClassName(target));
+            return FieldUtils.readField(field, target, true);
+        }
+        catch (IllegalAccessException e) {
+            throw new HecateException(String.format("Unable to read field %s value from object of type %s.", field.getName(), getClassName(target)), e);
+        }
+    }
+
+    public static void setFieldValue(Field field, Object target, Object fieldValue) {
+        try {
+            LOGGER.debug("Setting field {} to value {} on object {} (type={})...", field.getName(), fieldValue, target, getClassName(target));
+            FieldUtils.writeField(field, target, fieldValue, true);
+        }
+        catch (IllegalAccessException e) {
+            throw new HecateException(String.format("Unable to write field %s value on object of type %s.", field.getName(), getClassName(target)), e);
+        }
+    }
+
+    private static String getClassName(Object target) {
+        return target == null ? "null" : target.getClass().getCanonicalName();
+    }
+
+    public static List<Field> getFields(Class<?> pojoType) {
+        List<Field> fields = new LinkedList<>();
+        collectFields(pojoType, fields);
+        return fields;
+    }
+
+    private static void collectFields(Class<?> type, List<Field> fields) {
+        final Field[] declaredFields = type.getDeclaredFields();
+        for (Field declaredField : declaredFields) {
+            if (isPersistable(declaredField)) {
+                fields.add(declaredField);
+            }
+        }
+        if (type.getSuperclass() != null) {
+            collectFields(type.getSuperclass(), fields);
+        }
+    }
+
+    public static boolean isPersistable(Field field) {
+        final int mods = field.getModifiers();
+        return !(Modifier.isFinal(mods) ||
+                Modifier.isTransient(mods) ||
+                Modifier.isStatic(mods));
     }
 }

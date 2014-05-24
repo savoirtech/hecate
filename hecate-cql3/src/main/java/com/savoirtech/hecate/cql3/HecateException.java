@@ -16,10 +16,18 @@
 
 package com.savoirtech.hecate.cql3;
 
-public class HecateException extends Exception {
+public class HecateException extends RuntimeException {
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
     public HecateException(String s) {super(s);}
 
     public HecateException(Exception e) {
         super(e);
+    }
+
+    public HecateException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

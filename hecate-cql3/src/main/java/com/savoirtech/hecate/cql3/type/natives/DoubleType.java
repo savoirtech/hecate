@@ -10,10 +10,9 @@ public class DoubleType extends NullSafeColumnType<Double> {
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
-    public DataType.Name getCassandraType() {
-        return DataType.Name.DOUBLE;
+    public DataType getDataType() {
+        return DataType.cdouble();
     }
 
     @Override

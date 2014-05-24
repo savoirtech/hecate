@@ -10,10 +10,9 @@ public class IntegerType extends NullSafeColumnType<Integer> {
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
-    public DataType.Name getCassandraType() {
-        return DataType.Name.INT;
+    public DataType getDataType() {
+        return DataType.cint();
     }
 
     @Override

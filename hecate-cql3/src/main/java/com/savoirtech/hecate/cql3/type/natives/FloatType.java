@@ -10,10 +10,9 @@ public class FloatType extends NullSafeColumnType<Float> {
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
-    public DataType.Name getCassandraType() {
-        return DataType.Name.FLOAT;
+    public DataType getDataType() {
+        return DataType.cfloat();
     }
 
     @Override

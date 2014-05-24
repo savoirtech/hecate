@@ -6,14 +6,15 @@ import com.datastax.driver.core.Row;
 
 
 public interface ColumnType<T> {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
     /**
-     * Sets the specified parameter value.  Subclasses must perform the conversion to a Cassandra-supported type in
-     * order to call the proper setter on the {@link com.datastax.driver.core.BoundStatement}.
-     * @param statement the statement
-     * @param parameterIndex the parameter index
-     * @param value the parameter value
+     * Returns the {@link com.datastax.driver.core.DataType} for this column.
+     * @return the {@link com.datastax.driver.core.DataType} for this column
      */
-    void setValue(BoundStatement statement, int parameterIndex, T value);
+    DataType getDataType();
 
     /**
      * Gets the specified column value.  Subclasses must perform the conversion from the Cassandra-supported type
@@ -23,10 +24,13 @@ public interface ColumnType<T> {
      * @return the column value
      */
     T getValue(Row row, int columnIndex);
-
+    
     /**
-     * Returns the Cassandra-supported type used by this column type.
-     * @return the Cassandra-supported type used by this column type
+     * Sets the specified parameter value.  Subclasses must perform the conversion to a Cassandra-supported type in
+     * order to call the proper setter on the {@link com.datastax.driver.core.BoundStatement}.
+     * @param statement the statement
+     * @param parameterIndex the parameter index
+     * @param value the parameter value
      */
-    DataType.Name  getCassandraType();
+    void setValue(BoundStatement statement, int parameterIndex, T value);
 }

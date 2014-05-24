@@ -12,8 +12,8 @@ public class VarcharType extends NullSafeColumnType<String> {
 
 
     @Override
-    public DataType.Name getCassandraType() {
-        return DataType.Name.VARCHAR;
+    public DataType getDataType() {
+        return DataType.varchar();
     }
 
     @Override

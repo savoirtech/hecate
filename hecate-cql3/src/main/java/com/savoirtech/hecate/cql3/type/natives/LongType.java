@@ -11,8 +11,8 @@ public class LongType extends NullSafeColumnType<Long> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public DataType.Name getCassandraType() {
-        return DataType.Name.BIGINT;
+    public DataType getDataType() {
+        return DataType.bigint();
     }
 
     @Override

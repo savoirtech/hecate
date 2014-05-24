@@ -13,8 +13,8 @@ public class DateType extends NullSafeColumnType<Date> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public DataType.Name getCassandraType() {
-        return DataType.Name.TIMESTAMP;
+    public DataType getDataType() {
+        return DataType.timestamp();
     }
 
     @Override

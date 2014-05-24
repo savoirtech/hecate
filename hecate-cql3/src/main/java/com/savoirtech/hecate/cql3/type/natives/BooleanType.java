@@ -12,8 +12,8 @@ public class BooleanType extends NullSafeColumnType<Boolean> {
 
 
     @Override
-    public DataType.Name getCassandraType() {
-        return DataType.Name.BOOLEAN;
+    public DataType getDataType() {
+        return DataType.cboolean();
     }
 
     @Override

@@ -1,0 +1,23 @@
+package com.savoirtech.hecate.cql3.dao.def;
+
+import com.savoirtech.hecate.cql3.dao.PojoDao;
+import com.savoirtech.hecate.cql3.entities.SimplePojo;
+import com.savoirtech.hecate.cql3.test.CassandraTestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+public class DefaultPojoDaoTest extends CassandraTestCase {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Test
+    public void testSave() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<Object, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        dao.save(pojo);
+    }
+}

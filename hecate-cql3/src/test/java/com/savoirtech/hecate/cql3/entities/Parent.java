@@ -31,19 +31,19 @@ public class Parent {
     @IdColumn
     long id;
 
-    @TableName(name = "child")
+    @TableName("child")
     Child child;
 
-    @TableName(name = "childlist")
+    @TableName("childlist")
     List<Child> childList = new ArrayList<>();
 
-    @TableName(name = "childset")
+    @TableName("childset")
     Set<Child> childSet = new HashSet<>();
 
-    @TableName(name = "childmap")
+    @TableName("childmap")
     Map<String, Child> childMap = new HashMap<>();
 
-    @TableName(name = "longchildmap")
+    @TableName("longchildmap")
     Map<Long, Child> longChildMap = new HashMap<>();
 
     public long getId() {

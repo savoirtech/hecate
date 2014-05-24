@@ -12,10 +12,9 @@ public class UuidType extends NullSafeColumnType<UUID> {
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
-    public DataType.Name getCassandraType() {
-        return DataType.Name.UUID;
+    public DataType getDataType() {
+        return DataType.uuid();
     }
 
     @Override
