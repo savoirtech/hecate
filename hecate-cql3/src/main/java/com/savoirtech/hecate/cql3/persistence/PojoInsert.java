@@ -39,6 +39,6 @@ public class PojoInsert<P> extends PojoPersistenceStatement<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     public void execute(P pojo) {
-        execute(collectValues(pojo, pojoDescriptor.getColumns()));
+        execute(cassandraValues(pojo, pojoDescriptor.getColumns()));
     }
 }

@@ -25,4 +25,17 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertEquals("name", found.getName());
         assertEquals(pojo.getId(), found.getId());
     }
+
+
+    @Test
+    public void testDelete() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        dao.save(pojo);
+        assertNotNull(dao.findByKey(pojo.getId()));
+        dao.delete(pojo.getId());
+        assertNull(dao.findByKey(pojo.getId()));
+    }
 }

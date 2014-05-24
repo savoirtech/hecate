@@ -57,7 +57,19 @@ public class PojoPersistenceStatement<P> {
         return session.execute(preparedStatement.bind(parameters.toArray(new Object[parameters.size()])));
     }
 
-    protected List<Object> collectValues(P pojo, List<ColumnDescriptor> descriptors) {
+    protected List<ColumnDescriptor> allColumns() {
+        return pojoDescriptor.getColumns();
+    }
+
+    protected ColumnDescriptor identifierColumn() {
+        return pojoDescriptor.getIdentifierColumn();
+    }
+
+    protected Object cassandraValue(P pojo, ColumnDescriptor descriptor) {
+        return descriptor.getMapping().fieldCassandraValue(pojo);
+    }
+
+    protected List<Object> cassandraValues(P pojo, List<ColumnDescriptor> descriptors) {
         final List<Object> values = new ArrayList<>(descriptors.size());
         for (ColumnDescriptor columnDescriptor : descriptors) {
             values.add(columnDescriptor.getMapping().fieldCassandraValue(pojo));

@@ -7,4 +7,6 @@ public interface PojoDao<K, P> {
 
     P findByKey(K key);
     void save(P pojo);
+
+    void delete(K key);
 }
