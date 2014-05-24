@@ -1,7 +1,6 @@
 package com.savoirtech.hecate.cql3.mapping.map;
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
-import com.savoirtech.hecate.cql3.dao.PojoDaoFactory;
 import com.savoirtech.hecate.cql3.mapping.FieldMapping;
 import com.savoirtech.hecate.cql3.mapping.FieldMappingProvider;
 import com.savoirtech.hecate.cql3.type.ColumnType;
@@ -31,7 +30,7 @@ public class MapFieldMappingProvider implements FieldMappingProvider {
 
     @Override
     @SuppressWarnings("unchecked")
-    public FieldMapping createFieldMapping(Field field, PojoDaoFactory factory) {
+    public FieldMapping createFieldMapping(Field field) {
         return new MapFieldMapping(field,
                 (ColumnType<Object>) registry.getColumnType(keyType(field)),
                 (ColumnType<Object>) registry.getColumnType(valueType(field)));
