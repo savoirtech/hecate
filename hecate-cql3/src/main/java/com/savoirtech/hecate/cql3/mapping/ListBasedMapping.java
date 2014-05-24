@@ -53,8 +53,8 @@ public abstract class ListBasedMapping extends AbstractFieldMapping {
     }
 
     @Override
-    public Object rawCassandraValue(Object value) {
-        return value == null ? null : toCassandraList(value);
+    public Object rawCassandraValue(Object rawValue) {
+        return rawValue == null ? null : toCassandraList(rawValue);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

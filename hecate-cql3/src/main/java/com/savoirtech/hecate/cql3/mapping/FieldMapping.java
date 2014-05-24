@@ -14,5 +14,5 @@ public interface FieldMapping {
 
     void populateFromRow(Object root, Row row, int columnIndex);
 
-    Object rawCassandraValue(Object value);
+    Object rawCassandraValue(Object rawValue);
 }

@@ -44,253 +44,43 @@ import java.util.Map;
 import java.util.Set;
 
 public class ReflectionUtils {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ReflectionUtils.class);
     private static final TypeVariable<Class<List>> LIST_ELEMENT_TYPE_VAR = List.class.getTypeParameters()[0];
     private static final TypeVariable<Class<Set>> SET_ELEMENT_TYPE_VAR = Set.class.getTypeParameters()[0];
+    private static final TypeVariable<Class<Map>> MAP_KEY_TYPE_VAR = Map.class.getTypeParameters()[0];
+    private static final TypeVariable<Class<Map>> MAP_VALUE_TYPE_VAR = Map.class.getTypeParameters()[1];
 
-    public static <K> String getIdName(Class clazz) {
+//----------------------------------------------------------------------------------------------------------------------
+// Static Methods
+//----------------------------------------------------------------------------------------------------------------------
 
-        for (Field fied : getFieldsUpTo(clazz, null)) {
-
-            if (fied.isAnnotationPresent(IdColumn.class)) {
-                return fied.getName();
+    private static void collectFields(Class<?> type, List<Field> fields) {
+        final Field[] declaredFields = type.getDeclaredFields();
+        for (Field declaredField : declaredFields) {
+            if (isPersistable(declaredField)) {
+                fields.add(declaredField);
             }
         }
-
-        return null;
-    }
-
-    public static Field getFieldType(String id) {
-        return null;
+        if (type.getSuperclass() != null) {
+            collectFields(type.getSuperclass(), fields);
+        }
     }
 
     public static <K> K extractFieldValue(String fieldName, Field fieldType, Row row) {
         return null;
     }
 
-    public static class DataDescriptor {
-        String tableName;
-        String id;
-
-        Object[] values;
-
-        public Object[] getValues() {
-            return values;
+    public static String[] fieldNames(Class mappingClazz) {
+        List<String> fields = new ArrayList<>();
+        for (Field field : getFieldsUpTo(mappingClazz, null)) {
+            fields.add(field.getName());
         }
-
-        public String getTableName() {
-            return tableName;
-        }
-
-        @Override
-        public String toString() {
-            return "DataDescriptor{" +
-                    "tableName='" + tableName + '\'' +
-                    ", id='" + id + '\'' +
-                    ", values=" + Arrays.toString(values) +
-                    '}';
-        }
-
-        public void setTableName(String tableName) {
-            this.tableName = tableName;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public void setValues(Object[] values) {
-            this.values = values;
-        }
+        return fields.toArray(new String[fields.size()]);
     }
-
-    public static <T> Map<Class, Set<DataDescriptor>> valuesForClasses(Map<Class, Set<DataDescriptor>> values, String originalTableName,
-                                                                       T pojo) throws HecateException {
-
-        List vals = new ArrayList();
-
-        DataDescriptor dataDescriptor = new DataDescriptor();
-        dataDescriptor.tableName = originalTableName;
-
-        for (Field field : getFieldsUpTo(pojo.getClass(), null)) {
-            try {
-
-                field.setAccessible(true);
-
-                String csType = FieldMapper.getRawCassandraType(field);
-                boolean fieldProcessed = false;
-                if (csType == null) {
-                    LOGGER.debug("Encountered an Object, we need to convert this object to a new insert value.");
-
-                    Object fieldVal = field.get(pojo);
-                    String id = ReflectionUtils.getIdName(field.getType());
-                    dataDescriptor.tableName = tableName(field);
-
-                    if (fieldVal != null) {
-                        for (Field nestedF : getFieldsUpTo(fieldVal.getClass(), null)) {
-                            nestedF.setAccessible(true);
-                            if (id == null) {
-                                throw new HecateException("Id field not found on object " + fieldVal);
-                            }
-                            if (id.equals(nestedF.getName())) {
-                                vals.add(nestedF.get(fieldVal));
-                                fieldProcessed = true;
-                                valuesForClasses(values, dataDescriptor.getTableName(), fieldVal);
-                            }
-                        }
-                    } else {
-                        vals.add(null);
-                        fieldProcessed = true;
-                    }
-                }
-
-                if ("list<blob>".equalsIgnoreCase(csType)) {
-
-                    LOGGER.debug("Encountered a List, checking generic type");
-                    dataDescriptor.tableName = tableName(field);
-                    List fieldVal = (List) field.get(pojo);
-                    List rawList = new ArrayList();
-                    LOGGER.debug("List " + fieldVal);
-                    for (Object o : fieldVal) {
-                        LOGGER.debug("Object class " + o.getClass());
-                        String id = ReflectionUtils.getIdName(o.getClass());
-                        for (Field nestedF : getFieldsUpTo(o.getClass(), null)) {
-                            LOGGER.debug("Parsing list item " + nestedF);
-                            nestedF.setAccessible(true);
-                            if (id == null) {
-                                throw new HecateException("Id field not found on list item " + fieldVal);
-                            }
-                            if (id.equals(nestedF.getName())) {
-                                LOGGER.debug("Field to use " + field);
-                                rawList.add(nestedF.get(o));
-                                valuesForClasses(values, dataDescriptor.getTableName(), o);
-                            }
-                        }
-                    }
-
-                    vals.add(rawList);
-                    fieldProcessed = true;
-                }
-
-                if ("set<blob>".equalsIgnoreCase(csType)) {
-                    LOGGER.debug("Encountered a Set, checking generic type");
-                    dataDescriptor.tableName = tableName(field);
-                    Set fieldVal = (Set) field.get(pojo);
-
-                    Set rawSet = new HashSet();
-                    for (Object o : fieldVal) {
-                        LOGGER.debug("Object class " + o.getClass());
-                        String id = ReflectionUtils.getIdName(o.getClass());
-                        for (Field nestedF : getFieldsUpTo(o.getClass(), null)) {
-                            nestedF.setAccessible(true);
-                            if (id == null) {
-                                throw new HecateException("Id field not found on set item " + fieldVal);
-                            }
-                            if (id.equals(nestedF.getName())) {
-                                rawSet.add(nestedF.get(o));
-                                valuesForClasses(values, dataDescriptor.getTableName(), o);
-                            }
-                        }
-                    }
-                    vals.add(rawSet);
-                    fieldProcessed = true;
-                }
-
-                if (csType != null && csType.toLowerCase().contains("map<") && csType.toLowerCase().contains(",blob>")) {
-                    LOGGER.debug("Encountered a Map, checking generic type");
-                    dataDescriptor.tableName = tableName(field);
-                    Map fieldVal = (Map) field.get(pojo);
-
-                    Map rawMap = new HashMap();
-                    if (fieldVal != null) {
-                        for (Object en : fieldVal.entrySet()) {
-                            Map.Entry o = (Map.Entry) en;
-                            LOGGER.debug("Object class " + o.getValue());
-                            String id = ReflectionUtils.getIdName(o.getValue().getClass());
-                            if (id == null) {
-                                throw new HecateException("Id field not found on set item " + fieldVal);
-                            }
-                            for (Field nestedF : getFieldsUpTo(o.getValue().getClass(), null)) {
-                                nestedF.setAccessible(true);
-
-                                if (id.equals(nestedF.getName())) {
-                                    rawMap.put(o.getKey(), nestedF.get(o.getValue()));
-                                    valuesForClasses(values, dataDescriptor.getTableName(), o.getValue());
-                                }
-                            }
-                        }
-                    }
-                    vals.add(rawMap);
-                    fieldProcessed = true;
-                }
-
-                if (!fieldProcessed) {
-                    Object value = field.get(pojo);
-                    vals.add(value);
-                }
-            }
-            catch (IllegalAccessException e) {
-                LOGGER.error("Could not access field " + e);
-            }
-        }
-        dataDescriptor.values = vals.toArray(new Object[vals.size()]);
-        if (values.containsKey(pojo.getClass()) && values.get(pojo.getClass()) == null || !values.containsKey(pojo.getClass())) {
-            values.put(pojo.getClass(), new HashSet<DataDescriptor>());
-        }
-        values.get(pojo.getClass()).add(dataDescriptor);
-
-        for (Map.Entry<Class, Set<ReflectionUtils.DataDescriptor>> entry : values.entrySet()) {
-            for (DataDescriptor descriptor : entry.getValue()) {
-                LOGGER.debug(dataDescriptor.getTableName() + "=>" + Arrays.asList(descriptor.getValues()));
-            }
-        }
-        return values;
-    }
-
-    public static Class getIdType(Class instanceClazz) {
-        for (Field fied : getFieldsUpTo(instanceClazz, null)) {
-
-            if (fied.isAnnotationPresent(IdColumn.class)) {
-                return fied.getType();
-            }
-        }
-
-        return null;
-    }
-
-    public static String tableName(Field field) {
-        if (field.isAnnotationPresent(TableName.class)) {
-            return field.getAnnotation(TableName.class).value();
-        } else {
-            return field.getName();
-        }
-    }
-
-    public static Class<?> setElementType(Type type) {
-        final Map<TypeVariable<?>, Type> arguments = TypeUtils.getTypeArguments(type, Set.class);
-        for (Map.Entry<TypeVariable<?>, Type> entry : arguments.entrySet()) {
-            if (SET_ELEMENT_TYPE_VAR.equals(entry.getKey())) {
-                return TypeUtils.getRawType(entry.getValue(), type);
-            }
-        }
-        return null;
-    }
-
-    public static Class<?> listElementType(Type type) {
-        final Map<TypeVariable<?>, Type> arguments = TypeUtils.getTypeArguments(type, List.class);
-        for (Map.Entry<TypeVariable<?>, Type> entry : arguments.entrySet()) {
-            if (LIST_ELEMENT_TYPE_VAR.equals(entry.getKey())) {
-                return TypeUtils.getRawType(entry.getValue(), type);
-            }
-        }
-        return null;
-    }
-
 
     public static <T> Object[] fieldValues(T pojo) {
         List vals = new ArrayList();
@@ -309,6 +99,62 @@ public class ReflectionUtils {
         return vals.toArray(new Object[vals.size()]);
     }
 
+    private static String getClassName(Object target) {
+        return target == null ? "null" : target.getClass().getCanonicalName();
+    }
+
+    public static Field getFieldType(String id) {
+        return null;
+    }
+
+    public static Object getFieldValue(Field field, Object target) {
+        try {
+            LOGGER.debug("Getting field {} value from object {} (type={})...", field.getName(), target, getClassName(target));
+            return FieldUtils.readField(field, target, true);
+        }
+        catch (IllegalAccessException e) {
+            throw new HecateException(String.format("Unable to read field %s value from object of type %s.", field.getName(), getClassName(target)), e);
+        }
+    }
+
+    public static List<Field> getFields(Class<?> pojoType) {
+        List<Field> fields = new LinkedList<>();
+        collectFields(pojoType, fields);
+        return fields;
+    }
+
+    public static Iterable<Field> getFieldsUpTo(Class<?> startClass, Class<?> exclusiveParent) {
+        List<Field> currentClassFields = Lists.newArrayList(startClass.getDeclaredFields());
+        Class<?> parentClass = startClass.getSuperclass();
+
+        if (parentClass != null && (exclusiveParent == null || !(parentClass.equals(exclusiveParent)))) {
+            List<Field> parentClassFields = (List<Field>) getFieldsUpTo(parentClass, exclusiveParent);
+            currentClassFields.addAll(parentClassFields);
+        }
+
+        return currentClassFields;
+    }
+
+    public static <K> String getIdName(Class clazz) {
+        for (Field fied : getFieldsUpTo(clazz, null)) {
+            if (fied.isAnnotationPresent(IdColumn.class)) {
+                return fied.getName();
+            }
+        }
+
+        return null;
+    }
+
+    public static Class getIdType(Class instanceClazz) {
+        for (Field fied : getFieldsUpTo(instanceClazz, null)) {
+            if (fied.isAnnotationPresent(IdColumn.class)) {
+                return fied.getType();
+            }
+        }
+
+        return null;
+    }
+
     public static <P> P instantiate(Class<P> type) {
         try {
             return type.newInstance();
@@ -319,6 +165,40 @@ public class ReflectionUtils {
         catch (IllegalAccessException e) {
             throw new HecateException(String.format("Default constructor not accessible for class %s.", type.getName()), e);
         }
+    }
+
+    public static boolean isPersistable(Field field) {
+        final int mods = field.getModifiers();
+        return !(Modifier.isFinal(mods) ||
+                Modifier.isTransient(mods) ||
+                Modifier.isStatic(mods));
+    }
+
+    public static Class<?> mapKeyType(Type type) {
+        return findTypeVariable(type, Map.class, MAP_KEY_TYPE_VAR);
+    }
+
+    public static Class<?> mapValueType(Type type) {
+        return findTypeVariable(type, Map.class, MAP_VALUE_TYPE_VAR);
+    }
+
+    private static <T> Class<?> findTypeVariable(Type type, Class<T> declaringClass, TypeVariable<Class<T>> target) {
+        final Map<TypeVariable<?>, Type> arguments = TypeUtils.getTypeArguments(type, declaringClass);
+        for (Map.Entry<TypeVariable<?>, Type> entry : arguments.entrySet()) {
+            if (target.equals(entry.getKey())) {
+                return TypeUtils.getRawType(entry.getValue(), type);
+            }
+        }
+        return null;
+    }
+
+    public static Class<?> listElementType(Type type) {
+        return findTypeVariable(type, List.class, LIST_ELEMENT_TYPE_VAR);
+    }
+
+    @SuppressWarnings("unchecked")
+    static <T> T[] newArray(Class<T> type, int length) {
+        return (T[]) Array.newInstance(type, length);
     }
 
     public static <T> Object[] pojofieldValues(T pojo) {
@@ -341,34 +221,7 @@ public class ReflectionUtils {
         return vals.toArray(new Object[vals.size()]);
     }
 
-    public static String[] fieldNames(Class mappingClazz) {
-        List<String> fields = new ArrayList<>();
-        for (Field field : getFieldsUpTo(mappingClazz, null)) {
-            fields.add(field.getName());
-        }
-        return fields.toArray(new String[fields.size()]);
-    }
-
-    @SuppressWarnings("unchecked")
-    static <T> T[] newArray(Class<T> type, int length) {
-        return (T[]) Array.newInstance(type, length);
-    }
-
-    public static Iterable<Field> getFieldsUpTo(Class<?> startClass, Class<?> exclusiveParent) {
-
-        List<Field> currentClassFields = Lists.newArrayList(startClass.getDeclaredFields());
-        Class<?> parentClass = startClass.getSuperclass();
-
-        if (parentClass != null && (exclusiveParent == null || !(parentClass.equals(exclusiveParent)))) {
-            List<Field> parentClassFields = (List<Field>) getFieldsUpTo(parentClass, exclusiveParent);
-            currentClassFields.addAll(parentClassFields);
-        }
-
-        return currentClassFields;
-    }
-
     public static <T> void populate(T clz, Row row) {
-
         for (ColumnDefinitions.Definition cf : row.getColumnDefinitions()) {
             LOGGER.debug("Column " + cf.getType().asJavaClass());
 
@@ -392,7 +245,6 @@ public class ReflectionUtils {
     }
 
     public static <T> void populateGraph(T clz, Row row, GenericCqlDao dao) throws HecateException {
-
         for (ColumnDefinitions.Definition cf : row.getColumnDefinitions()) {
             LOGGER.debug("Column " + cf.getType().asJavaClass());
 
@@ -507,19 +359,9 @@ public class ReflectionUtils {
         }
     }
 
-    public static Class typeToClass(Type type, ClassLoader cl) throws ClassNotFoundException {
-        return cl.loadClass(type.toString().split(" ")[1]);
-    }
+    public static Class<?> setElementType(Type type) {
+        return findTypeVariable(type, Set.class, SET_ELEMENT_TYPE_VAR);
 
-
-    public static Object getFieldValue(Field field, Object target) {
-        try {
-            LOGGER.debug("Getting field {} value from object {} (type={})...", field.getName(), target, getClassName(target));
-            return FieldUtils.readField(field, target, true);
-        }
-        catch (IllegalAccessException e) {
-            throw new HecateException(String.format("Unable to read field %s value from object of type %s.", field.getName(), getClassName(target)), e);
-        }
     }
 
     public static void setFieldValue(Field field, Object target, Object fieldValue) {
@@ -532,32 +374,199 @@ public class ReflectionUtils {
         }
     }
 
-    private static String getClassName(Object target) {
-        return target == null ? "null" : target.getClass().getCanonicalName();
+    public static String tableName(Field field) {
+        if (field.isAnnotationPresent(TableName.class)) {
+            return field.getAnnotation(TableName.class).value();
+        } else {
+            return field.getName();
+        }
     }
 
-    public static List<Field> getFields(Class<?> pojoType) {
-        List<Field> fields = new LinkedList<>();
-        collectFields(pojoType, fields);
-        return fields;
+    public static Class typeToClass(Type type, ClassLoader cl) throws ClassNotFoundException {
+        return cl.loadClass(type.toString().split(" ")[1]);
     }
 
-    private static void collectFields(Class<?> type, List<Field> fields) {
-        final Field[] declaredFields = type.getDeclaredFields();
-        for (Field declaredField : declaredFields) {
-            if (isPersistable(declaredField)) {
-                fields.add(declaredField);
+    public static <T> Map<Class, Set<DataDescriptor>> valuesForClasses(Map<Class, Set<DataDescriptor>> values, String originalTableName,
+                                                                       T pojo) throws HecateException {
+        List vals = new ArrayList();
+
+        DataDescriptor dataDescriptor = new DataDescriptor();
+        dataDescriptor.tableName = originalTableName;
+
+        for (Field field : getFieldsUpTo(pojo.getClass(), null)) {
+            try {
+                field.setAccessible(true);
+
+                String csType = FieldMapper.getRawCassandraType(field);
+                boolean fieldProcessed = false;
+                if (csType == null) {
+                    LOGGER.debug("Encountered an Object, we need to convert this object to a new insert value.");
+
+                    Object fieldVal = field.get(pojo);
+                    String id = ReflectionUtils.getIdName(field.getType());
+                    dataDescriptor.tableName = tableName(field);
+
+                    if (fieldVal != null) {
+                        for (Field nestedF : getFieldsUpTo(fieldVal.getClass(), null)) {
+                            nestedF.setAccessible(true);
+                            if (id == null) {
+                                throw new HecateException("Id field not found on object " + fieldVal);
+                            }
+                            if (id.equals(nestedF.getName())) {
+                                vals.add(nestedF.get(fieldVal));
+                                fieldProcessed = true;
+                                valuesForClasses(values, dataDescriptor.getTableName(), fieldVal);
+                            }
+                        }
+                    } else {
+                        vals.add(null);
+                        fieldProcessed = true;
+                    }
+                }
+
+                if ("list<blob>".equalsIgnoreCase(csType)) {
+                    LOGGER.debug("Encountered a List, checking generic type");
+                    dataDescriptor.tableName = tableName(field);
+                    List fieldVal = (List) field.get(pojo);
+                    List rawList = new ArrayList();
+                    LOGGER.debug("List " + fieldVal);
+                    for (Object o : fieldVal) {
+                        LOGGER.debug("Object class " + o.getClass());
+                        String id = ReflectionUtils.getIdName(o.getClass());
+                        for (Field nestedF : getFieldsUpTo(o.getClass(), null)) {
+                            LOGGER.debug("Parsing list item " + nestedF);
+                            nestedF.setAccessible(true);
+                            if (id == null) {
+                                throw new HecateException("Id field not found on list item " + fieldVal);
+                            }
+                            if (id.equals(nestedF.getName())) {
+                                LOGGER.debug("Field to use " + field);
+                                rawList.add(nestedF.get(o));
+                                valuesForClasses(values, dataDescriptor.getTableName(), o);
+                            }
+                        }
+                    }
+
+                    vals.add(rawList);
+                    fieldProcessed = true;
+                }
+
+                if ("set<blob>".equalsIgnoreCase(csType)) {
+                    LOGGER.debug("Encountered a Set, checking generic type");
+                    dataDescriptor.tableName = tableName(field);
+                    Set fieldVal = (Set) field.get(pojo);
+
+                    Set rawSet = new HashSet();
+                    for (Object o : fieldVal) {
+                        LOGGER.debug("Object class " + o.getClass());
+                        String id = ReflectionUtils.getIdName(o.getClass());
+                        for (Field nestedF : getFieldsUpTo(o.getClass(), null)) {
+                            nestedF.setAccessible(true);
+                            if (id == null) {
+                                throw new HecateException("Id field not found on set item " + fieldVal);
+                            }
+                            if (id.equals(nestedF.getName())) {
+                                rawSet.add(nestedF.get(o));
+                                valuesForClasses(values, dataDescriptor.getTableName(), o);
+                            }
+                        }
+                    }
+                    vals.add(rawSet);
+                    fieldProcessed = true;
+                }
+
+                if (csType != null && csType.toLowerCase().contains("map<") && csType.toLowerCase().contains(",blob>")) {
+                    LOGGER.debug("Encountered a Map, checking generic type");
+                    dataDescriptor.tableName = tableName(field);
+                    Map fieldVal = (Map) field.get(pojo);
+
+                    Map rawMap = new HashMap();
+                    if (fieldVal != null) {
+                        for (Object en : fieldVal.entrySet()) {
+                            Map.Entry o = (Map.Entry) en;
+                            LOGGER.debug("Object class " + o.getValue());
+                            String id = ReflectionUtils.getIdName(o.getValue().getClass());
+                            if (id == null) {
+                                throw new HecateException("Id field not found on set item " + fieldVal);
+                            }
+                            for (Field nestedF : getFieldsUpTo(o.getValue().getClass(), null)) {
+                                nestedF.setAccessible(true);
+
+                                if (id.equals(nestedF.getName())) {
+                                    rawMap.put(o.getKey(), nestedF.get(o.getValue()));
+                                    valuesForClasses(values, dataDescriptor.getTableName(), o.getValue());
+                                }
+                            }
+                        }
+                    }
+                    vals.add(rawMap);
+                    fieldProcessed = true;
+                }
+
+                if (!fieldProcessed) {
+                    Object value = field.get(pojo);
+                    vals.add(value);
+                }
+            }
+            catch (IllegalAccessException e) {
+                LOGGER.error("Could not access field " + e);
             }
         }
-        if (type.getSuperclass() != null) {
-            collectFields(type.getSuperclass(), fields);
+        dataDescriptor.values = vals.toArray(new Object[vals.size()]);
+        if (values.containsKey(pojo.getClass()) && values.get(pojo.getClass()) == null || !values.containsKey(pojo.getClass())) {
+            values.put(pojo.getClass(), new HashSet<DataDescriptor>());
         }
+        values.get(pojo.getClass()).add(dataDescriptor);
+
+        for (Map.Entry<Class, Set<ReflectionUtils.DataDescriptor>> entry : values.entrySet()) {
+            for (DataDescriptor descriptor : entry.getValue()) {
+                LOGGER.debug(dataDescriptor.getTableName() + "=>" + Arrays.asList(descriptor.getValues()));
+            }
+        }
+        return values;
     }
 
-    public static boolean isPersistable(Field field) {
-        final int mods = field.getModifiers();
-        return !(Modifier.isFinal(mods) ||
-                Modifier.isTransient(mods) ||
-                Modifier.isStatic(mods));
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    public static class DataDescriptor {
+        String tableName;
+        String id;
+
+        Object[] values;
+
+        public Object[] getValues() {
+            return values;
+        }
+
+        public String getTableName() {
+            return tableName;
+        }
+
+        @Override
+        public String toString() {
+            return "DataDescriptor{" +
+                    "tableName='" + tableName + '\'' +
+                    ", id='" + id + '\'' +
+                    ", values=" + Arrays.toString(values) +
+                    '}';
+        }
+
+        public void setTableName(String tableName) {
+            this.tableName = tableName;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public void setValues(Object[] values) {
+            this.values = values;
+        }
     }
 }
