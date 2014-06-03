@@ -54,12 +54,31 @@ public class ReflectionUtils {
         return null;
     }
 
+    public static <K> Object getIdValue(Class clazz, Object o) {
+
+        for (Field fied : getFieldsUpTo(clazz, null)) {
+
+            if (fied.isAnnotationPresent(IdColumn.class)) {
+                fied.setAccessible(true);
+                try {
+                    return fied.get(o);
+                } catch (IllegalAccessException e) {
+                    logger.error("Cannot get to field " + e);
+                }
+            }
+        }
+
+        return null;
+    }
+
     public static Field getFieldType(String id) {return null;}
 
     public static <K> K extractFieldValue(String fieldName, Field fieldType, Row row) {return null;}
 
     public static class DataDescriptor {
         String tableName;
+        String id;
+
         Object[] values;
 
         public Object[] getValues() {
@@ -74,13 +93,30 @@ public class ReflectionUtils {
         public String toString() {
             return "DataDescriptor{" +
                 "tableName='" + tableName + '\'' +
+                ", id='" + id + '\'' +
                 ", values=" + Arrays.toString(values) +
                 '}';
+        }
+
+        public void setTableName(String tableName) {
+            this.tableName = tableName;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public void setValues(Object[] values) {
+            this.values = values;
         }
     }
 
     public static <T> Map<Class, Set<DataDescriptor>> valuesForClasses(Map<Class, Set<DataDescriptor>> values, String originalTableName,
-                                                                        T pojo) throws HecateException {
+                                                                       T pojo) throws HecateException {
 
         List vals = new ArrayList();
 
@@ -109,8 +145,8 @@ public class ReflectionUtils {
                             }
                             if (id.equals(nestedF.getName())) {
                                 vals.add(nestedF.get(fieldVal));
-                                valuesForClasses(values, dataDescriptor.getTableName(), fieldVal);
                                 fieldProcessed = true;
+                                valuesForClasses(values, dataDescriptor.getTableName(), fieldVal);
                             }
                         }
                     } else {
@@ -138,7 +174,6 @@ public class ReflectionUtils {
                             if (id.equals(nestedF.getName())) {
                                 logger.debug("Field to use " + field);
                                 rawList.add(nestedF.get(o));
-
                                 valuesForClasses(values, dataDescriptor.getTableName(), o);
                             }
                         }
@@ -178,18 +213,21 @@ public class ReflectionUtils {
                     Map fieldVal = (Map) field.get(pojo);
 
                     Map rawMap = new HashMap();
-                    for (Object en : fieldVal.entrySet()) {
-                        Map.Entry o = (Map.Entry) en;
-                        logger.debug("Object class " + o.getValue());
-                        String id = ReflectionUtils.getIdName(o.getValue().getClass());
-                        for (Field nestedF : getFieldsUpTo(o.getValue().getClass(), null)) {
-                            nestedF.setAccessible(true);
+                    if (fieldVal != null) {
+                        for (Object en : fieldVal.entrySet()) {
+                            Map.Entry o = (Map.Entry) en;
+                            logger.debug("Object class " + o.getValue());
+                            String id = ReflectionUtils.getIdName(o.getValue().getClass());
                             if (id == null) {
                                 throw new HecateException("Id field not found on set item " + fieldVal);
                             }
-                            if (id.equals(nestedF.getName())) {
-                                rawMap.put(o.getKey(), nestedF.get(o.getValue()));
-                                valuesForClasses(values, dataDescriptor.getTableName(), o.getValue());
+                            for (Field nestedF : getFieldsUpTo(o.getValue().getClass(), null)) {
+                                nestedF.setAccessible(true);
+
+                                if (id.equals(nestedF.getName())) {
+                                    rawMap.put(o.getKey(), nestedF.get(o.getValue()));
+                                    valuesForClasses(values, dataDescriptor.getTableName(), o.getValue());
+                                }
                             }
                         }
                     }
@@ -213,7 +251,7 @@ public class ReflectionUtils {
 
         for (Map.Entry<Class, Set<ReflectionUtils.DataDescriptor>> entry : values.entrySet()) {
             for (DataDescriptor descriptor : entry.getValue()) {
-                logger.debug(dataDescriptor.getTableName()  + "=>" + Arrays.asList(descriptor.getValues()));
+                logger.debug(dataDescriptor.getTableName() + "=>" + Arrays.asList(descriptor.getValues()));
             }
         }
         return values;
@@ -395,7 +433,8 @@ public class ReflectionUtils {
                                     Map.Entry ent = (Map.Entry) ento;
                                     Object id = ent.getKey();
                                     if (id != null) {
-                                        logger.debug("Find map item " + id +"=>"+ ent.getValue() + " from " + dao.getKeySpace() + "." + tableName(field));
+                                        logger.debug("Find map item " + id + "=>" + ent.getValue() + " from " + dao.getKeySpace() + "." + tableName(
+                                            field));
                                         Object o = ((GenericPojoGraphDao) dao).findChildRow(ent.getValue(), entityClazz, dao.getKeySpace(), tableName(
                                             field));
                                         logger.debug("Found entity " + o);

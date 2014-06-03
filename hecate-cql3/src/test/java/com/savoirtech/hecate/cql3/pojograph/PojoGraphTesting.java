@@ -42,6 +42,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class PojoGraphTesting {
     protected Cluster cluster;
@@ -163,7 +164,11 @@ public class PojoGraphTesting {
 
         assertEquals(200l, fempty.getId());
 
-        //Start the insert.
+        dao.delete(100l);
+
+        fempty = (Parent) dao.find(100l);
+
+        assertNull(fempty);
 
     }
 }
