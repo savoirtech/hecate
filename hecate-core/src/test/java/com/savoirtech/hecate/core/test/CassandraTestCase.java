@@ -1,25 +1,19 @@
 package com.savoirtech.hecate.core.test;
 
-import com.datastax.driver.core.Session;
 import com.google.common.collect.Maps;
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
 import me.prettyprint.cassandra.locking.HLockManagerImpl;
 import me.prettyprint.cassandra.model.AllOneConsistencyLevelPolicy;
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.cassandra.service.FailoverPolicy;
-import me.prettyprint.cassandra.service.ThriftKsDef;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.ConsistencyLevelPolicy;
-import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
-import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.locking.HLockManagerConfigurator;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collections;
 
 public abstract class CassandraTestCase {
 //----------------------------------------------------------------------------------------------------------------------
@@ -65,9 +59,8 @@ public abstract class CassandraTestCase {
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
         EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
         cluster = HFactory.getOrCreateCluster(getClusterName(), CLUSTER_ADDRESS);
-        KeyspaceDefinition keyspaceDefinition = HFactory.createKeyspaceDefinition(getKeyspaceName(), ThriftKsDef.DEF_STRATEGY_CLASS, 1, Collections.<ColumnFamilyDefinition>emptyList());
-        cluster.addKeyspace(keyspaceDefinition);
 
+        HFactory.createKeyspace(getKeyspaceName(), cluster);
         keyspaceConfigurator = new CassandraKeyspaceConfigurator(hostConfigurator(), getKeyspaceName(), failoverPolicy(), consistencyLevelPolicy(), Maps.<String,String>newTreeMap());
         HLockManagerConfigurator hLockManagerConfigurator = new HLockManagerConfigurator();
         hLockManagerConfigurator.setReplicationFactor(1);
