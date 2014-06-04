@@ -18,7 +18,7 @@
 
         <savoirtech.osgi.export.pkg>
             com.savoirtech.hecate*,
-            me.prettyprint*;version="${cassandra-thrift-version}",
+            me.prettyprint*;version="${hectorcore-version}",
             com.eaio.uuid* ;version="${uuid-version}",
         </savoirtech.osgi.export.pkg>
 
