@@ -16,16 +16,16 @@
 
 package com.savoirtech.hecate.core.daotests;
 
-import com.savoirtech.hecate.core.AbstractCassandraTest;
 import com.savoirtech.hecate.core.dao.ColumnFamilyDao;
 import com.savoirtech.hecate.core.dao.PojoObjectGraphDao;
+import com.savoirtech.hecate.core.test.CassandraTestCase;
 import com.savoirtech.hecate.core.utils.DaoPool;
 import org.junit.Test;
 
 
 import static junit.framework.Assert.assertTrue;
 
-public class PojoGraphDaoTest extends AbstractCassandraTest {
+public class PojoGraphDaoTest extends CassandraTestCase {
 
     @Test
     public void genericCollectionsToCF() {

@@ -16,18 +16,18 @@
 
 package com.savoirtech.hecate.testing;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.google.common.collect.Maps;
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
 import me.prettyprint.cassandra.model.AllOneConsistencyLevelPolicy;
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.cassandra.service.FailoverPolicy;
 import me.prettyprint.hector.api.ConsistencyLevelPolicy;
-import org.apache.cassandra.auth.IAuthenticator;
 import org.cassandraunit.dataset.yaml.ClassPathYamlDataSet;
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.After;
 import org.junit.Before;
+
+import java.util.Map;
 
 public abstract class AbstractCassandraTest {
 
@@ -37,26 +37,19 @@ public abstract class AbstractCassandraTest {
     //Column Family
     public ConsistencyLevelPolicy consistencyLevelPolicy = new AllOneConsistencyLevelPolicy();
     public FailoverPolicy failoverPolicy = FailoverPolicy.ON_FAIL_TRY_ALL_AVAILABLE;
-    public Map<String, String> credentials = new HashMap<String, String>();
     public CassandraKeyspaceConfigurator keyspaceConfigurator;
 
-    protected AbstractCassandraTest() {
-        credentials.put(IAuthenticator.USERNAME_KEY, "admin");
-        credentials.put(IAuthenticator.PASSWORD_KEY, "secret");
-    }
 
     @Before
     public void setUp() throws Exception {
 
-        credentials.put(IAuthenticator.USERNAME_KEY, "admin");
-        credentials.put(IAuthenticator.PASSWORD_KEY, "secret");
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra("cassandra.yaml", getCredentials());
+        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
         EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-        DataLoader dataLoader = new DataLoader(CLUSTER, HOST, credentials);
+        DataLoader dataLoader = new DataLoader(CLUSTER, HOST);
         dataLoader.load(new ClassPathYamlDataSet("dataset.yaml"));
 
-        keyspaceConfigurator = new CassandraKeyspaceConfigurator(getHost(), KEYSPACE, getFailoverPolicy(), getConsistencyLevelPolicy(),
-            getCredentials());
+        keyspaceConfigurator = new CassandraKeyspaceConfigurator(getHost(), KEYSPACE, getFailoverPolicy(), getConsistencyLevelPolicy(), Maps.<String,String>newTreeMap());
+
     }
 
     @After
@@ -79,7 +72,4 @@ public abstract class AbstractCassandraTest {
         return failoverPolicy;
     }
 
-    public Map<String, String> getCredentials() {
-        return credentials;
-    }
 }

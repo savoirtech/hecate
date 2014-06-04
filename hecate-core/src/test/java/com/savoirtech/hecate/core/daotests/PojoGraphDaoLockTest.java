@@ -16,9 +16,9 @@
 
 package com.savoirtech.hecate.core.daotests;
 
-import com.savoirtech.hecate.core.AbstractCassandraTest;
 import com.savoirtech.hecate.core.dao.ColumnFamilyDao;
 import com.savoirtech.hecate.core.dao.PojoObjectGraphDao;
+import com.savoirtech.hecate.core.test.CassandraTestCase;
 import com.savoirtech.hecate.core.utils.DaoPool;
 import me.prettyprint.hector.api.locking.HLock;
 import org.junit.Test;
@@ -26,7 +26,7 @@ import org.junit.Test;
 
 import static junit.framework.Assert.assertTrue;
 
-public class PojoGraphDaoLockTest extends AbstractCassandraTest {
+public class PojoGraphDaoLockTest extends CassandraTestCase {
 
     @Test
     public void genericCollectionsToCF() {

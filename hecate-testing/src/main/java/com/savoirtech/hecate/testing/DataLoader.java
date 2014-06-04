@@ -64,10 +64,10 @@ public class DataLoader {
 
     private Logger log = LoggerFactory.getLogger(DataLoader.class);
 
-    public DataLoader(String clusterName, String host, Map<String, String> creds) {
+    public DataLoader(String clusterName, String host) {
         super();
         CassandraHostConfigurator chc = new CassandraHostConfigurator(host);
-        cluster = HFactory.getOrCreateCluster(clusterName, chc, creds);
+        cluster = HFactory.getOrCreateCluster(clusterName, chc);
     }
 
     protected Cluster getCluster() {
@@ -274,7 +274,7 @@ public class DataLoader {
         for (ColumnMetadataModel columnMetadata : columnsMetadata) {
             BasicColumnDefinition columnDefinition = new BasicColumnDefinition();
 
-            String columnName = columnMetadata.getColumnName();
+            String columnName = columnMetadata.getColumnName().getValue();
             columnDefinition.setName(ByteBuffer.wrap(columnName.getBytes(Charsets.UTF_8)));
 
             if (columnMetadata.getColumnIndexType() != null) {

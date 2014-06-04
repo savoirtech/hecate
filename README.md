@@ -274,8 +274,6 @@ public class PojoGraphDaoTest extends AbstractCassandraTest {
 ```
 
 We can do quite similar things with CQL...
-The testing here is happily stolen from https://github.com/edwardcapriolo/farsandra since
-I couldn't find a central release.
 
 ```Java
 
