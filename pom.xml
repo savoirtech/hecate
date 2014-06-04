@@ -140,6 +140,7 @@
             ${savoirtech.osgi.import.before.defaults},
             ${savoirtech.osgi.import.defaults},
             ${savoirtech.osgi.import.additional},
+            com.google.common*;version="[15,17.0)",
             *,
         </savoirtech.osgi.import.pkg>
         <savoirtech.osgi.activator/>

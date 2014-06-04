@@ -26,6 +26,7 @@
             !sun.misc,
             !com.sun*,
             com.yammer.metrics.core;resolution:=optional,
+            com.google.common*;version="[15,17.0)",
             *
         </savoirtech.osgi.import>
         <savoirtech.osgi.dynamic>org.osgi.service.blueprint,*</savoirtech.osgi.dynamic>
