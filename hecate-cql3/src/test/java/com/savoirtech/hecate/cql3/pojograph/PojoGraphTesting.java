@@ -16,7 +16,9 @@
 
 package com.savoirtech.hecate.cql3.pojograph;
 
-import com.datastax.driver.core.Cluster;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.ResultSet;
@@ -30,10 +32,10 @@ import com.savoirtech.hecate.cql3.table.TableCreator;
 import com.savoirtech.hecate.cql3.test.CassandraTestCase;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class PojoGraphTesting extends CassandraTestCase {
 
@@ -71,6 +73,7 @@ public class PojoGraphTesting extends CassandraTestCase {
         pj.setId(100l);
         pj.setChild(new Child("V"));
         pj.getChildList().add(new Child("LIST"));
+        pj.getChildList().add(new Child("LIST2"));
         pj.getChildSet().add(new Child("SET"));
         pj.getChildMap().put("A", new Child("MAP"));
         pj.getLongChildMap().put(1l, new Child("LONG"));
