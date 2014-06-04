@@ -61,11 +61,11 @@ public abstract class CassandraTestCase {
         cluster = HFactory.getOrCreateCluster(getClusterName(), CLUSTER_ADDRESS);
 
         HFactory.createKeyspace(getKeyspaceName(), cluster);
-        keyspaceConfigurator = new CassandraKeyspaceConfigurator(hostConfigurator(), getKeyspaceName(), failoverPolicy(), consistencyLevelPolicy(), Maps.<String,String>newTreeMap());
+        keyspaceConfigurator = new CassandraKeyspaceConfigurator(hostConfigurator(), getKeyspaceName(), failoverPolicy(), consistencyLevelPolicy(), Maps.<String, String>newTreeMap());
         HLockManagerConfigurator hLockManagerConfigurator = new HLockManagerConfigurator();
         hLockManagerConfigurator.setReplicationFactor(1);
 
-        hLockManager = new HLockManagerImpl(HFactory.getOrCreateCluster(cluster.getClusterName(), hostConfigurator()), hLockManagerConfigurator);
+        hLockManager = new HLockManagerImpl(cluster, hLockManagerConfigurator);
         hLockManager.init();
     }
 }
