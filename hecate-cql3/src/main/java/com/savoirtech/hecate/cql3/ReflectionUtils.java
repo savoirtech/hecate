@@ -54,23 +54,6 @@ public class ReflectionUtils {
         return null;
     }
 
-    public static <K> Object getIdValue(Class clazz, Object o) {
-
-        for (Field fied : getFieldsUpTo(clazz, null)) {
-
-            if (fied.isAnnotationPresent(IdColumn.class)) {
-                fied.setAccessible(true);
-                try {
-                    return fied.get(o);
-                } catch (IllegalAccessException e) {
-                    logger.error("Cannot get to field " + e);
-                }
-            }
-        }
-
-        return null;
-    }
-
     public static Field getFieldType(String id) {return null;}
 
     public static <K> K extractFieldValue(String fieldName, Field fieldType, Row row) {return null;}
@@ -255,6 +238,17 @@ public class ReflectionUtils {
             }
         }
         return values;
+    }
+
+    public static Class getIdType(Class instanceClazz) {
+        for (Field fied : getFieldsUpTo(instanceClazz, null)) {
+
+            if (fied.isAnnotationPresent(IdColumn.class)) {
+                return fied.getType();
+            }
+        }
+
+        return null;
     }
 
     public static String tableName(Field field) {

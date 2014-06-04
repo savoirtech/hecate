@@ -97,6 +97,8 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
                     for (ReflectionUtils.DataDescriptor descriptor : entry.getValue()) {
                         insert = QueryBuilder.insertInto(keySpace, tableName).values(ReflectionUtils.fieldNames(entry.getKey()),
                             descriptor.getValues());
+
+                        logger.debug("Insert " + insert);
                         ResultSet res = session.execute(insert);
                         logger.debug("Result " + res);
                     }
