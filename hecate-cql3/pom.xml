@@ -15,7 +15,8 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>hecate-parent</artifactId>
         <groupId>com.savoirtech.hecate</groupId>
@@ -26,6 +27,20 @@
     <artifactId>hecate-cql3</artifactId>
 
     <packaging>bundle</packaging>
+
+    <properties>
+
+        <savoirtech.osgi.export.pkg>
+            com.savoirtech.hecate.cql3*,
+
+        </savoirtech.osgi.export.pkg>
+
+        <savoirtech.osgi.import>
+            com.google.common*;version="[15,17.0)",
+            *
+        </savoirtech.osgi.import>
+
+    </properties>
 
     <name>SavoirTech ::: Hecate CQL3</name>
     <description>SavoirTech ::: Hecate CQL3</description>
