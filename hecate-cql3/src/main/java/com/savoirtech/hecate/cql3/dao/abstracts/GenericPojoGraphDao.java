@@ -42,42 +42,44 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
 
         Object rootClass = find(key);
 
-        Map<Class, Set<ReflectionUtils.DataDescriptor>> valueMap = new HashMap<>();
+        if (rootClass != null) {
+            Map<Class, Set<ReflectionUtils.DataDescriptor>> valueMap = new HashMap<>();
 
-        try {
-            ReflectionUtils.valuesForClasses(valueMap, null, rootClass);
+            try {
+                ReflectionUtils.valuesForClasses(valueMap, null, rootClass);
 
-            for (Map.Entry<Class, Set<ReflectionUtils.DataDescriptor>> entry : valueMap.entrySet()) {
-                Delete.Where delete = null;
-                if (entry.getKey().getName().equals(rootClass.getClass().getName())) {
-                    logger.info("Working on the root class " + rootClass);
-                    for (ReflectionUtils.DataDescriptor descriptor : entry.getValue()) {
+                for (Map.Entry<Class, Set<ReflectionUtils.DataDescriptor>> entry : valueMap.entrySet()) {
+                    Delete.Where delete = null;
+                    if (entry.getKey().getName().equals(rootClass.getClass().getName())) {
+                        logger.info("Working on the root class " + rootClass);
+                        for (ReflectionUtils.DataDescriptor descriptor : entry.getValue()) {
 
-                        delete = QueryBuilder.delete().all().from(keySpace, tableName).where(QueryBuilder.eq(ReflectionUtils.getIdName(
-                            entry.getKey()), key));
-                        ResultSet res = session.execute(delete);
+                            delete = QueryBuilder.delete().all().from(keySpace, tableName).where(QueryBuilder.eq(ReflectionUtils.getIdName(
+                                entry.getKey()), key));
+                            ResultSet res = session.execute(delete);
 
-                        logger.debug("Result " + res);
-                    }
-                } else {
-                    for (ReflectionUtils.DataDescriptor descriptor : entry.getValue()) {
-                        String id = ReflectionUtils.getIdName(entry.getKey());
-                        String nestedtableName = descriptor.getTableName();
-                        logger.debug("Delete builder " + descriptor + " from " + keySpace + "." + nestedtableName);
-                        ResultSet res;
-                        for (Object val : descriptor.getValues()) {
-
-                            delete = QueryBuilder.delete().all().from(keySpace, nestedtableName).where(QueryBuilder.eq(id, val));
-
-                            logger.debug("Delete " + delete);
-                            res = session.execute(delete);
                             logger.debug("Result " + res);
+                        }
+                    } else {
+                        for (ReflectionUtils.DataDescriptor descriptor : entry.getValue()) {
+                            String id = ReflectionUtils.getIdName(entry.getKey());
+                            String nestedtableName = descriptor.getTableName();
+                            logger.debug("Delete builder " + descriptor + " from " + keySpace + "." + nestedtableName);
+                            ResultSet res;
+                            for (Object val : descriptor.getValues()) {
+
+                                delete = QueryBuilder.delete().all().from(keySpace, nestedtableName).where(QueryBuilder.eq(id, val));
+
+                                logger.debug("Delete " + delete);
+                                res = session.execute(delete);
+                                logger.debug("Result " + res);
+                            }
                         }
                     }
                 }
+            } catch (HecateException e) {
+                logger.error("Hecate problem " + e);
             }
-        } catch (HecateException e) {
-            logger.error("Hecate problem " + e);
         }
     }
 
