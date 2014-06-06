@@ -3,6 +3,7 @@ package com.savoirtech.hecate.cql3.entities;
 import com.savoirtech.hecate.cql3.annotations.IdColumn;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,8 +21,9 @@ public class SimplePojo {
 
     private List<String> listOfStrings;
 
-
     private Set<String> setOfStrings;
+
+    private Map<Integer, String> mapOfStrings;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
@@ -49,6 +51,14 @@ public class SimplePojo {
 
     public void setListOfStrings(List<String> listOfStrings) {
         this.listOfStrings = listOfStrings;
+    }
+
+    public Map<Integer, String> getMapOfStrings() {
+        return mapOfStrings;
+    }
+
+    public void setMapOfStrings(Map<Integer, String> mapOfStrings) {
+        this.mapOfStrings = mapOfStrings;
     }
 
     public String getName() {

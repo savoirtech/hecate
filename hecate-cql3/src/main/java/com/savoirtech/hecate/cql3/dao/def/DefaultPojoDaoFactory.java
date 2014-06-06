@@ -7,6 +7,7 @@ import com.savoirtech.hecate.cql3.dao.PojoDaoFactory;
 import com.savoirtech.hecate.cql3.mapping.FieldMappingProvider;
 import com.savoirtech.hecate.cql3.mapping.array.ArrayFieldMappingProvider;
 import com.savoirtech.hecate.cql3.mapping.list.ListFieldMappingProvider;
+import com.savoirtech.hecate.cql3.mapping.map.MapFieldMappingProvider;
 import com.savoirtech.hecate.cql3.mapping.scalar.ScalarMappingProvider;
 import com.savoirtech.hecate.cql3.mapping.set.SetFieldMappingProvider;
 import com.savoirtech.hecate.cql3.meta.PojoDescriptor;
@@ -45,7 +46,8 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
                 new ScalarMappingProvider(registry),
                 new ArrayFieldMappingProvider(registry),
                 new ListFieldMappingProvider(registry),
-                new SetFieldMappingProvider(registry)
+                new SetFieldMappingProvider(registry),
+                new MapFieldMappingProvider(registry)
         };
     }
 

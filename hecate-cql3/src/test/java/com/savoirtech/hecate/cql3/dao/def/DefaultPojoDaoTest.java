@@ -7,7 +7,9 @@ import com.savoirtech.hecate.cql3.test.CassandraTestCase;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -102,5 +104,24 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertTrue(found.getSetOfStrings().contains("one"));
         assertTrue(found.getSetOfStrings().contains("two"));
         assertTrue(found.getSetOfStrings().contains("three"));
+    }
+
+    @Test
+    public void testWithMapField() {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        Map<Integer, String> mapOfStrings = new HashMap<>();
+        mapOfStrings.put(1, "one");
+        mapOfStrings.put(2, "two");
+        mapOfStrings.put(3, "three");
+        pojo.setMapOfStrings(mapOfStrings);
+        dao.save(pojo);
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found.getMapOfStrings());
+        assertEquals(3, found.getMapOfStrings().size());
+        assertEquals("one", found.getMapOfStrings().get(1));
+        assertEquals("two", found.getMapOfStrings().get(2));
+        assertEquals("three", found.getMapOfStrings().get(3));
     }
 }

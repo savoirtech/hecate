@@ -45,7 +45,7 @@ public class ScalarMapping extends AbstractFieldMapping {
     }
 
     @Override
-    public Object rawCassandraValue(Object value) {
-        return columnType.toCassandraValue(value);
+    public Object rawCassandraValue(Object rawValue) {
+        return columnType.toCassandraValue(rawValue);
     }
 }
