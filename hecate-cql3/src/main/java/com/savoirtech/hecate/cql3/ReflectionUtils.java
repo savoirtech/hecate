@@ -23,13 +23,18 @@ import com.savoirtech.hecate.cql3.annotations.IdColumn;
 import com.savoirtech.hecate.cql3.annotations.TableName;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericCqlDao;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericPojoGraphDao;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -53,6 +58,9 @@ public class ReflectionUtils {
     private static final TypeVariable<Class<Set>> SET_ELEMENT_TYPE_VAR = Set.class.getTypeParameters()[0];
     private static final TypeVariable<Class<Map>> MAP_KEY_TYPE_VAR = Map.class.getTypeParameters()[0];
     private static final TypeVariable<Class<Map>> MAP_VALUE_TYPE_VAR = Map.class.getTypeParameters()[1];
+    private static final String IS_PREFIX = "is";
+    private static final String GET_PREFIX = "get";
+    private static final String SET_PREFIX = "set";
 
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
@@ -176,6 +184,19 @@ public class ReflectionUtils {
 
     public static Class<?> mapKeyType(Type type) {
         return findTypeVariable(type, Map.class, MAP_KEY_TYPE_VAR);
+    }
+
+    public static Object invoke(Object target, Method method, Object... params) {
+        try {
+            Validate.notNull(method).setAccessible(true);
+            return method.invoke(target, params);
+        }
+        catch (IllegalAccessException e) {
+            throw new HecateException(String.format("Unable to invoke method %s on object of type %s.", method.getName(), getClassName(target)), e);
+        }
+        catch (InvocationTargetException e) {
+            throw new HecateException(String.format("Method %s threw exception when invoked on an object of type %s.", method.getName(), getClassName(target)));
+        }
     }
 
     public static Class<?> mapValueType(Type type) {
@@ -524,6 +545,53 @@ public class ReflectionUtils {
             }
         }
         return values;
+    }
+
+    private static String propertySuffix(PropertyDescriptor descriptor) {
+        return StringUtils.capitalize(descriptor.getName());
+    }
+
+    private static String getReadMethodName(PropertyDescriptor descriptor) {
+        final String prefix = Boolean.TYPE.equals(descriptor.getPropertyType()) ? IS_PREFIX : GET_PREFIX;
+        return prefix + propertySuffix(descriptor);
+    }
+
+    private static String getWriteMethodName(PropertyDescriptor descriptor) {
+        return SET_PREFIX + propertySuffix(descriptor);
+    }
+
+    private static Method findDeclaredMethod(Class<?> c, String name, Class<?>... parameterTypes) {
+        try {
+            return c.getDeclaredMethod(name, parameterTypes);
+        }
+        catch (NoSuchMethodException e) {
+            if (c.getSuperclass() != null) {
+                return findDeclaredMethod(c.getSuperclass(), name, parameterTypes);
+            }
+            return null;
+        }
+    }
+
+    public static Method getReadMethod(Class<?> pojoType, PropertyDescriptor descriptor) {
+        Method method = descriptor.getReadMethod();
+        if (method == null) {
+            Method candidate = findDeclaredMethod(pojoType, getReadMethodName(descriptor));
+            if (candidate != null && descriptor.getPropertyType().equals(candidate.getReturnType())) {
+                method = candidate;
+            }
+        }
+        return method;
+    }
+
+    public static Method getWriteMethod(Class<?> pojoType, PropertyDescriptor descriptor) {
+        Method method = descriptor.getWriteMethod();
+        if (method == null) {
+            Method candidate = findDeclaredMethod(pojoType, getWriteMethodName(descriptor), descriptor.getPropertyType());
+            if (candidate != null && Void.TYPE.equals(candidate.getReturnType())) {
+                method = candidate;
+            }
+        }
+        return method;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
