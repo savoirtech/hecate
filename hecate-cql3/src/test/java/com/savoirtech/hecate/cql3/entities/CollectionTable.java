@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.cql3.entities;
 
+import com.savoirtech.hecate.cql3.annotations.Id;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,11 +27,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.savoirtech.hecate.cql3.annotations.IdColumn;
-
 public class CollectionTable {
 
-    @IdColumn
+    @Id
     long id;
 
     List<String> stringList = new ArrayList<>();

@@ -16,6 +16,9 @@
 
 package com.savoirtech.hecate.cql3.entities;
 
+import com.savoirtech.hecate.cql3.annotations.Id;
+import com.savoirtech.hecate.cql3.annotations.TableName;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,12 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.savoirtech.hecate.cql3.annotations.IdColumn;
-import com.savoirtech.hecate.cql3.annotations.TableName;
-
 public class Parent {
 
-    @IdColumn
+    @Id
     long id;
 
     @TableName("child")
@@ -97,12 +97,12 @@ public class Parent {
     @Override
     public String toString() {
         return "Parent{" +
-            "id=" + id +
-            ", child=" + child +
-            ", childList=" + childList +
-            ", childSet=" + childSet +
-            ", childMap=" + childMap +
-            ", longChildMap=" + longChildMap +
-            '}';
+                "id=" + id +
+                ", child=" + child +
+                ", childList=" + childList +
+                ", childSet=" + childSet +
+                ", childMap=" + childMap +
+                ", longChildMap=" + longChildMap +
+                '}';
     }
 }

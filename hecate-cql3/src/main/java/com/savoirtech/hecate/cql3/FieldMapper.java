@@ -16,6 +16,12 @@
 
 package com.savoirtech.hecate.cql3;
 
+import com.datastax.driver.core.Row;
+import com.savoirtech.hecate.cql3.exception.HecateException;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -26,14 +32,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.datastax.driver.core.Row;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public final class FieldMapper {
 
-    private FieldMapper() {}
+    private FieldMapper() {
+    }
 
     private final static Logger logger = LoggerFactory.getLogger(FieldMapper.class);
 
@@ -160,8 +162,9 @@ public final class FieldMapper {
 
                     try {
                         return "list<" + FieldMapper.getCassandraTypeForFieldName(ReflectionUtils.getIdName(Class.forName(getClassName(
-                            pt.getActualTypeArguments()[0]))), Class.forName(getClassName(pt.getActualTypeArguments()[0]))) + ">";
-                    } catch (ClassNotFoundException e) {
+                                pt.getActualTypeArguments()[0]))), Class.forName(getClassName(pt.getActualTypeArguments()[0]))) + ">";
+                    }
+                    catch (ClassNotFoundException e) {
                         logger.error("Class error " + e);
                     }
                 }
@@ -183,8 +186,9 @@ public final class FieldMapper {
 
                     try {
                         return "set<" + FieldMapper.getCassandraTypeForFieldName(ReflectionUtils.getIdName(Class.forName(getClassName(
-                            pt.getActualTypeArguments()[0]))), Class.forName(getClassName(pt.getActualTypeArguments()[0]))) + ">";
-                    } catch (ClassNotFoundException e) {
+                                pt.getActualTypeArguments()[0]))), Class.forName(getClassName(pt.getActualTypeArguments()[0]))) + ">";
+                    }
+                    catch (ClassNotFoundException e) {
                         logger.error("Class error " + e);
                     }
                 }
@@ -203,15 +207,16 @@ public final class FieldMapper {
                 if ("blob".equals(getStorageType(pt.getActualTypeArguments()[1]))) {
                     try {
                         return "map<" + getStorageType(pt.getActualTypeArguments()[0]) + "," +
-                            FieldMapper.getCassandraTypeForFieldName(ReflectionUtils.getIdName(Class.forName(getClassName(
-                                pt.getActualTypeArguments()[1]))), Class.forName(getClassName(pt.getActualTypeArguments()[1]))) +
-                            ">";
-                    } catch (ClassNotFoundException e) {
+                                FieldMapper.getCassandraTypeForFieldName(ReflectionUtils.getIdName(Class.forName(getClassName(
+                                        pt.getActualTypeArguments()[1]))), Class.forName(getClassName(pt.getActualTypeArguments()[1]))) +
+                                ">";
+                    }
+                    catch (ClassNotFoundException e) {
                         logger.error("Class error " + e);
                     }
                 }
                 return "map<" + getStorageType(pt.getActualTypeArguments()[0]) + "," +
-                    getStorageType(pt.getActualTypeArguments()[1]) + ">";
+                        getStorageType(pt.getActualTypeArguments()[1]) + ">";
             }
 
             return "map<blob,blob>";
@@ -267,7 +272,7 @@ public final class FieldMapper {
                 }
 
                 return "map<" + getStorageType(pt.getActualTypeArguments()[0]) + "," +
-                    getStorageType(pt.getActualTypeArguments()[1]) + ">";
+                        getStorageType(pt.getActualTypeArguments()[1]) + ">";
             }
 
             return "map<blob,blob>";
@@ -277,7 +282,6 @@ public final class FieldMapper {
 
         return FieldMapper.getRawCassandraTypeForFieldName(ReflectionUtils.getIdName(field.getType()), field.getType());
     }
-
 
 
     private static String getRawCassandraTypeForFieldName(String idName, Class<?> type) throws HecateException {

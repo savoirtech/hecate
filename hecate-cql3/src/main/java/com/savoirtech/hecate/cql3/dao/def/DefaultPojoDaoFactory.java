@@ -1,13 +1,12 @@
 package com.savoirtech.hecate.cql3.dao.def;
 
 import com.datastax.driver.core.Session;
+import com.savoirtech.hecate.cql3.annotations.TableName;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.dao.PojoDaoFactory;
 import com.savoirtech.hecate.cql3.meta.PojoDescriptor;
 import com.savoirtech.hecate.cql3.meta.PojoDescriptorFactory;
 import com.savoirtech.hecate.cql3.meta.def.DefaultPojoDescriptorFactory;
-import com.savoirtech.hecate.cql3.naming.NamingConvention;
-import com.savoirtech.hecate.cql3.naming.def.DefaultNamingConvention;
 import com.savoirtech.hecate.cql3.schema.CreateVerifier;
 import com.savoirtech.hecate.cql3.schema.SchemaVerifier;
 
@@ -17,9 +16,17 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Session session;
-    private NamingConvention namingConvention = new DefaultNamingConvention();
     private SchemaVerifier verifier = new CreateVerifier();
-    private PojoDescriptorFactory pojoDescriptorFactory = new DefaultPojoDescriptorFactory(namingConvention);
+    private PojoDescriptorFactory pojoDescriptorFactory = new DefaultPojoDescriptorFactory();
+
+//----------------------------------------------------------------------------------------------------------------------
+// Static Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    private static String tableName(Class<?> pojoType) {
+        TableName annot = pojoType.getAnnotation(TableName.class);
+        return annot == null ? pojoType.getSimpleName() : annot.value();
+    }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -35,7 +42,7 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 
     @Override
     public <K, P> PojoDao<K, P> createPojoDao(Class<P> pojoType) {
-        return createPojoDao(pojoType, namingConvention.tableName(pojoType));
+        return createPojoDao(pojoType, tableName(pojoType));
     }
 
     @Override

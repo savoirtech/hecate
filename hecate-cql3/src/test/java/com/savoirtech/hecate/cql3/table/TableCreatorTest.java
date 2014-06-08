@@ -16,12 +16,11 @@
 
 package com.savoirtech.hecate.cql3.table;
 
-import com.savoirtech.hecate.cql3.HecateException;
 import com.savoirtech.hecate.cql3.entities.CompoundKeyTable;
 import com.savoirtech.hecate.cql3.entities.ConflictKeyTable;
 import com.savoirtech.hecate.cql3.entities.SimpleTable;
+import com.savoirtech.hecate.cql3.exception.HecateException;
 import org.junit.Test;
-
 
 import static org.junit.Assert.assertTrue;
 
@@ -33,9 +32,9 @@ public class TableCreatorTest {
         String create = TableCreator.createTable("keySpace", "tableName", SimpleTable.class);
         System.out.println(create);
         assertTrue(create.equals(
-            "CREATE TABLE IF NOT EXISTS keySpace.tableName ( id BIGINT PRIMARY KEY,name TEXT,more TEXT,date TIMESTAMP,aBoolean BOOLEAN,"
-                + "aDouble DOUBLE,aFloat FLOAT,uuid UUID );"
-                                ));
+                "CREATE TABLE IF NOT EXISTS keySpace.tableName ( id BIGINT PRIMARY KEY,name TEXT,more TEXT,date TIMESTAMP,aBoolean BOOLEAN,"
+                        + "aDouble DOUBLE,aFloat FLOAT,uuid UUID );"
+        ));
 
         create = TableCreator.createTable("keySpace", "tableName", CompoundKeyTable.class);
         System.out.println(create);
@@ -48,7 +47,8 @@ public class TableCreatorTest {
         String create = null;
         try {
             TableCreator.createTable("keySpace", "tableName", ConflictKeyTable.class);
-        } catch (HecateException h) {
+        }
+        catch (HecateException h) {
             h.printStackTrace();
         }
         assertTrue(create == null);

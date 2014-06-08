@@ -16,26 +16,23 @@
 
 package com.savoirtech.hecate.cql3.pojograph;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
-import com.savoirtech.hecate.cql3.HecateException;
 import com.savoirtech.hecate.cql3.dao.GenericTableDao;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericPojoGraphDao;
 import com.savoirtech.hecate.cql3.entities.Child;
 import com.savoirtech.hecate.cql3.entities.Parent;
+import com.savoirtech.hecate.cql3.exception.HecateException;
 import com.savoirtech.hecate.cql3.table.TableCreator;
 import com.savoirtech.hecate.cql3.test.CassandraTestCase;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class PojoGraphTesting extends CassandraTestCase {
 
@@ -52,17 +49,18 @@ public class PojoGraphTesting extends CassandraTestCase {
         ResultSet resultSet = null;
         Map<String, StringBuilder> tables = new HashMap<>();
 
-        System.out.println("Create statement " + TableCreator.createNestedTables(tables,"hecate", "parent", Parent.class));
+        System.out.println("Create statement " + TableCreator.createNestedTables(tables, "hecate", "parent", Parent.class));
 
-        for (Map.Entry<String,StringBuilder> entry : tables.entrySet()){
-             System.out.println(" " + entry.getKey() + " => " + entry.getValue().toString() );
+        for (Map.Entry<String, StringBuilder> entry : tables.entrySet()) {
+            System.out.println(" " + entry.getKey() + " => " + entry.getValue().toString());
             resultSet = session.execute(entry.getValue().toString());
         }
         try {
             String create = TableCreator.createTable("hecate", "parent", Parent.class);
 
             resultSet = session.execute(create);
-        } catch (HecateException e) {
+        }
+        catch (HecateException e) {
             e.printStackTrace();
         }
 

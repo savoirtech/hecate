@@ -1,21 +1,13 @@
-package com.savoirtech.hecate.cql3.value;
+package com.savoirtech.hecate.cql3.convert;
 
 import com.savoirtech.hecate.cql3.util.GenericType;
 
-import java.lang.annotation.Annotation;
-
-public interface Value {
+public interface ValueConverterFactory {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Object get(Object pojo);
+    Class<? extends ValueConverter> converterType();
 
-    <A extends Annotation> A getAnnotation(Class<A> annotationType);
-
-    GenericType getType();
-
-    String getName();
-
-    void set(Object pojo, Object value);
+    ValueConverter createConverter(GenericType type, ValueConverterRegistry registry);
 }

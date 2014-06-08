@@ -16,13 +16,13 @@
 
 package com.savoirtech.hecate.cql3.entities;
 
-import com.savoirtech.hecate.cql3.annotations.IdColumn;
+import com.savoirtech.hecate.cql3.annotations.Id;
 import com.savoirtech.hecate.cql3.annotations.PrimaryKey;
 
 @PrimaryKey(pk = "id,name")
 public class ConflictKeyTable {
-    @IdColumn
-    long id ;
+    @Id
+    long id;
 
     String name;
 

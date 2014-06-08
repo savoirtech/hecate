@@ -1,6 +1,6 @@
 package com.savoirtech.hecate.cql3.entities;
 
-import com.savoirtech.hecate.cql3.annotations.IdColumn;
+import com.savoirtech.hecate.cql3.annotations.Id;
 
 import java.util.List;
 import java.util.Map;
@@ -12,9 +12,9 @@ public class SimplePojo {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    @IdColumn
+    @Id
     private String id = UUID.randomUUID().toString();
-    
+
     private String name;
 
     private int[] ints;

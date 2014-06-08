@@ -19,10 +19,11 @@ package com.savoirtech.hecate.cql3;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Row;
 import com.google.common.collect.Lists;
-import com.savoirtech.hecate.cql3.annotations.IdColumn;
+import com.savoirtech.hecate.cql3.annotations.Id;
 import com.savoirtech.hecate.cql3.annotations.TableName;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericCqlDao;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericPojoGraphDao;
+import com.savoirtech.hecate.cql3.exception.HecateException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -54,10 +55,10 @@ public class ReflectionUtils {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ReflectionUtils.class);
-    private static final TypeVariable<Class<List>> LIST_ELEMENT_TYPE_VAR = List.class.getTypeParameters()[0];
-    private static final TypeVariable<Class<Set>> SET_ELEMENT_TYPE_VAR = Set.class.getTypeParameters()[0];
-    private static final TypeVariable<Class<Map>> MAP_KEY_TYPE_VAR = Map.class.getTypeParameters()[0];
-    private static final TypeVariable<Class<Map>> MAP_VALUE_TYPE_VAR = Map.class.getTypeParameters()[1];
+    public static final TypeVariable<Class<List>> LIST_ELEMENT_TYPE_VAR = List.class.getTypeParameters()[0];
+    public static final TypeVariable<Class<Set>> SET_ELEMENT_TYPE_VAR = Set.class.getTypeParameters()[0];
+    public static final TypeVariable<Class<Map>> MAP_KEY_TYPE_VAR = Map.class.getTypeParameters()[0];
+    public static final TypeVariable<Class<Map>> MAP_VALUE_TYPE_VAR = Map.class.getTypeParameters()[1];
     private static final String IS_PREFIX = "is";
     private static final String GET_PREFIX = "get";
     private static final String SET_PREFIX = "set";
@@ -145,7 +146,7 @@ public class ReflectionUtils {
 
     public static <K> String getIdName(Class clazz) {
         for (Field fied : getFieldsUpTo(clazz, null)) {
-            if (fied.isAnnotationPresent(IdColumn.class)) {
+            if (fied.isAnnotationPresent(Id.class)) {
                 return fied.getName();
             }
         }
@@ -155,7 +156,7 @@ public class ReflectionUtils {
 
     public static Class getIdType(Class instanceClazz) {
         for (Field fied : getFieldsUpTo(instanceClazz, null)) {
-            if (fied.isAnnotationPresent(IdColumn.class)) {
+            if (fied.isAnnotationPresent(Id.class)) {
                 return fied.getType();
             }
         }

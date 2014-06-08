@@ -16,6 +16,13 @@
 
 package com.savoirtech.hecate.cql3.table;
 
+import com.savoirtech.hecate.cql3.FieldMapper;
+import com.savoirtech.hecate.cql3.ReflectionUtils;
+import com.savoirtech.hecate.cql3.annotations.Id;
+import com.savoirtech.hecate.cql3.annotations.PrimaryKey;
+import com.savoirtech.hecate.cql3.exception.HecateException;
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -24,16 +31,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import com.savoirtech.hecate.cql3.FieldMapper;
-import com.savoirtech.hecate.cql3.HecateException;
-import com.savoirtech.hecate.cql3.ReflectionUtils;
-import com.savoirtech.hecate.cql3.annotations.IdColumn;
-import com.savoirtech.hecate.cql3.annotations.PrimaryKey;
-import org.apache.commons.lang3.StringUtils;
-
 public class TableCreator {
 
-    private TableCreator() {}
+    private TableCreator() {
+    }
 
     public static List<TableDescriptor> createPojoTables(String keySpace, String tableName, Class cls) {
 
@@ -75,7 +76,7 @@ public class TableCreator {
                 flds.append(FieldMapper.getRawCassandraType(field));
             }
 
-            if (field.isAnnotationPresent(IdColumn.class)) {
+            if (field.isAnnotationPresent(Id.class)) {
                 if (idFound) {
                     throw new HecateException("Cannot have multiple PRIMARY KEY declarations");
                 } else {
@@ -150,8 +151,9 @@ public class TableCreator {
 
                     Class clazz = null;
                     try {
-                        clazz = ReflectionUtils.typeToClass(pt.getActualTypeArguments()[0],field.getDeclaringClass().getClassLoader());
-                    } catch (ClassNotFoundException e) {
+                        clazz = ReflectionUtils.typeToClass(pt.getActualTypeArguments()[0], field.getDeclaringClass().getClassLoader());
+                    }
+                    catch (ClassNotFoundException e) {
                         throw new HecateException(e);
                     }
                     createNestedTables(tables, keySpace, ReflectionUtils.tableName(field), clazz);
@@ -165,8 +167,9 @@ public class TableCreator {
 
                     Class clazz = null;
                     try {
-                        clazz = ReflectionUtils.typeToClass(pt.getActualTypeArguments()[0],field.getDeclaringClass().getClassLoader());
-                    } catch (ClassNotFoundException e) {
+                        clazz = ReflectionUtils.typeToClass(pt.getActualTypeArguments()[0], field.getDeclaringClass().getClassLoader());
+                    }
+                    catch (ClassNotFoundException e) {
                         throw new HecateException(e);
                     }
 
@@ -181,8 +184,9 @@ public class TableCreator {
 
                     Class clazz = null;
                     try {
-                        clazz = ReflectionUtils.typeToClass(pt.getActualTypeArguments()[1],field.getDeclaringClass().getClassLoader());
-                    } catch (ClassNotFoundException e) {
+                        clazz = ReflectionUtils.typeToClass(pt.getActualTypeArguments()[1], field.getDeclaringClass().getClassLoader());
+                    }
+                    catch (ClassNotFoundException e) {
                         throw new HecateException(e);
                     }
 
@@ -192,7 +196,7 @@ public class TableCreator {
 
             flds.append(FieldMapper.getCassandraType(field));
 
-            if (field.isAnnotationPresent(IdColumn.class)) {
+            if (field.isAnnotationPresent(Id.class)) {
                 if (idFound) {
                     throw new HecateException("Cannot have multiple PRIMARY KEY declarations");
                 } else {

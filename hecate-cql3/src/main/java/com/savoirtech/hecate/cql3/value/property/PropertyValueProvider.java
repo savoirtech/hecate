@@ -23,7 +23,7 @@ public class PropertyValueProvider implements ValueProvider {
             final Method readMethod = ReflectionUtils.getReadMethod(pojoType, descriptor);
             final Method writeMethod = ReflectionUtils.getWriteMethod(pojoType, descriptor);
             if (readMethod != null && writeMethod != null) {
-                values.add(new PropertyValue(descriptor, readMethod, writeMethod));
+                values.add(new PropertyValue(pojoType, descriptor, readMethod, writeMethod));
             }
         }
         return values;

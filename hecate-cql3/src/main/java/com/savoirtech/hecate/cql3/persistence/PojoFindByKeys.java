@@ -22,7 +22,7 @@ public class PojoFindByKeys<P, K> extends PojoPersistenceStatement<P> {
     private static <P> Select.Where createSelect(String tableName, PojoDescriptor<P> pojoDescriptor) {
         final Select.Where where = pojoSelect(pojoDescriptor)
                 .from(tableName)
-                .where(in(pojoDescriptor.getIdentifierColumn().getColumnName(), bindMarker()));
+                .where(in(pojoDescriptor.getIdentifierMapping().getColumnName(), bindMarker()));
 
         LOGGER.info("{}.findByKeys(): {}", pojoDescriptor.getPojoType().getSimpleName(), where);
         return where;
@@ -35,7 +35,7 @@ public class PojoFindByKeys<P, K> extends PojoPersistenceStatement<P> {
     private List<Object> cassandraValues(Iterable<K> keys) {
         List<Object> cassandraValues = new LinkedList<>();
         for (K key : keys) {
-            cassandraValues.add(identifierColumn().getMapping().rawCassandraValue(key));
+            cassandraValues.add(identifierMapping().getConverter().toCassandraValue(key));
         }
         return cassandraValues;
     }

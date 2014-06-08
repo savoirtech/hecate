@@ -1,62 +1,51 @@
 package com.savoirtech.hecate.cql3.value.field;
 
-import com.savoirtech.hecate.cql3.ReflectionUtils;
-import com.savoirtech.hecate.cql3.annotations.IdColumn;
+import com.savoirtech.hecate.cql3.annotations.Id;
 import com.savoirtech.hecate.cql3.value.Value;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
 
 public class FieldValueProviderTest {
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
+    private FieldValue fooField() throws Exception {
+        return new FieldValue(FieldHolder.class, FieldHolder.class.getDeclaredField("foo"));
+    }
 
     @Test
     public void testGet() throws Exception {
-        FieldValue value = new FieldValue(fooField());
+        FieldValue value = fooField();
         final FieldHolder holder = new FieldHolder();
         assertEquals("bar", value.get(holder));
     }
 
     @Test
     public void testGetType() throws Exception {
-        FieldValue value = new FieldValue(fooField());
-        assertEquals(String.class, value.getType());
-    }
-
-    private Field fooField() throws Exception {
-        return FieldHolder.class.getDeclaredField("foo");
+        FieldValue value = fooField();
+        assertEquals(String.class, value.getType().getRawType());
     }
 
     @Test
     public void testGetAnnotation() throws Exception {
-        FieldValue value = new FieldValue(fooField());
-        assertNotNull(value.getAnnotation(IdColumn.class));
+        FieldValue value = fooField();
+        assertNotNull(value.getAnnotation(Id.class));
     }
 
-    @Test
-    public void testGetGenericType() throws Exception {
-        FieldValue value = new FieldValue(FieldHolder.class.getDeclaredField("map"));
-        Type type = value.getGenericType();
-        assertEquals(String.class, ReflectionUtils.mapKeyType(type));
-        assertEquals(String.class, ReflectionUtils.mapValueType(type));
-    }
 
     @Test
     public void testGetName() throws Exception {
-        FieldValue value = new FieldValue(fooField());
+        FieldValue value = fooField();
         assertEquals("foo", value.getName());
     }
 
     @Test
     public void testSet() throws Exception {
-        FieldValue value = new FieldValue(fooField());
+        FieldValue value = fooField();
         final FieldHolder holder = new FieldHolder();
         value.set(holder, "baz");
         assertEquals("baz", holder.foo);
@@ -81,7 +70,7 @@ public class FieldValueProviderTest {
 //----------------------------------------------------------------------------------------------------------------------
 
     private static class FieldHolder {
-        @IdColumn
+        @Id
         private String foo = "bar";
 
         private Map<String, String> map;

@@ -1,7 +1,7 @@
 package com.savoirtech.hecate.cql3.meta;
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
-import com.savoirtech.hecate.cql3.mapping.FieldMapping;
+import com.savoirtech.hecate.cql3.mapping.ValueMapping;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -13,8 +13,8 @@ public class PojoDescriptor<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Class<P> pojoType;
-    private final List<ColumnDescriptor> columns = new LinkedList<>();
-    private ColumnDescriptor identifierColumn;
+    private final List<ValueMapping> valueMappings = new LinkedList<>();
+    private ValueMapping identifierMapping;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -28,8 +28,8 @@ public class PojoDescriptor<P> {
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ColumnDescriptor getIdentifierColumn() {
-        return identifierColumn;
+    public ValueMapping getIdentifierMapping() {
+        return identifierMapping;
     }
 
     public Class<P> getPojoType() {
@@ -40,19 +40,17 @@ public class PojoDescriptor<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public void addColumn(String columnName, boolean identifier, FieldMapping mapping) {
-        final ColumnDescriptor descriptor = new ColumnDescriptor(columnName, identifier, mapping);
-        if (identifier) {
-            identifierColumn = descriptor;
-            columns.add(0, descriptor);
-        }
-        else {
-            columns.add(descriptor);
+    public void addMapping(ValueMapping valueMapping) {
+        if (valueMapping.isIdentifier()) {
+            this.identifierMapping = valueMapping;
+            valueMappings.add(0, valueMapping);
+        } else {
+            valueMappings.add(valueMapping);
         }
     }
 
-    public List<ColumnDescriptor> getColumns() {
-        return Collections.unmodifiableList(columns);
+    public List<ValueMapping> getValueMappings() {
+        return Collections.unmodifiableList(valueMappings);
     }
 
     public P newInstance() {

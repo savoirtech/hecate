@@ -1,18 +1,15 @@
-package com.savoirtech.hecate.cql3.mapping;
+package com.savoirtech.hecate.cql3.convert;
 
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
 
-public interface FieldMapping {
+public interface ValueConverter {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Object fieldCassandraValue(Object pojo);
+    Object fromCassandraValue(Object value);
 
-    DataType columnType();
+    DataType getDataType();
 
-    void populateFromRow(Object root, Row row, int columnIndex);
-
-    Object rawCassandraValue(Object rawValue);
+    Object toCassandraValue(Object value);
 }

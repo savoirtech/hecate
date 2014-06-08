@@ -16,14 +16,14 @@
 
 package com.savoirtech.hecate.cql3.entities;
 
+import com.savoirtech.hecate.cql3.annotations.Id;
+
 import java.util.Date;
 import java.util.UUID;
 
-import com.savoirtech.hecate.cql3.annotations.IdColumn;
-
 public class SimpleTable {
 
-    @IdColumn
+    @Id
     long id;
 
     String name;

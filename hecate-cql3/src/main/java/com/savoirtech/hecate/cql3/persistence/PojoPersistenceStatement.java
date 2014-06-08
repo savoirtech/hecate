@@ -7,8 +7,9 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.savoirtech.hecate.cql3.meta.ColumnDescriptor;
+import com.savoirtech.hecate.cql3.mapping.ValueMapping;
 import com.savoirtech.hecate.cql3.meta.PojoDescriptor;
+import com.savoirtech.hecate.cql3.util.CassandraUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,8 +34,8 @@ public class PojoPersistenceStatement<P> {
 
     protected static <P> Select.Selection pojoSelect(PojoDescriptor<P> pojoDescriptor) {
         final Select.Selection select = QueryBuilder.select();
-        for (ColumnDescriptor columnDescriptor : pojoDescriptor.getColumns()) {
-            select.column(columnDescriptor.getColumnName());
+        for (ValueMapping mapping : pojoDescriptor.getValueMappings()) {
+            select.column(mapping.getColumnName());
         }
         return select;
     }
@@ -53,18 +54,18 @@ public class PojoPersistenceStatement<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected List<ColumnDescriptor> allColumns() {
-        return pojoDescriptor.getColumns();
+    protected List<ValueMapping> allColumns() {
+        return pojoDescriptor.getValueMappings();
     }
 
-    protected Object cassandraValue(P pojo, ColumnDescriptor descriptor) {
-        return descriptor.getMapping().fieldCassandraValue(pojo);
+    protected Object cassandraValue(P pojo, ValueMapping mapping) {
+        return mapping.getConverter().toCassandraValue(mapping.getValue().get(pojo));
     }
 
-    protected List<Object> cassandraValues(P pojo, List<ColumnDescriptor> descriptors) {
-        final List<Object> values = new ArrayList<>(descriptors.size());
-        for (ColumnDescriptor columnDescriptor : descriptors) {
-            values.add(columnDescriptor.getMapping().fieldCassandraValue(pojo));
+    protected List<Object> cassandraValues(P pojo, List<ValueMapping> mappings) {
+        final List<Object> values = new ArrayList<>(mappings.size());
+        for (ValueMapping mapping : mappings) {
+            values.add(mapping.getConverter().toCassandraValue(mapping.getValue().get(pojo)));
         }
         return values;
     }
@@ -78,8 +79,8 @@ public class PojoPersistenceStatement<P> {
         return session.execute(preparedStatement.bind(parameters.toArray(new Object[parameters.size()])));
     }
 
-    protected ColumnDescriptor identifierColumn() {
-        return pojoDescriptor.getIdentifierColumn();
+    protected ValueMapping identifierMapping() {
+        return pojoDescriptor.getIdentifierMapping();
     }
 
     protected List<P> list(ResultSet resultSet) {
@@ -94,8 +95,9 @@ public class PojoPersistenceStatement<P> {
     protected P mapPojoFromRow(Row row) {
         P pojo = pojoDescriptor.newInstance();
         int columnIndex = 0;
-        for (ColumnDescriptor descriptor : pojoDescriptor.getColumns()) {
-            descriptor.getMapping().populateFromRow(pojo, row, columnIndex);
+        for (ValueMapping mapping : pojoDescriptor.getValueMappings()) {
+            Object columnValue = CassandraUtils.getValue(row, columnIndex, mapping.getConverter().getDataType());
+            mapping.getValue().set(pojo, mapping.getConverter().fromCassandraValue(columnValue));
             columnIndex++;
         }
         return pojo;

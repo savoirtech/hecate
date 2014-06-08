@@ -1,11 +1,11 @@
 package com.savoirtech.hecate.cql3.value.property;
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
-import com.savoirtech.hecate.cql3.annotations.IdColumn;
+import com.savoirtech.hecate.cql3.annotations.Id;
+import com.savoirtech.hecate.cql3.util.GenericType;
 import com.savoirtech.hecate.cql3.value.Value;
 import org.junit.Test;
 
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -19,13 +19,13 @@ public class PropertyValueProviderTest {
     @Test
     public void testGetAnnotation() {
         Value value = getPropertyValue(PropertiesHolder.class, "normal");
-        assertNotNull(value.getAnnotation(IdColumn.class));
+        assertNotNull(value.getAnnotation(Id.class));
     }
 
     @Test
     public void testGetType() {
         Value value = getPropertyValue(PropertiesHolder.class, "normal");
-        assertEquals(String.class, value.getType());
+        assertEquals(String.class, value.getType().getRawType());
     }
 
     @Test
@@ -57,9 +57,9 @@ public class PropertyValueProviderTest {
     public void testGetGenericType() {
         Value value = getPropertyValue(PropertiesHolder.class, "mapProperty");
         assertNotNull(value);
-        final Type type = value.getGenericType();
-        assertEquals(String.class, ReflectionUtils.mapKeyType(type));
-        assertEquals(String.class, ReflectionUtils.mapValueType(type));
+        final GenericType type = value.getType();
+        assertEquals(String.class, type.getTypeArgument(ReflectionUtils.MAP_KEY_TYPE_VAR, Map.class).getRawType());
+        assertEquals(String.class, type.getTypeArgument(ReflectionUtils.MAP_VALUE_TYPE_VAR, Map.class).getRawType());
     }
 
     private Value getPropertyValue(Class<?> c, String propertyName) {
@@ -91,7 +91,7 @@ public class PropertyValueProviderTest {
             this.mapProperty = mapProperty;
         }
 
-        @IdColumn
+        @Id
         public String getNormal() {
             return normal;
         }

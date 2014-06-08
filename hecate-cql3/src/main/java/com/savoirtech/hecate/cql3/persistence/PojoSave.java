@@ -3,7 +3,7 @@ package com.savoirtech.hecate.cql3.persistence;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.savoirtech.hecate.cql3.meta.ColumnDescriptor;
+import com.savoirtech.hecate.cql3.mapping.ValueMapping;
 import com.savoirtech.hecate.cql3.meta.PojoDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +25,8 @@ public class PojoSave<P> extends PojoPersistenceStatement<P> {
 
     private static <P> Insert createInsert(String table, PojoDescriptor<P> pojoDescriptor) {
         final Insert insert = QueryBuilder.insertInto(table);
-        for (ColumnDescriptor columnDescriptor : pojoDescriptor.getColumns()) {
-            insert.value(columnDescriptor.getColumnName(), QueryBuilder.bindMarker());
+        for (ValueMapping mapping : pojoDescriptor.getValueMappings()) {
+            insert.value(mapping.getColumnName(), QueryBuilder.bindMarker());
         }
         LOGGER.info("{}.save(): {}", pojoDescriptor.getPojoType().getSimpleName(), insert);
         return insert;

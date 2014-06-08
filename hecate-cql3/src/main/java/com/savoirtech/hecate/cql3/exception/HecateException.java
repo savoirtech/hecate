@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3;
+package com.savoirtech.hecate.cql3.exception;
 
 public class HecateException extends RuntimeException {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public HecateException(String s) {super(s);}
+    public HecateException(String s) {
+        super(s);
+    }
 
     public HecateException(Exception e) {
         super(e);

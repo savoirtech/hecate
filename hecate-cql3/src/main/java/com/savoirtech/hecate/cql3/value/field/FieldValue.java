@@ -1,11 +1,11 @@
 package com.savoirtech.hecate.cql3.value.field;
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
+import com.savoirtech.hecate.cql3.util.GenericType;
 import com.savoirtech.hecate.cql3.value.Value;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 
 public class FieldValue implements Value {
 //----------------------------------------------------------------------------------------------------------------------
@@ -13,21 +13,23 @@ public class FieldValue implements Value {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Field field;
+    private final GenericType type;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public FieldValue(Field field) {
+    public FieldValue(Class<?> pojoType, Field field) {
         this.field = field;
+        this.type = new GenericType(pojoType, field.getGenericType());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Value Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
+    @SuppressWarnings("unchecked")
     public Object get(Object pojo) {
         return ReflectionUtils.getFieldValue(field, pojo);
     }
@@ -38,18 +40,12 @@ public class FieldValue implements Value {
     }
 
     @Override
-    public Type getGenericType() {
-        return field.getGenericType();
-    }
-
-    @Override
     public String getName() {
         return field.getName();
     }
 
-    @Override
-    public Class<?> getType() {
-        return field.getType();
+    public GenericType getType() {
+        return type;
     }
 
     @Override

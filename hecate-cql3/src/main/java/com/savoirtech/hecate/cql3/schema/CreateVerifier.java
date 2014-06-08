@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CreateVerifier implements SchemaVerifier {
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
 // SchemaVerifier Implementation
 //----------------------------------------------------------------------------------------------------------------------
     private static final Logger LOGGER = LoggerFactory.getLogger(CreateVerifier.class);
@@ -20,7 +20,7 @@ public class CreateVerifier implements SchemaVerifier {
         cql.append(".");
         cql.append(tableName);
         cql.append(" (");
-        cql.append(StringUtils.join(descriptor.getColumns(), ", "));
+        cql.append(StringUtils.join(descriptor.getValueMappings(), ", "));
         cql.append(")");
         LOGGER.info("Creating table for type {}: {}", descriptor.getPojoType(), cql);
         session.execute(cql.toString());

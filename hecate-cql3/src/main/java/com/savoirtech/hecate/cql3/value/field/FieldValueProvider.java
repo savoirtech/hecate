@@ -20,7 +20,7 @@ public class FieldValueProvider implements ValueProvider {
         final List<Value> values = new ArrayList<>();
         for (Field field : fields) {
             if (isPersistable(field)) {
-                values.add(new FieldValue(field));
+                values.add(new FieldValue(pojoType, field));
             }
         }
         return values;

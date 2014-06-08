@@ -2,7 +2,7 @@ package com.savoirtech.hecate.cql3.util;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
-import com.savoirtech.hecate.cql3.HecateException;
+import com.savoirtech.hecate.cql3.exception.HecateException;
 
 public class CassandraUtils {
 //----------------------------------------------------------------------------------------------------------------------
@@ -31,7 +31,26 @@ public class CassandraUtils {
                 return row.getDate(columnIndex);
             case UUID:
                 return row.getUUID(columnIndex);
+            case LIST:
+                return row.getList(columnIndex, typeArgument(dataType, 0));
+            case SET:
+                return row.getSet(columnIndex, typeArgument(dataType, 0));
+            case MAP:
+                return row.getMap(columnIndex, typeArgument(dataType, 0), typeArgument(dataType, 1));
+            case BLOB:
+                return row.getBytes(columnIndex);
+            case COUNTER:
+                return row.getLong(columnIndex);
+            case INET:
+                return row.getInet(columnIndex);
+            case VARINT:
+                return row.getVarint(columnIndex);
+            default:
+                throw new HecateException(String.format("Unsupported data type %s.", dataType.getName()));
         }
-        throw new HecateException(String.format("Unable to extract %s value from Row.", dataType.getName().toString()));
+    }
+
+    private static Class<?> typeArgument(DataType dataType, int index) {
+        return dataType.getTypeArguments().get(index).asJavaClass();
     }
 }

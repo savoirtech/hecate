@@ -1,12 +1,12 @@
 package com.savoirtech.hecate.cql3.value.property;
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
+import com.savoirtech.hecate.cql3.util.GenericType;
 import com.savoirtech.hecate.cql3.value.Value;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 
 public class PropertyValue implements Value {
 //----------------------------------------------------------------------------------------------------------------------
@@ -16,15 +16,17 @@ public class PropertyValue implements Value {
     private PropertyDescriptor propertyDescriptor;
     private final Method readMethod;
     private final Method writeMethod;
+    private final GenericType type;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PropertyValue(PropertyDescriptor propertyDescriptor, Method readMethod, Method writeMethod) {
+    public PropertyValue(Class<?> declaringClass, PropertyDescriptor propertyDescriptor, Method readMethod, Method writeMethod) {
         this.propertyDescriptor = propertyDescriptor;
         this.readMethod = readMethod;
         this.writeMethod = writeMethod;
+        this.type = new GenericType(declaringClass, readMethod.getGenericReturnType());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -32,6 +34,7 @@ public class PropertyValue implements Value {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object get(Object pojo) {
         return ReflectionUtils.invoke(pojo, readMethod);
     }
@@ -42,18 +45,14 @@ public class PropertyValue implements Value {
     }
 
     @Override
-    public Type getGenericType() {
-        return readMethod.getGenericReturnType();
-    }
-
-    @Override
     public String getName() {
         return propertyDescriptor.getName();
     }
 
     @Override
-    public Class<?> getType() {
-        return readMethod.getReturnType();
+    @SuppressWarnings("unchecked")
+    public GenericType getType() {
+        return type;
     }
 
     @Override

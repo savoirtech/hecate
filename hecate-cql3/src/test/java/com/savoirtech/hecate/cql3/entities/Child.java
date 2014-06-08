@@ -16,9 +16,9 @@
 
 package com.savoirtech.hecate.cql3.entities;
 
-import java.util.UUID;
+import com.savoirtech.hecate.cql3.annotations.Id;
 
-import com.savoirtech.hecate.cql3.annotations.IdColumn;
+import java.util.UUID;
 
 public class Child {
     public Child() {
@@ -28,7 +28,7 @@ public class Child {
         this.name = name;
     }
 
-    @IdColumn
+    @Id
     String id = UUID.randomUUID().toString();
 
     String name;
@@ -52,8 +52,8 @@ public class Child {
     @Override
     public String toString() {
         return "Child{" +
-            "id='" + id + '\'' +
-            ", name='" + name + '\'' +
-            '}';
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                '}';
     }
 }
