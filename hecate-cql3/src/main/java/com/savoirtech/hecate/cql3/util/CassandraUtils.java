@@ -2,7 +2,7 @@ package com.savoirtech.hecate.cql3.util;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
-import com.savoirtech.hecate.cql3.exception.HecateException;
+import com.savoirtech.hecate.cql3.HecateException;
 
 public class CassandraUtils {
 //----------------------------------------------------------------------------------------------------------------------

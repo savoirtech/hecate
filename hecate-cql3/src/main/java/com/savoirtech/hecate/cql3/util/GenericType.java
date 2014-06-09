@@ -1,6 +1,6 @@
 package com.savoirtech.hecate.cql3.util;
 
-import com.savoirtech.hecate.cql3.exception.HecateException;
+import com.savoirtech.hecate.cql3.HecateException;
 import org.apache.commons.lang3.reflect.TypeUtils;
 
 import java.lang.reflect.Type;

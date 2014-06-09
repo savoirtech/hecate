@@ -20,7 +20,7 @@ public class CreateVerifier implements SchemaVerifier {
         cql.append(".");
         cql.append(tableName);
         cql.append(" (");
-        cql.append(StringUtils.join(descriptor.getValueMappings(), ", "));
+        cql.append(StringUtils.join(descriptor.getFacetMappings(), ", "));
         cql.append(")");
         LOGGER.info("Creating table for type {}: {}", descriptor.getPojoType(), cql);
         session.execute(cql.toString());

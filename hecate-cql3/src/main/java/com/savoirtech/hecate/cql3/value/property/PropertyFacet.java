@@ -2,13 +2,13 @@ package com.savoirtech.hecate.cql3.value.property;
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
 import com.savoirtech.hecate.cql3.util.GenericType;
-import com.savoirtech.hecate.cql3.value.Value;
+import com.savoirtech.hecate.cql3.value.Facet;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-public class PropertyValue implements Value {
+public class PropertyFacet implements Facet {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ public class PropertyValue implements Value {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PropertyValue(Class<?> declaringClass, PropertyDescriptor propertyDescriptor, Method readMethod, Method writeMethod) {
+    public PropertyFacet(Class<?> declaringClass, PropertyDescriptor propertyDescriptor, Method readMethod, Method writeMethod) {
         this.propertyDescriptor = propertyDescriptor;
         this.readMethod = readMethod;
         this.writeMethod = writeMethod;

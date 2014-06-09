@@ -1,6 +1,7 @@
 package com.savoirtech.hecate.cql3.convert.def;
 
 import com.google.common.collect.MapMaker;
+import com.savoirtech.hecate.cql3.HecateException;
 import com.savoirtech.hecate.cql3.convert.NativeConverter;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.convert.ValueConverterFactory;
@@ -9,7 +10,6 @@ import com.savoirtech.hecate.cql3.convert.array.ArrayConverter;
 import com.savoirtech.hecate.cql3.convert.list.ListConverterFactory;
 import com.savoirtech.hecate.cql3.convert.map.MapConverterFactory;
 import com.savoirtech.hecate.cql3.convert.set.SetConverterFactory;
-import com.savoirtech.hecate.cql3.exception.ValueConverterNotFoundException;
 import com.savoirtech.hecate.cql3.util.GenericType;
 import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
@@ -79,7 +79,7 @@ public class DefaultValueConverterRegistry implements ValueConverterRegistry {
         }
         ValueConverterFactory factory = findFactory(type.getRawType());
         if (factory == null) {
-            throw new ValueConverterNotFoundException(type.getRawType());
+            throw new HecateException(String.format("Unable to find ValueConverter for values of type %s.", type.getRawType().getName()));
         }
         return factory.createConverter(type, this);
     }

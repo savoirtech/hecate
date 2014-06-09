@@ -35,7 +35,7 @@ public class PojoFindByKeys<P, K> extends PojoPersistenceStatement<P> {
     private List<Object> cassandraValues(Iterable<K> keys) {
         List<Object> cassandraValues = new LinkedList<>();
         for (K key : keys) {
-            cassandraValues.add(identifierMapping().getConverter().toCassandraValue(key));
+            cassandraValues.add(identifierMapping().getConverter().toCassandraValue(key, null));
         }
         return cassandraValues;
     }

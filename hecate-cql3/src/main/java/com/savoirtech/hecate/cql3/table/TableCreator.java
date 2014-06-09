@@ -17,10 +17,10 @@
 package com.savoirtech.hecate.cql3.table;
 
 import com.savoirtech.hecate.cql3.FieldMapper;
+import com.savoirtech.hecate.cql3.HecateException;
 import com.savoirtech.hecate.cql3.ReflectionUtils;
 import com.savoirtech.hecate.cql3.annotations.Id;
 import com.savoirtech.hecate.cql3.annotations.PrimaryKey;
-import com.savoirtech.hecate.cql3.exception.HecateException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;

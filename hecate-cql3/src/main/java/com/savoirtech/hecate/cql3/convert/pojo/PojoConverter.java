@@ -1,26 +1,25 @@
-package com.savoirtech.hecate.cql3.convert.set;
+package com.savoirtech.hecate.cql3.convert.pojo;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 import com.savoirtech.hecate.cql3.persistence.Hydrator;
 
-import java.util.HashSet;
-import java.util.Set;
-
-public class SetConverter implements ValueConverter {
+public class PojoConverter implements ValueConverter {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final ValueConverter elementConverter;
+    private final Class<?> pojoType;
+    private final ValueConverter identifierConverter;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public SetConverter(ValueConverter elementConverter) {
-        this.elementConverter = elementConverter;
+    public PojoConverter(Class<?> pojoType, ValueConverter identifierConverter) {
+        this.pojoType = pojoType;
+        this.identifierConverter = identifierConverter;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -28,33 +27,17 @@ public class SetConverter implements ValueConverter {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    @SuppressWarnings("unchecked")
     public Object fromCassandraValue(Object value, Hydrator hydrator) {
-        if (value == null) {
-            return null;
-        }
-        Set<Object> cassandraSet = (Set<Object>) value;
-        Set<Object> converted = new HashSet<>();
-        for (Object cassandraValue : cassandraSet) {
-            converted.add(elementConverter.fromCassandraValue(cassandraValue, hydrator));
-        }
-        return converted;
+        return hydrator.newPojo(pojoType, identifierConverter.fromCassandraValue(value, hydrator));
     }
 
     @Override
     public DataType getDataType() {
-        return DataType.set(elementConverter.getDataType());
+        return identifierConverter.getDataType();
     }
 
     @Override
     public Object toCassandraValue(Object value, Dehydrator dehydrator) {
-        if (value == null) {
-            return null;
-        }
-        Set<Object> cassandraValues = new HashSet<>();
-        for (Object element : (Set<?>) value) {
-            cassandraValues.add(elementConverter.toCassandraValue(element, dehydrator));
-        }
-        return cassandraValues;
+        return identifierConverter.toCassandraValue(dehydrator.getIdentifier(pojoType, value), dehydrator);
     }
 }

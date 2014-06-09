@@ -2,12 +2,12 @@ package com.savoirtech.hecate.cql3.value.field;
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
 import com.savoirtech.hecate.cql3.util.GenericType;
-import com.savoirtech.hecate.cql3.value.Value;
+import com.savoirtech.hecate.cql3.value.Facet;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
-public class FieldValue implements Value {
+public class FieldFacet implements Facet {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -19,7 +19,7 @@ public class FieldValue implements Value {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public FieldValue(Class<?> pojoType, Field field) {
+    public FieldFacet(Class<?> pojoType, Field field) {
         this.field = field;
         this.type = new GenericType(pojoType, field.getGenericType());
     }

@@ -1,29 +1,29 @@
 package com.savoirtech.hecate.cql3.value.field;
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
-import com.savoirtech.hecate.cql3.value.Value;
-import com.savoirtech.hecate.cql3.value.ValueProvider;
+import com.savoirtech.hecate.cql3.value.Facet;
+import com.savoirtech.hecate.cql3.value.FacetProvider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FieldValueProvider implements ValueProvider {
+public class FieldFacetProvider implements FacetProvider {
 //----------------------------------------------------------------------------------------------------------------------
 // ValueProvider Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public List<Value> getValues(Class<?> pojoType) {
+    public List<Facet> getFacets(Class<?> pojoType) {
         final List<Field> fields = ReflectionUtils.getFields(pojoType);
-        final List<Value> values = new ArrayList<>();
+        final List<Facet> facets = new ArrayList<>();
         for (Field field : fields) {
             if (isPersistable(field)) {
-                values.add(new FieldValue(pojoType, field));
+                facets.add(new FieldFacet(pojoType, field));
             }
         }
-        return values;
+        return facets;
     }
 
 //----------------------------------------------------------------------------------------------------------------------

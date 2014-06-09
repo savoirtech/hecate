@@ -1,7 +1,7 @@
 package com.savoirtech.hecate.cql3.meta;
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
-import com.savoirtech.hecate.cql3.mapping.ValueMapping;
+import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -13,8 +13,8 @@ public class PojoDescriptor<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Class<P> pojoType;
-    private final List<ValueMapping> valueMappings = new LinkedList<>();
-    private ValueMapping identifierMapping;
+    private final List<FacetMapping> facetMappings = new LinkedList<>();
+    private FacetMapping identifierMapping;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -28,7 +28,7 @@ public class PojoDescriptor<P> {
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ValueMapping getIdentifierMapping() {
+    public FacetMapping getIdentifierMapping() {
         return identifierMapping;
     }
 
@@ -40,17 +40,26 @@ public class PojoDescriptor<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public void addMapping(ValueMapping valueMapping) {
-        if (valueMapping.isIdentifier()) {
-            this.identifierMapping = valueMapping;
-            valueMappings.add(0, valueMapping);
+    public void addMapping(FacetMapping facetMapping) {
+        if (facetMapping.isIdentifier()) {
+            this.identifierMapping = facetMapping;
+            facetMappings.add(0, facetMapping);
         } else {
-            valueMappings.add(valueMapping);
+            facetMappings.add(facetMapping);
         }
     }
 
-    public List<ValueMapping> getValueMappings() {
-        return Collections.unmodifiableList(valueMappings);
+    public FacetMapping facet(String name) {
+        for (FacetMapping mapping : facetMappings) {
+            if (name.equals(mapping.getFacet().getName())) {
+                return mapping;
+            }
+        }
+        return null;
+    }
+
+    public List<FacetMapping> getFacetMappings() {
+        return Collections.unmodifiableList(facetMappings);
     }
 
     public P newInstance() {

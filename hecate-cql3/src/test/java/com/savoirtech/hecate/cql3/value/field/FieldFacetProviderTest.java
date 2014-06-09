@@ -1,7 +1,7 @@
 package com.savoirtech.hecate.cql3.value.field;
 
 import com.savoirtech.hecate.cql3.annotations.Id;
-import com.savoirtech.hecate.cql3.value.Value;
+import com.savoirtech.hecate.cql3.value.Facet;
 import org.junit.Test;
 
 import java.util.List;
@@ -9,43 +9,43 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class FieldValueProviderTest {
+public class FieldFacetProviderTest {
     //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
-    private FieldValue fooField() throws Exception {
-        return new FieldValue(FieldHolder.class, FieldHolder.class.getDeclaredField("foo"));
+    private FieldFacet fooField() throws Exception {
+        return new FieldFacet(FieldHolder.class, FieldHolder.class.getDeclaredField("foo"));
     }
 
     @Test
     public void testGet() throws Exception {
-        FieldValue value = fooField();
+        FieldFacet value = fooField();
         final FieldHolder holder = new FieldHolder();
         assertEquals("bar", value.get(holder));
     }
 
     @Test
     public void testGetType() throws Exception {
-        FieldValue value = fooField();
+        FieldFacet value = fooField();
         assertEquals(String.class, value.getType().getRawType());
     }
 
     @Test
     public void testGetAnnotation() throws Exception {
-        FieldValue value = fooField();
+        FieldFacet value = fooField();
         assertNotNull(value.getAnnotation(Id.class));
     }
 
 
     @Test
     public void testGetName() throws Exception {
-        FieldValue value = fooField();
+        FieldFacet value = fooField();
         assertEquals("foo", value.getName());
     }
 
     @Test
     public void testSet() throws Exception {
-        FieldValue value = fooField();
+        FieldFacet value = fooField();
         final FieldHolder holder = new FieldHolder();
         value.set(holder, "baz");
         assertEquals("baz", holder.foo);
@@ -53,16 +53,16 @@ public class FieldValueProviderTest {
 
     @Test
     public void testWithNonPersistentFields() {
-        FieldValueProvider provider = new FieldValueProvider();
-        List<Value> values = provider.getValues(NonPersistentFields.class);
-        assertEquals(0, values.size());
+        FieldFacetProvider provider = new FieldFacetProvider();
+        List<Facet> facets = provider.getFacets(NonPersistentFields.class);
+        assertEquals(0, facets.size());
     }
 
     @Test
     public void testWithPersistentFields() {
-        FieldValueProvider provider = new FieldValueProvider();
-        final List<Value> values = provider.getValues(PersistentFields.class);
-        assertEquals(1, values.size());
+        FieldFacetProvider provider = new FieldFacetProvider();
+        final List<Facet> facets = provider.getFacets(PersistentFields.class);
+        assertEquals(1, facets.size());
     }
 
 //----------------------------------------------------------------------------------------------------------------------

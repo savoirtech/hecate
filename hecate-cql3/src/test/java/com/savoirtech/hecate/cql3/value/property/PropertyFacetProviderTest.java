@@ -3,7 +3,7 @@ package com.savoirtech.hecate.cql3.value.property;
 import com.savoirtech.hecate.cql3.ReflectionUtils;
 import com.savoirtech.hecate.cql3.annotations.Id;
 import com.savoirtech.hecate.cql3.util.GenericType;
-import com.savoirtech.hecate.cql3.value.Value;
+import com.savoirtech.hecate.cql3.value.Facet;
 import org.junit.Test;
 
 import java.util.List;
@@ -11,63 +11,63 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class PropertyValueProviderTest {
+public class PropertyFacetProviderTest {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testGetAnnotation() {
-        Value value = getPropertyValue(PropertiesHolder.class, "normal");
-        assertNotNull(value.getAnnotation(Id.class));
+        Facet facet = getPropertyValue(PropertiesHolder.class, "normal");
+        assertNotNull(facet.getAnnotation(Id.class));
     }
 
     @Test
     public void testGetType() {
-        Value value = getPropertyValue(PropertiesHolder.class, "normal");
-        assertEquals(String.class, value.getType().getRawType());
+        Facet facet = getPropertyValue(PropertiesHolder.class, "normal");
+        assertEquals(String.class, facet.getType().getRawType());
     }
 
     @Test
     public void testGetValues() {
-        PropertyValueProvider provider = new PropertyValueProvider();
-        final List<Value> values = provider.getValues(PropertiesHolder.class);
-        assertEquals(4, values.size());
+        PropertyFacetProvider provider = new PropertyFacetProvider();
+        final List<Facet> facets = provider.getFacets(PropertiesHolder.class);
+        assertEquals(4, facets.size());
     }
 
     @Test
     public void testWithPrivateGetter() {
-        Value value = getPropertyValue(PropertiesHolder.class, "privateGetter");
-        assertNotNull(value);
+        Facet facet = getPropertyValue(PropertiesHolder.class, "privateGetter");
+        assertNotNull(facet);
         PropertiesHolder holder = new PropertiesHolder();
         holder.setPrivateGetter("foo");
-        assertEquals("foo", value.get(holder));
+        assertEquals("foo", facet.get(holder));
     }
 
     @Test
     public void testWithPrivateSetter() {
-        Value value = getPropertyValue(PropertiesHolder.class, "privateSetter");
-        assertNotNull(value);
+        Facet facet = getPropertyValue(PropertiesHolder.class, "privateSetter");
+        assertNotNull(facet);
         PropertiesHolder holder = new PropertiesHolder();
-        value.set(holder, "foo");
+        facet.set(holder, "foo");
         assertEquals("foo", holder.getPrivateSetter());
     }
 
     @Test
     public void testGetGenericType() {
-        Value value = getPropertyValue(PropertiesHolder.class, "mapProperty");
-        assertNotNull(value);
-        final GenericType type = value.getType();
+        Facet facet = getPropertyValue(PropertiesHolder.class, "mapProperty");
+        assertNotNull(facet);
+        final GenericType type = facet.getType();
         assertEquals(String.class, type.getTypeArgument(ReflectionUtils.MAP_KEY_TYPE_VAR, Map.class).getRawType());
         assertEquals(String.class, type.getTypeArgument(ReflectionUtils.MAP_VALUE_TYPE_VAR, Map.class).getRawType());
     }
 
-    private Value getPropertyValue(Class<?> c, String propertyName) {
-        PropertyValueProvider provider = new PropertyValueProvider();
-        final List<Value> values = provider.getValues(c);
-        for (Value value : values) {
-            if (propertyName.equals(value.getName())) {
-                return value;
+    private Facet getPropertyValue(Class<?> c, String propertyName) {
+        PropertyFacetProvider provider = new PropertyFacetProvider();
+        final List<Facet> facets = provider.getFacets(c);
+        for (Facet facet : facets) {
+            if (propertyName.equals(facet.getName())) {
+                return facet;
             }
         }
         return null;

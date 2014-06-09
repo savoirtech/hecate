@@ -16,10 +16,10 @@
 
 package com.savoirtech.hecate.cql3.table;
 
+import com.savoirtech.hecate.cql3.HecateException;
 import com.savoirtech.hecate.cql3.entities.CompoundKeyTable;
 import com.savoirtech.hecate.cql3.entities.ConflictKeyTable;
 import com.savoirtech.hecate.cql3.entities.SimpleTable;
-import com.savoirtech.hecate.cql3.exception.HecateException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;

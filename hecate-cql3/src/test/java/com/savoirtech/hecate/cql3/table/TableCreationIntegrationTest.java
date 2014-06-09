@@ -18,9 +18,9 @@ package com.savoirtech.hecate.cql3.table;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
+import com.savoirtech.hecate.cql3.HecateException;
 import com.savoirtech.hecate.cql3.entities.CompoundKeyTable;
 import com.savoirtech.hecate.cql3.entities.SimpleTable;
-import com.savoirtech.hecate.cql3.exception.HecateException;
 import com.savoirtech.hecate.cql3.test.CassandraTestCase;
 import org.junit.Test;
 

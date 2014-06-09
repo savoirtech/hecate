@@ -4,7 +4,7 @@ import com.savoirtech.hecate.cql3.util.GenericType;
 
 import java.lang.annotation.Annotation;
 
-public interface Value {
+public interface Facet {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------

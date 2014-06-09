@@ -7,7 +7,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.savoirtech.hecate.cql3.mapping.ValueMapping;
+import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.meta.PojoDescriptor;
 import com.savoirtech.hecate.cql3.util.CassandraUtils;
 import org.slf4j.Logger;
@@ -34,7 +34,7 @@ public class PojoPersistenceStatement<P> {
 
     protected static <P> Select.Selection pojoSelect(PojoDescriptor<P> pojoDescriptor) {
         final Select.Selection select = QueryBuilder.select();
-        for (ValueMapping mapping : pojoDescriptor.getValueMappings()) {
+        for (FacetMapping mapping : pojoDescriptor.getFacetMappings()) {
             select.column(mapping.getColumnName());
         }
         return select;
@@ -54,18 +54,18 @@ public class PojoPersistenceStatement<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected List<ValueMapping> allColumns() {
-        return pojoDescriptor.getValueMappings();
+    protected List<FacetMapping> allColumns() {
+        return pojoDescriptor.getFacetMappings();
     }
 
-    protected Object cassandraValue(P pojo, ValueMapping mapping) {
-        return mapping.getConverter().toCassandraValue(mapping.getValue().get(pojo));
+    protected Object cassandraValue(P pojo, FacetMapping mapping) {
+        return mapping.getConverter().toCassandraValue(mapping.getFacet().get(pojo), null);
     }
 
-    protected List<Object> cassandraValues(P pojo, List<ValueMapping> mappings) {
+    protected List<Object> cassandraValues(P pojo, List<FacetMapping> mappings) {
         final List<Object> values = new ArrayList<>(mappings.size());
-        for (ValueMapping mapping : mappings) {
-            values.add(mapping.getConverter().toCassandraValue(mapping.getValue().get(pojo)));
+        for (FacetMapping mapping : mappings) {
+            values.add(mapping.getConverter().toCassandraValue(mapping.getFacet().get(pojo), null));
         }
         return values;
     }
@@ -79,7 +79,7 @@ public class PojoPersistenceStatement<P> {
         return session.execute(preparedStatement.bind(parameters.toArray(new Object[parameters.size()])));
     }
 
-    protected ValueMapping identifierMapping() {
+    protected FacetMapping identifierMapping() {
         return pojoDescriptor.getIdentifierMapping();
     }
 
@@ -95,9 +95,10 @@ public class PojoPersistenceStatement<P> {
     protected P mapPojoFromRow(Row row) {
         P pojo = pojoDescriptor.newInstance();
         int columnIndex = 0;
-        for (ValueMapping mapping : pojoDescriptor.getValueMappings()) {
+        for (FacetMapping mapping : pojoDescriptor.getFacetMappings()) {
             Object columnValue = CassandraUtils.getValue(row, columnIndex, mapping.getConverter().getDataType());
-            mapping.getValue().set(pojo, mapping.getConverter().fromCassandraValue(columnValue));
+            // TODO: Use Hydrator!
+            mapping.getFacet().set(pojo, mapping.getConverter().fromCassandraValue(columnValue, null));
             columnIndex++;
         }
         return pojo;

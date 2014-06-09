@@ -1,11 +1,16 @@
-package com.savoirtech.hecate.cql3.value;
+package com.savoirtech.hecate.cql3.persistence;
 
+import java.util.Iterator;
 import java.util.List;
 
-public interface ValueProvider {
+public interface PojoQuery<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    List<Value> getValues(Class<?> pojoType);
+    Iterator<P> iterate(Object... parameters);
+
+    List<P> list(Object... parameters);
+
+    P one(Object... parameters);
 }

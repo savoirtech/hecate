@@ -2,15 +2,18 @@ package com.savoirtech.hecate.cql3.convert.array;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
+import com.savoirtech.hecate.cql3.persistence.Dehydrator;
+import com.savoirtech.hecate.cql3.persistence.Hydrator;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ArrayConverter implements ValueConverter {
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
+
     private final Class<?> elementType;
     private final ValueConverter elementConverter;
 
@@ -27,10 +30,9 @@ public class ArrayConverter implements ValueConverter {
 // ValueConverter Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     @SuppressWarnings("unchecked")
-    public Object fromCassandraValue(Object value) {
+    public Object fromCassandraValue(Object value, Hydrator hydrator) {
         if (value == null) {
             return null;
         }
@@ -38,7 +40,7 @@ public class ArrayConverter implements ValueConverter {
         final Object array = Array.newInstance(elementType, cassandraList.size());
         final int length = Array.getLength(array);
         for (int i = 0; i < length; ++i) {
-            Array.set(array, i, elementConverter.fromCassandraValue(cassandraList.get(i)));
+            Array.set(array, i, elementConverter.fromCassandraValue(cassandraList.get(i), hydrator));
         }
         return array;
     }
@@ -49,14 +51,14 @@ public class ArrayConverter implements ValueConverter {
     }
 
     @Override
-    public Object toCassandraValue(Object value) {
+    public Object toCassandraValue(Object value, Dehydrator dehydrator) {
         if (value == null) {
             return null;
         }
         final int length = Array.getLength(value);
         final List<Object> elements = new ArrayList<>(length);
         for (int i = 0; i < length; ++i) {
-            elements.add(Array.get(value, i));
+            elements.add(elementConverter.toCassandraValue(Array.get(value, i), dehydrator));
         }
         return elements;
     }

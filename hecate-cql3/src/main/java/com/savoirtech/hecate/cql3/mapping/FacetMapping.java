@@ -3,14 +3,14 @@ package com.savoirtech.hecate.cql3.mapping;
 import com.savoirtech.hecate.cql3.annotations.ColumnName;
 import com.savoirtech.hecate.cql3.annotations.Id;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.value.Value;
+import com.savoirtech.hecate.cql3.value.Facet;
 
-public class ValueMapping {
+public class FacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Value value;
+    private final Facet facet;
     private final ValueConverter converter;
     private final boolean identifier;
     private final String columnName;
@@ -19,16 +19,16 @@ public class ValueMapping {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ValueMapping(Value value, ValueConverter converter) {
-        this.value = value;
+    public FacetMapping(Facet facet, ValueConverter converter) {
+        this.facet = facet;
         this.converter = converter;
-        this.identifier = value.getAnnotation(Id.class) != null;
-        this.columnName = columnName(value);
+        this.identifier = facet.getAnnotation(Id.class) != null;
+        this.columnName = columnName(facet);
     }
 
-    private static String columnName(Value value) {
-        ColumnName annot = value.getAnnotation(ColumnName.class);
-        return annot == null ? value.getName() : annot.value();
+    private static String columnName(Facet facet) {
+        ColumnName annot = facet.getAnnotation(ColumnName.class);
+        return annot == null ? facet.getName() : annot.value();
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -43,8 +43,8 @@ public class ValueMapping {
         return converter;
     }
 
-    public Value getValue() {
-        return value;
+    public Facet getFacet() {
+        return facet;
     }
 
     public boolean isIdentifier() {
