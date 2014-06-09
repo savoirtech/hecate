@@ -16,12 +16,6 @@
 
 package com.savoirtech.hecate.cql3.dao.abstracts;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -29,8 +23,14 @@ import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.savoirtech.hecate.cql3.HecateException;
 import com.savoirtech.hecate.cql3.ReflectionUtils;
+import com.savoirtech.hecate.cql3.exception.HecateException;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
     public GenericPojoGraphDao(Session session, String keySpace, String tableName, Class keyClazz, Class mappingClazz) {
