@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.cql3;
 
 import com.datastax.driver.core.Row;
+import com.savoirtech.hecate.cql3.exception.HecateException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

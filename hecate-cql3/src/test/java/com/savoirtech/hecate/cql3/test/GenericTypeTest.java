@@ -1,6 +1,6 @@
 package com.savoirtech.hecate.cql3.test;
 
-import com.savoirtech.hecate.cql3.HecateException;
+import com.savoirtech.hecate.cql3.exception.HecateException;
 import com.savoirtech.hecate.cql3.util.GenericType;
 import org.junit.Test;
 

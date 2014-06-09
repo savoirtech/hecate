@@ -23,8 +23,8 @@ import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.savoirtech.hecate.cql3.HecateException;
 import com.savoirtech.hecate.cql3.ReflectionUtils;
+import com.savoirtech.hecate.cql3.exception.HecateException;
 
 import java.util.HashMap;
 import java.util.HashSet;
