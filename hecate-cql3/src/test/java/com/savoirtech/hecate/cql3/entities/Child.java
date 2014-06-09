@@ -16,7 +16,7 @@
 
 package com.savoirtech.hecate.cql3.entities;
 
-import com.savoirtech.hecate.cql3.annotations.Id;
+import com.savoirtech.hecate.cql3.annotations.IdColumn;
 
 import java.util.UUID;
 
@@ -28,7 +28,7 @@ public class Child {
         this.name = name;
     }
 
-    @Id
+    @IdColumn
     String id = UUID.randomUUID().toString();
 
     String name;

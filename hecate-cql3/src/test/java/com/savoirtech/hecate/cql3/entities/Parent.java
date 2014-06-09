@@ -16,7 +16,7 @@
 
 package com.savoirtech.hecate.cql3.entities;
 
-import com.savoirtech.hecate.cql3.annotations.Id;
+import com.savoirtech.hecate.cql3.annotations.IdColumn;
 import com.savoirtech.hecate.cql3.annotations.TableName;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import java.util.Set;
 
 public class Parent {
 
-    @Id
+    @IdColumn
     long id;
 
     @TableName("child")

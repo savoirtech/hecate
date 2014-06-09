@@ -19,7 +19,7 @@ package com.savoirtech.hecate.cql3;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Row;
 import com.google.common.collect.Lists;
-import com.savoirtech.hecate.cql3.annotations.Id;
+import com.savoirtech.hecate.cql3.annotations.IdColumn;
 import com.savoirtech.hecate.cql3.annotations.TableName;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericCqlDao;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericPojoGraphDao;
@@ -146,7 +146,7 @@ public class ReflectionUtils {
 
     public static <K> String getIdName(Class clazz) {
         for (Field fied : getFieldsUpTo(clazz, null)) {
-            if (fied.isAnnotationPresent(Id.class)) {
+            if (fied.isAnnotationPresent(IdColumn.class)) {
                 return fied.getName();
             }
         }
@@ -156,7 +156,7 @@ public class ReflectionUtils {
 
     public static Class getIdType(Class instanceClazz) {
         for (Field fied : getFieldsUpTo(instanceClazz, null)) {
-            if (fied.isAnnotationPresent(Id.class)) {
+            if (fied.isAnnotationPresent(IdColumn.class)) {
                 return fied.getType();
             }
         }
