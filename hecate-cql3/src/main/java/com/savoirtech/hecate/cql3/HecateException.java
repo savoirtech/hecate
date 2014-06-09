@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3.exception;
+package com.savoirtech.hecate.cql3;
 
 public class HecateException extends RuntimeException {
 //----------------------------------------------------------------------------------------------------------------------
