@@ -282,7 +282,7 @@ public final class FieldMapper {
 
     private static String getRawCassandraTypeForFieldName(String idName, Class<?> type) throws HecateException {
         for (Field f : ReflectionUtils.getFieldsUpTo(type, null)) {
-            if (type.equals(f.getName())) {
+            if (idName.equals(f.getName())) {
                 return getRawCassandraType(f);
             }
         }
