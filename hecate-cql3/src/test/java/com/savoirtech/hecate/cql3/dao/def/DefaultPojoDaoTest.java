@@ -1,5 +1,11 @@
 package com.savoirtech.hecate.cql3.dao.def;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.common.collect.Sets;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.entities.NestedPojo;
@@ -7,18 +13,17 @@ import com.savoirtech.hecate.cql3.entities.SimplePojo;
 import com.savoirtech.hecate.cql3.test.CassandraTestCase;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class DefaultPojoDaoTest extends CassandraTestCase {
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Other Methods
+    //----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testSave() throws Exception {
@@ -34,6 +39,19 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertEquals(pojo.getId(), found.getId());
     }
 
+    @Test
+    public void testSaveWithTable() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class, "BOB");
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        dao.save(pojo);
+
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found);
+        assertEquals("name", found.getName());
+        assertEquals(pojo.getId(), found.getId());
+    }
 
     @Test
     public void testDelete() throws Exception {
@@ -149,7 +167,6 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertEquals("one", found.getListOfStrings().get(0));
         assertEquals("two", found.getListOfStrings().get(1));
         assertEquals("three", found.getListOfStrings().get(2));
-
     }
 
     @Test
@@ -165,7 +182,6 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertEquals(2, found.getPojoList().size());
         assertEquals(pojo.getPojoList().get(0), found.getPojoList().get(0));
         assertEquals(pojo.getPojoList().get(1), found.getPojoList().get(1));
-
     }
 
     @Test
@@ -187,7 +203,6 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertEquals(2, found.getPojoMap().size());
         assertEquals(nested1, found.getPojoMap().get("one"));
         assertEquals(nested2, found.getPojoMap().get("two"));
-
     }
 
     @Test
@@ -205,8 +220,6 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertEquals(2, found.getPojoSet().size());
         assertTrue(found.getPojoSet().contains(nested1));
         assertTrue(found.getPojoSet().contains(nested2));
-
-
     }
 
     @Test
