@@ -28,11 +28,11 @@ public abstract class AbstractMapHandler implements ColumnHandler {
 
     protected abstract Object toCassandraKey(Object key);
 
-    protected abstract Object toCassandraValue(Object value);
+    protected abstract Object toCassandraValue(Object value, SaveContext context);
 
     protected abstract Object toFacetKey(Object key);
 
-    protected abstract Object toFacetValue(Object value);
+    protected abstract Object toFacetValue(Object value, QueryContext context);
 
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnHandler Implementation
@@ -51,8 +51,9 @@ public abstract class AbstractMapHandler implements ColumnHandler {
         Map<Object, Object> cassandraMap = (Map<Object, Object>) cassandraValue;
         Map<Object, Object> facetMap = new HashMap<>();
         for (Map.Entry<Object, Object> entry : cassandraMap.entrySet()) {
-            facetMap.put(toFacetKey(entry.getKey()), toFacetValue(entry.getValue()));
+            facetMap.put(toFacetKey(entry.getKey()), toFacetValue(entry.getValue(), context));
         }
+        onFacetValueComplete(facetMap, context);
         return facetMap;
     }
 
@@ -65,8 +66,21 @@ public abstract class AbstractMapHandler implements ColumnHandler {
         Map<Object, Object> facetMap = (Map<Object, Object>) facetValue;
         Map<Object, Object> cassandraMap = new HashMap<>();
         for (Map.Entry<Object, Object> entry : facetMap.entrySet()) {
-            cassandraMap.put(toCassandraKey(entry.getKey()), toCassandraValue(entry.getValue()));
+            cassandraMap.put(toCassandraKey(entry.getKey()), toCassandraValue(entry.getValue(), context));
         }
+        onInsertValueComplete(cassandraMap, context);
         return cassandraMap;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    protected void onFacetValueComplete(Map<Object, Object> facetMap, QueryContext context) {
+
+    }
+
+    protected void onInsertValueComplete(Map<Object, Object> cassandraMap, SaveContext context) {
+        
     }
 }

@@ -50,6 +50,7 @@ public abstract class AbstractSetHandler implements ColumnHandler {
         for (Object value : cassandraValues) {
             facetValues.add(toFacetElement(value, context));
         }
+        onFacetValueComplete(facetValues, context);
         return facetValues;
     }
 
@@ -64,6 +65,19 @@ public abstract class AbstractSetHandler implements ColumnHandler {
         for (Object value : facetValues) {
             cassandraValues.add(toCassandraElement(value, context));
         }
+        onInsertValueComplete(cassandraValues, context);
         return cassandraValues;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    protected void onFacetValueComplete(Set<Object> facetValues, QueryContext context) {
+
+    }
+
+    private void onInsertValueComplete(Set<Object> cassandraValues, SaveContext context) {
+
     }
 }

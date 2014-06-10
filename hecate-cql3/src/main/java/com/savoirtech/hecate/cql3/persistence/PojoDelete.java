@@ -1,9 +1,14 @@
 package com.savoirtech.hecate.cql3.persistence;
 
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PojoDelete<P> { //extends PojoPersistenceStatement<P> {
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+
+public class PojoDelete extends PojoPersistenceStatement {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -14,21 +19,21 @@ public class PojoDelete<P> { //extends PojoPersistenceStatement<P> {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-//    public PojoDelete(Session session, String table, PojoDescriptor<P> pojoDescriptor) {
-//        super(session, createDelete(table, pojoDescriptor), pojoDescriptor);
-//    }
-//
-//    private static <P> Delete.Where createDelete(String table, PojoDescriptor<P> pojoDescriptor) {
-//        final Delete.Where delete = delete().from(table).where(eq(pojoDescriptor.getIdentifierMapping().getColumnName(), bindMarker()));
-//        LOGGER.info("{}.delete(): {}", pojoDescriptor.getPojoType().getSimpleName(), delete);
-//        return delete;
-//    }
+    public PojoDelete(Session session, PojoMapping mapping) {
+        super(session, createDelete(mapping), mapping);
+    }
+
+    private static <P> Delete.Where createDelete(PojoMapping mapping) {
+        final Delete.Where delete = delete().from(mapping.getTableName()).where(in(mapping.getIdentifierMapping().getFacetMetadata().getColumnName(), bindMarker()));
+        LOGGER.info("{}.delete(): {}", mapping.getPojoMetadata().getPojoType().getSimpleName(), delete);
+        return delete;
+    }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-//    public void execute(P pojo) {
-//        executeWithArgs(cassandraValue(pojo, identifierMapping()));
-//    }
+    public void execute(Iterable<Object> keys) {
+        executeWithArgs(cassandraIdentifiers(keys));
+    }
 }

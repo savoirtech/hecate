@@ -5,6 +5,8 @@ public interface Persister {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    PojoDelete delete();
+
     PojoFindByKey findByKey();
 
     PojoSave save();

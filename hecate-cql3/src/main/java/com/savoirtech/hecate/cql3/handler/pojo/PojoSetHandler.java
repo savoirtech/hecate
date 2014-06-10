@@ -1,17 +1,17 @@
 package com.savoirtech.hecate.cql3.handler.pojo;
 
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.handler.AbstractListHandler;
+import com.savoirtech.hecate.cql3.handler.AbstractSetHandler;
 import com.savoirtech.hecate.cql3.meta.FacetMetadata;
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
 import com.savoirtech.hecate.cql3.persistence.QueryContext;
 import com.savoirtech.hecate.cql3.persistence.SaveContext;
 import org.apache.commons.collections.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-public class PojoListHandler extends AbstractListHandler {
+public class PojoSetHandler extends AbstractSetHandler {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ public class PojoListHandler extends AbstractListHandler {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoListHandler(FacetMetadata facetMetadata, PojoMetadata pojoMetadata, ValueConverter identifierConverter) {
+    public PojoSetHandler(FacetMetadata facetMetadata, PojoMetadata pojoMetadata, ValueConverter identifierConverter) {
         super(identifierConverter.getDataType());
         this.facetMetadata = facetMetadata;
         this.pojoMetadata = pojoMetadata;
@@ -53,9 +53,9 @@ public class PojoListHandler extends AbstractListHandler {
     }
 
     @Override
-    protected void onFacetValueComplete(List<Object> facetValues, QueryContext context) {
+    protected void onFacetValueComplete(Set<Object> facetValues, QueryContext context) {
         if (!CollectionUtils.isEmpty(facetValues)) {
-            List<Object> identifiers = new ArrayList<>(facetValues.size());
+            Set<Object> identifiers = new HashSet<>(facetValues.size());
             for (Object pojo : facetValues) {
                 identifiers.add(pojoMetadata.getIdentifierFacet().getFacet().get(pojo));
             }

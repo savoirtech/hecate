@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -89,10 +90,6 @@ public class PojoPersistenceStatement {
         return session.execute(preparedStatement.bind(parameters.toArray(new Object[parameters.size()])));
     }
 
-    //    protected FacetMapping identifierMapping() {
-//        return pojoMapping.getIdentifierMapping();
-//    }
-//
     protected List<Object> list(Map<Object, Object> pojoMap, ResultSet resultSet, QueryContext context) {
         List<Row> rows = resultSet.all();
         final Map<Object, Object> cassandraKeyedPojos = cassandraKeyedPojoMap(pojoMap);
@@ -130,5 +127,13 @@ public class PojoPersistenceStatement {
     protected Object one(Object pojo, ResultSet resultSet, QueryContext context) {
         Row row = resultSet.one();
         return row == null ? null : mapPojoFromRow(pojo, row, context);
+    }
+
+    protected List<Object> cassandraIdentifiers(Iterable<Object> keys) {
+        List<Object> cassandraValues = new LinkedList<>();
+        for (Object key : keys) {
+            cassandraValues.add(getPojoMapping().getIdentifierMapping().getColumnHandler().getWhereClauseValue(key));
+        }
+        return cassandraValues;
     }
 }

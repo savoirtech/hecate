@@ -6,7 +6,6 @@ import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,18 +27,11 @@ public class PojoFindByKeys extends PojoPersistenceStatement {
     }
 
     public List<Object> execute(Map<Object, Object> pojos, QueryContext queryContext) {
-        return list(pojos, executeWithArgs(cassandraValues(pojos.keySet())), queryContext);
+        return list(pojos, executeWithArgs(cassandraIdentifiers(pojos.keySet())), queryContext);
     }
 
     public List<Object> execute(Iterable<Object> identifiers, QueryContext queryContext) {
         return execute(getPojoMapping().getPojoMetadata().newPojoMap(identifiers), queryContext);
     }
 
-    private List<Object> cassandraValues(Iterable<Object> keys) {
-        List<Object> cassandraValues = new LinkedList<>();
-        for (Object key : keys) {
-            cassandraValues.add(getPojoMapping().getIdentifierMapping().getColumnHandler().getWhereClauseValue(key));
-        }
-        return cassandraValues;
-    }
 }

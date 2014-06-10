@@ -33,6 +33,10 @@ public class SimplePojo {
 
     private List<NestedPojo> pojoList;
 
+    private Set<NestedPojo> pojoSet;
+
+    private Map<String, NestedPojo> pojoMap;
+
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
@@ -107,6 +111,22 @@ public class SimplePojo {
 
     public void setPojoList(List<NestedPojo> pojoList) {
         this.pojoList = pojoList;
+    }
+
+    public Map<String, NestedPojo> getPojoMap() {
+        return pojoMap;
+    }
+
+    public void setPojoMap(Map<String, NestedPojo> pojoMap) {
+        this.pojoMap = pojoMap;
+    }
+
+    public Set<NestedPojo> getPojoSet() {
+        return pojoSet;
+    }
+
+    public void setPojoSet(Set<NestedPojo> pojoSet) {
+        this.pojoSet = pojoSet;
     }
 
     public Set<String> getSetOfStrings() {

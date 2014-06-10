@@ -145,6 +145,47 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
     }
 
     @Test
+    public void testWithPojoMapField() {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        Map<String, NestedPojo> pojoMap = new HashMap<>();
+        final NestedPojo nested1 = new NestedPojo();
+        final NestedPojo nested2 = new NestedPojo();
+        pojoMap.put("one", nested1);
+        pojoMap.put("two", nested2);
+
+        pojo.setPojoMap(pojoMap);
+        dao.save(pojo);
+
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found.getPojoMap());
+        assertEquals(2, found.getPojoMap().size());
+        assertEquals(nested1, found.getPojoMap().get("one"));
+        assertEquals(nested2, found.getPojoMap().get("two"));
+
+    }
+
+    @Test
+    public void testWithPojoSetField() {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        final NestedPojo nested1 = new NestedPojo();
+        final NestedPojo nested2 = new NestedPojo();
+        pojo.setPojoSet(Sets.newHashSet(nested1, nested2));
+        dao.save(pojo);
+
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found.getPojoSet());
+        assertEquals(2, found.getPojoSet().size());
+        assertTrue(found.getPojoSet().contains(nested1));
+        assertTrue(found.getPojoSet().contains(nested2));
+
+
+    }
+
+    @Test
     public void testWithSetField() {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);

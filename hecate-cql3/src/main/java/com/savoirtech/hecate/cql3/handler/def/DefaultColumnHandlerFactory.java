@@ -8,6 +8,8 @@ import com.savoirtech.hecate.cql3.handler.ColumnHandler;
 import com.savoirtech.hecate.cql3.handler.ColumnHandlerFactory;
 import com.savoirtech.hecate.cql3.handler.pojo.PojoArrayHandler;
 import com.savoirtech.hecate.cql3.handler.pojo.PojoListHandler;
+import com.savoirtech.hecate.cql3.handler.pojo.PojoMapHandler;
+import com.savoirtech.hecate.cql3.handler.pojo.PojoSetHandler;
 import com.savoirtech.hecate.cql3.handler.pojo.PojoValueHandler;
 import com.savoirtech.hecate.cql3.handler.scalar.ScalarArrayHandler;
 import com.savoirtech.hecate.cql3.handler.scalar.ScalarListHandler;
@@ -48,10 +50,10 @@ public class DefaultColumnHandlerFactory implements ColumnHandlerFactory {
             return createListHandler(facetMetadata, facetType.getListElementType());
         }
         if (Set.class.equals(facetType.getRawType())) {
-            return createSetHandler(facetType.getSetElementType());
+            return createSetHandler(facetMetadata, facetType.getSetElementType());
         }
         if (Map.class.equals(facetType.getRawType())) {
-            return createMapHandler(facetType.getMapKeyType(), facetType.getMapValueType());
+            return createMapHandler(facetMetadata, facetType.getMapKeyType(), facetType.getMapValueType());
         }
         if (facetType.getRawType().isArray()) {
             return createArrayHandler(facetMetadata, facetType.getArrayElementType());
@@ -103,22 +105,22 @@ public class DefaultColumnHandlerFactory implements ColumnHandlerFactory {
     }
 
 
-    private ColumnHandler createMapHandler(GenericType keyType, GenericType valueType) {
+    private ColumnHandler createMapHandler(FacetMetadata facetMetadata, GenericType keyType, GenericType valueType) {
         ValueConverter keyConverter = Validate.notNull(registry.getValueConverter(keyType.getRawType()), "Invalid map key type %s (must be scalar).", keyType.getRawType().toString());
         ValueConverter valueConverter = registry.getValueConverter(valueType.getRawType());
         if (valueConverter != null) {
             return new ScalarMapHandler(keyConverter, valueConverter);
         }
-        // TODO: Handle pojos.
-        return null;
+        final PojoMetadata pojoMetadata = pojoMetadataFactory.getPojoMetadata(valueType.getRawType());
+        return new PojoMapHandler(keyConverter, facetMetadata, pojoMetadata, getIdentifierConverter(pojoMetadata));
     }
 
-    private ColumnHandler createSetHandler(GenericType elementType) {
+    private ColumnHandler createSetHandler(FacetMetadata facetMetadata, GenericType elementType) {
         ValueConverter converter = registry.getValueConverter(elementType.getRawType());
         if (converter != null) {
             return new ScalarSetHandler(converter);
         }
-        // TODO: Handle pojos.
-        return null;
+        final PojoMetadata pojoMetadata = pojoMetadataFactory.getPojoMetadata(elementType.getRawType());
+        return new PojoSetHandler(facetMetadata, pojoMetadata, getIdentifierConverter(pojoMetadata));
     }
 }
