@@ -1,13 +1,11 @@
 package com.savoirtech.hecate.cql3.convert;
 
-import com.savoirtech.hecate.cql3.util.GenericType;
-
-public interface ValueConverterFactory {
+public interface ValueConverterProvider {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
     Class<? extends ValueConverter> converterType();
 
-    ValueConverter createConverter(GenericType type, ValueConverterRegistry registry);
+    ValueConverter createConverter(Class<?> valueType);
 }

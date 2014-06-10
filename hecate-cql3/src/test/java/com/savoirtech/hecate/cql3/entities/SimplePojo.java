@@ -25,7 +25,21 @@ public class SimplePojo {
 
     private Map<Integer, String> mapOfStrings;
 
-//----------------------------------------------------------------------------------------------------------------------
+    private Nums nums;
+
+    private NestedPojo[] nestedArray;
+
+    private NestedPojo nestedPojo;
+
+    public NestedPojo getNestedPojo() {
+        return nestedPojo;
+    }
+
+    public void setNestedPojo(NestedPojo nestedPojo) {
+        this.nestedPojo = nestedPojo;
+    }
+
+    //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -69,6 +83,22 @@ public class SimplePojo {
         this.name = name;
     }
 
+    public NestedPojo[] getNestedArray() {
+        return nestedArray;
+    }
+
+    public void setNestedArray(NestedPojo[] nestedArray) {
+        this.nestedArray = nestedArray;
+    }
+
+    public Nums getNums() {
+        return nums;
+    }
+
+    public void setNums(Nums nums) {
+        this.nums = nums;
+    }
+
     public Set<String> getSetOfStrings() {
         return setOfStrings;
     }
@@ -102,5 +132,13 @@ public class SimplePojo {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    public static enum Nums {
+        One, Two, Three
     }
 }

@@ -4,11 +4,14 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
-import com.savoirtech.hecate.cql3.meta.PojoDescriptor;
+import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PojoSave<P> extends PojoPersistenceStatement<P> {
+import java.util.ArrayList;
+import java.util.List;
+
+public class PojoSave extends PojoPersistenceStatement {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -19,16 +22,16 @@ public class PojoSave<P> extends PojoPersistenceStatement<P> {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoSave(Session session, String table, PojoDescriptor<P> pojoDescriptor) {
-        super(session, createInsert(table, pojoDescriptor), pojoDescriptor);
+    public PojoSave(Session session, PojoMapping mapping) {
+        super(session, createInsert(mapping), mapping);
     }
 
-    private static <P> Insert createInsert(String table, PojoDescriptor<P> pojoDescriptor) {
-        final Insert insert = QueryBuilder.insertInto(table);
-        for (FacetMapping mapping : pojoDescriptor.getFacetMappings()) {
-            insert.value(mapping.getColumnName(), QueryBuilder.bindMarker());
+    private static Insert createInsert(PojoMapping mapping) {
+        final Insert insert = QueryBuilder.insertInto(mapping.getTableName());
+        for (FacetMapping facetMapping : mapping.getFacetMappings()) {
+            insert.value(facetMapping.getFacetMetadata().getColumnName(), QueryBuilder.bindMarker());
         }
-        LOGGER.info("{}.save(): {}", pojoDescriptor.getPojoType().getSimpleName(), insert);
+        LOGGER.info("{}.save(): {}", mapping.getPojoMetadata().getPojoType().getSimpleName(), insert);
         return insert;
     }
 
@@ -36,7 +39,12 @@ public class PojoSave<P> extends PojoPersistenceStatement<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public void execute(P pojo) {
-        executeWithList(cassandraValues(pojo, allColumns()));
+    public void execute(Object pojo, SaveContext saveContext) {
+        List<Object> parameters = new ArrayList<>(getPojoMapping().getFacetMappings().size());
+        for (FacetMapping mapping : getPojoMapping().getFacetMappings()) {
+            Object facetValue = mapping.getFacetMetadata().getFacet().get(pojo);
+            parameters.add(mapping.getColumnHandler().getInsertValue(facetValue, saveContext));
+        }
+        executeWithList(parameters);
     }
 }

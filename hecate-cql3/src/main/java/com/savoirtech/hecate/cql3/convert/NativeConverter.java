@@ -1,8 +1,6 @@
 package com.savoirtech.hecate.cql3.convert;
 
 import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.cql3.persistence.Dehydrator;
-import com.savoirtech.hecate.cql3.persistence.Hydrator;
 
 public class NativeConverter<T> implements ValueConverter {
 //----------------------------------------------------------------------------------------------------------------------
@@ -37,7 +35,7 @@ public class NativeConverter<T> implements ValueConverter {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Object fromCassandraValue(Object value, Hydrator hydrator) {
+    public Object fromCassandraValue(Object value) {
         return value;
     }
 
@@ -47,7 +45,7 @@ public class NativeConverter<T> implements ValueConverter {
     }
 
     @Override
-    public Object toCassandraValue(Object value, Dehydrator dehydrator) {
+    public Object toCassandraValue(Object value) {
         return value;
     }
 }

@@ -1,27 +1,29 @@
-package com.savoirtech.hecate.cql3.meta;
+package com.savoirtech.hecate.cql3.mapping;
 
-import com.savoirtech.hecate.cql3.ReflectionUtils;
-import com.savoirtech.hecate.cql3.mapping.FacetMapping;
+import com.savoirtech.hecate.cql3.meta.PojoMetadata;
 
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class PojoDescriptor<P> {
+public class PojoMapping {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Class<P> pojoType;
     private final List<FacetMapping> facetMappings = new LinkedList<>();
+
+    private final PojoMetadata pojoMetadata;
+    private final String tableName;
     private FacetMapping identifierMapping;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoDescriptor(Class<P> pojoType) {
-        this.pojoType = pojoType;
+    public PojoMapping(PojoMetadata pojoMetadata, String tableName) {
+        this.pojoMetadata = pojoMetadata;
+        this.tableName = tableName == null ? pojoMetadata.getTableName() : tableName;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -32,37 +34,26 @@ public class PojoDescriptor<P> {
         return identifierMapping;
     }
 
-    public Class<P> getPojoType() {
-        return pojoType;
+    public PojoMetadata getPojoMetadata() {
+        return pojoMetadata;
+    }
+
+    public String getTableName() {
+        return tableName;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public void addMapping(FacetMapping facetMapping) {
-        if (facetMapping.isIdentifier()) {
-            this.identifierMapping = facetMapping;
-            facetMappings.add(0, facetMapping);
-        } else {
-            facetMappings.add(facetMapping);
+    public void addFacet(FacetMapping facetMapping) {
+        facetMappings.add(facetMapping);
+        if (facetMapping.getFacetMetadata().isIdentifier()) {
+            identifierMapping = facetMapping;
         }
-    }
-
-    public FacetMapping facet(String name) {
-        for (FacetMapping mapping : facetMappings) {
-            if (name.equals(mapping.getFacet().getName())) {
-                return mapping;
-            }
-        }
-        return null;
     }
 
     public List<FacetMapping> getFacetMappings() {
         return Collections.unmodifiableList(facetMappings);
-    }
-
-    public P newInstance() {
-        return ReflectionUtils.instantiate(pojoType);
     }
 }

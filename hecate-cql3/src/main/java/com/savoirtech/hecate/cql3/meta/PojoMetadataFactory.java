@@ -1,9 +1,9 @@
 package com.savoirtech.hecate.cql3.meta;
 
-public interface PojoDescriptorFactory {
+public interface PojoMetadataFactory {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    <P> PojoDescriptor<P> getPojoDescriptor(Class<P> pojoType);
+    PojoMetadata getPojoMetadata(Class<?> pojoType);
 }

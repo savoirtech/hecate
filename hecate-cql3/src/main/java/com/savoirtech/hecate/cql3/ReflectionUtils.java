@@ -27,6 +27,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -45,6 +46,7 @@ import com.savoirtech.hecate.cql3.dao.abstracts.GenericPojoGraphDao;
 import com.savoirtech.hecate.cql3.exception.HecateException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.slf4j.Logger;
@@ -67,6 +69,18 @@ public class ReflectionUtils {
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    public static List<Class<?>> getSupertypes(Class<?> type) {
+        List<Class<?>> supertypes = new LinkedList<>();
+        supertypes.add(type.getSuperclass());
+        Collections.addAll(supertypes, type.getInterfaces());
+        return supertypes;
+    }
+
+    public static boolean isInstantiable(Class<?> type) {
+        return type != null && ConstructorUtils.getAccessibleConstructor(type) != null;
+    }
 
     private static void collectFields(Class<?> type, List<Field> fields) {
         final Field[] declaredFields = type.getDeclaredFields();

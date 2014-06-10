@@ -1,65 +1,49 @@
 package com.savoirtech.hecate.cql3.mapping;
 
-import com.savoirtech.hecate.cql3.annotations.ColumnName;
-import com.savoirtech.hecate.cql3.annotations.Id;
-import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.value.Facet;
+import com.savoirtech.hecate.cql3.handler.ColumnHandler;
+import com.savoirtech.hecate.cql3.meta.FacetMetadata;
 
 public class FacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Facet facet;
-    private final ValueConverter converter;
-    private final boolean identifier;
-    private final String columnName;
+    private final FacetMetadata facet;
+    private final ColumnHandler columnHandler;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public FacetMapping(Facet facet, ValueConverter converter) {
+    public FacetMapping(FacetMetadata facet, ColumnHandler columnHandler) {
         this.facet = facet;
-        this.converter = converter;
-        this.identifier = facet.getAnnotation(Id.class) != null;
-        this.columnName = columnName(facet);
-    }
-
-    private static String columnName(Facet facet) {
-        ColumnName annot = facet.getAnnotation(ColumnName.class);
-        return annot == null ? facet.getName() : annot.value();
+        this.columnHandler = columnHandler;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public String getColumnName() {
-        return columnName;
+    public ColumnHandler getColumnHandler() {
+        return columnHandler;
     }
 
-    public ValueConverter getConverter() {
-        return converter;
-    }
-
-    public Facet getFacet() {
+    public FacetMetadata getFacetMetadata() {
         return facet;
     }
 
-    public boolean isIdentifier() {
-        return identifier;
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Canonical Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(columnName);
+        sb.append(facet.getColumnName());
         sb.append(" ");
-        sb.append(converter.getDataType().toString());
-        if (identifier) {
+        sb.append(columnHandler.getColumnType());
+        if (facet.isIdentifier()) {
             sb.append(" PRIMARY KEY");
         }
         return sb.toString();
-
     }
 }

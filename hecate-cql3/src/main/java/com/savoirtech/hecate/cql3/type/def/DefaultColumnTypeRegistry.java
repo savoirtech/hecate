@@ -6,6 +6,10 @@ import com.savoirtech.hecate.cql3.type.ColumnTypeRegistry;
 import com.savoirtech.hecate.cql3.type.NativeType;
 import org.apache.commons.lang3.ClassUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +20,7 @@ public class DefaultColumnTypeRegistry implements ColumnTypeRegistry {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private Map<Class<?>,ColumnType<?>> columnTypes = new HashMap<>();
+    private Map<Class<?>, ColumnType<?>> columnTypes = new HashMap<>();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -31,6 +35,10 @@ public class DefaultColumnTypeRegistry implements ColumnTypeRegistry {
         addColumnType(Long.class, new NativeType<Long>(DataType.bigint()));
         addColumnType(UUID.class, new NativeType<UUID>(DataType.uuid()));
         addColumnType(String.class, new NativeType<String>(DataType.varchar()));
+        addColumnType(BigInteger.class, new NativeType<BigInteger>(DataType.varint()));
+        addColumnType(BigDecimal.class, new NativeType<BigDecimal>(DataType.decimal()));
+        addColumnType(InetAddress.class, new NativeType<InetAddress>(DataType.inet()));
+        addColumnType(ByteBuffer.class, new NativeType<ByteBuffer>(DataType.blob()));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -40,7 +48,7 @@ public class DefaultColumnTypeRegistry implements ColumnTypeRegistry {
     @Override
     @SuppressWarnings("unchecked")
     public <T> ColumnType<T> getColumnType(Class<T> type) {
-        return (ColumnType<T>)columnTypes.get(type);
+        return (ColumnType<T>) columnTypes.get(type);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -49,7 +57,7 @@ public class DefaultColumnTypeRegistry implements ColumnTypeRegistry {
 
     public final <T> void addColumnType(Class<T> javaType, ColumnType<T> columnType) {
         columnTypes.put(javaType, columnType);
-        if(ClassUtils.isPrimitiveWrapper(javaType)) {
+        if (ClassUtils.isPrimitiveWrapper(javaType)) {
             columnTypes.put(ClassUtils.wrapperToPrimitive(javaType), columnType);
         }
     }

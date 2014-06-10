@@ -1,16 +1,11 @@
-package com.savoirtech.hecate.cql3.persistence;
+package com.savoirtech.hecate.cql3.handler;
 
-import java.util.Iterator;
-import java.util.List;
+import com.savoirtech.hecate.cql3.meta.FacetMetadata;
 
-public interface PojoFinder<P> {
+public interface ColumnHandlerFactory {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Iterator<P> iterate(Object... parameters);
-
-    List<P> list(Object... parameters);
-
-    P one(Object... parameters);
+    ColumnHandler getColumnHandler(FacetMetadata facetMetadata);
 }

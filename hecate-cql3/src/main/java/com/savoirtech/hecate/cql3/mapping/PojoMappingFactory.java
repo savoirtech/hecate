@@ -1,9 +1,9 @@
-package com.savoirtech.hecate.cql3.persistence;
+package com.savoirtech.hecate.cql3.mapping;
 
-public interface Hydrator {
+public interface PojoMappingFactory {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    <P> P newPojo(Class<P> pojoType, Object identifier);
+    PojoMapping getPojoMapping(Class<?> pojoType, String tableName);
 }

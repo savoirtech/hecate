@@ -1,16 +1,12 @@
 package com.savoirtech.hecate.cql3.persistence;
 
-import java.util.Iterator;
-import java.util.List;
-
-public interface ProjectionQuery {
+public interface Persister {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Iterator<List<Object>> iterate(Object... parameters);
+    PojoFindByKey findByKey();
 
-    List<List<Object>> list(Object... parameters);
+    PojoSave save();
 
-    List<Object> one(Object... parameters);
 }

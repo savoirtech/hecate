@@ -1,25 +1,21 @@
-package com.savoirtech.hecate.cql3.convert.pojo;
+package com.savoirtech.hecate.cql3.convert.enumeration;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.persistence.Dehydrator;
-import com.savoirtech.hecate.cql3.persistence.Hydrator;
 
-public class PojoConverter implements ValueConverter {
+public class EnumConverter implements ValueConverter {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Class<?> pojoType;
-    private final ValueConverter identifierConverter;
+    private final Class<? extends Enum> enumType;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoConverter(Class<?> pojoType, ValueConverter identifierConverter) {
-        this.pojoType = pojoType;
-        this.identifierConverter = identifierConverter;
+    public EnumConverter(Class<? extends Enum> enumType) {
+        this.enumType = enumType;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -27,17 +23,23 @@ public class PojoConverter implements ValueConverter {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public Object fromCassandraValue(Object value, Hydrator hydrator) {
-        return hydrator.newPojo(pojoType, identifierConverter.fromCassandraValue(value, hydrator));
+    public Object fromCassandraValue(Object value) {
+        if (value == null) {
+            return null;
+        }
+        return Enum.valueOf(enumType, value.toString());
     }
 
     @Override
     public DataType getDataType() {
-        return identifierConverter.getDataType();
+        return DataType.varchar();
     }
 
     @Override
-    public Object toCassandraValue(Object value, Dehydrator dehydrator) {
-        return identifierConverter.toCassandraValue(dehydrator.getIdentifier(pojoType, value), dehydrator);
+    public Object toCassandraValue(Object value) {
+        if (value == null) {
+            return null;
+        }
+        return value.toString();
     }
 }
