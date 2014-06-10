@@ -7,7 +7,7 @@ import com.savoirtech.hecate.cql3.persistence.SaveContext;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AbstractMapHandler implements ColumnHandler {
+public abstract class AbstractMapHandler extends AbstractColumnHandler {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -81,6 +81,6 @@ public abstract class AbstractMapHandler implements ColumnHandler {
     }
 
     protected void onInsertValueComplete(Map<Object, Object> cassandraMap, SaveContext context) {
-        
+
     }
 }

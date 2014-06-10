@@ -7,7 +7,7 @@ import com.savoirtech.hecate.cql3.persistence.SaveContext;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class AbstractSetHandler implements ColumnHandler {
+public abstract class AbstractSetHandler extends AbstractColumnHandler {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------

@@ -4,12 +4,16 @@ import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.AbstractArrayHandler;
 import com.savoirtech.hecate.cql3.meta.FacetMetadata;
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
+import com.savoirtech.hecate.cql3.persistence.DeleteContext;
 import com.savoirtech.hecate.cql3.persistence.QueryContext;
 import com.savoirtech.hecate.cql3.persistence.SaveContext;
 
 import java.lang.reflect.Array;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class PojoArrayHandler extends AbstractArrayHandler {
 //----------------------------------------------------------------------------------------------------------------------
@@ -35,10 +39,14 @@ public class PojoArrayHandler extends AbstractArrayHandler {
 // ColumnHandler Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public Object getWhereClauseValue(Object parameterValue) {
         return identifierConverter.toCassandraValue(parameterValue);
+    }
+
+    @Override
+    public boolean isCascading() {
+        return true;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -56,7 +64,6 @@ public class PojoArrayHandler extends AbstractArrayHandler {
         context.addPojos(pojoMetadata.getPojoType(), facetMetadata.getTableName(), pojos);
     }
 
-
     @Override
     protected Object toCassandraElement(Object facetElement, SaveContext context) {
         final Object identifierValue = pojoMetadata.getIdentifierFacet().getFacet().get(facetElement);
@@ -68,5 +75,20 @@ public class PojoArrayHandler extends AbstractArrayHandler {
     @Override
     protected Object toFacetElement(Object cassandraElement, QueryContext context) {
         return pojoMetadata.newPojo(identifierConverter.fromCassandraValue(cassandraElement));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void getDeletionIdentifiers(Object cassandraValue, DeleteContext context) {
+        if (cassandraValue != null) {
+            List<Object> cassandraValues = (List<Object>) cassandraValue;
+            if (!cassandraValues.isEmpty()) {
+                Set<Object> identifiers = new HashSet<>();
+                for (Object value : cassandraValues) {
+                    identifiers.add(identifierConverter.fromCassandraValue(value));
+                }
+                context.addDeletedIdentifiers(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifiers);
+            }
+        }
     }
 }

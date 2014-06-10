@@ -1,11 +1,14 @@
 package com.savoirtech.hecate.cql3.dao.def;
 
 import com.savoirtech.hecate.cql3.dao.PojoDao;
+import com.savoirtech.hecate.cql3.persistence.DeleteContext;
 import com.savoirtech.hecate.cql3.persistence.Persister;
 import com.savoirtech.hecate.cql3.persistence.PersisterFactory;
+import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
 import com.savoirtech.hecate.cql3.persistence.QueryContext;
 import com.savoirtech.hecate.cql3.persistence.SaveContext;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,12 +39,25 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 // PojoDao Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+    private class DeleteContextImpl implements DeleteContext {
+        private final Queue<PersistenceTask> tasks;
+
+        private DeleteContextImpl(Queue<PersistenceTask> tasks) {
+            this.tasks = tasks;
+        }
+
+        @Override
+        public void addDeletedIdentifiers(Class<?> pojoType, String tableName, Iterable<Object> identifiers) {
+            tasks.add(new DeletePojosTask(pojoType, tableName, identifiers, this));
+        }
+    }
+
     @Override
     public void delete(K key) {
-//        final P pojo = findByKey(key);
-//        if (pojo != null) {
-//            delete.execute(pojo);
-//        }
+        final Queue<PersistenceTask> tasks = new LinkedList<>();
+        final DeleteContext context = new DeleteContextImpl(tasks);
+        context.addDeletedIdentifiers(rootPojoType, rootTableName, Arrays.<Object>asList(key));
+        executeTasks(tasks);
     }
 
     @Override
@@ -83,6 +99,30 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
+
+    private class DeletePojosTask implements PersistenceTask {
+        private final Class<?> pojoType;
+        private final String tableName;
+        private final Iterable<Object> identifiers;
+        private final DeleteContext context;
+
+        private DeletePojosTask(Class<?> pojoType, String tableName, Iterable<Object> identifiers, DeleteContext context) {
+            this.pojoType = pojoType;
+            this.tableName = tableName;
+            this.identifiers = identifiers;
+            this.context = context;
+        }
+
+        @Override
+        public void execute() {
+            final Persister persister = persisterFactory.getPersister(pojoType, tableName);
+            final PojoFindForDelete findForDelete = persister.findForDelete();
+            if (findForDelete != null) {
+                findForDelete.execute(identifiers, context);
+            }
+            persister.delete().execute(identifiers);
+        }
+    }
 
     private class HydratePojoTask implements PersistenceTask {
         private final QueryContext context;

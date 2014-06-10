@@ -9,7 +9,9 @@ public interface Persister {
 
     PojoFindByKey findByKey();
 
-    PojoSave save();
-
     PojoFindByKeys findByKeys();
+
+    PojoFindForDelete findForDelete();
+
+    PojoSave save();
 }

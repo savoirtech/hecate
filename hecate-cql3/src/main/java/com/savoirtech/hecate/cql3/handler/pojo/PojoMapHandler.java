@@ -4,6 +4,7 @@ import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.AbstractMapHandler;
 import com.savoirtech.hecate.cql3.meta.FacetMetadata;
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
+import com.savoirtech.hecate.cql3.persistence.DeleteContext;
 import com.savoirtech.hecate.cql3.persistence.QueryContext;
 import com.savoirtech.hecate.cql3.persistence.SaveContext;
 import org.apache.commons.collections.MapUtils;
@@ -40,13 +41,44 @@ public class PojoMapHandler extends AbstractMapHandler {
 
 
     @Override
+    @SuppressWarnings("unchecked")
+    public void getDeletionIdentifiers(Object cassandraValue, DeleteContext context) {
+        if (cassandraValue != null) {
+            Map<Object, Object> cassandraMap = (Map<Object, Object>) cassandraValue;
+            if (!cassandraMap.isEmpty()) {
+                Set<Object> identifiers = new HashSet<>();
+                for (Object value : cassandraMap.values()) {
+                    identifiers.add(identifierConverter.fromCassandraValue(value));
+                }
+                context.addDeletedIdentifiers(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifiers);
+            }
+        }
+    }
+
+    @Override
     public Object getWhereClauseValue(Object parameterValue) {
         return null;
+    }
+
+    @Override
+    public boolean isCascading() {
+        return true;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    protected void onFacetValueComplete(Map<Object, Object> facetValues, QueryContext context) {
+        if (!MapUtils.isEmpty(facetValues)) {
+            Set<Object> identifiers = new HashSet<>(facetValues.size());
+            for (Object pojo : facetValues.values()) {
+                identifiers.add(pojoMetadata.getIdentifierFacet().getFacet().get(pojo));
+            }
+            context.addPojos(pojoMetadata.getPojoType(), facetMetadata.getTableName(), pojoMetadata.newPojoMap(identifiers));
+        }
+    }
 
     @Override
     protected Object toCassandraKey(Object key) {
@@ -63,17 +95,6 @@ public class PojoMapHandler extends AbstractMapHandler {
     @Override
     protected Object toFacetKey(Object key) {
         return keyConverter.fromCassandraValue(key);
-    }
-
-    @Override
-    protected void onFacetValueComplete(Map<Object, Object> facetValues, QueryContext context) {
-        if (!MapUtils.isEmpty(facetValues)) {
-            Set<Object> identifiers = new HashSet<>(facetValues.size());
-            for (Object pojo : facetValues.values()) {
-                identifiers.add(pojoMetadata.getIdentifierFacet().getFacet().get(pojo));
-            }
-            context.addPojos(pojoMetadata.getPojoType(), facetMetadata.getTableName(), pojoMetadata.newPojoMap(identifiers));
-        }
     }
 
     @Override

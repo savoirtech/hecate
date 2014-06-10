@@ -2,11 +2,11 @@ package com.savoirtech.hecate.cql3.handler.scalar;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.handler.ColumnHandler;
+import com.savoirtech.hecate.cql3.handler.AbstractColumnHandler;
 import com.savoirtech.hecate.cql3.persistence.QueryContext;
 import com.savoirtech.hecate.cql3.persistence.SaveContext;
 
-public class ScalarValueHandler implements ColumnHandler {
+public class ScalarValueHandler extends AbstractColumnHandler {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------

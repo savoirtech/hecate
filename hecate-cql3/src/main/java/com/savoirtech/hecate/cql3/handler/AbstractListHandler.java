@@ -7,7 +7,7 @@ import com.savoirtech.hecate.cql3.persistence.SaveContext;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractListHandler implements ColumnHandler {
+public abstract class AbstractListHandler extends AbstractColumnHandler {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -77,6 +77,6 @@ public abstract class AbstractListHandler implements ColumnHandler {
     }
 
     protected void onInsertValueComplete(List<Object> cassandraValues, SaveContext context) {
-        
+
     }
 }

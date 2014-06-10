@@ -5,7 +5,6 @@ import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.entities.NestedPojo;
 import com.savoirtech.hecate.cql3.entities.SimplePojo;
 import com.savoirtech.hecate.cql3.test.CassandraTestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -36,7 +35,6 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
 
 
     @Test
-    @Ignore
     public void testDelete() throws Exception {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);

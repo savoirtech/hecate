@@ -8,7 +8,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractArrayHandler implements ColumnHandler {
+public abstract class AbstractArrayHandler extends AbstractColumnHandler {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -33,18 +33,12 @@ public abstract class AbstractArrayHandler implements ColumnHandler {
 
     protected abstract Object toFacetElement(Object cassandraElement, QueryContext context);
 
-
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnHandler Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     public DataType getColumnType() {
         return columnType;
-    }
-
-    protected void onFacetValueComplete(Object facetValue, QueryContext context) {
-
     }
 
     @Override
@@ -64,10 +58,6 @@ public abstract class AbstractArrayHandler implements ColumnHandler {
         return array;
     }
 
-    protected void onInsertValueComplete(List<Object> insertValue, SaveContext context) {
-
-    }
-
     @Override
     public Object getInsertValue(Object facetValue, SaveContext context) {
         if (facetValue == null) {
@@ -81,5 +71,22 @@ public abstract class AbstractArrayHandler implements ColumnHandler {
         }
         onInsertValueComplete(elements, context);
         return elements;
+    }
+
+    @Override
+    public boolean isCascading() {
+        return false;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    protected void onFacetValueComplete(Object facetValue, QueryContext context) {
+
+    }
+
+    protected void onInsertValueComplete(List<Object> insertValue, SaveContext context) {
+
     }
 }

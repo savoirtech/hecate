@@ -6,6 +6,7 @@ import com.savoirtech.hecate.cql3.persistence.Persister;
 import com.savoirtech.hecate.cql3.persistence.PojoDelete;
 import com.savoirtech.hecate.cql3.persistence.PojoFindByKey;
 import com.savoirtech.hecate.cql3.persistence.PojoFindByKeys;
+import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
 import com.savoirtech.hecate.cql3.persistence.PojoSave;
 
 public class DefaultPersister implements Persister {
@@ -17,6 +18,7 @@ public class DefaultPersister implements Persister {
     private final PojoFindByKey findByKey;
     private final PojoFindByKeys findByKeys;
     private final PojoDelete delete;
+    private final PojoFindForDelete findForDelete;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -27,6 +29,7 @@ public class DefaultPersister implements Persister {
         this.findByKey = new PojoFindByKey(session, mapping);
         this.findByKeys = new PojoFindByKeys(session, mapping);
         this.delete = new PojoDelete(session, mapping);
+        this.findForDelete = mapping.isCascading() ? new PojoFindForDelete(session, mapping) : null;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -51,5 +54,14 @@ public class DefaultPersister implements Persister {
     @Override
     public PojoSave save() {
         return save;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public PojoFindForDelete findForDelete() {
+        return findForDelete;
     }
 }

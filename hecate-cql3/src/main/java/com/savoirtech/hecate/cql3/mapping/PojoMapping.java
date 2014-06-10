@@ -56,4 +56,13 @@ public class PojoMapping {
     public List<FacetMapping> getFacetMappings() {
         return Collections.unmodifiableList(facetMappings);
     }
+
+    public boolean isCascading() {
+        for (FacetMapping facetMapping : facetMappings) {
+            if (facetMapping.getColumnHandler().isCascading()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

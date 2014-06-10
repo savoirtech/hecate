@@ -1,6 +1,7 @@
 package com.savoirtech.hecate.cql3.handler;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.cql3.persistence.DeleteContext;
 import com.savoirtech.hecate.cql3.persistence.QueryContext;
 import com.savoirtech.hecate.cql3.persistence.SaveContext;
 
@@ -16,4 +17,8 @@ public interface ColumnHandler {
     Object getFacetValue(Object cassandraValue, QueryContext context);
 
     Object getWhereClauseValue(Object parameterValue);
+
+    void getDeletionIdentifiers(Object cassandraValue, DeleteContext context);
+
+    boolean isCascading();
 }
