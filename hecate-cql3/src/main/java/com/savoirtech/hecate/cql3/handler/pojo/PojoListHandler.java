@@ -6,6 +6,10 @@ import com.savoirtech.hecate.cql3.meta.FacetMetadata;
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
 import com.savoirtech.hecate.cql3.persistence.QueryContext;
 import com.savoirtech.hecate.cql3.persistence.SaveContext;
+import org.apache.commons.collections.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PojoListHandler extends AbstractListHandler {
 //----------------------------------------------------------------------------------------------------------------------
@@ -49,9 +53,18 @@ public class PojoListHandler extends AbstractListHandler {
     }
 
     @Override
+    protected void onFacetValueComplete(List<Object> facetValues, QueryContext context) {
+        if (!CollectionUtils.isEmpty(facetValues)) {
+            List<Object> identifiers = new ArrayList<Object>(facetValues.size());
+            for (Object pojo : facetValues) {
+                identifiers.add(pojoMetadata.getIdentifierFacet().getFacet().get(pojo));
+            }
+            context.addPojos(pojoMetadata.getPojoType(), facetMetadata.getTableName(), pojoMetadata.newPojoMap(identifiers));
+        }
+    }
+
+    @Override
     protected Object toFacetElement(Object cassandraElement, QueryContext context) {
-        Object pojo = pojoMetadata.newPojo(identifierConverter.fromCassandraValue(cassandraElement));
-        context.addPojo(pojoMetadata.getPojoType(), facetMetadata.getTableName(), cassandraElement, pojo);
-        return pojo;
+        return pojoMetadata.newPojo(identifierConverter.fromCassandraValue(cassandraElement));
     }
 }
