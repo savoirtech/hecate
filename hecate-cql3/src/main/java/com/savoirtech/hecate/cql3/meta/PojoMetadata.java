@@ -59,7 +59,7 @@ public class PojoMetadata {
         return pojoType;
     }
 
-    public String getTableName() {
+    public String getDefaultTableName() {
         return tableName;
     }
 

@@ -1,12 +1,14 @@
 package com.savoirtech.hecate.cql3.entities;
 
 import com.savoirtech.hecate.cql3.annotations.Id;
+import com.savoirtech.hecate.cql3.annotations.TableName;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+@TableName("simpletons")
 public class SimplePojo {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields

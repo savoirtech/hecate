@@ -1,11 +1,5 @@
 package com.savoirtech.hecate.cql3.dao.def;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.collect.Sets;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.entities.NestedPojo;
@@ -13,12 +7,13 @@ import com.savoirtech.hecate.cql3.entities.SimplePojo;
 import com.savoirtech.hecate.cql3.test.CassandraTestCase;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class DefaultPojoDaoTest extends CassandraTestCase {
     //----------------------------------------------------------------------------------------------------------------------
@@ -40,7 +35,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
     }
 
     @Test
-    public void testSaveWithTable() throws Exception {
+    public void testSaveWithCustomTableName() throws Exception {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class, "BOB");
         final SimplePojo pojo = new SimplePojo();

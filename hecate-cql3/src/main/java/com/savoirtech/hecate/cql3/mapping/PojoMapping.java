@@ -23,7 +23,7 @@ public class PojoMapping {
 
     public PojoMapping(PojoMetadata pojoMetadata, String tableName) {
         this.pojoMetadata = pojoMetadata;
-        this.tableName = tableName == null ? pojoMetadata.getTableName() : tableName;
+        this.tableName = tableName == null ? pojoMetadata.getDefaultTableName() : tableName;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
