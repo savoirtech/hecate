@@ -13,8 +13,11 @@ import com.savoirtech.hecate.cql3.util.CassandraUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PojoPersistenceStatement {
 //----------------------------------------------------------------------------------------------------------------------
@@ -31,12 +34,12 @@ public class PojoPersistenceStatement {
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected static Select.Selection pojoSelect(PojoMapping pojoMapping) {
+    protected static Select pojoSelect(PojoMapping pojoMapping) {
         final Select.Selection select = QueryBuilder.select();
         for (FacetMapping mapping : pojoMapping.getFacetMappings()) {
             select.column(mapping.getFacetMetadata().getColumnName());
         }
-        return select;
+        return select.from(pojoMapping.getTableName());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -90,15 +93,29 @@ public class PojoPersistenceStatement {
 //        return pojoMapping.getIdentifierMapping();
 //    }
 //
-//    protected List<P> list(ResultSet resultSet) {
-//        List<Row> rows = resultSet.all();
-//        final List<P> pojos = new ArrayList<>(rows.size());
-//        for (Row row : rows) {
-//            pojos.add(mapPojoFromRow(row));
-//        }
-//        return pojos;
-//    }
-//
+    protected List<Object> list(Map<Object, Object> pojoMap, ResultSet resultSet, QueryContext context) {
+        List<Row> rows = resultSet.all();
+        final Map<Object, Object> cassandraKeyedPojos = cassandraKeyedPojoMap(pojoMap);
+        final List<Object> pojos = new ArrayList<>(rows.size());
+        final FacetMapping identifierMapping = pojoMapping.getIdentifierMapping();
+        for (Row row : rows) {
+            Object cassandraIdentifier = CassandraUtils.getValue(row, 0, identifierMapping.getColumnHandler().getColumnType());
+            Object pojo = cassandraKeyedPojos.get(cassandraIdentifier);
+            if (pojo != null) {
+                pojos.add(mapPojoFromRow(pojo, row, context));
+            }
+        }
+        return pojos;
+    }
+
+    private Map<Object, Object> cassandraKeyedPojoMap(Map<Object, Object> pojoMap) {
+        Map<Object, Object> cassandraKeyed = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : pojoMap.entrySet()) {
+            cassandraKeyed.put(pojoMapping.getIdentifierMapping().getColumnHandler().getWhereClauseValue(entry.getKey()), entry.getValue());
+        }
+        return cassandraKeyed;
+    }
+
     @SuppressWarnings("unchecked")
     protected Object mapPojoFromRow(Object pojo, Row row, QueryContext context) {
         int columnIndex = 0;

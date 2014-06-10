@@ -33,6 +33,7 @@ public abstract class AbstractArrayHandler implements ColumnHandler {
 
     protected abstract Object toFacetElement(Object cassandraElement, QueryContext context);
 
+
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnHandler Implementation
 //----------------------------------------------------------------------------------------------------------------------
@@ -40,6 +41,10 @@ public abstract class AbstractArrayHandler implements ColumnHandler {
 
     public DataType getColumnType() {
         return columnType;
+    }
+
+    protected void onFacetValueComplete(Object facetValue, QueryContext context) {
+
     }
 
     @Override
@@ -55,7 +60,12 @@ public abstract class AbstractArrayHandler implements ColumnHandler {
             Array.set(array, index, toFacetElement(value, context));
             index++;
         }
+        onFacetValueComplete(array, context);
         return array;
+    }
+
+    protected void onInsertValueComplete(List<Object> insertValue, SaveContext context) {
+
     }
 
     @Override
@@ -69,6 +79,7 @@ public abstract class AbstractArrayHandler implements ColumnHandler {
             final Object value = Array.get(facetValue, i);
             elements.add(toCassandraElement(value, context));
         }
+        onInsertValueComplete(elements, context);
         return elements;
     }
 }

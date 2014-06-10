@@ -25,9 +25,8 @@ public class PojoFindByKey extends PojoPersistenceStatement {
         this.pojoMapping = mapping;
     }
 
-    private static <P> Select.Where createSelect(PojoMapping mapping) {
+    private static Select.Where createSelect(PojoMapping mapping) {
         final Select.Where where = pojoSelect(mapping)
-                .from(mapping.getTableName())
                 .where(QueryBuilder.eq(mapping.getIdentifierMapping().getFacetMetadata().getColumnName(), QueryBuilder.bindMarker()));
 
         LOGGER.info("{}.findByKey(): {}", mapping.getPojoMetadata().getPojoType().getSimpleName(), where);
@@ -39,7 +38,7 @@ public class PojoFindByKey extends PojoPersistenceStatement {
 //----------------------------------------------------------------------------------------------------------------------
 
     public Object find(Object identifier, QueryContext context) {
-        return find(identifier, pojoMapping.getPojoMetadata().newPojo(), context);
+        return find(identifier, pojoMapping.getPojoMetadata().newPojo(identifier), context);
     }
 
     public Object find(Object identifier, Object pojo, QueryContext context) {

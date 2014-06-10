@@ -112,7 +112,21 @@ public class PojoMetadata {
         return Collections.unmodifiableMap(facets);
     }
 
-    public Object newPojo() {
+    private Object newPojo() {
         return ReflectionUtils.instantiate(pojoType);
+    }
+
+    public Object newPojo(Object identifier) {
+        Object pojo = newPojo();
+        getIdentifierFacet().getFacet().set(pojo, identifier);
+        return pojo;
+    }
+
+    public Map<Object, Object> newPojoMap(Iterable<Object> identifiers) {
+        Map<Object, Object> pojos = new HashMap<>();
+        for (Object identifier : identifiers) {
+            pojos.put(identifier, newPojo(identifier));
+        }
+        return pojos;
     }
 }

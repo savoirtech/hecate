@@ -41,7 +41,7 @@ public class PojoValueHandler implements ColumnHandler {
         if (cassandraValue == null) {
             return null;
         }
-        Object pojo = pojoMetadata.newPojo();
+        Object pojo = pojoMetadata.newPojo(identifierConverter.fromCassandraValue(cassandraValue));
         context.addPojo(pojoMetadata.getPojoType(), facetMetadata.getTableName(), cassandraValue, pojo);
         return pojo;
     }

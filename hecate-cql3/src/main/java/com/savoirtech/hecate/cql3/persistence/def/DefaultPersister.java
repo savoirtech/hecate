@@ -4,6 +4,7 @@ import com.datastax.driver.core.Session;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.persistence.Persister;
 import com.savoirtech.hecate.cql3.persistence.PojoFindByKey;
+import com.savoirtech.hecate.cql3.persistence.PojoFindByKeys;
 import com.savoirtech.hecate.cql3.persistence.PojoSave;
 
 public class DefaultPersister implements Persister {
@@ -13,6 +14,7 @@ public class DefaultPersister implements Persister {
 
     private final PojoSave save;
     private final PojoFindByKey findByKey;
+    private final PojoFindByKeys findByKeys;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -21,11 +23,22 @@ public class DefaultPersister implements Persister {
     public DefaultPersister(Session session, PojoMapping mapping) {
         this.save = new PojoSave(session, mapping);
         this.findByKey = new PojoFindByKey(session, mapping);
+        this.findByKeys = new PojoFindByKeys(session, mapping);
     }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Persister Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
 
     @Override
     public PojoFindByKey findByKey() {
         return findByKey;
+    }
+
+    @Override
+    public PojoFindByKeys findByKeys() {
+        return findByKeys;
     }
 
     @Override

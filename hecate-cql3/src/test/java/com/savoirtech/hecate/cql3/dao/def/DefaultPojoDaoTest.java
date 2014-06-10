@@ -49,7 +49,6 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
     }
 
     @Test
-    @Ignore
     public void testFindByKeys() {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
@@ -85,10 +84,10 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
         final SimplePojo pojo = new SimplePojo();
 
-        pojo.setNestedArray(new NestedPojo[]{new NestedPojo()});
+        pojo.setPojoArray(new NestedPojo[]{new NestedPojo()});
         dao.save(pojo);
         final SimplePojo found = dao.findByKey(pojo.getId());
-        assertArrayEquals(pojo.getNestedArray(), found.getNestedArray());
+        assertArrayEquals(pojo.getPojoArray(), found.getPojoArray());
     }
 
     @Test
@@ -126,6 +125,22 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertEquals("one", found.getListOfStrings().get(0));
         assertEquals("two", found.getListOfStrings().get(1));
         assertEquals("three", found.getListOfStrings().get(2));
+
+    }
+
+    @Test
+    public void testWithPojoListField() {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setPojoList(Arrays.asList(new NestedPojo(), new NestedPojo()));
+        dao.save(pojo);
+
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found.getPojoList());
+        assertEquals(2, found.getPojoList().size());
+        assertEquals(pojo.getPojoList().get(0), found.getPojoList().get(0));
+        assertEquals(pojo.getPojoList().get(1), found.getPojoList().get(1));
 
     }
 

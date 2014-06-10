@@ -8,6 +8,7 @@ import com.savoirtech.hecate.cql3.persistence.SaveContext;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
@@ -46,30 +47,36 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
     @Override
     @SuppressWarnings("unchecked")
     public P findByKey(K key) {
-        final Queue<PojoQueryItem> queryItems = new LinkedList<>();
-        final QueryContext context = new QueryContextImpl(queryItems);
-        P root = (P) rootPersister.findByKey().find(key, context);
-        while (!queryItems.isEmpty()) {
-            PojoQueryItem item = queryItems.poll();
-            persisterFactory.getPersister(item.getPojoType(), item.getTableName()).findByKey().find(item.getIdentifier(), item.getPojo(), context);
-        }
+        final Queue<PersistenceTask> tasks = new LinkedList<>();
+        P root = (P) rootPersister.findByKey().find(key, new QueryContextImpl(tasks));
+        executeTasks(tasks);
         return root;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<P> findByKeys(Iterable<K> keys) {
-//        return findByKeys.execute(keys);
-        return null;
+        final Queue<PersistenceTask> tasks = new LinkedList<>();
+        List<P> roots = (List<P>) rootPersister.findByKeys().execute((Iterable<Object>) keys, new QueryContextImpl(tasks));
+        executeTasks(tasks);
+        return roots;
     }
 
     @Override
     public void save(P pojo) {
-        Queue<PojoSaveItem> saveItems = new LinkedList<>();
-        saveItems.add(new PojoSaveItem(rootPojoType, rootTableName, pojo));
-        final SaveContext saveContext = new SaveContextImpl(saveItems);
-        while (!saveItems.isEmpty()) {
-            PojoSaveItem item = saveItems.poll();
-            persisterFactory.getPersister(item.getPojoType(), item.getTableName()).save().execute(item.getPojo(), saveContext);
+        Queue<PersistenceTask> tasks = new LinkedList<>();
+        tasks.add(new PojoSaveTask(rootPojoType, rootTableName, pojo, new SaveContextImpl(tasks)));
+        executeTasks(tasks);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    private void executeTasks(Queue<PersistenceTask> taskQueue) {
+        while (!taskQueue.isEmpty()) {
+            PersistenceTask task = taskQueue.poll();
+            task.execute();
         }
     }
 
@@ -77,83 +84,97 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static class PojoQueryItem {
+    private class HydratePojoTask implements PersistenceTask {
+        private final QueryContext context;
         private final Class<?> pojoType;
         private final String tableName;
         private final Object identifier;
         private final Object pojo;
 
-        private PojoQueryItem(Class<?> pojoType, String tableName, Object identifier, Object pojo) {
+        private HydratePojoTask(Class<?> pojoType, String tableName, Object identifier, Object pojo, QueryContext context) {
             this.pojoType = pojoType;
             this.tableName = tableName;
             this.identifier = identifier;
             this.pojo = pojo;
+            this.context = context;
         }
 
-        public String getTableName() {
-            return tableName;
-        }
-
-        public Class<?> getPojoType() {
-            return pojoType;
-        }
-
-        public Object getIdentifier() {
-            return identifier;
-        }
-
-        public Object getPojo() {
-            return pojo;
+        @Override
+        public void execute() {
+            persisterFactory.getPersister(pojoType, tableName).findByKey().find(identifier, pojo, context);
         }
     }
 
-    private static class PojoSaveItem {
+    private class HydratePojosTask implements PersistenceTask {
+        private final Class<?> pojoType;
+        private final String tableName;
+        private final Map<Object, Object> pojoMap;
+        private final QueryContext context;
+
+        private HydratePojosTask(Class<?> pojoType, String tableName, Map<Object, Object> pojoMap, QueryContext context) {
+            this.pojoType = pojoType;
+            this.tableName = tableName;
+            this.pojoMap = pojoMap;
+            this.context = context;
+        }
+
+        @Override
+        public void execute() {
+            persisterFactory.getPersister(pojoType, tableName).findByKeys().execute(pojoMap, context);
+        }
+    }
+
+    private interface PersistenceTask {
+        void execute();
+    }
+
+    private class PojoSaveTask implements PersistenceTask {
+        private final SaveContext context;
         private final Class<?> pojoType;
         private final String tableName;
         private final Object pojo;
 
-        public PojoSaveItem(Class<?> pojoType, String tableName, Object pojo) {
+        public PojoSaveTask(Class<?> pojoType, String tableName, Object pojo, SaveContext context) {
             this.pojoType = pojoType;
             this.tableName = tableName;
             this.pojo = pojo;
+            this.context = context;
         }
 
-        public Class<?> getPojoType() {
-            return pojoType;
-        }
-
-        public String getTableName() {
-            return tableName;
-        }
-
-        public Object getPojo() {
-            return pojo;
+        @Override
+        public void execute() {
+            persisterFactory.getPersister(pojoType, tableName).save().execute(pojo, context);
         }
     }
 
-    private static class QueryContextImpl implements QueryContext {
-        private final Queue<PojoQueryItem> items;
+    private class QueryContextImpl implements QueryContext {
+        private final Queue<PersistenceTask> items;
 
-        private QueryContextImpl(Queue<PojoQueryItem> items) {
+        private QueryContextImpl(Queue<PersistenceTask> items) {
             this.items = items;
         }
 
         @Override
         public void addPojo(Class<?> pojoType, String tableName, Object identifier, Object pojo) {
-            items.add(new PojoQueryItem(pojoType, tableName, identifier, pojo));
+            items.add(new HydratePojoTask(pojoType, tableName, identifier, pojo, this));
+        }
+
+        @Override
+        public void addPojos(Class<?> pojoType, String tableName, Map<Object, Object> pojoMap) {
+            items.add(new HydratePojosTask(pojoType, tableName, pojoMap, this));
         }
     }
 
-    private static class SaveContextImpl implements SaveContext {
-        private final Queue<PojoSaveItem> items;
+    private class SaveContextImpl implements SaveContext {
+        private final Queue<PersistenceTask> items;
 
-        private SaveContextImpl(Queue<PojoSaveItem> items) {
+        private SaveContextImpl(Queue<PersistenceTask> items) {
             this.items = items;
         }
 
         @Override
         public void enqueue(Class<?> pojoType, String tableName, Object pojo) {
-            items.add(new PojoSaveItem(pojoType, tableName, pojo));
+            items.add(new PojoSaveTask(pojoType, tableName, pojo, this));
         }
     }
 }

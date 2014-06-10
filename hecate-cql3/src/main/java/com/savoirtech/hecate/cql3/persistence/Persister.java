@@ -9,4 +9,5 @@ public interface Persister {
 
     PojoSave save();
 
+    PojoFindByKeys findByKeys();
 }

@@ -27,19 +27,13 @@ public class SimplePojo {
 
     private Nums nums;
 
-    private NestedPojo[] nestedArray;
+    private NestedPojo[] pojoArray;
 
     private NestedPojo nestedPojo;
 
-    public NestedPojo getNestedPojo() {
-        return nestedPojo;
-    }
+    private List<NestedPojo> pojoList;
 
-    public void setNestedPojo(NestedPojo nestedPojo) {
-        this.nestedPojo = nestedPojo;
-    }
-
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -83,12 +77,12 @@ public class SimplePojo {
         this.name = name;
     }
 
-    public NestedPojo[] getNestedArray() {
-        return nestedArray;
+    public NestedPojo getNestedPojo() {
+        return nestedPojo;
     }
 
-    public void setNestedArray(NestedPojo[] nestedArray) {
-        this.nestedArray = nestedArray;
+    public void setNestedPojo(NestedPojo nestedPojo) {
+        this.nestedPojo = nestedPojo;
     }
 
     public Nums getNums() {
@@ -97,6 +91,22 @@ public class SimplePojo {
 
     public void setNums(Nums nums) {
         this.nums = nums;
+    }
+
+    public NestedPojo[] getPojoArray() {
+        return pojoArray;
+    }
+
+    public void setPojoArray(NestedPojo[] pojoArray) {
+        this.pojoArray = pojoArray;
+    }
+
+    public List<NestedPojo> getPojoList() {
+        return pojoList;
+    }
+
+    public void setPojoList(List<NestedPojo> pojoList) {
+        this.pojoList = pojoList;
     }
 
     public Set<String> getSetOfStrings() {

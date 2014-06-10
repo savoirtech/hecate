@@ -7,6 +7,7 @@ import com.savoirtech.hecate.cql3.exception.HecateException;
 import com.savoirtech.hecate.cql3.handler.ColumnHandler;
 import com.savoirtech.hecate.cql3.handler.ColumnHandlerFactory;
 import com.savoirtech.hecate.cql3.handler.pojo.PojoArrayHandler;
+import com.savoirtech.hecate.cql3.handler.pojo.PojoListHandler;
 import com.savoirtech.hecate.cql3.handler.pojo.PojoValueHandler;
 import com.savoirtech.hecate.cql3.handler.scalar.ScalarArrayHandler;
 import com.savoirtech.hecate.cql3.handler.scalar.ScalarListHandler;
@@ -44,7 +45,7 @@ public class DefaultColumnHandlerFactory implements ColumnHandlerFactory {
             return new ScalarValueHandler(converter);
         }
         if (List.class.equals(facetType.getRawType())) {
-            return createListHandler(facetType.getListElementType());
+            return createListHandler(facetMetadata, facetType.getListElementType());
         }
         if (Set.class.equals(facetType.getRawType())) {
             return createSetHandler(facetType.getSetElementType());
@@ -92,14 +93,15 @@ public class DefaultColumnHandlerFactory implements ColumnHandlerFactory {
         return converter;
     }
 
-    private ColumnHandler createListHandler(GenericType elementType) {
+    private ColumnHandler createListHandler(FacetMetadata facetMetadata, GenericType elementType) {
         ValueConverter converter = registry.getValueConverter(elementType.getRawType());
         if (converter != null) {
             return new ScalarListHandler(converter);
         }
-        // TODO: Handle pojos.
-        return null;
+        final PojoMetadata pojoMetadata = pojoMetadataFactory.getPojoMetadata(elementType.getRawType());
+        return new PojoListHandler(facetMetadata, pojoMetadata, getIdentifierConverter(pojoMetadata));
     }
+
 
     private ColumnHandler createMapHandler(GenericType keyType, GenericType valueType) {
         ValueConverter keyConverter = Validate.notNull(registry.getValueConverter(keyType.getRawType()), "Invalid map key type %s (must be scalar).", keyType.getRawType().toString());
