@@ -74,7 +74,7 @@ public class PojoListHandler extends AbstractListHandler {
             for (Object pojo : facetValues) {
                 identifiers.add(pojoMetadata.getIdentifierFacet().getFacet().get(pojo));
             }
-            context.addPojos(pojoMetadata.getPojoType(), facetMetadata.getTableName(), pojoMetadata.newPojoMap(identifiers));
+            context.addPojos(pojoMetadata.getPojoType(), facetMetadata.getTableName(), context.newPojoMap(pojoMetadata, identifiers));
         }
     }
 

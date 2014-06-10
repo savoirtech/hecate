@@ -76,7 +76,7 @@ public class PojoMapHandler extends AbstractMapHandler {
             for (Object pojo : facetValues.values()) {
                 identifiers.add(pojoMetadata.getIdentifierFacet().getFacet().get(pojo));
             }
-            context.addPojos(pojoMetadata.getPojoType(), facetMetadata.getTableName(), pojoMetadata.newPojoMap(identifiers));
+            context.addPojos(pojoMetadata.getPojoType(), facetMetadata.getTableName(), context.newPojoMap(pojoMetadata, identifiers));
         }
     }
 

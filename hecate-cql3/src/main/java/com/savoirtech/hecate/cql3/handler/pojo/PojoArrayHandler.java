@@ -74,7 +74,7 @@ public class PojoArrayHandler extends AbstractArrayHandler {
 
     @Override
     protected Object toFacetElement(Object cassandraElement, QueryContext context) {
-        return pojoMetadata.newPojo(identifierConverter.fromCassandraValue(cassandraElement));
+        return context.newPojo(pojoMetadata, identifierConverter.fromCassandraValue(cassandraElement));
     }
 
     @Override

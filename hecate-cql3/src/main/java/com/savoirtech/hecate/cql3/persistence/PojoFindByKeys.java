@@ -37,7 +37,7 @@ public class PojoFindByKeys extends PojoPersistenceStatement {
 
     public List<Object> execute(Iterable<Object> identifiers, QueryContext queryContext) {
         if (identifiers.iterator().hasNext()) {
-            return execute(getPojoMapping().getPojoMetadata().newPojoMap(identifiers), queryContext);
+            return execute(queryContext.newPojoMap(getPojoMapping().getPojoMetadata(), identifiers), queryContext);
         }
         return Collections.emptyList();
     }

@@ -1,12 +1,14 @@
 package com.savoirtech.hecate.cql3.dao.def;
 
 import com.savoirtech.hecate.cql3.dao.PojoDao;
+import com.savoirtech.hecate.cql3.meta.PojoMetadata;
 import com.savoirtech.hecate.cql3.persistence.DeleteContext;
 import com.savoirtech.hecate.cql3.persistence.Persister;
 import com.savoirtech.hecate.cql3.persistence.PersisterFactory;
 import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
 import com.savoirtech.hecate.cql3.persistence.QueryContext;
 import com.savoirtech.hecate.cql3.persistence.SaveContext;
+import org.apache.commons.lang3.Validate;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -201,6 +203,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
     private class QueryContextImpl implements QueryContext {
         private final Queue<PersistenceTask> items;
         private final VisitedPojoCache cache = new VisitedPojoCache();
+        private final Map<String, Object> pojoCache = new HashMap<>();
 
 
         private QueryContextImpl(Queue<PersistenceTask> items) {
@@ -208,7 +211,38 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         }
 
         @Override
+        public Object newPojo(PojoMetadata pojoMetadata, Object identifier) {
+            final String key = pojoCacheKey(pojoMetadata.getPojoType(), identifier);
+            Object pojo = pojoCache.get(key);
+            if (pojo == null) {
+                pojo = pojoMetadata.newPojo(identifier);
+                pojoCache.put(key, pojo);
+            }
+            return pojo;
+        }
+
+        @Override
+        public Map<Object, Object> newPojoMap(PojoMetadata pojoMetadata, Iterable<Object> identifiers) {
+            Map<Object, Object> result = new HashMap<>();
+            for (Object identifier : identifiers) {
+                final String key = pojoCacheKey(pojoMetadata.getPojoType(), identifier);
+                Object pojo = pojoCache.get(key);
+                if (pojo == null) {
+                    pojo = pojoMetadata.newPojo(identifier);
+                    pojoCache.put(key, pojo);
+                }
+                result.put(identifier, pojo);
+            }
+            return result;
+        }
+
+        private String pojoCacheKey(Class<?> pojoType, Object identifier) {
+            return pojoType.getCanonicalName() + ":" + identifier;
+        }
+
+        @Override
         public void addPojo(Class<?> pojoType, String tableName, Object identifier, Object pojo) {
+            Validate.isTrue(pojoCache.get(pojoCacheKey(pojoType, identifier)) == pojo, "Invalid POJO instance added to QueryContext, use QueryContext.newPojo() method instead.");
             if (!cache.contains(pojoType, tableName, identifier)) {
                 items.add(new HydratePojoTask(pojoType, tableName, identifier, pojo, this));
             }
@@ -216,6 +250,9 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 
         @Override
         public void addPojos(Class<?> pojoType, String tableName, Map<Object, Object> pojoMap) {
+            for (Map.Entry<Object, Object> entry : pojoMap.entrySet()) {
+                Validate.isTrue(pojoCache.get(pojoCacheKey(pojoType, entry.getKey())) == entry.getValue(), "Invalid POJO instance added to QueryContext, use QueryContext.newPojo() method instead.");
+            }
             final Set<Object> prunedIdentifiers = cache.prune(pojoType, tableName, pojoMap.keySet());
             final Map<Object, Object> pruned = new HashMap<>();
             for (Object prunedIdentifier : prunedIdentifiers) {

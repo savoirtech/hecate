@@ -59,10 +59,6 @@ public class PojoMetadata {
         return pojoType;
     }
 
-    public String getDefaultTableName() {
-        return tableName;
-    }
-
     public Integer getTimeToLive() {
         return timeToLive;
     }
@@ -108,6 +104,10 @@ public class PojoMetadata {
         }
     }
 
+    public String getDefaultTableName() {
+        return tableName;
+    }
+
     public Map<String, FacetMetadata> getFacets() {
         return Collections.unmodifiableMap(facets);
     }
@@ -120,13 +120,5 @@ public class PojoMetadata {
         Object pojo = newPojo();
         getIdentifierFacet().getFacet().set(pojo, identifier);
         return pojo;
-    }
-
-    public Map<Object, Object> newPojoMap(Iterable<Object> identifiers) {
-        Map<Object, Object> pojos = new HashMap<>();
-        for (Object identifier : identifiers) {
-            pojos.put(identifier, newPojo(identifier));
-        }
-        return pojos;
     }
 }
