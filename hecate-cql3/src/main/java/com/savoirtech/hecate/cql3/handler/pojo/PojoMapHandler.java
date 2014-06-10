@@ -88,7 +88,7 @@ public class PojoMapHandler extends AbstractMapHandler {
     @Override
     protected Object toCassandraValue(Object value, SaveContext context) {
         final Object identifierValue = pojoMetadata.getIdentifierFacet().getFacet().get(value);
-        context.enqueue(pojoMetadata.getPojoType(), facetMetadata.getTableName(), value);
+        context.addPojo(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifierValue, value);
         return identifierConverter.toCassandraValue(identifierValue);
     }
 

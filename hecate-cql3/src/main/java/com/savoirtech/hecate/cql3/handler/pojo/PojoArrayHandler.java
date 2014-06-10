@@ -68,7 +68,7 @@ public class PojoArrayHandler extends AbstractArrayHandler {
     protected Object toCassandraElement(Object facetElement, SaveContext context) {
         final Object identifierValue = pojoMetadata.getIdentifierFacet().getFacet().get(facetElement);
         Object pojo = pojoMetadata.newPojo(identifierValue);
-        context.enqueue(pojoMetadata.getPojoType(), facetMetadata.getTableName(), pojo);
+        context.addPojo(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifierValue, pojo);
         return identifierConverter.toCassandraValue(identifierValue);
     }
 

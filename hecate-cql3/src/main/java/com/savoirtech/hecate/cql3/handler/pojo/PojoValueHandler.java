@@ -64,7 +64,7 @@ public class PojoValueHandler implements ColumnHandler {
             return null;
         }
         Object identifierValue = pojoMetadata.getIdentifierFacet().getFacet().get(facetValue);
-        context.enqueue(pojoMetadata.getPojoType(), facetMetadata.getTableName(), facetValue);
+        context.addPojo(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifierValue, facetValue);
         return identifierConverter.toCassandraValue(identifierValue);
     }
 

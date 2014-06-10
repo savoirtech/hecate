@@ -9,10 +9,13 @@ import com.savoirtech.hecate.cql3.persistence.QueryContext;
 import com.savoirtech.hecate.cql3.persistence.SaveContext;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -38,19 +41,6 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 //----------------------------------------------------------------------------------------------------------------------
 // PojoDao Implementation
 //----------------------------------------------------------------------------------------------------------------------
-
-    private class DeleteContextImpl implements DeleteContext {
-        private final Queue<PersistenceTask> tasks;
-
-        private DeleteContextImpl(Queue<PersistenceTask> tasks) {
-            this.tasks = tasks;
-        }
-
-        @Override
-        public void addDeletedIdentifiers(Class<?> pojoType, String tableName, Iterable<Object> identifiers) {
-            tasks.add(new DeletePojosTask(pojoType, tableName, identifiers, this));
-        }
-    }
 
     @Override
     public void delete(K key) {
@@ -89,6 +79,10 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    private String cacheKey(Class<?> pojoType, String tableName, Object identifier) {
+        return pojoType.getName() + ":" + tableName + ":" + identifier;
+    }
+
     private void executeTasks(Queue<PersistenceTask> taskQueue) {
         while (!taskQueue.isEmpty()) {
             PersistenceTask task = taskQueue.poll();
@@ -99,6 +93,23 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
+
+    private class DeleteContextImpl implements DeleteContext {
+        private final Queue<PersistenceTask> tasks;
+        private final VisitedPojoCache cache = new VisitedPojoCache();
+
+        private DeleteContextImpl(Queue<PersistenceTask> tasks) {
+            this.tasks = tasks;
+        }
+
+        @Override
+        public void addDeletedIdentifiers(Class<?> pojoType, String tableName, Iterable<Object> identifiers) {
+            Set<Object> pruned = cache.prune(pojoType, tableName, identifiers);
+            if (!pruned.isEmpty()) {
+                tasks.add(new DeletePojosTask(pojoType, tableName, pruned, this));
+            }
+        }
+    }
 
     private class DeletePojosTask implements PersistenceTask {
         private final Class<?> pojoType;
@@ -189,6 +200,8 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 
     private class QueryContextImpl implements QueryContext {
         private final Queue<PersistenceTask> items;
+        private final VisitedPojoCache cache = new VisitedPojoCache();
+
 
         private QueryContextImpl(Queue<PersistenceTask> items) {
             this.items = items;
@@ -196,25 +209,60 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 
         @Override
         public void addPojo(Class<?> pojoType, String tableName, Object identifier, Object pojo) {
-            items.add(new HydratePojoTask(pojoType, tableName, identifier, pojo, this));
+            if (!cache.contains(pojoType, tableName, identifier)) {
+                items.add(new HydratePojoTask(pojoType, tableName, identifier, pojo, this));
+            }
         }
 
         @Override
         public void addPojos(Class<?> pojoType, String tableName, Map<Object, Object> pojoMap) {
-            items.add(new HydratePojosTask(pojoType, tableName, pojoMap, this));
+            final Set<Object> prunedIdentifiers = cache.prune(pojoType, tableName, pojoMap.keySet());
+            final Map<Object, Object> pruned = new HashMap<>();
+            for (Object prunedIdentifier : prunedIdentifiers) {
+                pruned.put(prunedIdentifier, pojoMap.get(prunedIdentifier));
+            }
+            items.add(new HydratePojosTask(pojoType, tableName, pruned, this));
         }
     }
 
     private class SaveContextImpl implements SaveContext {
         private final Queue<PersistenceTask> items;
+        private final VisitedPojoCache cache = new VisitedPojoCache();
 
         private SaveContextImpl(Queue<PersistenceTask> items) {
             this.items = items;
         }
 
         @Override
-        public void enqueue(Class<?> pojoType, String tableName, Object pojo) {
-            items.add(new PojoSaveTask(pojoType, tableName, pojo, this));
+        public void addPojo(Class<?> pojoType, String tableName, Object identifier, Object pojo) {
+            if (!cache.contains(pojoType, tableName, identifier)) {
+                items.add(new PojoSaveTask(pojoType, tableName, pojo, this));
+            }
+        }
+    }
+
+    private class VisitedPojoCache {
+        private final Set<String> visited = new HashSet<>();
+
+        public boolean contains(Class<?> pojoType, String tableName, Object identifier) {
+            final String key = cacheKey(pojoType, tableName, identifier);
+            if (visited.contains(key)) {
+                return true;
+            }
+            visited.add(key);
+            return false;
+        }
+
+        public Set<Object> prune(Class<?> pojoType, String tableName, Iterable<Object> identifiers) {
+            final Set<Object> pruned = new HashSet<>();
+            for (Object identifier : identifiers) {
+                final String key = cacheKey(pojoType, tableName, identifier);
+                if (!visited.contains(key)) {
+                    visited.add(key);
+                    pruned.add(identifier);
+                }
+            }
+            return pruned;
         }
     }
 }

@@ -81,7 +81,7 @@ public class PojoListHandler extends AbstractListHandler {
     @Override
     protected Object toCassandraElement(Object facetElement, SaveContext context) {
         final Object identifierValue = pojoMetadata.getIdentifierFacet().getFacet().get(facetElement);
-        context.enqueue(pojoMetadata.getPojoType(), facetMetadata.getTableName(), facetElement);
+        context.addPojo(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifierValue, facetElement);
         return identifierConverter.toCassandraValue(identifierValue);
     }
 

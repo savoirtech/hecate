@@ -5,5 +5,5 @@ public interface SaveContext {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void enqueue(Class<?> pojoType, String tableName, Object pojo);
+    void addPojo(Class<?> pojoType, String tableName, Object identifier, Object pojo);
 }
