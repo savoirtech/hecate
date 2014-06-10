@@ -23,7 +23,7 @@ public class CreateVerifier implements SchemaVerifier {
         cql.append("CREATE TABLE IF NOT EXISTS ");
         cql.append(session.getLoggedKeyspace());
         cql.append(".");
-        cql.append(mapping.getTableName());
+        cql.append(mapping.getTableName() == null ? mapping.getPojoMetadata().getTableName() : mapping.getTableName());
         cql.append(" (");
         cql.append(StringUtils.join(mapping.getFacetMappings(), ", "));
         cql.append(")");
