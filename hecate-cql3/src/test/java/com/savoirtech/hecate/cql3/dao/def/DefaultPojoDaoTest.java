@@ -8,6 +8,7 @@ import com.savoirtech.hecate.cql3.test.CassandraTestCase;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,31 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertNotNull(dao.findByKey(pojo.getId()));
         dao.delete(pojo.getId());
         assertNull(dao.findByKey(pojo.getId()));
+    }
+
+    @Test
+    public void testDeleteWithNestedPojos() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final PojoDao<String, NestedPojo> nestedPojoDao = factory.createPojoDao(NestedPojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        final NestedPojo nestedPojo = new NestedPojo();
+        pojo.setNestedPojo(nestedPojo);
+        pojo.setPojoArray(new NestedPojo[]{nestedPojo});
+        pojo.setPojoList(Arrays.asList(nestedPojo));
+        Map<String, NestedPojo> pojoMap = new HashMap<>();
+        pojoMap.put("one", nestedPojo);
+        pojo.setPojoMap(pojoMap);
+        pojo.setPojoSet(Collections.singleton(nestedPojo));
+        pojo.setName("name");
+        dao.save(pojo);
+
+        assertNotNull(dao.findByKey(pojo.getId()));
+        assertNotNull(nestedPojoDao.findByKey(nestedPojo.getId()));
+
+        dao.delete(pojo.getId());
+        assertNull(dao.findByKey(pojo.getId()));
+        assertNull(nestedPojoDao.findByKey(nestedPojo.getId()));
     }
 
     @Test
