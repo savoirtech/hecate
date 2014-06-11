@@ -17,8 +17,8 @@ public class PojoMetadata {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Class<?> pojoType;
-    private final String tableName;
-    private final Integer timeToLive;
+    private final String defaultTableName;
+    private final int defaultTtl;
     private final Map<String, FacetMetadata> facets = new HashMap<>();
     private FacetMetadata identifierFacet;
 
@@ -38,18 +38,26 @@ public class PojoMetadata {
     public PojoMetadata(Class<?> pojoType) {
         this.pojoType = Validate.notNull(pojoType, "POJO type cannot be null.");
         Validate.isTrue(ReflectionUtils.isInstantiable(pojoType), "Unable to instantiate POJOs of type %s", pojoType.getName());
-        this.tableName = tableNameOf(pojoType);
-        this.timeToLive = timeToLiveOf(pojoType);
+        this.defaultTableName = tableNameOf(pojoType);
+        this.defaultTtl = timeToLiveOf(pojoType);
     }
 
-    private static Integer timeToLiveOf(Class<?> pojoType) {
+    private static int timeToLiveOf(Class<?> pojoType) {
         Ttl annot = pojoType.getAnnotation(Ttl.class);
-        return annot == null ? null : annot.value();
+        return annot == null ? 0 : annot.value();
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
+
+    public String getDefaultTableName() {
+        return defaultTableName;
+    }
+
+    public Integer getDefaultTtl() {
+        return defaultTtl;
+    }
 
     public FacetMetadata getIdentifierFacet() {
         return identifierFacet;
@@ -57,10 +65,6 @@ public class PojoMetadata {
 
     public Class<?> getPojoType() {
         return pojoType;
-    }
-
-    public Integer getTimeToLive() {
-        return timeToLive;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -104,20 +108,12 @@ public class PojoMetadata {
         }
     }
 
-    public String getDefaultTableName() {
-        return tableName;
-    }
-
     public Map<String, FacetMetadata> getFacets() {
         return Collections.unmodifiableMap(facets);
     }
 
-    private Object newPojo() {
-        return ReflectionUtils.instantiate(pojoType);
-    }
-
     public Object newPojo(Object identifier) {
-        Object pojo = newPojo();
+        Object pojo = ReflectionUtils.instantiate(pojoType);
         getIdentifierFacet().getFacet().set(pojo, identifier);
         return pojo;
     }
