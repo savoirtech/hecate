@@ -129,7 +129,7 @@ public class PojoPersistenceStatement {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static class FacetValueTarget implements InjectionTarget<Object> {
+    private static final class FacetValueTarget implements InjectionTarget<Object> {
         private final Object pojo;
         private final Facet facet;
 
