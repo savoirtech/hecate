@@ -24,11 +24,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.savoirtech.hecate</groupId>
     <artifactId>hecate-farsandra</artifactId>
 
-    <name>Savoirtech ::: Hecate ::: Farsandra</name>
-    <description>Savoirtech ::: Hecate ::: Farsandra Testing libraries</description>
+    <name>SavoirTech ::: Hecate ::: Farsandra</name>
 
     <dependencies>
         <dependency>

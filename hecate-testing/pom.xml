@@ -26,8 +26,8 @@
 
     <artifactId>hecate-testing</artifactId>
 
-    <name>Savoirtech ::: Hecate ::: Test</name>
-    <description>Savoirtech ::: Hecate ::: Testing libraries</description>
+    <name>SavoirTech ::: Hecate ::: Test</name>
+    <description>SavoirTech ::: Hecate ::: Testing libraries</description>
 
     <dependencies>
 

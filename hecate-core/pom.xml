@@ -24,8 +24,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <name>SavoirTech ::: Hecate Core</name>
-    <description>SavoirTech ::: Hecate Core</description>
+    <name>SavoirTech ::: Hecate ::: Core</name>
 
     <artifactId>hecate-core</artifactId>
 

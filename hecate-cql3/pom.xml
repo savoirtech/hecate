@@ -42,8 +42,7 @@
 
     </properties>
 
-    <name>SavoirTech ::: Hecate CQL3</name>
-    <description>SavoirTech ::: Hecate CQL3</description>
+    <name>SavoirTech ::: Hecate ::: CQL3</name>
 
     <dependencies>
 

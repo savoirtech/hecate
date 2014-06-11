@@ -26,18 +26,11 @@
         <version>7</version>
     </parent>
 
-    <distributionManagement>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
     <groupId>com.savoirtech.hecate</groupId>
     <artifactId>hecate-parent</artifactId>
     <packaging>pom</packaging>
     <version>1.0.23-SNAPSHOT</version>
+    <name>SavoirTech ::: Hecate ::: Parent</name>
 
     <licenses>
         <license>
@@ -47,9 +40,11 @@
         </license>
     </licenses>
 
-    <name>Savoirtech Project Hecate ::: Parent</name>
-    <description>Savoirtech Project Hecate ::: Parent</description>
     <inceptionYear>2012</inceptionYear>
+    <organization>
+        <name>Savoir Technologies, Inc.</name>
+        <url>http://www.savoirtech.com</url>
+    </organization>
 
     <modules>
         <module>hecate-core</module>
@@ -64,8 +59,15 @@
         <url>https://github.com/savoirtech/hecate</url>
         <connection>scm:git:git@github.com:savoirtech/hecate.git</connection>
         <developerConnection>scm:git:git@github.com:savoirtech/hecate.git</developerConnection>
-        <tag>hecate-parent-1.0.19</tag>
     </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Nexus Release Repository</name>
+            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
