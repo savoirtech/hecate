@@ -2,7 +2,7 @@ package com.savoirtech.hecate.cql3.convert;
 
 import com.datastax.driver.core.DataType;
 
-public class NativeConverter<T> implements ValueConverter {
+public final class NativeConverter implements ValueConverter {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
