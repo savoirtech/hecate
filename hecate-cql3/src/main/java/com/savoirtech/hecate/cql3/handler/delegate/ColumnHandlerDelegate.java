@@ -1,4 +1,4 @@
-package com.savoirtech.hecate.cql3.handler;
+package com.savoirtech.hecate.cql3.handler.delegate;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
@@ -6,20 +6,23 @@ import com.savoirtech.hecate.cql3.handler.context.QueryContext;
 import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.util.InjectionTarget;
 
-public interface ColumnHandler {
+import java.util.Map;
+
+public interface ColumnHandlerDelegate {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    DataType getColumnType();
+    DataType getDataType();
 
-    void getDeletionIdentifiers(Object columnValue, DeleteContext context);
+    boolean isCascading();
 
-    void injectFacetValue(InjectionTarget<Object> target, Object columnValue, QueryContext context);
+    void injectFacetValues(InjectionTarget<Map<Object, Object>> target, Iterable<Object> columnValues, QueryContext context);
 
-    Object getInsertValue(Object facetValue, SaveContext context);
+    void collectDeletionIdentifiers(Iterable<Object> columnValues, DeleteContext context);
 
     Object getWhereClauseValue(Object parameterValue);
 
-    boolean isCascading();
+    Object convertToInsertValue(Object facetValue, SaveContext saveContext);
+
 }

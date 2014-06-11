@@ -1,7 +1,9 @@
-package com.savoirtech.hecate.cql3.persistence;
+package com.savoirtech.hecate.cql3.handler.context;
 
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
+import com.savoirtech.hecate.cql3.util.InjectionTarget;
 
+import java.util.List;
 import java.util.Map;
 
 public interface QueryContext {
@@ -9,11 +11,7 @@ public interface QueryContext {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void addPojo(Class<?> pojoType, String tableName, Object identifier, Object pojo);
-
-    void addPojos(Class<?> pojoType, String tableName, Map<Object, Object> pojoMap);
-
-    Object newPojo(PojoMetadata pojoMetadata, Object identifier);
+    void addPojos(Class<?> pojoType, String tableName, Iterable<Object> identifiers, InjectionTarget<List<Object>> target);
 
     Map<Object, Object> newPojoMap(PojoMetadata pojoMetadata, Iterable<Object> identifiers);
 }

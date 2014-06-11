@@ -1,4 +1,4 @@
-package com.savoirtech.hecate.cql3.persistence;
+package com.savoirtech.hecate.cql3.handler.context;
 
 public interface SaveContext {
 //----------------------------------------------------------------------------------------------------------------------

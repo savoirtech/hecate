@@ -1,14 +1,14 @@
 package com.savoirtech.hecate.cql3.dao.def;
 
 import com.savoirtech.hecate.cql3.dao.PojoDao;
+import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
+import com.savoirtech.hecate.cql3.handler.context.QueryContext;
+import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
-import com.savoirtech.hecate.cql3.persistence.DeleteContext;
 import com.savoirtech.hecate.cql3.persistence.Persister;
 import com.savoirtech.hecate.cql3.persistence.PersisterFactory;
 import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
-import com.savoirtech.hecate.cql3.persistence.QueryContext;
-import com.savoirtech.hecate.cql3.persistence.SaveContext;
-import org.apache.commons.lang3.Validate;
+import com.savoirtech.hecate.cql3.util.InjectionTarget;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -137,43 +137,25 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         }
     }
 
-    private class HydratePojoTask implements PersistenceTask {
-        private final QueryContext context;
-        private final Class<?> pojoType;
-        private final String tableName;
-        private final Object identifier;
-        private final Object pojo;
-
-        private HydratePojoTask(Class<?> pojoType, String tableName, Object identifier, Object pojo, QueryContext context) {
-            this.pojoType = pojoType;
-            this.tableName = tableName;
-            this.identifier = identifier;
-            this.pojo = pojo;
-            this.context = context;
-        }
-
-        @Override
-        public void execute() {
-            persisterFactory.getPersister(pojoType, tableName).findByKey().find(identifier, pojo, context);
-        }
-    }
-
     private class HydratePojosTask implements PersistenceTask {
         private final Class<?> pojoType;
         private final String tableName;
-        private final Map<Object, Object> pojoMap;
+        private final Iterable<Object> identifiers;
         private final QueryContext context;
+        private final InjectionTarget<List<Object>> target;
 
-        private HydratePojosTask(Class<?> pojoType, String tableName, Map<Object, Object> pojoMap, QueryContext context) {
+        private HydratePojosTask(Class<?> pojoType, String tableName, Iterable<Object> identifiers, InjectionTarget<List<Object>> target, QueryContext context) {
             this.pojoType = pojoType;
             this.tableName = tableName;
-            this.pojoMap = pojoMap;
+            this.identifiers = identifiers;
             this.context = context;
+            this.target = target;
         }
 
         @Override
         public void execute() {
-            persisterFactory.getPersister(pojoType, tableName).findByKeys().execute(pojoMap, context);
+            final List<Object> pojos = persisterFactory.getPersister(pojoType, tableName).findByKeys().execute(identifiers, context);
+            target.inject(pojos);
         }
     }
 
@@ -211,14 +193,10 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         }
 
         @Override
-        public Object newPojo(PojoMetadata pojoMetadata, Object identifier) {
-            final String key = pojoCacheKey(pojoMetadata.getPojoType(), identifier);
-            Object pojo = pojoCache.get(key);
-            if (pojo == null) {
-                pojo = pojoMetadata.newPojo(identifier);
-                pojoCache.put(key, pojo);
+        public void addPojos(Class<?> pojoType, String tableName, Iterable<Object> identifiers, InjectionTarget<List<Object>> target) {
+            if (identifiers.iterator().hasNext()) {
+                items.add(new HydratePojosTask(pojoType, tableName, identifiers, target, this));
             }
-            return pojo;
         }
 
         @Override
@@ -238,27 +216,6 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 
         private String pojoCacheKey(Class<?> pojoType, Object identifier) {
             return pojoType.getCanonicalName() + ":" + identifier;
-        }
-
-        @Override
-        public void addPojo(Class<?> pojoType, String tableName, Object identifier, Object pojo) {
-            Validate.isTrue(pojoCache.get(pojoCacheKey(pojoType, identifier)) == pojo, "Invalid POJO instance added to QueryContext, use QueryContext.newPojo() method instead.");
-            if (!cache.contains(pojoType, tableName, identifier)) {
-                items.add(new HydratePojoTask(pojoType, tableName, identifier, pojo, this));
-            }
-        }
-
-        @Override
-        public void addPojos(Class<?> pojoType, String tableName, Map<Object, Object> pojoMap) {
-            for (Map.Entry<Object, Object> entry : pojoMap.entrySet()) {
-                Validate.isTrue(pojoCache.get(pojoCacheKey(pojoType, entry.getKey())) == entry.getValue(), "Invalid POJO instance added to QueryContext, use QueryContext.newPojo() method instead.");
-            }
-            final Set<Object> prunedIdentifiers = cache.prune(pojoType, tableName, pojoMap.keySet());
-            final Map<Object, Object> pruned = new HashMap<>();
-            for (Object prunedIdentifier : prunedIdentifiers) {
-                pruned.put(prunedIdentifier, pojoMap.get(prunedIdentifier));
-            }
-            items.add(new HydratePojosTask(pojoType, tableName, pruned, this));
         }
     }
 

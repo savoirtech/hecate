@@ -7,9 +7,12 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import com.savoirtech.hecate.cql3.handler.context.QueryContext;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.util.CassandraUtils;
+import com.savoirtech.hecate.cql3.util.InjectionTarget;
+import com.savoirtech.hecate.cql3.value.Facet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,21 +68,13 @@ public class PojoPersistenceStatement {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-//    protected List<FacetMapping> allColumns() {
-//        return pojoMapping.getFacetMappings();
-//    }
-
-//    protected Object cassandraValue(P pojo, FacetMapping mapping) {
-//        return mapping.getConverter().toCassandraValue(mapping.getFacet().get(pojo), null);
-//    }
-//
-//    protected List<Object> cassandraValues(P pojo, List<FacetMapping> mappings) {
-//        final List<Object> values = new ArrayList<>(mappings.size());
-//        for (FacetMapping mapping : mappings) {
-//            values.add(mapping.getConverter().toCassandraValue(mapping.getFacet().get(pojo), null));
-//        }
-//        return values;
-//    }
+    protected List<Object> cassandraIdentifiers(Iterable<Object> keys) {
+        List<Object> cassandraValues = new LinkedList<>();
+        for (Object key : keys) {
+            cassandraValues.add(getPojoMapping().getIdentifierMapping().getColumnHandler().getWhereClauseValue(key));
+        }
+        return cassandraValues;
+    }
 
     protected ResultSet executeWithArgs(Object... parameters) {
         return executeWithList(Arrays.asList(parameters));
@@ -118,7 +113,8 @@ public class PojoPersistenceStatement {
         int columnIndex = 0;
         for (FacetMapping mapping : pojoMapping.getFacetMappings()) {
             Object columnValue = CassandraUtils.getValue(row, columnIndex, mapping.getColumnHandler().getColumnType());
-            mapping.getFacetMetadata().getFacet().set(pojo, mapping.getColumnHandler().getFacetValue(columnValue, context));
+            final FacetValueTarget target = new FacetValueTarget(pojo, mapping.getFacetMetadata().getFacet());
+            mapping.getColumnHandler().injectFacetValue(target, columnValue, context);
             columnIndex++;
         }
         return pojo;
@@ -129,11 +125,22 @@ public class PojoPersistenceStatement {
         return row == null ? null : mapPojoFromRow(pojo, row, context);
     }
 
-    protected List<Object> cassandraIdentifiers(Iterable<Object> keys) {
-        List<Object> cassandraValues = new LinkedList<>();
-        for (Object key : keys) {
-            cassandraValues.add(getPojoMapping().getIdentifierMapping().getColumnHandler().getWhereClauseValue(key));
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    private static class FacetValueTarget implements InjectionTarget<Object> {
+        private final Object pojo;
+        private final Facet facet;
+
+        private FacetValueTarget(Object pojo, Facet facet) {
+            this.pojo = pojo;
+            this.facet = facet;
         }
-        return cassandraValues;
+
+        @Override
+        public void inject(Object value) {
+            facet.set(pojo, value);
+        }
     }
 }

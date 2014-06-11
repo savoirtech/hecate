@@ -9,6 +9,7 @@ import com.savoirtech.hecate.cql3.persistence.Persister;
 import com.savoirtech.hecate.cql3.persistence.PersisterFactory;
 import com.savoirtech.hecate.cql3.schema.CreateVerifier;
 import com.savoirtech.hecate.cql3.schema.SchemaVerifier;
+import org.apache.commons.lang3.Validate;
 
 import java.util.Map;
 
@@ -38,6 +39,7 @@ public class DefaultPersisterFactory implements PersisterFactory {
 
     @Override
     public Persister getPersister(Class<?> pojoType, String tableName) {
+        Validate.notNull(tableName);
         final String key = key(pojoType, tableName);
         Persister persister = persisters.get(key);
         if (persister == null) {
