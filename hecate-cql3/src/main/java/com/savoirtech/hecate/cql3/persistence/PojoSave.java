@@ -31,6 +31,7 @@ public class PojoSave extends PojoPersistenceStatement {
         for (FacetMapping facetMapping : mapping.getFacetMappings()) {
             insert.value(facetMapping.getFacetMetadata().getColumnName(), QueryBuilder.bindMarker());
         }
+        insert.using(QueryBuilder.ttl(QueryBuilder.bindMarker()));
         LOGGER.info("{}.save(): {}", mapping.getPojoMetadata().getPojoType().getSimpleName(), insert);
         return insert;
     }
@@ -45,6 +46,7 @@ public class PojoSave extends PojoPersistenceStatement {
             Object facetValue = mapping.getFacetMetadata().getFacet().get(pojo);
             parameters.add(mapping.getColumnHandler().getInsertValue(facetValue, saveContext));
         }
+        parameters.add(getPojoMapping().getPojoMetadata().getDefaultTtl());
         executeWithList(parameters);
     }
 }
