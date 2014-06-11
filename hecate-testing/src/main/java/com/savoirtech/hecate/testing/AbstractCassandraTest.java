@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.After;
 import org.junit.Before;
 
-import java.util.Map;
-
 public abstract class AbstractCassandraTest {
 
     public static final String CLUSTER = "Cluster";
@@ -48,7 +46,7 @@ public abstract class AbstractCassandraTest {
         DataLoader dataLoader = new DataLoader(CLUSTER, HOST);
         dataLoader.load(new ClassPathYamlDataSet("dataset.yaml"));
 
-        keyspaceConfigurator = new CassandraKeyspaceConfigurator(getHost(), KEYSPACE, getFailoverPolicy(), getConsistencyLevelPolicy(), Maps.<String,String>newTreeMap());
+        keyspaceConfigurator = new CassandraKeyspaceConfigurator(getHost(), KEYSPACE, getFailoverPolicy(), getConsistencyLevelPolicy(), Maps.<String, String>newTreeMap());
 
     }
 

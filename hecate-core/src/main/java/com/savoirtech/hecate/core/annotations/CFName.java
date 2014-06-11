@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,5 +25,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface CFName {
 
-    public String name() default "";;
+    public String name() default "";
+
+    ;
 }

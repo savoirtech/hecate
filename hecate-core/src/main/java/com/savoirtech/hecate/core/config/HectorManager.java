@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 package com.savoirtech.hecate.core.config;
 
-import java.util.ArrayList;
-
 import me.prettyprint.cassandra.service.ThriftCfDef;
 import me.prettyprint.cassandra.service.ThriftKsDef;
 import me.prettyprint.hector.api.Cluster;
@@ -30,6 +28,8 @@ import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 import me.prettyprint.hector.api.exceptions.HInvalidRequestException;
 import me.prettyprint.hector.api.factory.HFactory;
 import org.apache.commons.lang.StringUtils;
+
+import java.util.ArrayList;
 
 public class HectorManager {
 
@@ -48,20 +48,22 @@ public class HectorManager {
         try {
 
             ks = createKeyspace(clusterName, keyspaceConfigurator, columnFamilyName, isSuperColumn, comparatorAlias);
-        } catch (HInvalidRequestException e) {
+        }
+        catch (HInvalidRequestException e) {
             // ignore it, it means keyspace already exists, but CF could not
             if (e.getWhy().startsWith("Keyspace names must be case-insensitively unique")) {
                 try {
 
                     ks = createCF(clusterName, keyspaceConfigurator, columnFamilyName, isSuperColumn, comparatorAlias);
-                } catch (HInvalidRequestException e1) {
+                }
+                catch (HInvalidRequestException e1) {
                     // ignore it, it means keyspace & CF already exist, get the
                     // ks to hector client
                     if (e1.getWhy().startsWith("Cannot add already existing column family")) {
 
                         ks = HFactory.createKeyspace(keyspaceConfigurator.getKeyspace(), getOrCreateCluster(clusterName, keyspaceConfigurator),
-                            keyspaceConfigurator.getConsistencyLevelPolicy(), keyspaceConfigurator.getFailoverPolicy(),
-                            keyspaceConfigurator.getCredentials());
+                                keyspaceConfigurator.getConsistencyLevelPolicy(), keyspaceConfigurator.getFailoverPolicy(),
+                                keyspaceConfigurator.getCredentials());
                     } else {
                         throw e1;
                     }
@@ -85,7 +87,7 @@ public class HectorManager {
         createCF(keyspaceConfigurator.getKeyspace(), columnFamilyName, cluster, isSuperColumn, comparatorAlias);
 
         Keyspace keyspace = HFactory.createKeyspace(keyspaceConfigurator.getKeyspace(), getOrCreateCluster(clusterName, keyspaceConfigurator),
-            keyspaceConfigurator.getConsistencyLevelPolicy(), keyspaceConfigurator.getFailoverPolicy(), keyspaceConfigurator.getCredentials());
+                keyspaceConfigurator.getConsistencyLevelPolicy(), keyspaceConfigurator.getFailoverPolicy(), keyspaceConfigurator.getCredentials());
 
         return keyspace;
     }
@@ -99,7 +101,7 @@ public class HectorManager {
 
         KeyspaceDefinition ksDefinition = new ThriftKsDef(keyspaceConfigurator.getKeyspace());
         Keyspace keyspace = HFactory.createKeyspace(keyspaceConfigurator.getKeyspace(), cluster, keyspaceConfigurator.getConsistencyLevelPolicy(),
-            keyspaceConfigurator.getFailoverPolicy(), keyspaceConfigurator.getCredentials());
+                keyspaceConfigurator.getFailoverPolicy(), keyspaceConfigurator.getCredentials());
         cluster.addKeyspace(ksDefinition);
 
         createCF(keyspaceConfigurator.getKeyspace(), columnFamilyName, cluster, isSuperColumn, comparatorAlias);
@@ -110,7 +112,7 @@ public class HectorManager {
 
         if (isSuperColumn) {
             ThriftCfDef cfDefinition = (ThriftCfDef) HFactory.createColumnFamilyDefinition(kspace, columnFamilyName, ComparatorType.UTF8TYPE,
-                new ArrayList<ColumnDefinition>());
+                    new ArrayList<ColumnDefinition>());
             cfDefinition.setColumnType(ColumnType.SUPER);
             cfDefinition.setSubComparatorType(ComparatorType.UTF8TYPE);
             cluster.addColumnFamily(cfDefinition, true);

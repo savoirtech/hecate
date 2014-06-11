@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2014 Savoir Technologies
+  ~ Copyright (c) 2012-2014 Savoir Technologies, Inc.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>hecate-parent</artifactId>
         <groupId>com.savoirtech.hecate</groupId>
@@ -27,7 +28,7 @@
     <artifactId>hecate-farsandra</artifactId>
 
     <name>Savoirtech ::: Hecate ::: Farsandra</name>
-        <description>Savoirtech ::: Hecate ::: Farsandra Testing libraries </description>
+    <description>Savoirtech ::: Hecate ::: Farsandra Testing libraries</description>
 
     <dependencies>
         <dependency>

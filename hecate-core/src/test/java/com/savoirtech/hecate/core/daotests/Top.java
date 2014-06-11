@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 
 package com.savoirtech.hecate.core.daotests;
 
+import com.savoirtech.hecate.core.annotations.CFName;
+import com.savoirtech.hecate.core.annotations.CassandraId;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.savoirtech.hecate.core.annotations.CFName;
-import com.savoirtech.hecate.core.annotations.CassandraId;
 
 public class Top {
 
@@ -109,13 +109,13 @@ public class Top {
     @Override
     public String toString() {
         return "Top{" +
-            "id='" + id + '\'' +
-            ", children=" + children +
-            ", moreKids=" + moreKids +
-            ", childSet=" + childSet +
-            ", childMap=" + childMap +
-            ", kidIds=" + kidIds +
-            ", bobs=" + bobs +
-            '}';
+                "id='" + id + '\'' +
+                ", children=" + children +
+                ", moreKids=" + moreKids +
+                ", childSet=" + childSet +
+                ", childMap=" + childMap +
+                ", kidIds=" + kidIds +
+                ", bobs=" + bobs +
+                '}';
     }
 }

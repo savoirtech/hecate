@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
  */
 
 package com.savoirtech.hecate.core.abstractdao;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
 import com.savoirtech.hecate.core.config.HectorHelper;
@@ -39,6 +35,10 @@ import me.prettyprint.hector.api.query.MultigetSliceQuery;
 import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.RangeSlicesQuery;
 import me.prettyprint.hector.api.query.SliceQuery;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
 
@@ -101,16 +101,17 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
      */
     public T find(KeyType key) {
         SliceQuery<Object, String, byte[]> query = HFactory.createSliceQuery(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass),
-            StringSerializer.get(), BytesArraySerializer.get());
+                StringSerializer.get(), BytesArraySerializer.get());
 
         QueryResult<ColumnSlice<String, byte[]>> result = query.setColumnFamily(columnFamilyName).setKey(key).setRange("", "", false,
-            Integer.MAX_VALUE).execute();
+                Integer.MAX_VALUE).execute();
 
         try {
             if (result.get().getColumns().isEmpty()) {
                 return null;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return null;
         }
 
@@ -118,7 +119,8 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
             T t = persistentClass.newInstance();
             HectorHelper.populateEntityAnnotated(t, result);
             return t;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new ObjectNotSerializableException("Error creating persistent class", e);
         }
     }
@@ -131,7 +133,7 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
      */
     public T findAllColumns(KeyType key) {
         SliceQuery<Object, String, byte[]> query = HFactory.createSliceQuery(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass),
-            StringSerializer.get(), BytesArraySerializer.get());
+                StringSerializer.get(), BytesArraySerializer.get());
 
         QueryResult<ColumnSlice<String, byte[]>> result = query.setColumnFamily(columnFamilyName).setKey(key).execute();
 
@@ -139,7 +141,8 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
             if (result.get().getColumns().isEmpty()) {
                 return null;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return null;
         }
 
@@ -147,7 +150,8 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
             T t = persistentClass.newInstance();
             HectorHelper.populateEntityAnnotated(t, result);
             return t;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new ObjectNotSerializableException("Error creating persistent class", e);
         }
     }
@@ -174,7 +178,7 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
 
         do {
             RangeSlicesQuery<Object, String, byte[]> rangeSlicesQuery = HFactory.createRangeSlicesQuery(keySpace, SerializerTypeInferer.getSerializer(
-                keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
+                    keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
             rangeSlicesQuery.setColumnFamily(columnFamilyName);
             if (lastRow != null) {
                 rangeSlicesQuery.setKeys(lastRow.getKey(), "");
@@ -195,7 +199,8 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
             }
 
             lastRow = orderedRows.peekLast();
-        } while (rows == pagination);
+        }
+        while (rows == pagination);
 
         return rowKeys;
     }
@@ -213,7 +218,7 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
         Set<T> items = new HashSet<T>();
 
         MultigetSliceQuery<Object, String, byte[]> multigetSliceQuery = HFactory.createMultigetSliceQuery(keySpace,
-            SerializerTypeInferer.getSerializer(keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
+                SerializerTypeInferer.getSerializer(keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
 
         multigetSliceQuery.setColumnFamily(columnFamilyName);
         multigetSliceQuery.setKeys(keys.toArray());
@@ -238,7 +243,7 @@ public abstract class AbstractAnnotatedColumnFamilyDao<KeyType, T> {
      */
     public boolean containsKey(KeyType key) {
         RangeSlicesQuery<Object, String, byte[]> rangeSlicesQuery = HFactory.createRangeSlicesQuery(keySpace, SerializerTypeInferer.getSerializer(
-            keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
+                keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
         rangeSlicesQuery.setColumnFamily(columnFamilyName);
         rangeSlicesQuery.setKeys(key, key);
         rangeSlicesQuery.setReturnKeysOnly();

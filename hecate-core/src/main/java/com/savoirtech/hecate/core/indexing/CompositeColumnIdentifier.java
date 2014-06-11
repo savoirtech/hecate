@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class CompositeColumnIdentifier implements Serializable {
     @Override
     public String toString() {
         return "CompositeColumnIdentifier{" +
-            "columns=" + columns +
-            '}';
+                "columns=" + columns +
+                '}';
     }
 }

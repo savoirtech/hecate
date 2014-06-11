@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,6 @@
  */
 
 package com.savoirtech.hecate.core.config;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.savoirtech.hecate.core.annotations.CFName;
@@ -50,6 +35,21 @@ import me.prettyprint.hector.api.beans.HSuperColumn;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.query.QueryResult;
 import org.apache.commons.lang.StringUtils;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public final class HectorHelper {
 
@@ -129,7 +129,8 @@ public final class HectorHelper {
         try {
             md51 = getMD5(string1);
             md52 = getMD5(string2);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -147,10 +148,10 @@ public final class HectorHelper {
         long lsb = uuid.getLeastSignificantBits();
         byte[] buffer = new byte[16];
 
-        for (int i = 0;i < 8;i++) {
+        for (int i = 0; i < 8; i++) {
             buffer[i] = (byte) (msb >>> 8 * (7 - i));
         }
-        for (int i = 8;i < 16;i++) {
+        for (int i = 8; i < 16; i++) {
             buffer[i] = (byte) (lsb >>> 8 * (7 - i));
         }
 
@@ -191,7 +192,8 @@ public final class HectorHelper {
                 columns.add(column);
             }
             return columns;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException("Reflection exception", e);
         }
     }
@@ -224,7 +226,7 @@ public final class HectorHelper {
                     Integer counter = 0;
                     for (Object o : list) {
                         HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter,
-                            (String) o, StringSerializer.get(), StringSerializer.get());
+                                (String) o, StringSerializer.get(), StringSerializer.get());
                         columns.add(column);
                         counter++;
                     }
@@ -242,19 +244,19 @@ public final class HectorHelper {
 
                         if (map.get(mapkey) instanceof String) {
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
-                                (String) map.get(
-                                    //mapkey), StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(mapkey)));
-                                    mapkey), StringSerializer.get(), StringSerializer.get()
-                                                                             );
+                                    (String) map.get(
+                                            //mapkey), StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(mapkey)));
+                                            mapkey), StringSerializer.get(), StringSerializer.get()
+                            );
                             columns.add(column);
                         } else {
                             if (map.get(mapkey) instanceof Collection) {
                                 List<String> values = (List) map.get(mapkey);
                                 String mapValue = CassandraAnnotationLogic.RECORD_LIST_START + StringUtils.join(values,
-                                    CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
+                                        CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
 
                                 HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
-                                    mapValue, StringSerializer.get(), StringSerializer.get());
+                                        mapValue, StringSerializer.get(), StringSerializer.get());
 
                                 columns.add(column);
                             }
@@ -276,7 +278,8 @@ public final class HectorHelper {
                 columns.add(column);
             }
             return columns;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException("Reflection exception", e);
         }
     }
@@ -309,7 +312,7 @@ public final class HectorHelper {
                     Integer counter = 0;
                     for (Object o : list) {
                         HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter,
-                            (String) o, StringSerializer.get(), SerializerTypeInferer.getSerializer(o));
+                                (String) o, StringSerializer.get(), SerializerTypeInferer.getSerializer(o));
                         columns.add(column);
                         counter++;
                     }
@@ -328,10 +331,10 @@ public final class HectorHelper {
                         if (map.get(mapkey) instanceof Collection) {
                             List<String> values = (List) map.get(mapkey);
                             String mapValue = CassandraAnnotationLogic.RECORD_LIST_START + StringUtils.join(values,
-                                CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
+                                    CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
 
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey,
-                                mapValue, StringSerializer.get(), StringSerializer.get());
+                                    mapValue, StringSerializer.get(), StringSerializer.get());
 
                             columns.add(column);
                         } else {
@@ -343,7 +346,7 @@ public final class HectorHelper {
                             }
 
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + mapkey, map.get(
-                                mapkey), StringSerializer.get(), ser);
+                                    mapkey), StringSerializer.get(), ser);
                             columns.add(column);
                         }
                     }
@@ -363,7 +366,8 @@ public final class HectorHelper {
                 columns.add(column);
             }
             return columns;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException("Reflection exception", e);
         }
     }
@@ -371,7 +375,7 @@ public final class HectorHelper {
     public static List<Field> getAllFields(Class<?> type) {
         List<Field> fields = new ArrayList<Field>();
 
-        for (Class<?> c = type;c != null;c = c.getSuperclass()) {
+        for (Class<?> c = type; c != null; c = c.getSuperclass()) {
             fields.addAll(Arrays.asList(c.getDeclaredFields()));
         }
 
@@ -425,7 +429,7 @@ public final class HectorHelper {
                     for (Object o : list) {
                         if (primitivesAndWrappers.contains(listClass.getName())) {
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter,
-                                (String) o, StringSerializer.get(), SerializerTypeInferer.getSerializer(o));
+                                    (String) o, StringSerializer.get(), SerializerTypeInferer.getSerializer(o));
                             columns.add(column);
                             counter++;
                         } else {
@@ -441,7 +445,7 @@ public final class HectorHelper {
                             innerDao.save(idKey, o);
 
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.LIST_PREFIX + counter, idKey,
-                                StringSerializer.get(), SerializerTypeInferer.getSerializer(idKey));
+                                    StringSerializer.get(), SerializerTypeInferer.getSerializer(idKey));
                             columns.add(column);
                             counter++;
                         }
@@ -472,18 +476,18 @@ public final class HectorHelper {
                             if (val.getValue() instanceof Collection) {
                                 List<String> values = (List) val.getValue();
                                 String mapValue = CassandraAnnotationLogic.RECORD_LIST_START + StringUtils.join(values,
-                                    CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
+                                        CassandraAnnotationLogic.RECORD_LIST_DELIMITER);
 
                                 HColumn<String, ?> column = HFactory.createColumn(
-                                    field.getName() + CassandraAnnotationLogic.MAP_PREFIX + val.getKey(), mapValue, StringSerializer.get(),
-                                    StringSerializer.get());
+                                        field.getName() + CassandraAnnotationLogic.MAP_PREFIX + val.getKey(), mapValue, StringSerializer.get(),
+                                        StringSerializer.get());
 
                                 columns.add(column);
                             } else {
 
                                 HColumn<String, ?> column = HFactory.createColumn(
-                                    field.getName() + CassandraAnnotationLogic.MAP_PREFIX + val.getKey(), (String) map.get(val.getKey()),
-                                    StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(val.getKey())));
+                                        field.getName() + CassandraAnnotationLogic.MAP_PREFIX + val.getKey(), (String) map.get(val.getKey()),
+                                        StringSerializer.get(), SerializerTypeInferer.getSerializer(map.get(val.getKey())));
                                 columns.add(column);
                             }
                         }
@@ -505,7 +509,7 @@ public final class HectorHelper {
 
                             innerDao.save(val.getKey(), o);
                             HColumn<String, ?> column = HFactory.createColumn(field.getName() + CassandraAnnotationLogic.MAP_PREFIX + val.getKey(),
-                                (String) val.getKey(), StringSerializer.get(), StringSerializer.get());
+                                    (String) val.getKey(), StringSerializer.get(), StringSerializer.get());
                             columns.add(column);
                         }
                     }
@@ -526,7 +530,8 @@ public final class HectorHelper {
             }
 
             return columns;
-        } catch (Exception e)
+        }
+        catch (Exception e)
 
         {
             throw new RuntimeException("Reflection exception", e);
@@ -554,7 +559,8 @@ public final class HectorHelper {
                 columns.add(column);
             }
             return columns;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException("Reflection exception", e);
         }
     }
@@ -576,7 +582,8 @@ public final class HectorHelper {
             }
 
             return retCols;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException("Reflection away", e);
         }
     }
@@ -670,7 +677,8 @@ public final class HectorHelper {
                 Object val = SerializerTypeInferer.getSerializer(field.getType()).fromBytes(col.getValue());
                 field.set(t, val);
             }
-        } catch (IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e) {
             throw new ObjectNotSerializableException("Reflection Error ", e);
         }
     }
@@ -811,7 +819,8 @@ public final class HectorHelper {
                 Object val = SerializerTypeInferer.getSerializer(field.getType()).fromBytes(col.getValue());
                 field.set(t, val);
             }
-        } catch (IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e) {
             throw new ObjectNotSerializableException("Reflection Error ", e);
         }
     }
@@ -845,7 +854,8 @@ public final class HectorHelper {
                 Object val = SerializerTypeInferer.getSerializer(field.getType()).fromBytes(col.getValue());
                 field.set(t, val);
             }
-        } catch (IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e) {
             throw new ObjectNotSerializableException("Reflection Error ", e);
         }
     }
@@ -878,7 +888,8 @@ public final class HectorHelper {
                 Object val = SerializerTypeInferer.getSerializer(field.getType()).fromBytes(col.getValue());
                 field.set(t, val);
             }
-        } catch (IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e) {
             throw new ObjectNotSerializableException("Reflection Error ", e);
         }
     }
@@ -922,7 +933,8 @@ public final class HectorHelper {
                     superField.set(st, columns);
                 }
             }
-        } catch (IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e) {
             throw new ObjectNotSerializableException("Reflection Error ", e);
         }
     }
@@ -938,7 +950,8 @@ public final class HectorHelper {
     public static <T> Field getFieldForPropertyName(T entity, String name) {
         try {
             return entity.getClass().getField(name);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -956,7 +969,8 @@ public final class HectorHelper {
             try {
                 f.setAccessible(true);
                 f.set(entity, col.getValue());
-            } catch (IllegalAccessException e) {
+            }
+            catch (IllegalAccessException e) {
                 throw new ObjectNotSerializableException(e);
             }
         }
@@ -1074,7 +1088,8 @@ public final class HectorHelper {
                 Object val = SerializerTypeInferer.getSerializer(field.getType()).fromBytes(col.getValue());
                 field.set(t, val);
             }
-        } catch (IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e) {
             throw new ObjectNotSerializableException("Reflection Error ", e);
         }
     }

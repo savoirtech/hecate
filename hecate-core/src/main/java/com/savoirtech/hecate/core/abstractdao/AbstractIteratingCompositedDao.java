@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public abstract class AbstractIteratingCompositedDao extends AbstractIteratingCo
             //                SerializerTypeInferer.getSerializer(Composite.class), BytesArraySerializer.get());
 
             query = HFactory.createSliceQuery(keySpace, StringSerializer.get(), SerializerTypeInferer.getSerializer(Composite.class),
-                BytesArraySerializer.get());
+                    BytesArraySerializer.get());
             query.setColumnFamily(columnFamilyName);
             query.setKey(key);
 
@@ -74,7 +74,7 @@ public abstract class AbstractIteratingCompositedDao extends AbstractIteratingCo
             return new ColumnRecordIterator(query, CompositeColumnIdentifier.class, String.class, compStart, compEnd, reverse);
         } else {
             query = HFactory.createSliceQuery(keySpace, StringSerializer.get(), SerializerTypeInferer.getSerializer(String.class),
-                BytesArraySerializer.get());
+                    BytesArraySerializer.get());
             query.setColumnFamily(columnFamilyName);
             query.setKey(key);
             //return new ColumnRecordIterator(query, String.class, CompositeColumnIdentifier.class, start, end, reverse);

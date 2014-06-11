@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014. Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,9 +63,11 @@ public class PojoMapping {
 //----------------------------------------------------------------------------------------------------------------------
 
     public void addFacet(FacetMapping facetMapping) {
-        facetMappings.add(facetMapping);
         if (facetMapping.getFacetMetadata().isIdentifier()) {
             identifierMapping = facetMapping;
+            facetMappings.add(0, facetMapping);
+        } else {
+            facetMappings.add(facetMapping);
         }
     }
 
