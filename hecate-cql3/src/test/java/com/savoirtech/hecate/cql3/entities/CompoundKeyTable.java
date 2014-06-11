@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2014. Savoir Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import com.savoirtech.hecate.cql3.annotations.PrimaryKey;
 @PrimaryKey(pk = "id,name")
 public class CompoundKeyTable {
 
-    long id ;
+    long id;
 
     String name;
 
