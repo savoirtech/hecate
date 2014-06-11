@@ -1,12 +1,12 @@
 package com.savoirtech.hecate.cql3.handler;
 
+import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.handler.delegate.ColumnHandlerDelegate;
 
 import java.util.Arrays;
-import java.util.Map;
 
-public class SimpleHandler extends AbstractColumnHandler {
+public class SimpleHandler extends AbstractColumnHandler<Object, Object> {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
@@ -19,6 +19,7 @@ public class SimpleHandler extends AbstractColumnHandler {
 // ColumnHandler Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+
     @Override
     public Object getInsertValue(Object facetValue, SaveContext context) {
         return facetValue == null ? null : getDelegate().convertToInsertValue(facetValue, context);
@@ -29,8 +30,8 @@ public class SimpleHandler extends AbstractColumnHandler {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected Object convertToFacetValue(Object columnValue, Map<Object, Object> conversions) {
-        return conversions.get(columnValue);
+    protected Object convertToFacetValue(Object columnValue, ValueConverter converter) {
+        return converter.fromCassandraValue(columnValue);
     }
 
     @Override

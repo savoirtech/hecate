@@ -4,22 +4,22 @@ import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
 import com.savoirtech.hecate.cql3.handler.context.QueryContext;
 import com.savoirtech.hecate.cql3.handler.context.SaveContext;
-import com.savoirtech.hecate.cql3.util.InjectionTarget;
+import com.savoirtech.hecate.cql3.util.Callback;
 
-public interface ColumnHandler {
+public interface ColumnHandler<C, F> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
     DataType getColumnType();
 
-    void getDeletionIdentifiers(Object columnValue, DeleteContext context);
+    void getDeletionIdentifiers(C columnValue, DeleteContext context);
 
-    void injectFacetValue(InjectionTarget<Object> target, Object columnValue, QueryContext context);
+    void injectFacetValue(Callback<F> target, C columnValue, QueryContext context);
 
-    Object getInsertValue(Object facetValue, SaveContext context);
+    C getInsertValue(F facetValue, SaveContext context);
 
-    Object getWhereClauseValue(Object parameterValue);
+    Object convertElement(Object parameterValue);
 
     boolean isCascading();
 }

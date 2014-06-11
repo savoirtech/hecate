@@ -8,7 +8,7 @@ import com.savoirtech.hecate.cql3.meta.PojoMetadata;
 import com.savoirtech.hecate.cql3.persistence.Persister;
 import com.savoirtech.hecate.cql3.persistence.PersisterFactory;
 import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
-import com.savoirtech.hecate.cql3.util.InjectionTarget;
+import com.savoirtech.hecate.cql3.util.Callback;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -142,9 +142,9 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         private final String tableName;
         private final Iterable<Object> identifiers;
         private final QueryContext context;
-        private final InjectionTarget<List<Object>> target;
+        private final Callback<List<Object>> target;
 
-        private HydratePojosTask(Class<?> pojoType, String tableName, Iterable<Object> identifiers, InjectionTarget<List<Object>> target, QueryContext context) {
+        private HydratePojosTask(Class<?> pojoType, String tableName, Iterable<Object> identifiers, Callback<List<Object>> target, QueryContext context) {
             this.pojoType = pojoType;
             this.tableName = tableName;
             this.identifiers = identifiers;
@@ -155,7 +155,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         @Override
         public void execute() {
             final List<Object> pojos = persisterFactory.getPersister(pojoType, tableName).findByKeys().execute(identifiers, context);
-            target.inject(pojos);
+            target.execute(pojos);
         }
     }
 
@@ -193,7 +193,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         }
 
         @Override
-        public void addPojos(Class<?> pojoType, String tableName, Iterable<Object> identifiers, InjectionTarget<List<Object>> target) {
+        public void addPojos(Class<?> pojoType, String tableName, Iterable<Object> identifiers, Callback<List<Object>> target) {
             Set<Object> pruned = cache.prune(pojoType, tableName, identifiers);
             if (pruned.iterator().hasNext()) {
                 items.add(new HydratePojosTask(pojoType, tableName, pruned, target, this));

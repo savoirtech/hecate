@@ -5,10 +5,7 @@ import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
 import com.savoirtech.hecate.cql3.handler.context.QueryContext;
 import com.savoirtech.hecate.cql3.handler.context.SaveContext;
-import com.savoirtech.hecate.cql3.util.InjectionTarget;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.savoirtech.hecate.cql3.util.Callback;
 
 public class ScalarDelegate implements ColumnHandlerDelegate {
 //----------------------------------------------------------------------------------------------------------------------
@@ -45,18 +42,15 @@ public class ScalarDelegate implements ColumnHandlerDelegate {
     }
 
     @Override
-    public Object getWhereClauseValue(Object parameterValue) {
+    public Object convertElement(Object parameterValue) {
         return valueConverter.toCassandraValue(parameterValue);
     }
 
     @Override
-    public void injectFacetValues(InjectionTarget<Map<Object, Object>> target, Iterable<Object> columnValues, QueryContext context) {
-        Map<Object, Object> converted = new HashMap<>();
-        for (Object columnValue : columnValues) {
-            converted.put(columnValue, valueConverter.fromCassandraValue(columnValue));
-        }
-        target.inject(converted);
+    public void createValueConverter(Callback<ValueConverter> target, Iterable<Object> columnValues, QueryContext context) {
+        target.execute(valueConverter);
     }
+
 
     @Override
     public boolean isCascading() {

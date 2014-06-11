@@ -10,8 +10,8 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.cql3.handler.context.QueryContext;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
+import com.savoirtech.hecate.cql3.util.Callback;
 import com.savoirtech.hecate.cql3.util.CassandraUtils;
-import com.savoirtech.hecate.cql3.util.InjectionTarget;
 import com.savoirtech.hecate.cql3.value.Facet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +71,7 @@ public class PojoPersistenceStatement {
     protected List<Object> cassandraIdentifiers(Iterable<Object> keys) {
         List<Object> cassandraValues = new LinkedList<>();
         for (Object key : keys) {
-            cassandraValues.add(getPojoMapping().getIdentifierMapping().getColumnHandler().getWhereClauseValue(key));
+            cassandraValues.add(getPojoMapping().getIdentifierMapping().getColumnHandler().convertElement(key));
         }
         return cassandraValues;
     }
@@ -103,7 +103,7 @@ public class PojoPersistenceStatement {
     private Map<Object, Object> cassandraKeyedPojoMap(Map<Object, Object> pojoMap) {
         Map<Object, Object> cassandraKeyed = new HashMap<>();
         for (Map.Entry<Object, Object> entry : pojoMap.entrySet()) {
-            cassandraKeyed.put(pojoMapping.getIdentifierMapping().getColumnHandler().getWhereClauseValue(entry.getKey()), entry.getValue());
+            cassandraKeyed.put(pojoMapping.getIdentifierMapping().getColumnHandler().convertElement(entry.getKey()), entry.getValue());
         }
         return cassandraKeyed;
     }
@@ -129,7 +129,7 @@ public class PojoPersistenceStatement {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static final class FacetValueTarget implements InjectionTarget<Object> {
+    private static final class FacetValueTarget implements Callback<Object> {
         private final Object pojo;
         private final Facet facet;
 
@@ -139,7 +139,7 @@ public class PojoPersistenceStatement {
         }
 
         @Override
-        public void inject(Object value) {
+        public void execute(Object value) {
             facet.set(pojo, value);
         }
     }

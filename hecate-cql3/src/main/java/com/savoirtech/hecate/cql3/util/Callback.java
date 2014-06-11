@@ -1,9 +1,9 @@
 package com.savoirtech.hecate.cql3.util;
 
-public interface InjectionTarget<T> {
+public interface Callback<T> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void inject(T value);
+    void execute(T value);
 }

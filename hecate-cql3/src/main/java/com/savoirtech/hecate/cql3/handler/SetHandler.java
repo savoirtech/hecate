@@ -1,14 +1,14 @@
 package com.savoirtech.hecate.cql3.handler;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.handler.delegate.ColumnHandlerDelegate;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
-public class SetHandler extends AbstractColumnHandler {
+public class SetHandler extends AbstractColumnHandler<Set<Object>, Set<Object>> {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
@@ -21,18 +21,13 @@ public class SetHandler extends AbstractColumnHandler {
 // ColumnHandler Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+
     @Override
-    @SuppressWarnings("unchecked")
-    public Object getInsertValue(Object facetValue, SaveContext context) {
+    public Set<Object> getInsertValue(Set<Object> facetValue, SaveContext context) {
         if (facetValue == null) {
             return null;
         }
-        Set<Object> facetValues = (Set<Object>) facetValue;
-        Set<Object> columnValues = new HashSet<>();
-        for (Object value : facetValues) {
-            columnValues.add(getDelegate().convertToInsertValue(value, context));
-        }
-        return columnValues;
+        return copyFacetValues(facetValue, new HashSet<>(), context);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -40,22 +35,15 @@ public class SetHandler extends AbstractColumnHandler {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected Object convertToFacetValue(Object columnValue, Map<Object, Object> conversions) {
+    protected Set<Object> convertToFacetValue(Set<Object> columnValue, ValueConverter converter) {
         if (columnValue == null) {
             return null;
         }
-        Set<Object> columnValues = (Set<Object>) columnValue;
-        Set<Object> facetValues = new HashSet<>();
-        for (Object value : columnValues) {
-            facetValues.add(conversions.get(value));
-        }
-        return facetValues;
+        return copyColumnValues(columnValue, new HashSet<>(), converter);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected Iterable<Object> toColumnValues(Object columnValue) {
-        return (Set<Object>) columnValue;
+    protected Iterable<Object> toColumnValues(Set<Object> columnValue) {
+        return columnValue;
     }
 }

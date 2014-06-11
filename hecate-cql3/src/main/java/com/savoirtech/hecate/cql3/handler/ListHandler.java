@@ -1,14 +1,14 @@
 package com.savoirtech.hecate.cql3.handler;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.handler.delegate.ColumnHandlerDelegate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-public class ListHandler extends AbstractColumnHandler {
+public class ListHandler extends AbstractColumnHandler<List<Object>, List<Object>> {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
@@ -21,18 +21,13 @@ public class ListHandler extends AbstractColumnHandler {
 // ColumnHandler Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+
     @Override
-    @SuppressWarnings("unchecked")
-    public Object getInsertValue(Object facetValue, SaveContext context) {
+    public List<Object> getInsertValue(List<Object> facetValue, SaveContext context) {
         if (facetValue == null) {
             return null;
         }
-        List<Object> facetValues = (List<Object>) facetValue;
-        List<Object> columnValues = new ArrayList<>();
-        for (Object value : facetValues) {
-            columnValues.add(getDelegate().convertToInsertValue(value, context));
-        }
-        return columnValues;
+        return copyFacetValues(facetValue, new ArrayList<>(facetValue.size()), context);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -40,22 +35,15 @@ public class ListHandler extends AbstractColumnHandler {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected Object convertToFacetValue(Object columnValue, Map<Object, Object> conversions) {
-        if (columnValue == null) {
+    protected List<Object> convertToFacetValue(List<Object> columnValues, ValueConverter converter) {
+        if (columnValues == null) {
             return null;
         }
-        List<Object> columnValues = (List<Object>) columnValue;
-        List<Object> facetValues = new ArrayList<>(columnValues.size());
-        for (Object value : columnValues) {
-            facetValues.add(conversions.get(value));
-        }
-        return facetValues;
+        return copyColumnValues(columnValues, new ArrayList<>(columnValues.size()), converter);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected Iterable<Object> toColumnValues(Object columnValue) {
-        return (List<Object>) columnValue;
+    protected Iterable<Object> toColumnValues(List<Object> columnValue) {
+        return columnValue;
     }
 }

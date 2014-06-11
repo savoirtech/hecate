@@ -1,14 +1,16 @@
 package com.savoirtech.hecate.cql3.handler;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
 import com.savoirtech.hecate.cql3.handler.context.QueryContext;
+import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.handler.delegate.ColumnHandlerDelegate;
-import com.savoirtech.hecate.cql3.util.InjectionTarget;
+import com.savoirtech.hecate.cql3.util.Callback;
 
-import java.util.Map;
+import java.util.Collection;
 
-public abstract class AbstractColumnHandler implements ColumnHandler {
+public abstract class AbstractColumnHandler<C, F> implements ColumnHandler<C, F> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -29,13 +31,18 @@ public abstract class AbstractColumnHandler implements ColumnHandler {
 // Abstract Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected abstract Object convertToFacetValue(Object columnValue, Map<Object, Object> conversions);
+    protected abstract F convertToFacetValue(C columnValue, ValueConverter converter);
 
-    protected abstract Iterable<Object> toColumnValues(Object columnValue);
+    protected abstract Iterable<Object> toColumnValues(C columnValue);
 
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnHandler Implementation
 //----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public Object convertElement(Object parameterValue) {
+        return parameterValue == null ? null : getDelegate().convertElement(parameterValue);
+    }
 
     @Override
     public DataType getColumnType() {
@@ -44,21 +51,16 @@ public abstract class AbstractColumnHandler implements ColumnHandler {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void getDeletionIdentifiers(Object columnValue, DeleteContext context) {
+    public void getDeletionIdentifiers(C columnValue, DeleteContext context) {
         if (columnValue != null) {
             getDelegate().collectDeletionIdentifiers(toColumnValues(columnValue), context);
         }
     }
 
     @Override
-    public Object getWhereClauseValue(Object parameterValue) {
-        return parameterValue == null ? null : getDelegate().getWhereClauseValue(parameterValue);
-    }
-
-    @Override
-    public void injectFacetValue(InjectionTarget<Object> target, Object columnValue, QueryContext context) {
+    public void injectFacetValue(Callback<F> target, C columnValue, QueryContext context) {
         if (columnValue != null) {
-            getDelegate().injectFacetValues(new InjectionTargetWrapper(target, columnValue), toColumnValues(columnValue), context);
+            getDelegate().createValueConverter(new ValueConverterCallback(target, columnValue), toColumnValues(columnValue), context);
         }
     }
 
@@ -67,26 +69,48 @@ public abstract class AbstractColumnHandler implements ColumnHandler {
         return getDelegate().isCascading();
     }
 
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
     protected ColumnHandlerDelegate getDelegate() {
         return delegate;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    protected <T extends Collection<Object>> T copyColumnValues(Collection<Object> columnValues, T facetValues, ValueConverter converter) {
+        for (Object value : columnValues) {
+            facetValues.add(converter.fromCassandraValue(value));
+        }
+        return facetValues;
+    }
+
+    protected <T extends Collection<Object>> T copyFacetValues(Collection<Object> facetValues, T columnValues, SaveContext context) {
+        for (Object value : facetValues) {
+            columnValues.add(getDelegate().convertToInsertValue(value, context));
+        }
+        return columnValues;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private class InjectionTargetWrapper implements InjectionTarget<Map<Object, Object>> {
-        private final InjectionTarget<Object> originalTarget;
-        private final Object originalValue;
+    private class ValueConverterCallback implements Callback<ValueConverter> {
+        private final Callback<F> originalTarget;
+        private final C originalValue;
 
-        private InjectionTargetWrapper(InjectionTarget<Object> originalTarget, Object originalValue) {
+        private ValueConverterCallback(Callback<F> originalTarget, C originalValue) {
             this.originalTarget = originalTarget;
             this.originalValue = originalValue;
         }
 
         @Override
-        public void inject(Map<Object, Object> value) {
-            originalTarget.inject(convertToFacetValue(originalValue, value));
+        public void execute(ValueConverter valueConverter) {
+            originalTarget.execute(convertToFacetValue(originalValue, valueConverter));
         }
     }
 }

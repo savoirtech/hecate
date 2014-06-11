@@ -7,7 +7,8 @@ import com.savoirtech.hecate.cql3.handler.context.QueryContext;
 import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.meta.FacetMetadata;
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
-import com.savoirtech.hecate.cql3.util.InjectionTarget;
+import com.savoirtech.hecate.cql3.util.Callback;
+import com.savoirtech.hecate.cql3.value.Facet;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,6 +49,11 @@ public class PojoDelegate implements ColumnHandlerDelegate {
     }
 
     @Override
+    public Object convertElement(Object parameterValue) {
+        return identifierConverter.toCassandraValue(parameterValue);
+    }
+
+    @Override
     public Object convertToInsertValue(Object facetValue, SaveContext saveContext) {
         final Object identifier = identifierConverter.toCassandraValue(pojoMetadata.getIdentifierFacet().getFacet().get(facetValue));
         saveContext.addPojo(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifier, facetValue);
@@ -55,22 +61,17 @@ public class PojoDelegate implements ColumnHandlerDelegate {
     }
 
     @Override
-    public DataType getDataType() {
-        return identifierConverter.getDataType();
-    }
-
-    @Override
-    public Object getWhereClauseValue(Object parameterValue) {
-        return identifierConverter.toCassandraValue(parameterValue);
-    }
-
-    @Override
-    public void injectFacetValues(InjectionTarget<Map<Object, Object>> target, Iterable<Object> columnValues, QueryContext context) {
-        Set<Object> identifiers = new HashSet<>();
+    public void createValueConverter(Callback<ValueConverter> target, Iterable<Object> columnValues, QueryContext context) {
+        final Set<Object> identifiers = new HashSet<>();
         for (Object columnValue : columnValues) {
             identifiers.add(identifierConverter.fromCassandraValue(columnValue));
         }
-        context.addPojos(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifiers, new PojoInjectionTarget(target));
+        context.addPojos(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifiers, new PojoResultsCallback(target, identifierConverter, pojoMetadata.getIdentifierFacet().getFacet()));
+    }
+
+    @Override
+    public DataType getDataType() {
+        return identifierConverter.getDataType();
     }
 
     @Override
@@ -82,21 +83,50 @@ public class PojoDelegate implements ColumnHandlerDelegate {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private class PojoInjectionTarget implements InjectionTarget<List<Object>> {
-        private final InjectionTarget<Map<Object, Object>> target;
+    private static final class PojoResultsCallback implements Callback<List<Object>> {
+        private final Callback<ValueConverter> originalTarget;
+        private final ValueConverter identifierConverter;
+        private final Facet identifierFacet;
 
-        private PojoInjectionTarget(InjectionTarget<Map<Object, Object>> target) {
-            this.target = target;
+        private PojoResultsCallback(Callback<ValueConverter> originalTarget, ValueConverter identifierConverter, Facet identifierFacet) {
+            this.originalTarget = originalTarget;
+            this.identifierConverter = identifierConverter;
+            this.identifierFacet = identifierFacet;
         }
 
         @Override
-        public void inject(List<Object> pojos) {
-            Map<Object, Object> columnValueToPojo = new HashMap<>();
+        public void execute(List<Object> pojos) {
+            Map<Object, Object> pojoMap = new HashMap<>();
             for (Object pojo : pojos) {
-                Object identifier = pojoMetadata.getIdentifierFacet().getFacet().get(pojo);
-                columnValueToPojo.put(identifierConverter.toCassandraValue(identifier), pojo);
+                pojoMap.put(identifierFacet.get(pojo), pojo);
             }
-            target.inject(columnValueToPojo);
+            originalTarget.execute(new PojoValueConverter(identifierConverter, pojoMap));
+        }
+    }
+
+    private static final class PojoValueConverter implements ValueConverter {
+        private final ValueConverter identifierConverter;
+        private final Map<Object, Object> pojoMap;
+
+        private PojoValueConverter(ValueConverter identifierConverter, Map<Object, Object> pojoMap) {
+            this.identifierConverter = identifierConverter;
+            this.pojoMap = pojoMap;
+        }
+
+        @Override
+        public Object fromCassandraValue(Object value) {
+            Object identifier = identifierConverter.fromCassandraValue(value);
+            return pojoMap.get(identifier);
+        }
+
+        @Override
+        public DataType getDataType() {
+            return identifierConverter.getDataType();
+        }
+
+        @Override
+        public Object toCassandraValue(Object value) {
+            return identifierConverter.toCassandraValue(value);
         }
     }
 }

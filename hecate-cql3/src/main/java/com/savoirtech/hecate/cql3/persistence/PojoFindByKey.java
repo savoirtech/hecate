@@ -43,6 +43,6 @@ public class PojoFindByKey extends PojoPersistenceStatement {
     }
 
     public Object find(Object identifier, Object pojo, QueryContext context) {
-        return one(pojo, executeWithArgs(pojoMapping.getIdentifierMapping().getColumnHandler().getWhereClauseValue(identifier)), context);
+        return one(pojo, executeWithArgs(pojoMapping.getIdentifierMapping().getColumnHandler().convertElement(identifier)), context);
     }
 }
