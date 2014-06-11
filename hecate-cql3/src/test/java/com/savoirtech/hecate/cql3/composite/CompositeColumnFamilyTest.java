@@ -44,8 +44,15 @@ public class CompositeColumnFamilyTest extends CassandraTestCase {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, Composite> dao = factory.createPojoDao(Composite.class);
         Composite composite = new Composite();
-        composite.setId("ID");
-        composite.setA("us:co:dia");
+        composite.setId("NAME");
+        composite.setA("Johan Edstrom");
+        composite.setB("");
+        composite.setC("C");
+        composite.setData("DATA");
+        dao.save(composite);
+
+        composite.setId("NAME");
+        composite.setA("James Carman");
         composite.setB("");
         composite.setC("C");
         composite.setData("DATA");
@@ -56,6 +63,6 @@ public class CompositeColumnFamilyTest extends CassandraTestCase {
         assertEquals("DATA", found.getData());
         assertEquals(composite.getId(), found.getId());
 
-        System.out.println(connect().execute("select * from composite where  id = 'ID' and a > 'us:co:d';").all());
+        System.out.println(connect().execute("select * from composite where  id = 'NAME' and a > '';").all());
     }
 }
