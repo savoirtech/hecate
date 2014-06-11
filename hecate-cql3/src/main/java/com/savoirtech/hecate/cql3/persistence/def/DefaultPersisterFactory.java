@@ -9,7 +9,6 @@ import com.savoirtech.hecate.cql3.persistence.Persister;
 import com.savoirtech.hecate.cql3.persistence.PersisterFactory;
 import com.savoirtech.hecate.cql3.schema.CreateVerifier;
 import com.savoirtech.hecate.cql3.schema.SchemaVerifier;
-import org.apache.commons.lang3.Validate;
 
 import java.util.Map;
 
@@ -23,6 +22,14 @@ public class DefaultPersisterFactory implements PersisterFactory {
     private SchemaVerifier schemaVerifier = new CreateVerifier();
 
     private final Map<String, Persister> persisters;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Static Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    private static final String key(Class<?> pojoType, String tableName) {
+        return pojoType.getCanonicalName() + "@" + tableName;
+    }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -39,7 +46,6 @@ public class DefaultPersisterFactory implements PersisterFactory {
 
     @Override
     public Persister getPersister(Class<?> pojoType, String tableName) {
-        Validate.notNull(tableName);
         final String key = key(pojoType, tableName);
         Persister persister = persisters.get(key);
         if (persister == null) {
@@ -47,11 +53,10 @@ public class DefaultPersisterFactory implements PersisterFactory {
             schemaVerifier.verifySchema(session, pojoMapping);
             persister = new DefaultPersister(session, pojoMapping);
             persisters.put(key, persister);
+            if (tableName == null) {
+                persisters.put(key(pojoType, pojoMapping.getTableName()), persister);
+            }
         }
         return persister;
-    }
-
-    private static final String key(Class<?> pojoType, String tableName) {
-        return pojoType.getCanonicalName() + "@" + tableName;
     }
 }
