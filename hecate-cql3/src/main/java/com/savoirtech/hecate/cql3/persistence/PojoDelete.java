@@ -13,7 +13,7 @@ public class PojoDelete extends PojoPersistenceStatement {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static Logger LOGGER = LoggerFactory.getLogger(PojoDelete.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PojoDelete.class);
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -23,7 +23,7 @@ public class PojoDelete extends PojoPersistenceStatement {
         super(session, createDelete(mapping), mapping);
     }
 
-    private static <P> Delete.Where createDelete(PojoMapping mapping) {
+    private static Delete.Where createDelete(PojoMapping mapping) {
         final Delete.Where delete = delete().from(mapping.getTableName()).where(in(mapping.getIdentifierMapping().getFacetMetadata().getColumnName(), bindMarker()));
         LOGGER.info("{}.delete(): {}", mapping.getPojoMetadata().getPojoType().getSimpleName(), delete);
         return delete;
