@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.savoirtech.hecate.core.test.CassandraTestCase;
 import com.savoirtech.hecate.core.utils.DaoPool;
 import me.prettyprint.hector.api.locking.HLock;
 import org.junit.Test;
-
 
 import static junit.framework.Assert.assertTrue;
 

@@ -1,10 +1,20 @@
-package com.savoirtech.hecate.cql3.dao.def;
+/*
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+package com.savoirtech.hecate.cql3.dao.def;
 
 import com.google.common.collect.Sets;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
@@ -13,12 +23,13 @@ import com.savoirtech.hecate.cql3.entities.SimplePojo;
 import com.savoirtech.hecate.cql3.test.CassandraTestCase;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class DefaultPojoDaoTest extends CassandraTestCase {
     //----------------------------------------------------------------------------------------------------------------------
@@ -40,7 +51,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
     }
 
     @Test
-    public void testSaveWithTable() throws Exception {
+    public void testSaveWithCustomTableName() throws Exception {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class, "BOB");
         final SimplePojo pojo = new SimplePojo();

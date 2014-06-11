@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.savoirtech.hecate.core.dao;
 
 import com.savoirtech.hecate.core.abstractdao.AbstractPojoObjectGraphDao;
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
-import com.savoirtech.hecate.core.dao.ColumnFamilyDao;
 import com.savoirtech.hecate.core.utils.DaoPool;
 
 public class PojoObjectGraphDao<K, T> extends AbstractPojoObjectGraphDao<K, T> implements ColumnFamilyDao<K, T> {

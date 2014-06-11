@@ -1,0 +1,6 @@
+Hecate
+
+Copyright 2012-2014 Savoir Technologies, Inc.
+
+This product includes software developed by
+Savoir Technologies, Inc. (http://www.savoirtec.com/).

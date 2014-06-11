@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
  */
 
 package com.savoirtech.hecate.core.abstractdao;
-
-import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Set;
 
 import com.savoirtech.hecate.core.annotations.CompositeComponent;
 import com.savoirtech.hecate.core.annotations.CompositeComponentProcessor;
@@ -40,6 +36,10 @@ import me.prettyprint.hector.api.mutation.Mutator;
 import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.RangeSlicesQuery;
 import me.prettyprint.hector.api.query.SliceQuery;
+
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class AbstractIteratingColumnFamilyDao<KeyType, NameType, ValueType> {
 
@@ -97,13 +97,13 @@ public abstract class AbstractIteratingColumnFamilyDao<KeyType, NameType, ValueT
             Composite comp = marshalComposite(name);
 
             HColumn<Object, ValueType> column = (HColumn<Object, ValueType>) HFactory.createColumn(comp, value, SerializerTypeInferer.getSerializer(
-                comp), SerializerTypeInferer.getSerializer(value));
+                    comp), SerializerTypeInferer.getSerializer(value));
 
             mutator.addInsertion(key, columnFamilyName, column);
         } else {
 
             HColumn<NameType, ValueType> column = (HColumn<NameType, ValueType>) HFactory.createColumn(name, value,
-                SerializerTypeInferer.getSerializer(name), SerializerTypeInferer.getSerializer(value));
+                    SerializerTypeInferer.getSerializer(name), SerializerTypeInferer.getSerializer(value));
 
             mutator.addInsertion(key, columnFamilyName, column);
         }
@@ -128,7 +128,7 @@ public abstract class AbstractIteratingColumnFamilyDao<KeyType, NameType, ValueT
 
         if (fields != null) {
             query = HFactory.createSliceQuery(keySpace, (Serializer<KeyType>) SerializerTypeInferer.getSerializer(keyTypeClass),
-                SerializerTypeInferer.getSerializer(Composite.class), BytesArraySerializer.get());
+                    SerializerTypeInferer.getSerializer(Composite.class), BytesArraySerializer.get());
             query.setColumnFamily(columnFamilyName);
             query.setKey(key);
 
@@ -138,7 +138,7 @@ public abstract class AbstractIteratingColumnFamilyDao<KeyType, NameType, ValueT
             return new ColumnIterator<KeyType, NameType, ValueType>(query, nameClass, valueClass, compStart, compEnd, reverse);
         } else {
             query = HFactory.createSliceQuery(keySpace, (Serializer<KeyType>) SerializerTypeInferer.getSerializer(keyTypeClass),
-                SerializerTypeInferer.getSerializer(nameClass), BytesArraySerializer.get());
+                    SerializerTypeInferer.getSerializer(nameClass), BytesArraySerializer.get());
             query.setColumnFamily(columnFamilyName);
             query.setKey(key);
             return new ColumnIterator<KeyType, NameType, ValueType>(query, nameClass, valueClass, start, end, reverse);
@@ -180,7 +180,7 @@ public abstract class AbstractIteratingColumnFamilyDao<KeyType, NameType, ValueT
 
         do {
             RangeSlicesQuery<Object, KeyType, byte[]> rangeSlicesQuery = HFactory.createRangeSlicesQuery(keySpace,
-                SerializerTypeInferer.getSerializer(keyTypeClass), (Serializer<KeyType>) StringSerializer.get(), BytesArraySerializer.get());
+                    SerializerTypeInferer.getSerializer(keyTypeClass), (Serializer<KeyType>) StringSerializer.get(), BytesArraySerializer.get());
             rangeSlicesQuery.setColumnFamily(columnFamilyName);
             if (lastRow != null) {
                 rangeSlicesQuery.setKeys(lastRow.getKey(), "");
@@ -201,7 +201,8 @@ public abstract class AbstractIteratingColumnFamilyDao<KeyType, NameType, ValueT
             }
 
             lastRow = orderedRows.peekLast();
-        } while (rows == pagination);
+        }
+        while (rows == pagination);
 
         return rowKeys;
     }
@@ -211,7 +212,7 @@ public abstract class AbstractIteratingColumnFamilyDao<KeyType, NameType, ValueT
      */
     public boolean containsKey(KeyType key) {
         RangeSlicesQuery<Object, String, byte[]> rangeSlicesQuery = HFactory.createRangeSlicesQuery(keySpace, SerializerTypeInferer.getSerializer(
-            keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
+                keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
         rangeSlicesQuery.setColumnFamily(columnFamilyName);
         rangeSlicesQuery.setKeys(key, key);
         rangeSlicesQuery.setReturnKeysOnly();
@@ -229,16 +230,17 @@ public abstract class AbstractIteratingColumnFamilyDao<KeyType, NameType, ValueT
 
             Composite comp = new Composite();
 
-            for (int i = 0;i < fields.length;i++) {
+            for (int i = 0; i < fields.length; i++) {
                 Object obj = fields[i].get(name);
 
                 comp.addComponent(obj, SerializerTypeInferer.getSerializer(fields[i].getType()), fields[i].getAnnotation(CompositeComponent.class)
-                                                                                                          .type().name(),
-                    AbstractComposite.ComponentEquality.EQUAL);
+                                .type().name(),
+                        AbstractComposite.ComponentEquality.EQUAL);
             }
 
             return comp;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package com.savoirtech.hecate.core.config;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.cassandra.service.FailoverPolicy;
 import me.prettyprint.hector.api.ConsistencyLevelPolicy;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class CassandraKeyspaceConfigurator {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,6 @@
  */
 
 package com.savoirtech.hecate.core;
-
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import com.google.common.base.Charsets;
 import me.prettyprint.cassandra.model.BasicColumnDefinition;
@@ -53,6 +47,11 @@ import org.cassandraunit.type.GenericTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static me.prettyprint.hector.api.ddl.ColumnType.SUPER;
 
@@ -116,7 +115,7 @@ public class DataLoader {
         dataSetKeyspace = overrideKeyspaceValueIfneeded(dataSetKeyspace, loadingOption);
 
         KeyspaceDefinition keyspaceDefinition = HFactory.createKeyspaceDefinition(dataSetKeyspace.getName(), dataSetKeyspace.getStrategy().value(),
-            dataSetKeyspace.getReplicationFactor(), columnFamilyDefinitions);
+                dataSetKeyspace.getReplicationFactor(), columnFamilyDefinitions);
         return keyspaceDefinition;
     }
 
@@ -138,14 +137,14 @@ public class DataLoader {
         Mutator<GenericType> mutator = HFactory.createMutator(keyspace, GenericTypeSerializer.get());
         for (RowModel row : columnFamily.getRows()) {
             switch (columnFamily.getType()) {
-            case STANDARD:
-                loadStandardColumnFamilyData(columnFamily, mutator, row);
-                break;
-            case SUPER:
-                loadSuperColumnFamilyData(columnFamily, mutator, row);
-                break;
-            default:
-                break;
+                case STANDARD:
+                    loadStandardColumnFamilyData(columnFamily, mutator, row);
+                    break;
+                case SUPER:
+                    loadSuperColumnFamilyData(columnFamily, mutator, row);
+                    break;
+                default:
+                    break;
             }
         }
         mutator.execute();
@@ -155,14 +154,14 @@ public class DataLoader {
         if (columnFamily.isCounter()) {
             for (SuperColumnModel superColumnModel : row.getSuperColumns()) {
                 HCounterSuperColumn<GenericType, GenericType> superCounterColumn = HFactory.createCounterSuperColumn(superColumnModel.getName(),
-                    createHCounterColumnList(superColumnModel.getColumns()), GenericTypeSerializer.get(), GenericTypeSerializer.get());
+                        createHCounterColumnList(superColumnModel.getColumns()), GenericTypeSerializer.get(), GenericTypeSerializer.get());
                 mutator.addCounter(row.getKey(), columnFamily.getName(), superCounterColumn);
             }
         } else {
             for (SuperColumnModel superColumnModel : row.getSuperColumns()) {
                 HSuperColumn<GenericType, GenericType, GenericType> superColumn = HFactory.createSuperColumn(superColumnModel.getName(),
-                    createHColumnList(superColumnModel.getColumns()), GenericTypeSerializer.get(), GenericTypeSerializer.get(),
-                    GenericTypeSerializer.get());
+                        createHColumnList(superColumnModel.getColumns()), GenericTypeSerializer.get(), GenericTypeSerializer.get(),
+                        GenericTypeSerializer.get());
                 mutator.addInsertion(row.getKey(), columnFamily.getName(), superColumn);
             }
         }
@@ -192,7 +191,7 @@ public class DataLoader {
                 timestamp = System.currentTimeMillis();
             }
             HColumn<GenericType, GenericType> column = HFactory.createColumn(columnModel.getName(), columnValue, timestamp,
-                GenericTypeSerializer.get(), GenericTypeSerializer.get());
+                    GenericTypeSerializer.get(), GenericTypeSerializer.get());
             hColumns.add(column);
         }
         return hColumns;
@@ -202,7 +201,7 @@ public class DataLoader {
         List<HCounterColumn<GenericType>> hColumns = new ArrayList<HCounterColumn<GenericType>>();
         for (ColumnModel columnModel : columnsModel) {
             HCounterColumn<GenericType> column = HFactory.createCounterColumn(columnModel.getName(), LongSerializer.get().fromByteBuffer(
-                GenericTypeSerializer.get().toByteBuffer(columnModel.getValue())), GenericTypeSerializer.get());
+                    GenericTypeSerializer.get().toByteBuffer(columnModel.getValue())), GenericTypeSerializer.get());
             hColumns.add(column);
         }
         return hColumns;
@@ -213,8 +212,8 @@ public class DataLoader {
         List<ColumnFamilyDefinition> columnFamilyDefinitions = new ArrayList<ColumnFamilyDefinition>();
         for (ColumnFamilyModel columnFamily : dataSet.getColumnFamilies()) {
             ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(dataSetKeyspace.getName(), columnFamily.getName(),
-                ComparatorType.getByClassName(columnFamily.getComparatorType().getClassName()), createColumnsDefinition(
-                columnFamily.getColumnsMetadata()));
+                    ComparatorType.getByClassName(columnFamily.getComparatorType().getClassName()), createColumnsDefinition(
+                            columnFamily.getColumnsMetadata()));
             cfDef.setColumnType(columnFamily.getType());
             cfDef.setComment(columnFamily.getComment());
 

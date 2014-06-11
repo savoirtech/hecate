@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,6 @@
 
 package com.savoirtech.hecate.core.utils;
 
-import java.lang.reflect.Field;
-import java.util.Iterator;
-
 import com.savoirtech.hecate.core.annotations.CompositeComponentProcessor;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
@@ -27,6 +24,9 @@ import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.query.SliceQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Field;
+import java.util.Iterator;
 
 public class ColumnIterator<KeyType, NameType, ValueType> implements Iterator<Column> {
 
@@ -82,12 +82,13 @@ public class ColumnIterator<KeyType, NameType, ValueType> implements Iterator<Co
         try {
             NameType name = nameClass.newInstance();
 
-            for (int i = 0;i < fields.length;i++) {
+            for (int i = 0; i < fields.length; i++) {
                 fields[i].set(name, comp.get(i, SerializerTypeInferer.getSerializer(fields[i].getType())));
             }
 
             return name;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

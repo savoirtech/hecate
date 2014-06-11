@@ -1,7 +1,24 @@
+/*
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.savoirtech.hecate.cql3.persistence;
 
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Select;
+import com.savoirtech.hecate.cql3.handler.context.QueryContext;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +30,15 @@ import java.util.Map;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 
 public class PojoFindByKeys extends PojoPersistenceStatement {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PojoFindByKeys.class);
+
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
 
     public PojoFindByKeys(Session session, PojoMapping mapping) {
         super(session, createSelect(mapping), mapping);
@@ -27,19 +51,22 @@ public class PojoFindByKeys extends PojoPersistenceStatement {
         return where;
     }
 
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
     public List<Object> execute(Map<Object, Object> pojos, QueryContext queryContext) {
         final List<Object> identifiers = cassandraIdentifiers(pojos.keySet());
-        if (!identifiers.isEmpty()) {
-            return list(pojos, executeWithArgs(identifiers), queryContext);
+        if (identifiers.isEmpty()) {
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
+        return list(pojos, executeWithArgs(identifiers), queryContext);
     }
 
     public List<Object> execute(Iterable<Object> identifiers, QueryContext queryContext) {
         if (identifiers.iterator().hasNext()) {
-            return execute(getPojoMapping().getPojoMetadata().newPojoMap(identifiers), queryContext);
+            return execute(queryContext.newPojoMap(getPojoMapping().getPojoMetadata(), identifiers), queryContext);
         }
         return Collections.emptyList();
     }
-
 }

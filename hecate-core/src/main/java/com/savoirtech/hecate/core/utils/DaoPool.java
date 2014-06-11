@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package com.savoirtech.hecate.core.utils;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
 import com.savoirtech.hecate.core.dao.ColumnFamilyDao;
 import com.savoirtech.hecate.core.dao.PojoObjectGraphDao;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DaoPool<V> {
 
@@ -47,7 +47,7 @@ public class DaoPool<V> {
         final String daoKey = configurator.getKeyspace() + ":::" + columnFamily + ":::" + storageClass.getName();
         dao = (ColumnFamilyDao<K, T>) daoMap.get(daoKey);
         if (dao == null) {
-            dao = new PojoObjectGraphDao<>(cluster, configurator, keyClass, storageClass, columnFamily, comparatorAlias,this);
+            dao = new PojoObjectGraphDao<>(cluster, configurator, keyClass, storageClass, columnFamily, comparatorAlias, this);
             daoMap.put(daoKey, dao);
         }
         return dao;

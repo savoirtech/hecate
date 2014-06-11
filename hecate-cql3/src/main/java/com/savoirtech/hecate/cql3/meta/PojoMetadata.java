@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.savoirtech.hecate.cql3.meta;
 
 
@@ -17,8 +33,8 @@ public class PojoMetadata {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Class<?> pojoType;
-    private final String tableName;
-    private final Integer timeToLive;
+    private final String defaultTableName;
+    private final int defaultTtl;
     private final Map<String, FacetMetadata> facets = new HashMap<>();
     private FacetMetadata identifierFacet;
 
@@ -38,18 +54,26 @@ public class PojoMetadata {
     public PojoMetadata(Class<?> pojoType) {
         this.pojoType = Validate.notNull(pojoType, "POJO type cannot be null.");
         Validate.isTrue(ReflectionUtils.isInstantiable(pojoType), "Unable to instantiate POJOs of type %s", pojoType.getName());
-        this.tableName = tableNameOf(pojoType);
-        this.timeToLive = timeToLiveOf(pojoType);
+        this.defaultTableName = tableNameOf(pojoType);
+        this.defaultTtl = timeToLiveOf(pojoType);
     }
 
-    private static Integer timeToLiveOf(Class<?> pojoType) {
+    private static int timeToLiveOf(Class<?> pojoType) {
         Ttl annot = pojoType.getAnnotation(Ttl.class);
-        return annot == null ? null : annot.value();
+        return annot == null ? 0 : annot.value();
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
+
+    public String getDefaultTableName() {
+        return defaultTableName;
+    }
+
+    public Integer getDefaultTtl() {
+        return defaultTtl;
+    }
 
     public FacetMetadata getIdentifierFacet() {
         return identifierFacet;
@@ -57,14 +81,6 @@ public class PojoMetadata {
 
     public Class<?> getPojoType() {
         return pojoType;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public Integer getTimeToLive() {
-        return timeToLive;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -112,21 +128,9 @@ public class PojoMetadata {
         return Collections.unmodifiableMap(facets);
     }
 
-    private Object newPojo() {
-        return ReflectionUtils.instantiate(pojoType);
-    }
-
     public Object newPojo(Object identifier) {
-        Object pojo = newPojo();
+        Object pojo = ReflectionUtils.instantiate(pojoType);
         getIdentifierFacet().getFacet().set(pojo, identifier);
         return pojo;
-    }
-
-    public Map<Object, Object> newPojoMap(Iterable<Object> identifiers) {
-        Map<Object, Object> pojos = new HashMap<>();
-        for (Object identifier : identifiers) {
-            pojos.put(identifier, newPojo(identifier));
-        }
-        return pojos;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 
 package com.savoirtech.hecate.core;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.cassandra.auth.AuthenticatedUser;
 import org.apache.cassandra.auth.IAuthenticator;
 import org.apache.cassandra.auth.IResource;
 import org.apache.cassandra.exceptions.AuthenticationException;
 import org.apache.cassandra.exceptions.InvalidRequestException;
+
+import java.util.Map;
+import java.util.Set;
 
 public class TestAuthenticator implements IAuthenticator {
 
@@ -31,9 +31,8 @@ public class TestAuthenticator implements IAuthenticator {
     public static final String SECURE_PASSWORD = "secret";
 
 
-
     @Override
-    public AuthenticatedUser authenticate(Map<String,String> credentials) throws AuthenticationException {
+    public AuthenticatedUser authenticate(Map<String, String> credentials) throws AuthenticationException {
 
         String username = null;
         CharSequence user = credentials.get(IAuthenticator.USERNAME_KEY);
@@ -78,7 +77,6 @@ public class TestAuthenticator implements IAuthenticator {
     public Set<Option> alterableOptions() {
         return null;  //TODO
     }
-
 
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.savoirtech.hecate.core.dao.PojoObjectGraphDao;
 import com.savoirtech.hecate.core.test.CassandraTestCase;
 import com.savoirtech.hecate.core.utils.DaoPool;
 import org.junit.Test;
-
 
 import static junit.framework.Assert.assertTrue;
 
@@ -48,7 +47,6 @@ public class PojoGraphDaoTest extends CassandraTestCase {
         top.getChildSet().add(child);
 
 
-
         child = new Child();
         child.setId("B");
         top.getChildren().add(child);
@@ -56,7 +54,7 @@ public class PojoGraphDaoTest extends CassandraTestCase {
         top.getChildSet().add(child);
         top.getChildMap().put("B", child);
 
-        top.getBobs().put("A","B") ;
+        top.getBobs().put("A", "B");
 
         dao.save(top.getId(), top);
 

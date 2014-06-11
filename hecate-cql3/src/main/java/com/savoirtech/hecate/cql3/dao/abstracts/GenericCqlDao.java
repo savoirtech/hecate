@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,6 @@
 
 package com.savoirtech.hecate.cql3.dao.abstracts;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -31,6 +27,10 @@ import com.savoirtech.hecate.cql3.ReflectionUtils;
 import com.savoirtech.hecate.cql3.dao.GenericTableDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
 
@@ -53,7 +53,7 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
     @Override
     public void delete(K key) {
         Delete.Where query = QueryBuilder.delete().all().from(keySpace, tableName).where(QueryBuilder.eq(ReflectionUtils.getIdName(mappingClazz),
-            key));
+                key));
         session.execute(query);
     }
 
@@ -64,7 +64,7 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
         ResultSet res = session.execute(selection);
         for (Row row : res.all()) {
             keys.add(ReflectionUtils.<K>extractFieldValue(ReflectionUtils.getIdName(mappingClazz), ReflectionUtils.getFieldType(
-                ReflectionUtils.getIdName(mappingClazz)), row));
+                    ReflectionUtils.getIdName(mappingClazz)), row));
         }
         return keys;
     }
@@ -72,7 +72,7 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
     @Override
     public boolean containsKey(K key) {
         Select.Where selection = QueryBuilder.select().column(ReflectionUtils.getIdName(mappingClazz)).from(keySpace, tableName).where(
-            QueryBuilder.eq(ReflectionUtils.getIdName(mappingClazz), key));
+                QueryBuilder.eq(ReflectionUtils.getIdName(mappingClazz), key));
         ResultSet res = session.execute(selection);
         return ((res.all().size() > 0));
     }
@@ -80,7 +80,7 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
     @Override
     public void save(T pojo) {
         Insert insert = QueryBuilder.insertInto(keySpace, tableName).values(ReflectionUtils.fieldNames(mappingClazz), ReflectionUtils.fieldValues(
-            pojo));
+                pojo));
         logger.debug("Save " + insert);
         ResultSet res = session.execute(insert);
         logger.debug("Result " + res);
@@ -89,7 +89,7 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
     @Override
     public T find(K key) {
         Select.Where select = QueryBuilder.select(ReflectionUtils.fieldNames(mappingClazz)).from(keySpace, tableName).where(QueryBuilder.eq(
-            ReflectionUtils.getIdName(mappingClazz), key));
+                ReflectionUtils.getIdName(mappingClazz), key));
         logger.debug("Find " + select);
         ResultSet res = session.execute(select);
         if (res != null) {
@@ -100,9 +100,11 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
                     T clz = (T) mappingClazz.newInstance();
                     ReflectionUtils.populate(clz, row);
                     return clz;
-                } catch (InstantiationException e) {
+                }
+                catch (InstantiationException e) {
                     logger.error("Could not create class " + mappingClazz + " " + e);
-                } catch (IllegalAccessException e) {
+                }
+                catch (IllegalAccessException e) {
                     logger.error("Could not access class " + mappingClazz + " " + e);
                 }
             }
@@ -116,7 +118,7 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
 
         Set<T> items = new HashSet<>();
         Select.Where select = QueryBuilder.select(ReflectionUtils.fieldNames(mappingClazz)).from(keySpace, tableName).where(QueryBuilder.in(
-            ReflectionUtils.getIdName(mappingClazz), keys.toArray()));
+                ReflectionUtils.getIdName(mappingClazz), keys.toArray()));
 
         logger.debug("Find " + select);
         ResultSet res = session.execute(select);
@@ -128,9 +130,11 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
                     T clz = (T) mappingClazz.newInstance();
                     ReflectionUtils.populate(clz, row);
                     items.add(clz);
-                } catch (InstantiationException e) {
+                }
+                catch (InstantiationException e) {
                     logger.error("Could not create class " + mappingClazz + " " + e);
-                } catch (IllegalAccessException e) {
+                }
+                catch (IllegalAccessException e) {
                     logger.error("Could not access class " + mappingClazz + " " + e);
                 }
             }

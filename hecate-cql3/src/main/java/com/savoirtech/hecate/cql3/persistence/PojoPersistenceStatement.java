@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.savoirtech.hecate.cql3.persistence;
 
 import com.datastax.driver.core.PreparedStatement;
@@ -7,9 +23,12 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import com.savoirtech.hecate.cql3.handler.context.QueryContext;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
+import com.savoirtech.hecate.cql3.util.Callback;
 import com.savoirtech.hecate.cql3.util.CassandraUtils;
+import com.savoirtech.hecate.cql3.value.Facet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,21 +84,13 @@ public class PojoPersistenceStatement {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-//    protected List<FacetMapping> allColumns() {
-//        return pojoMapping.getFacetMappings();
-//    }
-
-//    protected Object cassandraValue(P pojo, FacetMapping mapping) {
-//        return mapping.getConverter().toCassandraValue(mapping.getFacet().get(pojo), null);
-//    }
-//
-//    protected List<Object> cassandraValues(P pojo, List<FacetMapping> mappings) {
-//        final List<Object> values = new ArrayList<>(mappings.size());
-//        for (FacetMapping mapping : mappings) {
-//            values.add(mapping.getConverter().toCassandraValue(mapping.getFacet().get(pojo), null));
-//        }
-//        return values;
-//    }
+    protected List<Object> cassandraIdentifiers(Iterable<Object> keys) {
+        List<Object> cassandraValues = new LinkedList<>();
+        for (Object key : keys) {
+            cassandraValues.add(getPojoMapping().getIdentifierMapping().getColumnHandler().convertElement(key));
+        }
+        return cassandraValues;
+    }
 
     protected ResultSet executeWithArgs(Object... parameters) {
         return executeWithList(Arrays.asList(parameters));
@@ -108,7 +119,7 @@ public class PojoPersistenceStatement {
     private Map<Object, Object> cassandraKeyedPojoMap(Map<Object, Object> pojoMap) {
         Map<Object, Object> cassandraKeyed = new HashMap<>();
         for (Map.Entry<Object, Object> entry : pojoMap.entrySet()) {
-            cassandraKeyed.put(pojoMapping.getIdentifierMapping().getColumnHandler().getWhereClauseValue(entry.getKey()), entry.getValue());
+            cassandraKeyed.put(pojoMapping.getIdentifierMapping().getColumnHandler().convertElement(entry.getKey()), entry.getValue());
         }
         return cassandraKeyed;
     }
@@ -118,7 +129,8 @@ public class PojoPersistenceStatement {
         int columnIndex = 0;
         for (FacetMapping mapping : pojoMapping.getFacetMappings()) {
             Object columnValue = CassandraUtils.getValue(row, columnIndex, mapping.getColumnHandler().getColumnType());
-            mapping.getFacetMetadata().getFacet().set(pojo, mapping.getColumnHandler().getFacetValue(columnValue, context));
+            final FacetValueTarget target = new FacetValueTarget(pojo, mapping.getFacetMetadata().getFacet());
+            mapping.getColumnHandler().injectFacetValue(target, columnValue, context);
             columnIndex++;
         }
         return pojo;
@@ -129,11 +141,22 @@ public class PojoPersistenceStatement {
         return row == null ? null : mapPojoFromRow(pojo, row, context);
     }
 
-    protected List<Object> cassandraIdentifiers(Iterable<Object> keys) {
-        List<Object> cassandraValues = new LinkedList<>();
-        for (Object key : keys) {
-            cassandraValues.add(getPojoMapping().getIdentifierMapping().getColumnHandler().getWhereClauseValue(key));
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    private static final class FacetValueTarget implements Callback<Object> {
+        private final Object pojo;
+        private final Facet facet;
+
+        private FacetValueTarget(Object pojo, Facet facet) {
+            this.pojo = pojo;
+            this.facet = facet;
         }
-        return cassandraValues;
+
+        @Override
+        public void execute(Object value) {
+            facet.set(pojo, value);
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
  */
 
 package com.savoirtech.hecate.core.abstractdao;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import com.savoirtech.hecate.core.config.CassandraKeyspaceConfigurator;
 import com.savoirtech.hecate.core.config.HectorHelper;
@@ -38,6 +34,10 @@ import me.prettyprint.hector.api.query.MultigetSliceQuery;
 import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.RangeSlicesQuery;
 import me.prettyprint.hector.api.query.SliceQuery;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFamilyDao<K, T> {
 
@@ -94,16 +94,17 @@ public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFa
      */
     public T find(K key) {
         SliceQuery<Object, String, byte[]> query = HFactory.createSliceQuery(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass),
-            StringSerializer.get(), BytesArraySerializer.get());
+                StringSerializer.get(), BytesArraySerializer.get());
 
         QueryResult<ColumnSlice<String, byte[]>> result = query.setColumnFamily(columnFamilyName).setKey(key).setRange("", "", false,
-            Integer.MAX_VALUE).execute();
+                Integer.MAX_VALUE).execute();
 
         try {
             if (result.get().getColumns().isEmpty()) {
                 return null;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return null;
         }
 
@@ -111,7 +112,8 @@ public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFa
             T t = persistentClass.newInstance();
             HectorHelper.populateEntityGraph(t, result, daoPool);
             return t;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new ObjectNotSerializableException("Error creating persistent class", e);
         }
     }
@@ -124,7 +126,7 @@ public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFa
      */
     public T findAllColumns(K key) {
         SliceQuery<Object, String, byte[]> query = HFactory.createSliceQuery(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass),
-            StringSerializer.get(), BytesArraySerializer.get());
+                StringSerializer.get(), BytesArraySerializer.get());
 
         QueryResult<ColumnSlice<String, byte[]>> result = query.setColumnFamily(columnFamilyName).setKey(key).execute();
 
@@ -132,7 +134,8 @@ public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFa
             if (result.get().getColumns().isEmpty()) {
                 return null;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return null;
         }
 
@@ -140,7 +143,8 @@ public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFa
             T t = persistentClass.newInstance();
             HectorHelper.populateEntityAnnotated(t, result);
             return t;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new ObjectNotSerializableException("Error creating persistent class", e);
         }
     }
@@ -148,25 +152,26 @@ public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFa
     /**
      * Delete whole object graph. - Similar to a Cascade.ALL in JPA.
      */
-    public void deleteGraph(K key, DaoPool daoPool)  {
+    public void deleteGraph(K key, DaoPool daoPool) {
 
         SliceQuery<Object, String, byte[]> query = HFactory.createSliceQuery(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass),
-            StringSerializer.get(), BytesArraySerializer.get());
+                StringSerializer.get(), BytesArraySerializer.get());
 
         QueryResult<ColumnSlice<String, byte[]>> result = query.setColumnFamily(columnFamilyName).setKey(key).setRange("", "", false,
-            Integer.MAX_VALUE).execute();
+                Integer.MAX_VALUE).execute();
 
         try {
             if (result.get().getColumns().isEmpty()) {
                 return;
             }
             T t = persistentClass.newInstance();
-                   HectorHelper.deleteGraph(t, result, daoPool);
+            HectorHelper.deleteGraph(t, result, daoPool);
 
-                   Mutator<Object> mutator = HFactory.createMutator(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass));
-                   mutator.delete(key, columnFamilyName, null, SerializerTypeInferer.getSerializer(keyTypeClass));
-        } catch (Exception e) {
-           return;
+            Mutator<Object> mutator = HFactory.createMutator(keySpace, SerializerTypeInferer.getSerializer(keyTypeClass));
+            mutator.delete(key, columnFamilyName, null, SerializerTypeInferer.getSerializer(keyTypeClass));
+        }
+        catch (Exception e) {
+            return;
         }
 
     }
@@ -193,7 +198,7 @@ public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFa
 
         do {
             RangeSlicesQuery<Object, String, byte[]> rangeSlicesQuery = HFactory.createRangeSlicesQuery(keySpace, SerializerTypeInferer.getSerializer(
-                keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
+                    keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
             rangeSlicesQuery.setColumnFamily(columnFamilyName);
             if (lastRow != null) {
                 rangeSlicesQuery.setKeys(lastRow.getKey(), "");
@@ -214,7 +219,8 @@ public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFa
             }
 
             lastRow = orderedRows.peekLast();
-        } while (rows == pagination);
+        }
+        while (rows == pagination);
 
         return rowKeys;
     }
@@ -232,7 +238,7 @@ public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFa
         Set<T> items = new HashSet<T>();
 
         MultigetSliceQuery<Object, String, byte[]> multigetSliceQuery = HFactory.createMultigetSliceQuery(keySpace,
-            SerializerTypeInferer.getSerializer(keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
+                SerializerTypeInferer.getSerializer(keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
 
         multigetSliceQuery.setColumnFamily(columnFamilyName);
         multigetSliceQuery.setKeys(keys.toArray());
@@ -257,7 +263,7 @@ public class AbstractPojoObjectGraphDao<K, T> extends AbstractPojoMappedColumnFa
      */
     public boolean containsKey(K key) {
         RangeSlicesQuery<Object, String, byte[]> rangeSlicesQuery = HFactory.createRangeSlicesQuery(keySpace, SerializerTypeInferer.getSerializer(
-            keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
+                keyTypeClass), StringSerializer.get(), BytesArraySerializer.get());
         rangeSlicesQuery.setColumnFamily(columnFamilyName);
         rangeSlicesQuery.setKeys(key, key);
         rangeSlicesQuery.setReturnKeysOnly();

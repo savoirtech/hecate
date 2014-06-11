@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -286,7 +286,7 @@ public final class FieldMapper {
 
     private static String getRawCassandraTypeForFieldName(String idName, Class<?> type) throws HecateException {
         for (Field f : ReflectionUtils.getFieldsUpTo(type, null)) {
-            if (type.equals(f.getName())) {
+            if (idName.equals(f.getName())) {
                 return getRawCassandraType(f);
             }
         }

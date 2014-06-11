@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 
 package com.savoirtech.hecate.core.daotests;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.savoirtech.hecate.core.annotations.CFName;
 import com.savoirtech.hecate.core.annotations.CassandraId;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TopWithString {
 

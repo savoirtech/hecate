@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,23 @@
  */
 
 package com.savoirtech.hecate.cql3;
+
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.Row;
+import com.google.common.collect.Lists;
+import com.savoirtech.hecate.cql3.annotations.Id;
+import com.savoirtech.hecate.cql3.annotations.IdColumn;
+import com.savoirtech.hecate.cql3.annotations.TableName;
+import com.savoirtech.hecate.cql3.dao.abstracts.GenericCqlDao;
+import com.savoirtech.hecate.cql3.dao.abstracts.GenericPojoGraphDao;
+import com.savoirtech.hecate.cql3.exception.HecateException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.TypeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
@@ -34,23 +51,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.Row;
-import com.google.common.collect.Lists;
-import com.savoirtech.hecate.cql3.annotations.Id;
-import com.savoirtech.hecate.cql3.annotations.IdColumn;
-import com.savoirtech.hecate.cql3.annotations.TableName;
-import com.savoirtech.hecate.cql3.dao.abstracts.GenericCqlDao;
-import com.savoirtech.hecate.cql3.dao.abstracts.GenericPojoGraphDao;
-import com.savoirtech.hecate.cql3.exception.HecateException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.commons.lang3.reflect.TypeUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ReflectionUtils {
 //----------------------------------------------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 
 package com.savoirtech.hecate.core.dao;
 
-import java.util.Set;
-
 import com.savoirtech.hecate.core.utils.ColumnIterator;
+
+import java.util.Set;
 
 public interface GenericIteratingDao<KeyType, NameType, ValueType> {
 

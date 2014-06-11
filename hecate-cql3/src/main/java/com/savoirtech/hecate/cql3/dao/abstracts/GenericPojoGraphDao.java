@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
                         for (ReflectionUtils.DataDescriptor descriptor : entry.getValue()) {
 
                             delete = QueryBuilder.delete().all().from(keySpace, tableName).where(QueryBuilder.eq(ReflectionUtils.getIdName(
-                                entry.getKey()), key));
+                                    entry.getKey()), key));
                             ResultSet res = session.execute(delete);
 
                             logger.debug("Result " + res);
@@ -77,7 +77,8 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
                         }
                     }
                 }
-            } catch (HecateException e) {
+            }
+            catch (HecateException e) {
                 logger.error("Hecate problem " + e);
             }
         }
@@ -98,7 +99,7 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
                     logger.info("Working on the root class " + pojo);
                     for (ReflectionUtils.DataDescriptor descriptor : entry.getValue()) {
                         insert = QueryBuilder.insertInto(keySpace, tableName).values(ReflectionUtils.fieldNames(entry.getKey()),
-                            descriptor.getValues());
+                                descriptor.getValues());
 
                         logger.debug("Insert " + insert);
                         ResultSet res = session.execute(insert);
@@ -110,20 +111,21 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
                         String nestedtableName = descriptor.getTableName();
                         logger.debug("Insert builder " + descriptor + " into " + keySpace + "." + nestedtableName);
                         insert = QueryBuilder.insertInto(keySpace, nestedtableName).values(ReflectionUtils.fieldNames(entry.getKey()),
-                            descriptor.getValues());
+                                descriptor.getValues());
                         ResultSet res = session.execute(insert);
                         logger.debug("Result " + res);
                     }
                 }
             }
-        } catch (HecateException e) {
+        }
+        catch (HecateException e) {
             logger.error("Hecate problem " + e);
         }
     }
 
     public T findChildRow(K key, Class mapping, String keySpace, String tableName) {
         Select.Where select = QueryBuilder.select(ReflectionUtils.fieldNames(mapping)).from(keySpace, tableName).where(QueryBuilder.eq(
-            ReflectionUtils.getIdName(mapping), key));
+                ReflectionUtils.getIdName(mapping), key));
         logger.debug("Find " + select);
         ResultSet res = session.execute(select);
         logger.debug("Found : " + res);
@@ -134,11 +136,14 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
                     T clz = (T) mapping.newInstance();
                     ReflectionUtils.populateGraph(clz, row, this);
                     return clz;
-                } catch (InstantiationException e) {
+                }
+                catch (InstantiationException e) {
                     logger.error("Could not create class " + mapping + " " + e);
-                } catch (IllegalAccessException e) {
+                }
+                catch (IllegalAccessException e) {
                     logger.error("Could not access class " + mapping + " " + e);
-                } catch (HecateException e) {
+                }
+                catch (HecateException e) {
                     logger.error("Internal Hecate problem " + e);
                 }
             }
@@ -150,7 +155,7 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
     @Override
     public T find(K key) {
         Select.Where select = QueryBuilder.select(ReflectionUtils.fieldNames(mappingClazz)).from(keySpace, tableName).where(QueryBuilder.eq(
-            ReflectionUtils.getIdName(mappingClazz), key));
+                ReflectionUtils.getIdName(mappingClazz), key));
         logger.debug("Find " + select);
         ResultSet res = session.execute(select);
         if (res != null) {
@@ -161,11 +166,14 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
                     //Generate subSelects for the following - Object, Collection, Dictionary
                     ReflectionUtils.populateGraph(clz, row, this);
                     return clz;
-                } catch (InstantiationException e) {
+                }
+                catch (InstantiationException e) {
                     logger.error("Could not create class " + mappingClazz + " " + e);
-                } catch (IllegalAccessException e) {
+                }
+                catch (IllegalAccessException e) {
                     logger.error("Could not access class " + mappingClazz + " " + e);
-                } catch (HecateException e) {
+                }
+                catch (HecateException e) {
                     logger.error("Internal Hecate problem " + e);  //TODO
                 }
             }
@@ -178,7 +186,7 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
 
         Set<T> items = new HashSet<>();
         Select.Where select = QueryBuilder.select(ReflectionUtils.fieldNames(mappingClazz)).from(keySpace, tableName).where(QueryBuilder.in(
-            ReflectionUtils.getIdName(mappingClazz), keys.toArray()));
+                ReflectionUtils.getIdName(mappingClazz), keys.toArray()));
 
         logger.debug("Find " + select);
         ResultSet res = session.execute(select);
@@ -190,9 +198,11 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
                     T clz = (T) mappingClazz.newInstance();
                     ReflectionUtils.populate(clz, row);
                     items.add(clz);
-                } catch (InstantiationException e) {
+                }
+                catch (InstantiationException e) {
                     logger.error("Could not create class " + mappingClazz + " " + e);
-                } catch (IllegalAccessException e) {
+                }
+                catch (IllegalAccessException e) {
                     logger.error("Could not access class " + mappingClazz + " " + e);
                 }
             }

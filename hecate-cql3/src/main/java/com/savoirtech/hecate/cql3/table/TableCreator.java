@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,6 @@
 
 package com.savoirtech.hecate.cql3.table;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import com.savoirtech.hecate.cql3.FieldMapper;
 import com.savoirtech.hecate.cql3.ReflectionUtils;
 import com.savoirtech.hecate.cql3.annotations.Id;
@@ -31,6 +23,14 @@ import com.savoirtech.hecate.cql3.annotations.IdColumn;
 import com.savoirtech.hecate.cql3.annotations.PrimaryKey;
 import com.savoirtech.hecate.cql3.exception.HecateException;
 import org.apache.commons.lang3.StringUtils;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class TableCreator {
 
@@ -197,7 +197,7 @@ public class TableCreator {
 
             flds.append(FieldMapper.getCassandraType(field));
 
-            if (field.isAnnotationPresent(IdColumn.class)|| field.isAnnotationPresent(Id.class)) {
+            if (field.isAnnotationPresent(IdColumn.class) || field.isAnnotationPresent(Id.class)) {
                 if (idFound) {
                     throw new HecateException("Cannot have multiple PRIMARY KEY declarations");
                 } else {

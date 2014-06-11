@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,12 +41,13 @@ public class ColumnRecordIterator extends ColumnIterator {
             CompositeColumnIdentifier name = new CompositeColumnIdentifier();
             Integer pos = 0;
 
-            for (int i = 0;i < comp.size();i++) {
+            for (int i = 0; i < comp.size(); i++) {
                 name.addIdentifier(String.valueOf(i), comp.get(i, StringSerializer.get()));
             }
 
             return name;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
