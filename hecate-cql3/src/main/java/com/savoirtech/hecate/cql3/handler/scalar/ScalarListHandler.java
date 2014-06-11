@@ -37,6 +37,6 @@ public class ScalarListHandler extends AbstractListHandler {
 
     @Override
     public Object getWhereClauseValue(Object parameterValue) {
-        return null;
+        return elementConverter.toCassandraValue(parameterValue);
     }
 }

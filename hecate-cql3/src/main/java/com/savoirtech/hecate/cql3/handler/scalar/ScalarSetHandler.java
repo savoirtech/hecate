@@ -37,6 +37,6 @@ public class ScalarSetHandler extends AbstractSetHandler {
 
     @Override
     public Object getWhereClauseValue(Object parameterValue) {
-        return null;
+        return elementConverter.toCassandraValue(parameterValue);
     }
 }
