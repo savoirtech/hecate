@@ -26,7 +26,7 @@ public class DefaultValueConverterRegistry implements ValueConverterRegistry {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(DefaultValueConverterRegistry.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultValueConverterRegistry.class);
 
     private final Map<Class<?>, ValueConverterProvider> providers;
     private final Set<Class<?>> unsupportedTypes = new CopyOnWriteArraySet<>();
