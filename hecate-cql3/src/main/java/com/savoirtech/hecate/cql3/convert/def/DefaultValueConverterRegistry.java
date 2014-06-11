@@ -126,7 +126,7 @@ public class DefaultValueConverterRegistry implements ValueConverterRegistry {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static class ConstantProvider implements ValueConverterProvider {
+    private static final class ConstantProvider implements ValueConverterProvider {
         private final ValueConverter valueConverter;
 
         private ConstantProvider(ValueConverter valueConverter) {
