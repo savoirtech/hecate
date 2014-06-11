@@ -38,7 +38,7 @@ public class MapHandler extends AbstractColumnHandler {
         Map<Object, Object> columnValues = new HashMap<>();
         for (Map.Entry<Object, Object> entry : facetValues.entrySet()) {
             columnValues.put(keyConverter.toCassandraValue(entry.getKey()),
-                    delegate.convertToInsertValue(entry.getValue(), context));
+                    getDelegate().convertToInsertValue(entry.getValue(), context));
         }
         return columnValues;
     }

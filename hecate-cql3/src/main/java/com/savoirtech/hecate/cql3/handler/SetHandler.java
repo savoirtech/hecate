@@ -30,7 +30,7 @@ public class SetHandler extends AbstractColumnHandler {
         Set<Object> facetValues = (Set<Object>) facetValue;
         Set<Object> columnValues = new HashSet<>();
         for (Object value : facetValues) {
-            columnValues.add(delegate.convertToInsertValue(value, context));
+            columnValues.add(getDelegate().convertToInsertValue(value, context));
         }
         return columnValues;
     }

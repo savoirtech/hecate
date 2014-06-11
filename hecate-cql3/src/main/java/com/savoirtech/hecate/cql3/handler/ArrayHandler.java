@@ -38,7 +38,7 @@ public class ArrayHandler extends AbstractColumnHandler {
         final List<Object> columnValues = new ArrayList<>(length);
         for (int i = 0; i < length; ++i) {
             final Object value = Array.get(facetValue, i);
-            columnValues.add(delegate.convertToInsertValue(value, context));
+            columnValues.add(getDelegate().convertToInsertValue(value, context));
         }
         return columnValues;
     }

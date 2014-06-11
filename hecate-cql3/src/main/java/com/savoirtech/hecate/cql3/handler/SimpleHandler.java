@@ -21,7 +21,7 @@ public class SimpleHandler extends AbstractColumnHandler {
 
     @Override
     public Object getInsertValue(Object facetValue, SaveContext context) {
-        return facetValue == null ? null : delegate.convertToInsertValue(facetValue, context);
+        return facetValue == null ? null : getDelegate().convertToInsertValue(facetValue, context);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -13,7 +13,7 @@ public abstract class AbstractColumnHandler implements ColumnHandler {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected final ColumnHandlerDelegate delegate;
+    private final ColumnHandlerDelegate delegate;
     private final DataType columnType;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -46,25 +46,29 @@ public abstract class AbstractColumnHandler implements ColumnHandler {
     @SuppressWarnings("unchecked")
     public void getDeletionIdentifiers(Object columnValue, DeleteContext context) {
         if (columnValue != null) {
-            delegate.collectDeletionIdentifiers(toColumnValues(columnValue), context);
+            getDelegate().collectDeletionIdentifiers(toColumnValues(columnValue), context);
         }
     }
 
     @Override
     public Object getWhereClauseValue(Object parameterValue) {
-        return parameterValue == null ? null : delegate.getWhereClauseValue(parameterValue);
+        return parameterValue == null ? null : getDelegate().getWhereClauseValue(parameterValue);
     }
 
     @Override
     public void injectFacetValue(InjectionTarget<Object> target, Object columnValue, QueryContext context) {
         if (columnValue != null) {
-            delegate.injectFacetValues(new InjectionTargetWrapper(target, columnValue), toColumnValues(columnValue), context);
+            getDelegate().injectFacetValues(new InjectionTargetWrapper(target, columnValue), toColumnValues(columnValue), context);
         }
     }
 
     @Override
     public boolean isCascading() {
-        return delegate.isCascading();
+        return getDelegate().isCascading();
+    }
+
+    protected ColumnHandlerDelegate getDelegate() {
+        return delegate;
     }
 
 //----------------------------------------------------------------------------------------------------------------------

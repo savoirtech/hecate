@@ -30,7 +30,7 @@ public class ListHandler extends AbstractColumnHandler {
         List<Object> facetValues = (List<Object>) facetValue;
         List<Object> columnValues = new ArrayList<>();
         for (Object value : facetValues) {
-            columnValues.add(delegate.convertToInsertValue(value, context));
+            columnValues.add(getDelegate().convertToInsertValue(value, context));
         }
         return columnValues;
     }
