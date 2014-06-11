@@ -194,8 +194,9 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 
         @Override
         public void addPojos(Class<?> pojoType, String tableName, Iterable<Object> identifiers, InjectionTarget<List<Object>> target) {
-            if (identifiers.iterator().hasNext()) {
-                items.add(new HydratePojosTask(pojoType, tableName, identifiers, target, this));
+            Set<Object> pruned = cache.prune(pojoType, tableName, identifiers);
+            if (pruned.iterator().hasNext()) {
+                items.add(new HydratePojosTask(pojoType, tableName, pruned, target, this));
             }
         }
 
