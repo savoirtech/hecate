@@ -96,7 +96,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private class DeleteContextImpl implements DeleteContext {
+    private final class DeleteContextImpl implements DeleteContext {
         private final Queue<PersistenceTask> tasks;
         private final VisitedPojoCache cache = new VisitedPojoCache();
 
@@ -113,7 +113,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         }
     }
 
-    private class DeletePojosTask implements PersistenceTask {
+    private final class DeletePojosTask implements PersistenceTask {
         private final Class<?> pojoType;
         private final String tableName;
         private final Iterable<Object> identifiers;
@@ -137,7 +137,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         }
     }
 
-    private class HydratePojosTask implements PersistenceTask {
+    private final class HydratePojosTask implements PersistenceTask {
         private final Class<?> pojoType;
         private final String tableName;
         private final Iterable<Object> identifiers;
@@ -163,7 +163,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         void execute();
     }
 
-    private class PojoSaveTask implements PersistenceTask {
+    private final class PojoSaveTask implements PersistenceTask {
         private final SaveContext context;
         private final Class<?> pojoType;
         private final String tableName;
@@ -182,7 +182,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         }
     }
 
-    private class QueryContextImpl implements QueryContext {
+    private final class QueryContextImpl implements QueryContext {
         private final Queue<PersistenceTask> items;
         private final VisitedPojoCache cache = new VisitedPojoCache();
         private final Map<String, Object> pojoCache = new HashMap<>();
@@ -219,7 +219,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         }
     }
 
-    private class SaveContextImpl implements SaveContext {
+    private final class SaveContextImpl implements SaveContext {
         private final Queue<PersistenceTask> items;
         private final VisitedPojoCache cache = new VisitedPojoCache();
 
@@ -235,7 +235,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         }
     }
 
-    private class VisitedPojoCache {
+    private final class VisitedPojoCache {
         private final Set<String> visited = new HashSet<>();
 
         public boolean contains(Class<?> pojoType, String tableName, Object identifier) {
