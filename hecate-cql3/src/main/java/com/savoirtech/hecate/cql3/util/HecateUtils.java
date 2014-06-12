@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class HecateUtils {
+public final class HecateUtils {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -211,5 +211,13 @@ public class HecateUtils {
 
     private static Class<?> typeArgument(DataType dataType, int index) {
         return dataType.getTypeArguments().get(index).asJavaClass();
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
+    private HecateUtils() {
+
     }
 }

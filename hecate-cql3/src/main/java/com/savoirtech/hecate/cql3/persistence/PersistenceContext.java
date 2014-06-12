@@ -16,9 +16,6 @@
 
 package com.savoirtech.hecate.cql3.persistence;
 
-import com.savoirtech.hecate.cql3.persistence.def.DefaultPojoQuery;
-import com.savoirtech.hecate.cql3.persistence.def.DefaultPojoQueryBuilder;
-
 public interface PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
@@ -26,16 +23,12 @@ public interface PersistenceContext {
 
     PojoDelete delete(Class<?> pojoType, String tableName);
 
-
-    <P> DefaultPojoQueryBuilder<P> find(Class<P> pojoType);
+    <P> PojoQueryBuilder<P> find(Class<P> pojoType);
 
     <P> PojoQueryBuilder<P> find(Class<P> pojoType, String tableName);
 
-    @SuppressWarnings("unchecked")
-    <P> DefaultPojoQuery<P> findByKey(Class<P> pojoType, String tableName);
+    <P> PojoQuery<P> findByKey(Class<P> pojoType, String tableName);
 
-
-    @SuppressWarnings("unchecked")
     <P> PojoQuery<P> findByKeys(Class<P> pojoType, String tableName);
 
     PojoSave save(Class<?> pojoType, String tableName);
