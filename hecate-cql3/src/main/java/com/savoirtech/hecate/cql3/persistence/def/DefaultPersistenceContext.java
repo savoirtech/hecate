@@ -162,7 +162,7 @@ public class DefaultPersistenceContext implements PersistenceContext {
         }
     }
 
-    private class StatementCache<T> {
+    private final class StatementCache<T> {
         private final Map<String, T> cache;
         private final StatementFactory<T> factory;
 

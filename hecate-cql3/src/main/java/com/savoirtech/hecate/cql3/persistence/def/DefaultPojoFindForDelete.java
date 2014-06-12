@@ -45,8 +45,7 @@ public class DefaultPojoFindForDelete extends DefaultPersistenceStatement implem
                 select.column(mapping.getFacetMetadata().getColumnName());
             }
         }
-        final Select.Where where = select.from(pojoMapping.getTableName()).where(in(pojoMapping.getIdentifierMapping().getFacetMetadata().getColumnName(), bindMarker()));
-        return where;
+        return select.from(pojoMapping.getTableName()).where(in(pojoMapping.getIdentifierMapping().getFacetMetadata().getColumnName(), bindMarker()));
     }
 
 //----------------------------------------------------------------------------------------------------------------------

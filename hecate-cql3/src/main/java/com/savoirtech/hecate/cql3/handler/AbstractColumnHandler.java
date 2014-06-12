@@ -121,7 +121,7 @@ public abstract class AbstractColumnHandler<C, F> implements ColumnHandler<C, F>
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private class ValueConverterCallback implements Callback<ValueConverter> {
+    private final class ValueConverterCallback implements Callback<ValueConverter> {
         private final Callback<F> originalTarget;
         private final C originalValue;
 
