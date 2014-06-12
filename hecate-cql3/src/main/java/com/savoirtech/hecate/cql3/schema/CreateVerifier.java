@@ -54,7 +54,7 @@ public class CreateVerifier implements SchemaVerifier {
         for (FacetMapping facetMapping : mapping.getFacetMappings()) {
             if (facetMapping.getFacetMetadata().isIndexed()) {
 
-                final String cql = String.format("CREATE INDEX %s ON %s.%s (%s)",
+                final String cql = String.format("CREATE INDEX IF NOT EXISTS %s ON %s.%s (%s)",
                         facetMapping.getFacetMetadata().getIndexName(),
                         session.getLoggedKeyspace(),
                         mapping.getTableName(),
