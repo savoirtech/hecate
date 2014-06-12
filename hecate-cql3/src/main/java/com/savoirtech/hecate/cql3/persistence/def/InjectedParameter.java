@@ -41,7 +41,6 @@ public class InjectedParameter implements Comparable<InjectedParameter> {
 // Comparable Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public int compareTo(InjectedParameter other) {
         return new CompareToBuilder().append(index, other.index).build();
@@ -50,6 +49,34 @@ public class InjectedParameter implements Comparable<InjectedParameter> {
 //----------------------------------------------------------------------------------------------------------------------
 // Canonical Methods
 //----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        InjectedParameter that = (InjectedParameter) o;
+
+        if (index != that.index) {
+            return false;
+        }
+        if (parameter != null ? !parameter.equals(that.parameter) : that.parameter != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = parameter != null ? parameter.hashCode() : 0;
+        result = 31 * result + index;
+        return result;
+    }
 
     public String toString() {
         return parameter + " @ " + index;
