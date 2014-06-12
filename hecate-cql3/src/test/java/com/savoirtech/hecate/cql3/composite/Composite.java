@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,11 @@ package com.savoirtech.hecate.cql3.composite;
 import com.savoirtech.hecate.cql3.annotations.Id;
 
 public class Composite {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+    String data;
 
     @Id
     private String id;
@@ -26,15 +31,9 @@ public class Composite {
     private String b;
     private String c;
 
-    String data;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     public String getA() {
         return a;
@@ -66,5 +65,13 @@ public class Composite {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

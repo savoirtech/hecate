@@ -32,21 +32,15 @@ public class GenericTypeTest {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
-    public void testGetRawTypeWithNonParameterizedType() throws Exception {
-        GenericType type = new GenericType(Sub.class, Super.class.getField("regular").getGenericType());
-        assertEquals(String.class, type.getRawType());
+    public void testGetArrayComponentType() throws Exception {
+        GenericType type = new GenericType(Sub.class, Super.class.getField("ints").getGenericType());
+        assertEquals(int.class, type.getArrayElementType().getRawType());
     }
 
     @Test
-    public void testGetRawTypeWithParameterizedType() throws Exception {
-        GenericType type = new GenericType(Sub.class, Super.class.getField("set").getGenericType());
-        assertEquals(Set.class, type.getRawType());
-    }
-
-    @Test
-    public void testGetSetElementType() throws Exception {
-        GenericType type = new GenericType(Sub.class, Super.class.getField("set").getGenericType());
-        assertEquals(String.class, type.getSetElementType().getRawType());
+    public void testGetGenericArrayElementType() throws Exception {
+        GenericType type = new GenericType(Sub.class, Super.class.getField("array").getGenericType());
+        assertEquals(String.class, type.getArrayElementType().getRawType());
     }
 
     @Test
@@ -68,10 +62,34 @@ public class GenericTypeTest {
     }
 
     @Test
+    public void testGetMultidimensionalArrayComponentType() throws Exception {
+        GenericType type = new GenericType(Sub.class, Super.class.getField("ints2d").getGenericType());
+        assertEquals(int[].class, type.getArrayElementType().getRawType());
+    }
+
+    @Test
     public void testGetNestedSetElementType() throws Exception {
         GenericType type = new GenericType(Sub.class, Super.class.getField("setOfSets").getGenericType());
         assertEquals(Set.class, type.getSetElementType().getRawType());
         assertEquals(String.class, type.getSetElementType().getSetElementType().getRawType());
+    }
+
+    @Test
+    public void testGetRawTypeWithNonParameterizedType() throws Exception {
+        GenericType type = new GenericType(Sub.class, Super.class.getField("regular").getGenericType());
+        assertEquals(String.class, type.getRawType());
+    }
+
+    @Test
+    public void testGetRawTypeWithParameterizedType() throws Exception {
+        GenericType type = new GenericType(Sub.class, Super.class.getField("set").getGenericType());
+        assertEquals(Set.class, type.getRawType());
+    }
+
+    @Test
+    public void testGetSetElementType() throws Exception {
+        GenericType type = new GenericType(Sub.class, Super.class.getField("set").getGenericType());
+        assertEquals(String.class, type.getSetElementType().getRawType());
     }
 
     @Test(expected = HecateException.class)
@@ -79,26 +97,6 @@ public class GenericTypeTest {
         GenericType type = new GenericType(Sub.class, Super.class.getField("set").getGenericType());
         assertEquals(String.class, type.getListElementType().getRawType());
     }
-
-    @Test
-    public void testGetArrayComponentType() throws Exception {
-        GenericType type = new GenericType(Sub.class, Super.class.getField("ints").getGenericType());
-        assertEquals(int.class, type.getArrayElementType().getRawType());
-    }
-
-    @Test
-    public void testGetMultidimensionalArrayComponentType() throws Exception {
-        GenericType type = new GenericType(Sub.class, Super.class.getField("ints2d").getGenericType());
-        assertEquals(int[].class, type.getArrayElementType().getRawType());
-    }
-
-    @Test
-    public void testGetGenericArrayElementType() throws Exception {
-        GenericType type = new GenericType(Sub.class, Super.class.getField("array").getGenericType());
-        assertEquals(String.class, type.getArrayElementType().getRawType());
-
-    }
-
 
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
@@ -117,6 +115,4 @@ public class GenericTypeTest {
         public Map<T, T> map;
         public Set<Set<T>> setOfSets;
     }
-
-
 }

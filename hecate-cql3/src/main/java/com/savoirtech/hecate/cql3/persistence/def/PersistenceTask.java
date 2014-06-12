@@ -17,5 +17,9 @@
 package com.savoirtech.hecate.cql3.persistence.def;
 
 interface PersistenceTask {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
     void execute(DefaultPersistenceContext context);
 }

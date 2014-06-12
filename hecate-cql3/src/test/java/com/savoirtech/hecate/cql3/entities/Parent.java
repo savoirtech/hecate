@@ -27,6 +27,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class Parent {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     @IdColumn
     long id;
@@ -46,13 +49,9 @@ public class Parent {
     @TableName("longchildmap")
     Map<Long, Child> longChildMap = new HashMap<>();
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     public Child getChild() {
         return child;
@@ -70,6 +69,14 @@ public class Parent {
         this.childList = childList;
     }
 
+    public Map<String, Child> getChildMap() {
+        return childMap;
+    }
+
+    public void setChildMap(Map<String, Child> childMap) {
+        this.childMap = childMap;
+    }
+
     public Set<Child> getChildSet() {
         return childSet;
     }
@@ -78,12 +85,12 @@ public class Parent {
         this.childSet = childSet;
     }
 
-    public Map<String, Child> getChildMap() {
-        return childMap;
+    public long getId() {
+        return id;
     }
 
-    public void setChildMap(Map<String, Child> childMap) {
-        this.childMap = childMap;
+    public void setId(long id) {
+        this.id = id;
     }
 
     public Map<Long, Child> getLongChildMap() {
@@ -93,6 +100,10 @@ public class Parent {
     public void setLongChildMap(Map<Long, Child> longChildMap) {
         this.longChildMap = longChildMap;
     }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Canonical Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Override
     public String toString() {

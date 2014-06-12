@@ -28,6 +28,9 @@ import java.util.Set;
 import java.util.UUID;
 
 public class CollectionTable {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     @IdColumn
     long id;
@@ -62,29 +65,9 @@ public class CollectionTable {
 
     UUID uuid = UUID.randomUUID();
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getMore() {
-        return more;
-    }
-
-    public void setMore(String more) {
-        this.more = more;
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     public Date getDate() {
         return date;
@@ -94,52 +77,12 @@ public class CollectionTable {
         this.date = date;
     }
 
-    public boolean isaBoolean() {
-        return aBoolean;
+    public long getId() {
+        return id;
     }
 
-    public void setaBoolean(boolean aBoolean) {
-        this.aBoolean = aBoolean;
-    }
-
-    public double getaDouble() {
-        return aDouble;
-    }
-
-    public void setaDouble(double aDouble) {
-        this.aDouble = aDouble;
-    }
-
-    public float getaFloat() {
-        return aFloat;
-    }
-
-    public void setaFloat(float aFloat) {
-        this.aFloat = aFloat;
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
-
-    public List<String> getStringList() {
-        return stringList;
-    }
-
-    public void setStringList(List<String> stringList) {
-        this.stringList = stringList;
-    }
-
-    public List<String> getNullList() {
-        return nullList;
-    }
-
-    public void setNullList(List<String> nullList) {
-        this.nullList = nullList;
+    public void setId(long id) {
+        this.id = id;
     }
 
     public List<Integer> getIntegerList() {
@@ -150,12 +93,12 @@ public class CollectionTable {
         this.integerList = integerList;
     }
 
-    public List getObjectList() {
-        return objectList;
+    public Set<Integer> getIntegers() {
+        return integers;
     }
 
-    public void setObjectList(List objectList) {
-        this.objectList = objectList;
+    public void setIntegers(Set<Integer> integers) {
+        this.integers = integers;
     }
 
     public Map<String, String> getMap() {
@@ -166,6 +109,46 @@ public class CollectionTable {
         this.map = map;
     }
 
+    public String getMore() {
+        return more;
+    }
+
+    public void setMore(String more) {
+        this.more = more;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<String> getNullList() {
+        return nullList;
+    }
+
+    public void setNullList(List<String> nullList) {
+        this.nullList = nullList;
+    }
+
+    public List getObjectList() {
+        return objectList;
+    }
+
+    public void setObjectList(List objectList) {
+        this.objectList = objectList;
+    }
+
+    public List<String> getStringList() {
+        return stringList;
+    }
+
+    public void setStringList(List<String> stringList) {
+        this.stringList = stringList;
+    }
+
     public Set<String> getStringSet() {
         return stringSet;
     }
@@ -174,11 +157,39 @@ public class CollectionTable {
         this.stringSet = stringSet;
     }
 
-    public Set<Integer> getIntegers() {
-        return integers;
+    public UUID getUuid() {
+        return uuid;
     }
 
-    public void setIntegers(Set<Integer> integers) {
-        this.integers = integers;
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public double getaDouble() {
+        return aDouble;
+    }
+
+    public float getaFloat() {
+        return aFloat;
+    }
+
+    public boolean isaBoolean() {
+        return aBoolean;
+    }
+
+    public void setaBoolean(boolean aBoolean) {
+        this.aBoolean = aBoolean;
+    }
+
+    public void setaDouble(double aDouble) {
+        this.aDouble = aDouble;
+    }
+
+    public void setaFloat(float aFloat) {
+        this.aFloat = aFloat;
     }
 }

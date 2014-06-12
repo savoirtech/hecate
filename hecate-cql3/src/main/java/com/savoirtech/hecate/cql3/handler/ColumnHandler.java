@@ -27,17 +27,17 @@ public interface ColumnHandler<C, F> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    DataType getColumnType();
+    Object convertElement(Object parameterValue);
 
     F convertIdentifier(C columnValue);
 
-    void getDeletionIdentifiers(C columnValue, Evaporator context);
+    DataType getColumnType();
 
-    void injectFacetValue(Callback<F> target, C columnValue, Hydrator hydrator);
+    void getDeletionIdentifiers(C columnValue, Evaporator context);
 
     C getInsertValue(F facetValue, Dehydrator dehydrator);
 
-    Object convertElement(Object parameterValue);
+    void injectFacetValue(Callback<F> target, C columnValue, Hydrator hydrator);
 
     boolean isCascading();
 }

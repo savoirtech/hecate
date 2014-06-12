@@ -23,12 +23,9 @@ import org.junit.Test;
 import static org.junit.Assert.assertSame;
 
 public class DefaultPojoMetadataFactoryTest {
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testWithNoIdentifier() throws Exception {
-        DefaultPojoMetadataFactory factory = new DefaultPojoMetadataFactory();
-        factory.getPojoMetadata(NoIdentifier.class);
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testCaching() {
@@ -37,8 +34,17 @@ public class DefaultPojoMetadataFactoryTest {
         assertSame(metadata, factory.getPojoMetadata(SimplePojo.class));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testWithNoIdentifier() throws Exception {
+        DefaultPojoMetadataFactory factory = new DefaultPojoMetadataFactory();
+        factory.getPojoMetadata(NoIdentifier.class);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
     public static class NoIdentifier {
         private String name;
     }
-
 }

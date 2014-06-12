@@ -25,21 +25,9 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 
 public class TableCreatorTest {
-
-    @Test
-    public void testCreateTable() throws HecateException {
-
-        String create = TableCreator.createTable("keySpace", "tableName", SimpleTable.class);
-        System.out.println(create);
-        assertTrue(create.equals(
-                "CREATE TABLE IF NOT EXISTS keySpace.tableName ( id BIGINT PRIMARY KEY,name TEXT,more TEXT,date TIMESTAMP,aBoolean BOOLEAN,"
-                        + "aDouble DOUBLE,aFloat FLOAT,uuid UUID );"
-        ));
-
-        create = TableCreator.createTable("keySpace", "tableName", CompoundKeyTable.class);
-        System.out.println(create);
-        assertTrue(create.equals("CREATE TABLE IF NOT EXISTS keySpace.tableName ( id BIGINT,name TEXT,more TEXT, PRIMARY KEY (id,name) );"));
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Test
 
@@ -52,5 +40,19 @@ public class TableCreatorTest {
             h.printStackTrace();
         }
         assertTrue(create == null);
+    }
+
+    @Test
+    public void testCreateTable() throws HecateException {
+        String create = TableCreator.createTable("keySpace", "tableName", SimpleTable.class);
+        System.out.println(create);
+        assertTrue(create.equals(
+                "CREATE TABLE IF NOT EXISTS keySpace.tableName ( id BIGINT PRIMARY KEY,name TEXT,more TEXT,date TIMESTAMP,aBoolean BOOLEAN,"
+                        + "aDouble DOUBLE,aFloat FLOAT,uuid UUID );"
+        ));
+
+        create = TableCreator.createTable("keySpace", "tableName", CompoundKeyTable.class);
+        System.out.println(create);
+        assertTrue(create.equals("CREATE TABLE IF NOT EXISTS keySpace.tableName ( id BIGINT,name TEXT,more TEXT, PRIMARY KEY (id,name) );"));
     }
 }

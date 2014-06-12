@@ -59,7 +59,6 @@ public class DefaultEvaporator extends PersistenceTaskExecutor implements Evapor
 
         @Override
         public void execute(DefaultPersistenceContext context) {
-
             context.delete(pojoType, tableName).execute(DefaultEvaporator.this, identifiers);
         }
     }

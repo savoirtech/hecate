@@ -64,21 +64,6 @@ public class DefaultHydrator extends PersistenceTaskExecutor implements Hydrator
         }
     }
 
-    private static final class SetFacetCallback implements Callback<Object> {
-        private final Object pojo;
-        private final Facet facet;
-
-        private SetFacetCallback(Object pojo, Facet facet) {
-            this.pojo = pojo;
-            this.facet = facet;
-        }
-
-        @Override
-        public void execute(Object value) {
-            facet.set(pojo, value);
-        }
-    }
-
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
@@ -101,6 +86,21 @@ public class DefaultHydrator extends PersistenceTaskExecutor implements Hydrator
         public void execute(DefaultPersistenceContext persistenceContext) {
             final List<Object> pojos = (List<Object>) persistenceContext.findByKeys(pojoType, tableName).execute(DefaultHydrator.this, identifiers).list();
             target.execute(pojos);
+        }
+    }
+
+    private static final class SetFacetCallback implements Callback<Object> {
+        private final Object pojo;
+        private final Facet facet;
+
+        private SetFacetCallback(Object pojo, Facet facet) {
+            this.pojo = pojo;
+            this.facet = facet;
+        }
+
+        @Override
+        public void execute(Object value) {
+            facet.set(pojo, value);
         }
     }
 }

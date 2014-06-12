@@ -57,11 +57,11 @@ public class ReflectionUtils {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ReflectionUtils.class);
     public static final TypeVariable<Class<List>> LIST_ELEMENT_TYPE_VAR = List.class.getTypeParameters()[0];
     public static final TypeVariable<Class<Set>> SET_ELEMENT_TYPE_VAR = Set.class.getTypeParameters()[0];
     public static final TypeVariable<Class<Map>> MAP_KEY_TYPE_VAR = Map.class.getTypeParameters()[0];
     public static final TypeVariable<Class<Map>> MAP_VALUE_TYPE_VAR = Map.class.getTypeParameters()[1];
+    private final static Logger LOGGER = LoggerFactory.getLogger(ReflectionUtils.class);
     private static final String IS_PREFIX = "is";
     private static final String GET_PREFIX = "get";
     private static final String SET_PREFIX = "set";
@@ -69,18 +69,6 @@ public class ReflectionUtils {
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
-
-    @SuppressWarnings("unchecked")
-    public static List<Class<?>> getSupertypes(Class<?> type) {
-        List<Class<?>> supertypes = new LinkedList<>();
-        supertypes.add(type.getSuperclass());
-        Collections.addAll(supertypes, type.getInterfaces());
-        return supertypes;
-    }
-
-    public static boolean isInstantiable(Class<?> type) {
-        return type != null && ConstructorUtils.getAccessibleConstructor(type) != null;
-    }
 
     private static void collectFields(Class<?> type, List<Field> fields) {
         final Field[] declaredFields = type.getDeclaredFields();
@@ -121,6 +109,28 @@ public class ReflectionUtils {
             }
         }
         return vals.toArray(new Object[vals.size()]);
+    }
+
+    private static Method findDeclaredMethod(Class<?> c, String name, Class<?>... parameterTypes) {
+        try {
+            return c.getDeclaredMethod(name, parameterTypes);
+        }
+        catch (NoSuchMethodException e) {
+            if (c.getSuperclass() != null) {
+                return findDeclaredMethod(c.getSuperclass(), name, parameterTypes);
+            }
+            return null;
+        }
+    }
+
+    private static <T> Class<?> findTypeVariable(Type type, Class<T> declaringClass, TypeVariable<Class<T>> target) {
+        final Map<TypeVariable<?>, Type> arguments = TypeUtils.getTypeArguments(type, declaringClass);
+        for (Map.Entry<TypeVariable<?>, Type> entry : arguments.entrySet()) {
+            if (target.equals(entry.getKey())) {
+                return TypeUtils.getRawType(entry.getValue(), type);
+            }
+        }
+        return null;
     }
 
     private static String getClassName(Object target) {
@@ -179,6 +189,45 @@ public class ReflectionUtils {
         return null;
     }
 
+    public static Method getReadMethod(Class<?> pojoType, PropertyDescriptor descriptor) {
+        Method method = descriptor.getReadMethod();
+        if (method == null) {
+            Method candidate = findDeclaredMethod(pojoType, getReadMethodName(descriptor));
+            if (candidate != null && descriptor.getPropertyType().equals(candidate.getReturnType())) {
+                method = candidate;
+            }
+        }
+        return method;
+    }
+
+    private static String getReadMethodName(PropertyDescriptor descriptor) {
+        final String prefix = Boolean.TYPE.equals(descriptor.getPropertyType()) ? IS_PREFIX : GET_PREFIX;
+        return prefix + propertySuffix(descriptor);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<Class<?>> getSupertypes(Class<?> type) {
+        List<Class<?>> supertypes = new LinkedList<>();
+        supertypes.add(type.getSuperclass());
+        Collections.addAll(supertypes, type.getInterfaces());
+        return supertypes;
+    }
+
+    public static Method getWriteMethod(Class<?> pojoType, PropertyDescriptor descriptor) {
+        Method method = descriptor.getWriteMethod();
+        if (method == null) {
+            Method candidate = findDeclaredMethod(pojoType, getWriteMethodName(descriptor), descriptor.getPropertyType());
+            if (candidate != null && Void.TYPE.equals(candidate.getReturnType())) {
+                method = candidate;
+            }
+        }
+        return method;
+    }
+
+    private static String getWriteMethodName(PropertyDescriptor descriptor) {
+        return SET_PREFIX + propertySuffix(descriptor);
+    }
+
     public static <P> P instantiate(Class<P> type) {
         try {
             return type.newInstance();
@@ -189,17 +238,6 @@ public class ReflectionUtils {
         catch (IllegalAccessException e) {
             throw new HecateException(String.format("Default constructor not accessible for class %s.", type.getName()), e);
         }
-    }
-
-    public static boolean isPersistable(Field field) {
-        final int mods = field.getModifiers();
-        return !(Modifier.isFinal(mods) ||
-                Modifier.isTransient(mods) ||
-                Modifier.isStatic(mods));
-    }
-
-    public static Class<?> mapKeyType(Type type) {
-        return findTypeVariable(type, Map.class, MAP_KEY_TYPE_VAR);
     }
 
     public static Object invoke(Object target, Method method, Object... params) {
@@ -215,22 +253,27 @@ public class ReflectionUtils {
         }
     }
 
-    public static Class<?> mapValueType(Type type) {
-        return findTypeVariable(type, Map.class, MAP_VALUE_TYPE_VAR);
+    public static boolean isInstantiable(Class<?> type) {
+        return type != null && ConstructorUtils.getAccessibleConstructor(type) != null;
     }
 
-    private static <T> Class<?> findTypeVariable(Type type, Class<T> declaringClass, TypeVariable<Class<T>> target) {
-        final Map<TypeVariable<?>, Type> arguments = TypeUtils.getTypeArguments(type, declaringClass);
-        for (Map.Entry<TypeVariable<?>, Type> entry : arguments.entrySet()) {
-            if (target.equals(entry.getKey())) {
-                return TypeUtils.getRawType(entry.getValue(), type);
-            }
-        }
-        return null;
+    public static boolean isPersistable(Field field) {
+        final int mods = field.getModifiers();
+        return !(Modifier.isFinal(mods) ||
+                Modifier.isTransient(mods) ||
+                Modifier.isStatic(mods));
     }
 
     public static Class<?> listElementType(Type type) {
         return findTypeVariable(type, List.class, LIST_ELEMENT_TYPE_VAR);
+    }
+
+    public static Class<?> mapKeyType(Type type) {
+        return findTypeVariable(type, Map.class, MAP_KEY_TYPE_VAR);
+    }
+
+    public static Class<?> mapValueType(Type type) {
+        return findTypeVariable(type, Map.class, MAP_VALUE_TYPE_VAR);
     }
 
     @SuppressWarnings("unchecked")
@@ -396,9 +439,12 @@ public class ReflectionUtils {
         }
     }
 
+    private static String propertySuffix(PropertyDescriptor descriptor) {
+        return StringUtils.capitalize(descriptor.getName());
+    }
+
     public static Class<?> setElementType(Type type) {
         return findTypeVariable(type, Set.class, SET_ELEMENT_TYPE_VAR);
-
     }
 
     public static void setFieldValue(Field field, Object target, Object fieldValue) {
@@ -561,53 +607,6 @@ public class ReflectionUtils {
             }
         }
         return values;
-    }
-
-    private static String propertySuffix(PropertyDescriptor descriptor) {
-        return StringUtils.capitalize(descriptor.getName());
-    }
-
-    private static String getReadMethodName(PropertyDescriptor descriptor) {
-        final String prefix = Boolean.TYPE.equals(descriptor.getPropertyType()) ? IS_PREFIX : GET_PREFIX;
-        return prefix + propertySuffix(descriptor);
-    }
-
-    private static String getWriteMethodName(PropertyDescriptor descriptor) {
-        return SET_PREFIX + propertySuffix(descriptor);
-    }
-
-    private static Method findDeclaredMethod(Class<?> c, String name, Class<?>... parameterTypes) {
-        try {
-            return c.getDeclaredMethod(name, parameterTypes);
-        }
-        catch (NoSuchMethodException e) {
-            if (c.getSuperclass() != null) {
-                return findDeclaredMethod(c.getSuperclass(), name, parameterTypes);
-            }
-            return null;
-        }
-    }
-
-    public static Method getReadMethod(Class<?> pojoType, PropertyDescriptor descriptor) {
-        Method method = descriptor.getReadMethod();
-        if (method == null) {
-            Method candidate = findDeclaredMethod(pojoType, getReadMethodName(descriptor));
-            if (candidate != null && descriptor.getPropertyType().equals(candidate.getReturnType())) {
-                method = candidate;
-            }
-        }
-        return method;
-    }
-
-    public static Method getWriteMethod(Class<?> pojoType, PropertyDescriptor descriptor) {
-        Method method = descriptor.getWriteMethod();
-        if (method == null) {
-            Method candidate = findDeclaredMethod(pojoType, getWriteMethodName(descriptor), descriptor.getPropertyType());
-            if (candidate != null && Void.TYPE.equals(candidate.getReturnType())) {
-                method = candidate;
-            }
-        }
-        return method;
     }
 
 //----------------------------------------------------------------------------------------------------------------------

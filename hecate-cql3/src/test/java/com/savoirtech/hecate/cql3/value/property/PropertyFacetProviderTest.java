@@ -38,6 +38,26 @@ public class PropertyFacetProviderTest {
         assertNotNull(facet.getAnnotation(Id.class));
     }
 
+    private Facet getPropertyValue(Class<?> c, String propertyName) {
+        PropertyFacetProvider provider = new PropertyFacetProvider();
+        final List<Facet> facets = provider.getFacets(c);
+        for (Facet facet : facets) {
+            if (propertyName.equals(facet.getName())) {
+                return facet;
+            }
+        }
+        return null;
+    }
+
+    @Test
+    public void testGetGenericType() {
+        Facet facet = getPropertyValue(PropertiesHolder.class, "mapProperty");
+        assertNotNull(facet);
+        final GenericType type = facet.getType();
+        assertEquals(String.class, type.getTypeArgument(ReflectionUtils.MAP_KEY_TYPE_VAR, Map.class).getRawType());
+        assertEquals(String.class, type.getTypeArgument(ReflectionUtils.MAP_VALUE_TYPE_VAR, Map.class).getRawType());
+    }
+
     @Test
     public void testGetType() {
         Facet facet = getPropertyValue(PropertiesHolder.class, "normal");
@@ -67,26 +87,6 @@ public class PropertyFacetProviderTest {
         PropertiesHolder holder = new PropertiesHolder();
         facet.set(holder, "foo");
         assertEquals("foo", holder.getPrivateSetter());
-    }
-
-    @Test
-    public void testGetGenericType() {
-        Facet facet = getPropertyValue(PropertiesHolder.class, "mapProperty");
-        assertNotNull(facet);
-        final GenericType type = facet.getType();
-        assertEquals(String.class, type.getTypeArgument(ReflectionUtils.MAP_KEY_TYPE_VAR, Map.class).getRawType());
-        assertEquals(String.class, type.getTypeArgument(ReflectionUtils.MAP_VALUE_TYPE_VAR, Map.class).getRawType());
-    }
-
-    private Facet getPropertyValue(Class<?> c, String propertyName) {
-        PropertyFacetProvider provider = new PropertyFacetProvider();
-        final List<Facet> facets = provider.getFacets(c);
-        for (Facet facet : facets) {
-            if (propertyName.equals(facet.getName())) {
-                return facet;
-            }
-        }
-        return null;
     }
 
 //----------------------------------------------------------------------------------------------------------------------

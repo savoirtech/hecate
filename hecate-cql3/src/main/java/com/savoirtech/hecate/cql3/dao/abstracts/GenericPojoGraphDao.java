@@ -33,13 +33,20 @@ import java.util.Map;
 import java.util.Set;
 
 public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
     public GenericPojoGraphDao(Session session, String keySpace, String tableName, Class keyClazz, Class mappingClazz) {
         super(session, keySpace, tableName, keyClazz, mappingClazz);
     }
 
+//----------------------------------------------------------------------------------------------------------------------
+// GenericTableDao Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
     @Override
     public void delete(K key) {
-
         Object rootClass = find(key);
 
         if (rootClass != null) {
@@ -53,7 +60,6 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
                     if (entry.getKey().getName().equals(rootClass.getClass().getName())) {
                         logger.info("Working on the root class " + rootClass);
                         for (ReflectionUtils.DataDescriptor descriptor : entry.getValue()) {
-
                             delete = QueryBuilder.delete().all().from(keySpace, tableName).where(QueryBuilder.eq(ReflectionUtils.getIdName(
                                     entry.getKey()), key));
                             ResultSet res = session.execute(delete);
@@ -67,7 +73,6 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
                             logger.debug("Delete builder " + descriptor + " from " + keySpace + "." + nestedtableName);
                             ResultSet res;
                             for (Object val : descriptor.getValues()) {
-
                                 delete = QueryBuilder.delete().all().from(keySpace, nestedtableName).where(QueryBuilder.eq(id, val));
 
                                 logger.debug("Delete " + delete);
@@ -82,74 +87,6 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
                 logger.error("Hecate problem " + e);
             }
         }
-    }
-
-    @Override
-    public void save(T pojo) {
-        //Find all Attached children and their respective classes.
-
-        Map<Class, Set<ReflectionUtils.DataDescriptor>> valueMap = new HashMap<>();
-
-        try {
-            ReflectionUtils.valuesForClasses(valueMap, null, pojo);
-
-            for (Map.Entry<Class, Set<ReflectionUtils.DataDescriptor>> entry : valueMap.entrySet()) {
-                Insert insert = null;
-                if (entry.getKey().getName().equals(pojo.getClass().getName())) {
-                    logger.info("Working on the root class " + pojo);
-                    for (ReflectionUtils.DataDescriptor descriptor : entry.getValue()) {
-                        insert = QueryBuilder.insertInto(keySpace, tableName).values(ReflectionUtils.fieldNames(entry.getKey()),
-                                descriptor.getValues());
-
-                        logger.debug("Insert " + insert);
-                        ResultSet res = session.execute(insert);
-                        logger.debug("Result " + res);
-                    }
-                } else {
-                    for (ReflectionUtils.DataDescriptor descriptor : entry.getValue()) {
-
-                        String nestedtableName = descriptor.getTableName();
-                        logger.debug("Insert builder " + descriptor + " into " + keySpace + "." + nestedtableName);
-                        insert = QueryBuilder.insertInto(keySpace, nestedtableName).values(ReflectionUtils.fieldNames(entry.getKey()),
-                                descriptor.getValues());
-                        ResultSet res = session.execute(insert);
-                        logger.debug("Result " + res);
-                    }
-                }
-            }
-        }
-        catch (HecateException e) {
-            logger.error("Hecate problem " + e);
-        }
-    }
-
-    public T findChildRow(K key, Class mapping, String keySpace, String tableName) {
-        Select.Where select = QueryBuilder.select(ReflectionUtils.fieldNames(mapping)).from(keySpace, tableName).where(QueryBuilder.eq(
-                ReflectionUtils.getIdName(mapping), key));
-        logger.debug("Find " + select);
-        ResultSet res = session.execute(select);
-        logger.debug("Found : " + res);
-        if (res != null) {
-            while (res.iterator().hasNext()) {
-                Row row = res.iterator().next();
-                try {
-                    T clz = (T) mapping.newInstance();
-                    ReflectionUtils.populateGraph(clz, row, this);
-                    return clz;
-                }
-                catch (InstantiationException e) {
-                    logger.error("Could not create class " + mapping + " " + e);
-                }
-                catch (IllegalAccessException e) {
-                    logger.error("Could not access class " + mapping + " " + e);
-                }
-                catch (HecateException e) {
-                    logger.error("Internal Hecate problem " + e);
-                }
-            }
-        }
-
-        return null;
     }
 
     @Override
@@ -183,7 +120,6 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
 
     @Override
     public Set<T> findItems(List<K> keys) {
-
         Set<T> items = new HashSet<>();
         Select.Where select = QueryBuilder.select(ReflectionUtils.fieldNames(mappingClazz)).from(keySpace, tableName).where(QueryBuilder.in(
                 ReflectionUtils.getIdName(mappingClazz), keys.toArray()));
@@ -191,7 +127,6 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
         logger.debug("Find " + select);
         ResultSet res = session.execute(select);
         if (res != null) {
-
             while (res.iterator().hasNext()) {
                 Row row = res.iterator().next();
                 try {
@@ -209,5 +144,76 @@ public class GenericPojoGraphDao<K, T> extends GenericCqlDao<K, T> {
         }
 
         return items;
+    }
+
+    @Override
+    public void save(T pojo) {
+        //Find all Attached children and their respective classes.
+
+        Map<Class, Set<ReflectionUtils.DataDescriptor>> valueMap = new HashMap<>();
+
+        try {
+            ReflectionUtils.valuesForClasses(valueMap, null, pojo);
+
+            for (Map.Entry<Class, Set<ReflectionUtils.DataDescriptor>> entry : valueMap.entrySet()) {
+                Insert insert = null;
+                if (entry.getKey().getName().equals(pojo.getClass().getName())) {
+                    logger.info("Working on the root class " + pojo);
+                    for (ReflectionUtils.DataDescriptor descriptor : entry.getValue()) {
+                        insert = QueryBuilder.insertInto(keySpace, tableName).values(ReflectionUtils.fieldNames(entry.getKey()),
+                                descriptor.getValues());
+
+                        logger.debug("Insert " + insert);
+                        ResultSet res = session.execute(insert);
+                        logger.debug("Result " + res);
+                    }
+                } else {
+                    for (ReflectionUtils.DataDescriptor descriptor : entry.getValue()) {
+                        String nestedtableName = descriptor.getTableName();
+                        logger.debug("Insert builder " + descriptor + " into " + keySpace + "." + nestedtableName);
+                        insert = QueryBuilder.insertInto(keySpace, nestedtableName).values(ReflectionUtils.fieldNames(entry.getKey()),
+                                descriptor.getValues());
+                        ResultSet res = session.execute(insert);
+                        logger.debug("Result " + res);
+                    }
+                }
+            }
+        }
+        catch (HecateException e) {
+            logger.error("Hecate problem " + e);
+        }
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public T findChildRow(K key, Class mapping, String keySpace, String tableName) {
+        Select.Where select = QueryBuilder.select(ReflectionUtils.fieldNames(mapping)).from(keySpace, tableName).where(QueryBuilder.eq(
+                ReflectionUtils.getIdName(mapping), key));
+        logger.debug("Find " + select);
+        ResultSet res = session.execute(select);
+        logger.debug("Found : " + res);
+        if (res != null) {
+            while (res.iterator().hasNext()) {
+                Row row = res.iterator().next();
+                try {
+                    T clz = (T) mapping.newInstance();
+                    ReflectionUtils.populateGraph(clz, row, this);
+                    return clz;
+                }
+                catch (InstantiationException e) {
+                    logger.error("Could not create class " + mapping + " " + e);
+                }
+                catch (IllegalAccessException e) {
+                    logger.error("Could not access class " + mapping + " " + e);
+                }
+                catch (HecateException e) {
+                    logger.error("Internal Hecate problem " + e);
+                }
+            }
+        }
+
+        return null;
     }
 }

@@ -22,6 +22,9 @@ import java.util.Date;
 import java.util.UUID;
 
 public class SimpleTable {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     @IdColumn
     long id;
@@ -40,20 +43,24 @@ public class SimpleTable {
 
     UUID uuid = UUID.randomUUID();
 
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
     public long getId() {
         return id;
     }
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getMore() {
@@ -64,12 +71,32 @@ public class SimpleTable {
         this.more = more;
     }
 
-    public Date getDate() {
-        return date;
+    public String getName() {
+        return name;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public double getaDouble() {
+        return aDouble;
+    }
+
+    public float getaFloat() {
+        return aFloat;
     }
 
     public boolean isaBoolean() {
@@ -80,27 +107,11 @@ public class SimpleTable {
         this.aBoolean = aBoolean;
     }
 
-    public double getaDouble() {
-        return aDouble;
-    }
-
     public void setaDouble(double aDouble) {
         this.aDouble = aDouble;
     }
 
-    public float getaFloat() {
-        return aFloat;
-    }
-
     public void setaFloat(float aFloat) {
         this.aFloat = aFloat;
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
     }
 }

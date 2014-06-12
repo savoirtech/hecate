@@ -60,11 +60,6 @@ public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public DefaultPojoSave save(Class<?> pojoType, String tableName) {
-        return saveCache.get(pojoType, tableName);
-    }
-
-    @Override
     public DefaultPojoDelete delete(Class<?> pojoType, String tableName) {
         return deleteCache.get(pojoType, tableName);
     }
@@ -84,6 +79,11 @@ public class DefaultPersistenceContext implements PersistenceContext {
     @SuppressWarnings("unchecked")
     public <P> DefaultPojoQuery<P> findByKeys(Class<P> pojoType, String tableName) {
         return (DefaultPojoQuery<P>) findByKeysCache.get(pojoType, tableName);
+    }
+
+    @Override
+    public DefaultPojoSave save(Class<?> pojoType, String tableName) {
+        return saveCache.get(pojoType, tableName);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -122,6 +122,13 @@ public class DefaultPersistenceContext implements PersistenceContext {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
+    private final class DeleteFactory implements StatementFactory<DefaultPojoDelete> {
+        @Override
+        public DefaultPojoDelete create(PojoMapping pojoMapping) {
+            return new DefaultPojoDelete(DefaultPersistenceContext.this, pojoMapping);
+        }
+    }
+
     private class FindByKeyFactory implements StatementFactory<DefaultPojoQuery<?>> {
         @Override
         public DefaultPojoQuery<?> create(PojoMapping pojoMapping) {
@@ -140,13 +147,6 @@ public class DefaultPersistenceContext implements PersistenceContext {
         @Override
         public DefaultPojoFindForDelete create(PojoMapping pojoMapping) {
             return new DefaultPojoFindForDelete(DefaultPersistenceContext.this, pojoMapping);
-        }
-    }
-
-    private final class DeleteFactory implements StatementFactory<DefaultPojoDelete> {
-        @Override
-        public DefaultPojoDelete create(PojoMapping pojoMapping) {
-            return new DefaultPojoDelete(DefaultPersistenceContext.this, pojoMapping);
         }
     }
 

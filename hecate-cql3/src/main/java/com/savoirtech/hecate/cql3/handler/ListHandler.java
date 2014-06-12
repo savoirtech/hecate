@@ -37,7 +37,6 @@ public class ListHandler extends AbstractColumnHandler<List<Object>, List<Object
 // ColumnHandler Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public List<Object> getInsertValue(List<Object> facetValue, Dehydrator dehydrator) {
         if (facetValue == null) {

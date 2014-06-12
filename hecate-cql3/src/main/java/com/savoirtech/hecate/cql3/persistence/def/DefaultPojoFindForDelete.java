@@ -50,7 +50,7 @@ public class DefaultPojoFindForDelete extends DefaultPersistenceStatement implem
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Other Methods
+// PojoFindForDelete Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
@@ -63,6 +63,10 @@ public class DefaultPojoFindForDelete extends DefaultPersistenceStatement implem
             }
         }
     }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     protected void processRow(Row row, Evaporator evaporator) {
         int columnIndex = 0;

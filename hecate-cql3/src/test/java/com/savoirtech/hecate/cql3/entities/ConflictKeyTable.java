@@ -21,12 +21,20 @@ import com.savoirtech.hecate.cql3.annotations.PrimaryKey;
 
 @PrimaryKey(pk = "id,name")
 public class ConflictKeyTable {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
     @IdColumn
     long id;
 
     String name;
 
     String more;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     public long getId() {
         return id;
@@ -36,19 +44,19 @@ public class ConflictKeyTable {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getMore() {
         return more;
     }
 
     public void setMore(String more) {
         this.more = more;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

@@ -37,7 +37,6 @@ public class SetHandler extends AbstractColumnHandler<Set<Object>, Set<Object>> 
 // ColumnHandler Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public Set<Object> getInsertValue(Set<Object> facetValue, Dehydrator dehydrator) {
         if (facetValue == null) {

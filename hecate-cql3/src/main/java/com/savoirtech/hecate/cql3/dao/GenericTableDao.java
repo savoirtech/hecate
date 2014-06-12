@@ -20,16 +20,19 @@ import java.util.List;
 import java.util.Set;
 
 public interface GenericTableDao<K, T> {
-
-    void delete(K key);
-
-    Set<K> getKeys();
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     boolean containsKey(K key);
 
-    void save(T pojo);
+    void delete(K key);
 
     T find(K key);
 
     Set<T> findItems(final List<K> keys);
+
+    Set<K> getKeys();
+
+    void save(T pojo);
 }

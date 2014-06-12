@@ -35,7 +35,6 @@ public class SimpleHandler extends AbstractColumnHandler<Object, Object> {
 // ColumnHandler Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public Object getInsertValue(Object facetValue, Dehydrator dehydrator) {
         return facetValue == null ? null : getDelegate().convertToInsertValue(facetValue, dehydrator);

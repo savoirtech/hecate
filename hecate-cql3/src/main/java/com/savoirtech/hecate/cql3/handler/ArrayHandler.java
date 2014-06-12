@@ -45,7 +45,6 @@ public class ArrayHandler extends AbstractColumnHandler<List<Object>, Object> {
 // ColumnHandler Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public List<Object> getInsertValue(Object array, Dehydrator dehydrator) {
         if (array == null) {

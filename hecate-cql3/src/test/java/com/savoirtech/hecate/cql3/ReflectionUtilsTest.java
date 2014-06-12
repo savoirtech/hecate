@@ -32,22 +32,21 @@ public class ReflectionUtilsTest {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
-    public void testGetWriteMethod() throws Exception {
-        PropertyDescriptor descriptor = getPropertyDescriptor(Sub.class, "privateSetter");
-        Method method = ReflectionUtils.getWriteMethod(Sub.class, descriptor);
-        assertNotNull(method);
-        assertEquals("setPrivateSetter", method.getName());
-        assertTrue(Modifier.isPrivate(method.getModifiers()));
-    }
-
-    @Test
     public void testGetReadMethod() throws Exception {
         PropertyDescriptor descriptor = getPropertyDescriptor(Sub.class, "privateGetter");
         Method method = ReflectionUtils.getReadMethod(Sub.class, descriptor);
         assertNotNull(method);
         assertEquals("getPrivateGetter", method.getName());
         assertTrue(Modifier.isPrivate(method.getModifiers()));
+    }
 
+    @Test
+    public void testGetWriteMethod() throws Exception {
+        PropertyDescriptor descriptor = getPropertyDescriptor(Sub.class, "privateSetter");
+        Method method = ReflectionUtils.getWriteMethod(Sub.class, descriptor);
+        assertNotNull(method);
+        assertEquals("setPrivateSetter", method.getName());
+        assertTrue(Modifier.isPrivate(method.getModifiers()));
     }
 
     private PropertyDescriptor getPropertyDescriptor(Class<?> beanType, String propertyName) throws Exception {

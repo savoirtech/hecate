@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Savoir Technologies
+ * Copyright (c) 2012-2014 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,23 @@ import com.savoirtech.hecate.cql3.test.CassandraTestCase;
 import org.junit.Before;
 import org.junit.Test;
 
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class CompositeColumnFamilyTest extends CassandraTestCase {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     private final static String TABLE =
-        "CREATE TABLE composite (\n" + "id text,\n" + "a text,\n" + "b text,\n" + "c text,\n" + "data text,\n" + "PRIMARY KEY (id, a, b, c)\n" + ");";
+            "CREATE TABLE composite (\n" + "id text,\n" + "a text,\n" + "b text,\n" + "c text,\n" + "data text,\n" + "PRIMARY KEY (id, a, b, c)\n" + ");";
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
     //----------------------------------------------------------------------------------------------------------------------
     // Other Methods
     //----------------------------------------------------------------------------------------------------------------------
-
     @Before
     public void createTable() {
         connect().execute(TABLE);

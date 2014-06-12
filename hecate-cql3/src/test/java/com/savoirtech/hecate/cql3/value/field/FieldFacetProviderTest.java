@@ -26,12 +26,9 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class FieldFacetProviderTest {
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
-    private FieldFacet fooField() throws Exception {
-        return new FieldFacet(FieldHolder.class, FieldHolder.class.getDeclaredField("foo"));
-    }
 
     @Test
     public void testGet() throws Exception {
@@ -40,10 +37,8 @@ public class FieldFacetProviderTest {
         assertEquals("bar", value.get(holder));
     }
 
-    @Test
-    public void testGetType() throws Exception {
-        FieldFacet value = fooField();
-        assertEquals(String.class, value.getType().getRawType());
+    private FieldFacet fooField() throws Exception {
+        return new FieldFacet(FieldHolder.class, FieldHolder.class.getDeclaredField("foo"));
     }
 
     @Test
@@ -52,11 +47,16 @@ public class FieldFacetProviderTest {
         assertNotNull(value.getAnnotation(Id.class));
     }
 
-
     @Test
     public void testGetName() throws Exception {
         FieldFacet value = fooField();
         assertEquals("foo", value.getName());
+    }
+
+    @Test
+    public void testGetType() throws Exception {
+        FieldFacet value = fooField();
+        assertEquals(String.class, value.getType().getRawType());
     }
 
     @Test

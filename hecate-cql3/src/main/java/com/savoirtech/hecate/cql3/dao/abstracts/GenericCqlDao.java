@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Set;
 
 public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     protected Session session;
     protected String tableName;
@@ -42,6 +45,10 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
 
     protected Logger logger = LoggerFactory.getLogger(GenericCqlDao.class);
 
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
     public GenericCqlDao(Session session, String keySpace, String tableName, Class keyClazz, Class mappingClazz) {
         this.session = session;
         this.tableName = tableName;
@@ -50,24 +57,9 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
         this.mappingClazz = mappingClazz;
     }
 
-    @Override
-    public void delete(K key) {
-        Delete.Where query = QueryBuilder.delete().all().from(keySpace, tableName).where(QueryBuilder.eq(ReflectionUtils.getIdName(mappingClazz),
-                key));
-        session.execute(query);
-    }
-
-    @Override
-    public Set<K> getKeys() {
-        Set<K> keys = new HashSet<>();
-        Select selection = QueryBuilder.select().column(ReflectionUtils.getIdName(mappingClazz)).from(keySpace, tableName);
-        ResultSet res = session.execute(selection);
-        for (Row row : res.all()) {
-            keys.add(ReflectionUtils.<K>extractFieldValue(ReflectionUtils.getIdName(mappingClazz), ReflectionUtils.getFieldType(
-                    ReflectionUtils.getIdName(mappingClazz)), row));
-        }
-        return keys;
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// GenericTableDao Implementation
+//----------------------------------------------------------------------------------------------------------------------
 
     @Override
     public boolean containsKey(K key) {
@@ -78,12 +70,10 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
     }
 
     @Override
-    public void save(T pojo) {
-        Insert insert = QueryBuilder.insertInto(keySpace, tableName).values(ReflectionUtils.fieldNames(mappingClazz), ReflectionUtils.fieldValues(
-                pojo));
-        logger.debug("Save " + insert);
-        ResultSet res = session.execute(insert);
-        logger.debug("Result " + res);
+    public void delete(K key) {
+        Delete.Where query = QueryBuilder.delete().all().from(keySpace, tableName).where(QueryBuilder.eq(ReflectionUtils.getIdName(mappingClazz),
+                key));
+        session.execute(query);
     }
 
     @Override
@@ -93,7 +83,6 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
         logger.debug("Find " + select);
         ResultSet res = session.execute(select);
         if (res != null) {
-
             while (res.iterator().hasNext()) {
                 Row row = res.iterator().next();
                 try {
@@ -115,7 +104,6 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
 
     @Override
     public Set<T> findItems(List<K> keys) {
-
         Set<T> items = new HashSet<>();
         Select.Where select = QueryBuilder.select(ReflectionUtils.fieldNames(mappingClazz)).from(keySpace, tableName).where(QueryBuilder.in(
                 ReflectionUtils.getIdName(mappingClazz), keys.toArray()));
@@ -123,7 +111,6 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
         logger.debug("Find " + select);
         ResultSet res = session.execute(select);
         if (res != null) {
-
             while (res.iterator().hasNext()) {
                 Row row = res.iterator().next();
                 try {
@@ -143,12 +130,33 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
         return items;
     }
 
-    public Session getSession() {
-        return session;
+    @Override
+    public Set<K> getKeys() {
+        Set<K> keys = new HashSet<>();
+        Select selection = QueryBuilder.select().column(ReflectionUtils.getIdName(mappingClazz)).from(keySpace, tableName);
+        ResultSet res = session.execute(selection);
+        for (Row row : res.all()) {
+            keys.add(ReflectionUtils.<K>extractFieldValue(ReflectionUtils.getIdName(mappingClazz), ReflectionUtils.getFieldType(
+                    ReflectionUtils.getIdName(mappingClazz)), row));
+        }
+        return keys;
     }
 
-    public String getTableName() {
-        return tableName;
+    @Override
+    public void save(T pojo) {
+        Insert insert = QueryBuilder.insertInto(keySpace, tableName).values(ReflectionUtils.fieldNames(mappingClazz), ReflectionUtils.fieldValues(
+                pojo));
+        logger.debug("Save " + insert);
+        ResultSet res = session.execute(insert);
+        logger.debug("Result " + res);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public Class getKeyClazz() {
+        return keyClazz;
     }
 
     public String getKeySpace() {
@@ -159,7 +167,11 @@ public class GenericCqlDao<K, T> implements GenericTableDao<K, T> {
         return mappingClazz;
     }
 
-    public Class getKeyClazz() {
-        return keyClazz;
+    public Session getSession() {
+        return session;
+    }
+
+    public String getTableName() {
+        return tableName;
     }
 }

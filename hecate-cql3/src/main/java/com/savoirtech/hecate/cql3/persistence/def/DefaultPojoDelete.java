@@ -44,10 +44,12 @@ public class DefaultPojoDelete extends DefaultPersistenceStatement implements Po
         execute(getPersistenceContext().newEvaporator(), keys);
     }
 
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
     public void execute(Evaporator evaporator, Iterable<Object> keys) {
         getPersistenceContext().findForDelete(getPojoMapping().getPojoMetadata().getPojoType(), getPojoMapping().getTableName()).execute(keys, evaporator);
         executeStatementArgs(toList(keys));
     }
-
-
 }

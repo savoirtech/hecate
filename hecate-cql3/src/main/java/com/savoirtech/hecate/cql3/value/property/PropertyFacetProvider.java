@@ -28,7 +28,7 @@ import java.util.List;
 
 public class PropertyFacetProvider implements FacetProvider {
 //----------------------------------------------------------------------------------------------------------------------
-// ValueProvider Implementation
+// FacetProvider Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override

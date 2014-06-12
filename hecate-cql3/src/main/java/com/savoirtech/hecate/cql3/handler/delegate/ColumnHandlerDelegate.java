@@ -30,15 +30,15 @@ public interface ColumnHandlerDelegate {
 
     void collectDeletionIdentifiers(Iterable<Object> columnValues, Evaporator evaporator);
 
-    Object convertToInsertValue(Object facetValue, Dehydrator dehydrator);
+    Object convertElement(Object parameterValue);
 
     Object convertIdentifier(Object columnValue);
 
-    DataType getDataType();
-
-    Object convertElement(Object parameterValue);
+    Object convertToInsertValue(Object facetValue, Dehydrator dehydrator);
 
     void createValueConverter(Callback<ValueConverter> target, Iterable<Object> columnValues, Hydrator hydrator);
+
+    DataType getDataType();
 
     boolean isCascading();
 }

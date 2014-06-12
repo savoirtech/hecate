@@ -17,5 +17,9 @@
 package com.savoirtech.hecate.cql3.persistence;
 
 public interface PojoFindForDelete {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
     void execute(Iterable<Object> keys, Evaporator evaporator);
 }

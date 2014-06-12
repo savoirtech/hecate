@@ -17,13 +17,31 @@
 package com.savoirtech.hecate.cql3.table;
 
 public class TableDescriptor {
-
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     private String pk;
     private String createStatement;
 
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
     public TableDescriptor(String pk, String createStatement) {
         this.pk = pk;
+        this.createStatement = createStatement;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public String getCreateStatement() {
+        return createStatement;
+    }
+
+    public void setCreateStatement(String createStatement) {
         this.createStatement = createStatement;
     }
 
@@ -33,13 +51,5 @@ public class TableDescriptor {
 
     public void setPk(String pk) {
         this.pk = pk;
-    }
-
-    public String getCreateStatement() {
-        return createStatement;
-    }
-
-    public void setCreateStatement(String createStatement) {
-        this.createStatement = createStatement;
     }
 }

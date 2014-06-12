@@ -33,17 +33,21 @@ import java.util.Set;
 import java.util.UUID;
 
 public final class FieldMapper {
-
-    private FieldMapper() {
-    }
-
-    private final static Logger logger = LoggerFactory.getLogger(FieldMapper.class);
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     public static final Map<String, String> fromCassandra = new HashMap<>();
 
     public static final Map<String, String> toCassandra = new HashMap<>();
 
+    private final static Logger logger = LoggerFactory.getLogger(FieldMapper.class);
+
     private static final String TYPE_NAME_PREFIX = "class ";
+
+//----------------------------------------------------------------------------------------------------------------------
+// Static Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     static {
         {
@@ -56,7 +60,6 @@ public final class FieldMapper {
             fromCassandra.put("INT", Integer.class.getName());
             fromCassandra.put("UUID", UUID.class.getName());
             fromCassandra.put("TIMESTAMP", Date.class.getName());
-
             for (Map.Entry<String, String> entry : fromCassandra.entrySet()) {
                 toCassandra.put(entry.getValue(), entry.getKey());
             }
@@ -69,80 +72,6 @@ public final class FieldMapper {
         }
     }
 
-    public static Object getJavaObject(String type, String column, Row row) {
-
-        if ("TEXT".equalsIgnoreCase(type)) {
-            return row.getString(column);
-        }
-
-        if ("VARCHAR".equalsIgnoreCase(type)) {
-            return row.getString(column);
-        }
-
-        if ("BIGINT".equalsIgnoreCase(type)) {
-            return row.getLong(column);
-        }
-
-        if ("BOOLEAN".equalsIgnoreCase(type)) {
-            return row.getBool(column);
-        }
-
-        if ("DOUBLE".equalsIgnoreCase(type)) {
-            return row.getDouble(column);
-        }
-
-        if ("FLOAT".equalsIgnoreCase(type)) {
-            return row.getFloat(column);
-        }
-
-        if ("INT".equalsIgnoreCase(type)) {
-            return row.getInt(column);
-        }
-
-        if (type.startsWith("LIST")) {
-
-            return row.getList(column, Object.class);
-        }
-
-        if (type.startsWith("SET")) {
-            return row.getSet(column, Object.class);
-        }
-
-        if (type.startsWith("MAP")) {
-            return row.getMap(column, Object.class, Object.class);
-        }
-
-        if ("UUID".equalsIgnoreCase(type)) {
-            return row.getUUID(column);
-        }
-
-        if ("TIMESTAMP".equalsIgnoreCase(type)) {
-            return row.getDate(column);
-        }
-
-        return row.getBytes(column);
-    }
-
-    private static String getClassName(Type type) {
-        if (type == null) {
-            return "";
-        }
-        String className = type.toString();
-        if (className.startsWith(TYPE_NAME_PREFIX)) {
-            className = className.substring(TYPE_NAME_PREFIX.length());
-        }
-        return className;
-    }
-
-    public static String getCassandraTypeForFieldName(String field, Class cls) throws HecateException {
-        for (Field f : ReflectionUtils.getFieldsUpTo(cls, null)) {
-            if (field.equals(f.getName())) {
-                return getCassandraType(f);
-            }
-        }
-        return null;
-    }
-
     public static String getCassandraType(Field field) throws HecateException {
         String fieldType = toCassandra.get(field.getType().getName());
 
@@ -151,7 +80,6 @@ public final class FieldMapper {
         }
 
         if (field.getType().isAssignableFrom(List.class)) {
-
             Type type = field.getGenericType();
             if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) type;
@@ -159,7 +87,6 @@ public final class FieldMapper {
                 if (!csType.equals("blob")) {
                     return "list<" + csType + ">";
                 } else {
-
                     try {
                         return "list<" + FieldMapper.getCassandraTypeForFieldName(ReflectionUtils.getIdName(Class.forName(getClassName(
                                 pt.getActualTypeArguments()[0]))), Class.forName(getClassName(pt.getActualTypeArguments()[0]))) + ">";
@@ -174,7 +101,6 @@ public final class FieldMapper {
         }
 
         if (field.getType().isAssignableFrom(Set.class)) {
-
             Type type = field.getGenericType();
             if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) type;
@@ -183,7 +109,6 @@ public final class FieldMapper {
                 if (!csType.equals("blob")) {
                     return "set<" + csType + ">";
                 } else {
-
                     try {
                         return "set<" + FieldMapper.getCassandraTypeForFieldName(ReflectionUtils.getIdName(Class.forName(getClassName(
                                 pt.getActualTypeArguments()[0]))), Class.forName(getClassName(pt.getActualTypeArguments()[0]))) + ">";
@@ -227,6 +152,78 @@ public final class FieldMapper {
         return FieldMapper.getCassandraTypeForFieldName(ReflectionUtils.getIdName(field.getType()), field.getType());
     }
 
+    public static String getCassandraTypeForFieldName(String field, Class cls) throws HecateException {
+        for (Field f : ReflectionUtils.getFieldsUpTo(cls, null)) {
+            if (field.equals(f.getName())) {
+                return getCassandraType(f);
+            }
+        }
+        return null;
+    }
+
+    private static String getClassName(Type type) {
+        if (type == null) {
+            return "";
+        }
+        String className = type.toString();
+        if (className.startsWith(TYPE_NAME_PREFIX)) {
+            className = className.substring(TYPE_NAME_PREFIX.length());
+        }
+        return className;
+    }
+
+    public static Object getJavaObject(String type, String column, Row row) {
+        if ("TEXT".equalsIgnoreCase(type)) {
+            return row.getString(column);
+        }
+
+        if ("VARCHAR".equalsIgnoreCase(type)) {
+            return row.getString(column);
+        }
+
+        if ("BIGINT".equalsIgnoreCase(type)) {
+            return row.getLong(column);
+        }
+
+        if ("BOOLEAN".equalsIgnoreCase(type)) {
+            return row.getBool(column);
+        }
+
+        if ("DOUBLE".equalsIgnoreCase(type)) {
+            return row.getDouble(column);
+        }
+
+        if ("FLOAT".equalsIgnoreCase(type)) {
+            return row.getFloat(column);
+        }
+
+        if ("INT".equalsIgnoreCase(type)) {
+            return row.getInt(column);
+        }
+
+        if (type.startsWith("LIST")) {
+            return row.getList(column, Object.class);
+        }
+
+        if (type.startsWith("SET")) {
+            return row.getSet(column, Object.class);
+        }
+
+        if (type.startsWith("MAP")) {
+            return row.getMap(column, Object.class, Object.class);
+        }
+
+        if ("UUID".equalsIgnoreCase(type)) {
+            return row.getUUID(column);
+        }
+
+        if ("TIMESTAMP".equalsIgnoreCase(type)) {
+            return row.getDate(column);
+        }
+
+        return row.getBytes(column);
+    }
+
     public static String getRawCassandraType(Field field) throws HecateException {
         String fieldType = toCassandra.get(field.getType().getName());
 
@@ -235,7 +232,6 @@ public final class FieldMapper {
         }
 
         if (field.getType().isAssignableFrom(List.class)) {
-
             Type type = field.getGenericType();
             if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) type;
@@ -249,7 +245,6 @@ public final class FieldMapper {
         }
 
         if (field.getType().isAssignableFrom(Set.class)) {
-
             Type type = field.getGenericType();
             if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) type;
@@ -283,7 +278,6 @@ public final class FieldMapper {
         return FieldMapper.getRawCassandraTypeForFieldName(ReflectionUtils.getIdName(field.getType()), field.getType());
     }
 
-
     private static String getRawCassandraTypeForFieldName(String idName, Class<?> type) throws HecateException {
         for (Field f : ReflectionUtils.getFieldsUpTo(type, null)) {
             if (idName.equals(f.getName())) {
@@ -294,7 +288,6 @@ public final class FieldMapper {
     }
 
     private static String getStorageType(Type type) {
-
         String csClass = toCassandra.get(getClassName(type));
         if (csClass != null && !StringUtils.isEmpty(csClass)) {
             return csClass;
@@ -302,5 +295,12 @@ public final class FieldMapper {
         //This is actually an Object.
         //Figure out what the Id Key is and how it'll be used.
         return "blob";
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
+    private FieldMapper() {
     }
 }

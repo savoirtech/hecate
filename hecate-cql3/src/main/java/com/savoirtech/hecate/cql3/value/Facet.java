@@ -29,9 +29,9 @@ public interface Facet {
 
     <A extends Annotation> A getAnnotation(Class<A> annotationType);
 
-    GenericType getType();
-
     String getName();
+
+    GenericType getType();
 
     void set(Object pojo, Object value);
 }

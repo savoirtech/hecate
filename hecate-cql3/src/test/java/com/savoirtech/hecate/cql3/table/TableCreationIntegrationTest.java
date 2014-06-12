@@ -31,17 +31,17 @@ public class TableCreationIntegrationTest extends CassandraTestCase {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    @Test
+    public void testWithCompoundTable() throws HecateException {
+        assertTableCreateSucceeds(TableCreator.createTable("hecate", "compoundtable", CompoundKeyTable.class));
+    }
+
     private void assertTableCreateSucceeds(String cql) throws HecateException {
         logger.info("Create statement {}", cql);
 
         Session session = connect();
         ResultSet resultSet = session.execute(TableCreator.createTable("hecate", "simpletable", SimpleTable.class));
         assertNotNull(resultSet);
-    }
-
-    @Test
-    public void testWithCompoundTable() throws HecateException {
-        assertTableCreateSucceeds(TableCreator.createTable("hecate", "compoundtable", CompoundKeyTable.class));
     }
 
     @Test

@@ -38,6 +38,28 @@ public class FacetMetadata {
     private final String tableName;
 
 //----------------------------------------------------------------------------------------------------------------------
+// Static Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    private static GenericType getElementType(Facet facet) {
+        final GenericType facetType = facet.getType();
+        final Class<?> facetRawType = facetType.getRawType();
+        if (List.class.equals(facetRawType)) {
+            return facetType.getListElementType();
+        }
+        if (Set.class.equals(facetRawType)) {
+            return facetType.getSetElementType();
+        }
+        if (Map.class.equals(facetRawType)) {
+            return facetType.getMapValueType();
+        }
+        if (facetRawType.isArray()) {
+            return facetType.getArrayElementType();
+        }
+        return facetType;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -56,24 +78,6 @@ public class FacetMetadata {
     private static boolean isIdentifier(Facet facet) {
         Id annot = facet.getAnnotation(Id.class);
         return annot != null;
-    }
-
-    private static GenericType getElementType(Facet facet) {
-        final GenericType facetType = facet.getType();
-        final Class<?> facetRawType = facetType.getRawType();
-        if (List.class.equals(facetRawType)) {
-            return facetType.getListElementType();
-        }
-        if (Set.class.equals(facetRawType)) {
-            return facetType.getSetElementType();
-        }
-        if (Map.class.equals(facetRawType)) {
-            return facetType.getMapValueType();
-        }
-        if (facetRawType.isArray()) {
-            return facetType.getArrayElementType();
-        }
-        return facetType;
     }
 
     private static String tableNameOf(Facet facet) {

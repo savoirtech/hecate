@@ -35,6 +35,9 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class PojoGraphTesting extends CassandraTestCase {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testInsertData() throws InterruptedException, HecateException {
@@ -103,6 +106,5 @@ public class PojoGraphTesting extends CassandraTestCase {
         fempty = (Parent) dao.find(100l);
 
         assertNull(fempty);
-
     }
 }

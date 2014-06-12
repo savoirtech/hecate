@@ -43,16 +43,6 @@ public class ScalarDelegate implements ColumnHandlerDelegate {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public Object convertToInsertValue(Object facetValue, Dehydrator dehydrator) {
-        return valueConverter.toCassandraValue(facetValue);
-    }
-
-    @Override
-    public DataType getDataType() {
-        return valueConverter.getDataType();
-    }
-
-    @Override
     public void collectDeletionIdentifiers(Iterable<Object> columnValues, Evaporator evaporator) {
         // Do nothing!
     }
@@ -63,13 +53,23 @@ public class ScalarDelegate implements ColumnHandlerDelegate {
     }
 
     @Override
+    public Object convertIdentifier(Object columnValue) {
+        return valueConverter.fromCassandraValue(columnValue);
+    }
+
+    @Override
+    public Object convertToInsertValue(Object facetValue, Dehydrator dehydrator) {
+        return valueConverter.toCassandraValue(facetValue);
+    }
+
+    @Override
     public void createValueConverter(Callback<ValueConverter> target, Iterable<Object> columnValues, Hydrator hydrator) {
         target.execute(valueConverter);
     }
 
     @Override
-    public Object convertIdentifier(Object columnValue) {
-        return valueConverter.fromCassandraValue(columnValue);
+    public DataType getDataType() {
+        return valueConverter.getDataType();
     }
 
     @Override

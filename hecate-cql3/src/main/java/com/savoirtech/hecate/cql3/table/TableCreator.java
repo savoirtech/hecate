@@ -33,87 +33,11 @@ import java.util.List;
 import java.util.Map;
 
 public class TableCreator {
-
-    private TableCreator() {
-    }
-
-    public static List<TableDescriptor> createPojoTables(String keySpace, String tableName, Class cls) {
-
-        List<TableDescriptor> descriptors = new ArrayList<>();
-
-        return descriptors;
-    }
-
-    public static String createTable(String keySpace, String tableName, Class cls) throws HecateException {
-        StringBuilder builder = new StringBuilder();
-        builder.append("CREATE TABLE IF NOT EXISTS ");
-        builder.append(keySpace);
-        builder.append(".");
-        builder.append(tableName);
-        builder.append(" ( ");
-        boolean idFound = false;
-
-        //Look for compound primary key annotation.
-        String primaryKey = null;
-        if (cls.isAnnotationPresent(PrimaryKey.class)) {
-            PrimaryKey p = (PrimaryKey) cls.getAnnotation(PrimaryKey.class);
-            primaryKey = p.pk();
-            idFound = true;
-        }
-        StringBuilder flds = new StringBuilder();
-        for (Field field : ReflectionUtils.getFieldsUpTo(cls, null)) {
-            if (flds.length() > 0) {
-                flds.append(",");
-            }
-
-            flds.append(field.getName());
-            flds.append(" ");
-
-            String csType = FieldMapper.getRawCassandraType(field);
-
-            if (StringUtils.isEmpty(csType)) {
-                flds.append("blob");
-            } else {
-                flds.append(FieldMapper.getRawCassandraType(field));
-            }
-
-            if (field.isAnnotationPresent(IdColumn.class) || field.isAnnotationPresent(Id.class)) {
-                if (idFound) {
-                    throw new HecateException("Cannot have multiple PRIMARY KEY declarations");
-                } else {
-                    //Idcolumn
-
-                    flds.append(" PRIMARY KEY");
-                    idFound = true;
-                }
-            }
-        }
-
-        builder.append(flds);
-
-        if (primaryKey != null) {
-
-            builder.append(",");
-            builder.append(" PRIMARY KEY (");
-            List<String> pkl = Arrays.asList(primaryKey.split(","));
-            StringBuilder keyBuilder = new StringBuilder();
-            for (String key : pkl) {
-                if (keyBuilder.length() > 0) {
-                    keyBuilder.append(",");
-                }
-                keyBuilder.append(key.trim());
-            }
-
-            builder.append(keyBuilder);
-            builder.append(")");
-        }
-        builder.append(" );");
-
-        return builder.toString();
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Static Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     public static String createNestedTables(Map<String, StringBuilder> tables, String keySpace, String tableName, Class cls) throws HecateException {
-
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE IF NOT EXISTS ");
         builder.append(keySpace);
@@ -145,7 +69,6 @@ public class TableCreator {
             }
 
             if (csType != null && csType.toLowerCase().startsWith("list<blob")) {
-
                 Type type = field.getGenericType();
                 if (type instanceof ParameterizedType) {
                     ParameterizedType pt = (ParameterizedType) type;
@@ -212,7 +135,6 @@ public class TableCreator {
         builder.append(flds);
 
         if (primaryKey != null) {
-
             builder.append(",");
             builder.append(" PRIMARY KEY (");
             List<String> pkl = Arrays.asList(primaryKey.split(","));
@@ -231,5 +153,85 @@ public class TableCreator {
 
         tables.put(tableName, builder);
         return builder.toString();
+    }
+
+    public static List<TableDescriptor> createPojoTables(String keySpace, String tableName, Class cls) {
+        List<TableDescriptor> descriptors = new ArrayList<>();
+
+        return descriptors;
+    }
+
+    public static String createTable(String keySpace, String tableName, Class cls) throws HecateException {
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE IF NOT EXISTS ");
+        builder.append(keySpace);
+        builder.append(".");
+        builder.append(tableName);
+        builder.append(" ( ");
+        boolean idFound = false;
+
+        //Look for compound primary key annotation.
+        String primaryKey = null;
+        if (cls.isAnnotationPresent(PrimaryKey.class)) {
+            PrimaryKey p = (PrimaryKey) cls.getAnnotation(PrimaryKey.class);
+            primaryKey = p.pk();
+            idFound = true;
+        }
+        StringBuilder flds = new StringBuilder();
+        for (Field field : ReflectionUtils.getFieldsUpTo(cls, null)) {
+            if (flds.length() > 0) {
+                flds.append(",");
+            }
+
+            flds.append(field.getName());
+            flds.append(" ");
+
+            String csType = FieldMapper.getRawCassandraType(field);
+
+            if (StringUtils.isEmpty(csType)) {
+                flds.append("blob");
+            } else {
+                flds.append(FieldMapper.getRawCassandraType(field));
+            }
+
+            if (field.isAnnotationPresent(IdColumn.class) || field.isAnnotationPresent(Id.class)) {
+                if (idFound) {
+                    throw new HecateException("Cannot have multiple PRIMARY KEY declarations");
+                } else {
+                    //Idcolumn
+
+                    flds.append(" PRIMARY KEY");
+                    idFound = true;
+                }
+            }
+        }
+
+        builder.append(flds);
+
+        if (primaryKey != null) {
+            builder.append(",");
+            builder.append(" PRIMARY KEY (");
+            List<String> pkl = Arrays.asList(primaryKey.split(","));
+            StringBuilder keyBuilder = new StringBuilder();
+            for (String key : pkl) {
+                if (keyBuilder.length() > 0) {
+                    keyBuilder.append(",");
+                }
+                keyBuilder.append(key.trim());
+            }
+
+            builder.append(keyBuilder);
+            builder.append(")");
+        }
+        builder.append(" );");
+
+        return builder.toString();
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
+    private TableCreator() {
     }
 }
