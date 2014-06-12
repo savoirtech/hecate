@@ -18,6 +18,6 @@ package com.savoirtech.hecate.cql3.persistence;
 
 public interface PersistenceContext {
 
-    IPojoSave createSave(Class<?> pojoType, String tableName);
+    PojoSave createSave(Class<?> pojoType, String tableName);
 
 }

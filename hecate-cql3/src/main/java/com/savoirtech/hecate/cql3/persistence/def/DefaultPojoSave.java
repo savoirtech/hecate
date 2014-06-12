@@ -22,19 +22,26 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
-import com.savoirtech.hecate.cql3.persistence.IPojoSave;
 import com.savoirtech.hecate.cql3.persistence.PojoPersistenceStatement;
+import com.savoirtech.hecate.cql3.persistence.PojoSave;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultPojoSave extends PojoPersistenceStatement implements IPojoSave {
+public class DefaultPojoSave extends PojoPersistenceStatement implements PojoSave {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPojoSave.class);
 
     private final DefaultPersistenceContext persistenceContext;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoSave(DefaultPersistenceContext persistenceContext, Session session, PojoMapping pojoMapping) {
         super(session, createInsert(pojoMapping), pojoMapping);
@@ -47,15 +54,22 @@ public class DefaultPojoSave extends PojoPersistenceStatement implements IPojoSa
             insert.value(facetMapping.getFacetMetadata().getColumnName(), QueryBuilder.bindMarker());
         }
         insert.using(QueryBuilder.ttl(QueryBuilder.bindMarker()));
-        LOGGER.info("{}.save(): {}", mapping.getPojoMetadata().getPojoType().getSimpleName(), insert);
         return insert;
     }
+
+//----------------------------------------------------------------------------------------------------------------------
+// PojoSave Implementation
+//----------------------------------------------------------------------------------------------------------------------
 
 
     @Override
     public void execute(Object pojo) {
         execute(persistenceContext.newDehydrator(), pojo);
     }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     void execute(Dehydrator dehydrator, Object pojo) {
         List<Object> parameters = new ArrayList<>(getPojoMapping().getFacetMappings().size());
