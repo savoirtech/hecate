@@ -25,13 +25,13 @@ public class FacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final FacetMetadata facet;
-    private final ColumnHandler columnHandler;
+    private final ColumnHandler<Object, Object> columnHandler;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public FacetMapping(FacetMetadata facet, ColumnHandler columnHandler) {
+    public FacetMapping(FacetMetadata facet, ColumnHandler<Object, Object> columnHandler) {
         this.facet = facet;
         this.columnHandler = columnHandler;
     }
@@ -40,7 +40,7 @@ public class FacetMapping {
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ColumnHandler getColumnHandler() {
+    public ColumnHandler<Object, Object> getColumnHandler() {
         return columnHandler;
     }
 

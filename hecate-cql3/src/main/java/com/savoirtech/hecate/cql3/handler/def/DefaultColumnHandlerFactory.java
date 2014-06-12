@@ -74,7 +74,7 @@ public class DefaultColumnHandlerFactory implements ColumnHandlerFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public ColumnHandler getColumnHandler(FacetMetadata facetMetadata) {
+    public ColumnHandler<Object, Object> getColumnHandler(FacetMetadata facetMetadata) {
         final GenericType facetType = facetMetadata.getFacet().getType();
         final Class<?> elementType = elementType(facetType);
         ValueConverter converter = registry.getValueConverter(elementType);

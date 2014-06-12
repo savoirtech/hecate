@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3.persistence.hydrate;
+package com.savoirtech.hecate.cql3.persistence;
 
 import com.datastax.driver.core.Row;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
@@ -29,5 +29,5 @@ public interface Hydrator {
 
     <P> P hydrate(PojoMapping pojoMappinge, Row row);
 
-    void hydrate(Class<?> pojoType, Iterable<Object> identifiers, Callback<List<Object>> callback);
+    void hydrate(Class<?> pojoType, String tableName, Iterable<Object> identifiers, Callback<List<Object>> callback);
 }

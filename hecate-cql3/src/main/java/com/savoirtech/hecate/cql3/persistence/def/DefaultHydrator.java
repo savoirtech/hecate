@@ -16,60 +16,40 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Row;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
-import com.savoirtech.hecate.cql3.persistence.Persister;
-import com.savoirtech.hecate.cql3.persistence.PojoDelete;
-import com.savoirtech.hecate.cql3.persistence.PojoFindByKey;
-import com.savoirtech.hecate.cql3.persistence.PojoFindByKeys;
-import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
+import com.savoirtech.hecate.cql3.persistence.Hydrator;
+import com.savoirtech.hecate.cql3.util.Callback;
 
-public class DefaultPersister implements Persister {
+import java.util.List;
+
+public class DefaultHydrator implements Hydrator {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final PojoFindByKey findByKey;
-    private final PojoFindByKeys findByKeys;
-    private final PojoDelete delete;
-    private final PojoFindForDelete findForDelete;
+    private final DefaultPersistenceContext persistenceContext;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPersister(Session session, PojoMapping mapping) {
-        this.findByKey = new PojoFindByKey(session, mapping);
-        this.findByKeys = new PojoFindByKeys(session, mapping);
-        this.delete = new PojoDelete(session, mapping);
-        this.findForDelete = mapping.isCascading() ? new PojoFindForDelete(session, mapping) : null;
+    public DefaultHydrator(DefaultPersistenceContext persistenceContext) {
+        this.persistenceContext = persistenceContext;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Persister Implementation
+// Hydrator Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+
     @Override
-    public PojoDelete delete() {
-        return delete;
+    public <P> P hydrate(PojoMapping pojoMappinge, Row row) {
+        return null;
     }
 
     @Override
-    public PojoFindByKey findByKey() {
-        return findByKey;
-    }
+    public void hydrate(Class<?> pojoType, String tableName, Iterable<Object> identifiers, Callback<List<Object>> callback) {
 
-    @Override
-    public PojoFindByKeys findByKeys() {
-        return findByKeys;
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    @Override
-    public PojoFindForDelete findForDelete() {
-        return findForDelete;
     }
 }

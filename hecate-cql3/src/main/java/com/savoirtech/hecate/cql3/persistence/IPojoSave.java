@@ -14,29 +14,12 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3.handler.delegate;
+package com.savoirtech.hecate.cql3.persistence;
 
-import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
-import com.savoirtech.hecate.cql3.handler.context.QueryContext;
-import com.savoirtech.hecate.cql3.persistence.Dehydrator;
-import com.savoirtech.hecate.cql3.util.Callback;
-
-public interface ColumnHandlerDelegate {
+public interface IPojoSave {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void collectDeletionIdentifiers(Iterable<Object> columnValues, DeleteContext context);
-
-    Object convertToInsertValue(Object facetValue, Dehydrator dehydrator);
-
-    DataType getDataType();
-
-    Object convertElement(Object parameterValue);
-
-    void createValueConverter(Callback<ValueConverter> target, Iterable<Object> columnValues, QueryContext context);
-
-    boolean isCascading();
+    void execute(Object pojo);
 }

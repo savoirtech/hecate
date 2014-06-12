@@ -17,59 +17,64 @@
 package com.savoirtech.hecate.cql3.persistence.def;
 
 import com.datastax.driver.core.Session;
-import com.savoirtech.hecate.cql3.mapping.PojoMapping;
-import com.savoirtech.hecate.cql3.persistence.Persister;
-import com.savoirtech.hecate.cql3.persistence.PojoDelete;
-import com.savoirtech.hecate.cql3.persistence.PojoFindByKey;
-import com.savoirtech.hecate.cql3.persistence.PojoFindByKeys;
-import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
+import com.savoirtech.hecate.cql3.mapping.PojoMappingFactory;
+import com.savoirtech.hecate.cql3.mapping.def.DefaultPojoMappingFactory;
+import com.savoirtech.hecate.cql3.persistence.Dehydrator;
+import com.savoirtech.hecate.cql3.persistence.Disintegrator;
+import com.savoirtech.hecate.cql3.persistence.Hydrator;
+import com.savoirtech.hecate.cql3.persistence.PersistenceContext;
 
-public class DefaultPersister implements Persister {
+public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final PojoFindByKey findByKey;
-    private final PojoFindByKeys findByKeys;
-    private final PojoDelete delete;
-    private final PojoFindForDelete findForDelete;
+    private final Session session;
+    private PojoMappingFactory pojoMappingFactory;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPersister(Session session, PojoMapping mapping) {
-        this.findByKey = new PojoFindByKey(session, mapping);
-        this.findByKeys = new PojoFindByKeys(session, mapping);
-        this.delete = new PojoDelete(session, mapping);
-        this.findForDelete = mapping.isCascading() ? new PojoFindForDelete(session, mapping) : null;
+    public DefaultPersistenceContext(Session session) {
+        this.session = session;
+        this.pojoMappingFactory = new DefaultPojoMappingFactory(session);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Persister Implementation
+// PersistenceContext Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public PojoDelete delete() {
-        return delete;
+    public DefaultPojoSave createSave(Class<?> pojoType, String tableName) {
+        return new DefaultPojoSave(this, session, pojoMappingFactory.getPojoMapping(pojoType, tableName));
     }
 
-    @Override
-    public PojoFindByKey findByKey() {
-        return findByKey;
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    Session getSession() {
+        return session;
     }
 
-    @Override
-    public PojoFindByKeys findByKeys() {
-        return findByKeys;
+    public void setPojoMappingFactory(PojoMappingFactory pojoMappingFactory) {
+        this.pojoMappingFactory = pojoMappingFactory;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Override
-    public PojoFindForDelete findForDelete() {
-        return findForDelete;
+    Dehydrator newDehydrator() {
+        return new DefaultDehydrator(this);
+    }
+
+    Disintegrator newDisintegrator() {
+        return new DefaultDisintegrator(this);
+    }
+
+    Hydrator newHydrator() {
+        return new DefaultHydrator(this);
     }
 }

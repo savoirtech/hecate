@@ -19,8 +19,8 @@ package com.savoirtech.hecate.cql3.dao.def;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
 import com.savoirtech.hecate.cql3.handler.context.QueryContext;
-import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
+import com.savoirtech.hecate.cql3.persistence.PersistenceContext;
 import com.savoirtech.hecate.cql3.persistence.Persister;
 import com.savoirtech.hecate.cql3.persistence.PersisterFactory;
 import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
@@ -41,6 +41,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final PersisterFactory persisterFactory;
+    private final PersistenceContext persistenceContext;
     private final Persister rootPersister;
     private final Class<P> rootPojoType;
     private final String rootTableName;
@@ -49,8 +50,9 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoDao(PersisterFactory persisterFactory, Class<P> rootPojoType, String rootTableName) {
+    public DefaultPojoDao(PersisterFactory persisterFactory, PersistenceContext persistenceContext, Class<P> rootPojoType, String rootTableName) {
         this.persisterFactory = persisterFactory;
+        this.persistenceContext = persistenceContext;
         this.rootPersister = persisterFactory.getPersister(rootPojoType, rootTableName);
         this.rootPojoType = rootPojoType;
         this.rootTableName = rootTableName;
@@ -88,9 +90,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 
     @Override
     public void save(P pojo) {
-        Queue<PersistenceTask> tasks = new LinkedList<>();
-        tasks.add(new PojoSaveTask(rootPojoType, rootTableName, pojo, new SaveContextImpl(tasks)));
-        executeTasks(tasks);
+        persistenceContext.createSave(rootPojoType, rootTableName).execute(pojo);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -179,25 +179,6 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         void execute();
     }
 
-    private final class PojoSaveTask implements PersistenceTask {
-        private final SaveContext context;
-        private final Class<?> pojoType;
-        private final String tableName;
-        private final Object pojo;
-
-        public PojoSaveTask(Class<?> pojoType, String tableName, Object pojo, SaveContext context) {
-            this.pojoType = pojoType;
-            this.tableName = tableName;
-            this.pojo = pojo;
-            this.context = context;
-        }
-
-        @Override
-        public void execute() {
-            persisterFactory.getPersister(pojoType, tableName).save().execute(pojo, context);
-        }
-    }
-
     private final class QueryContextImpl implements QueryContext {
         private final Queue<PersistenceTask> items;
         private final VisitedPojoCache cache = new VisitedPojoCache();
@@ -233,22 +214,6 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 
         private String pojoCacheKey(Class<?> pojoType, Object identifier) {
             return pojoType.getCanonicalName() + ":" + identifier;
-        }
-    }
-
-    private final class SaveContextImpl implements SaveContext {
-        private final Queue<PersistenceTask> items;
-        private final VisitedPojoCache cache = new VisitedPojoCache();
-
-        private SaveContextImpl(Queue<PersistenceTask> items) {
-            this.items = items;
-        }
-
-        @Override
-        public void addPojo(Class<?> pojoType, String tableName, Object identifier, Object pojo) {
-            if (!cache.contains(pojoType, tableName, identifier)) {
-                items.add(new PojoSaveTask(pojoType, tableName, pojo, this));
-            }
         }
     }
 

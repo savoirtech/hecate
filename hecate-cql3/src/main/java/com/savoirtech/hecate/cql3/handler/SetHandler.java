@@ -18,8 +18,8 @@ package com.savoirtech.hecate.cql3.handler;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.handler.delegate.ColumnHandlerDelegate;
+import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -39,11 +39,11 @@ public class SetHandler extends AbstractColumnHandler<Set<Object>, Set<Object>> 
 
 
     @Override
-    public Set<Object> getInsertValue(Set<Object> facetValue, SaveContext context) {
+    public Set<Object> getInsertValue(Set<Object> facetValue, Dehydrator dehydrator) {
         if (facetValue == null) {
             return null;
         }
-        return copyFacetValues(facetValue, new HashSet<>(), context);
+        return copyFacetValues(facetValue, new HashSet<>(), dehydrator);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

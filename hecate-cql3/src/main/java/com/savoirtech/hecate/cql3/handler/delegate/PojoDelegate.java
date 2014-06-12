@@ -20,9 +20,9 @@ import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
 import com.savoirtech.hecate.cql3.handler.context.QueryContext;
-import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.meta.FacetMetadata;
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
+import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 import com.savoirtech.hecate.cql3.util.Callback;
 import com.savoirtech.hecate.cql3.value.Facet;
 
@@ -70,9 +70,9 @@ public class PojoDelegate implements ColumnHandlerDelegate {
     }
 
     @Override
-    public Object convertToInsertValue(Object facetValue, SaveContext saveContext) {
+    public Object convertToInsertValue(Object facetValue, Dehydrator dehydrator) {
         final Object identifier = identifierConverter.toCassandraValue(pojoMetadata.getIdentifierFacet().getFacet().get(facetValue));
-        saveContext.addPojo(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifier, facetValue);
+        dehydrator.dehydrate(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifier, facetValue);
         return identifier;
     }
 

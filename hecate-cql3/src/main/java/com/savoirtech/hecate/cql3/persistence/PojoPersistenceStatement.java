@@ -44,7 +44,7 @@ public class PojoPersistenceStatement {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PojoPersistenceStatement.class);
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Session session;
     private final PreparedStatement preparedStatement;
@@ -68,6 +68,7 @@ public class PojoPersistenceStatement {
 
     protected PojoPersistenceStatement(Session session, RegularStatement statement, PojoMapping pojoMapping) {
         this.session = session;
+        logger.info("{}: {}", pojoMapping.getPojoMetadata().getPojoType().getSimpleName(), statement);
         this.preparedStatement = session.prepare(statement);
         this.pojoMapping = pojoMapping;
     }
@@ -97,7 +98,7 @@ public class PojoPersistenceStatement {
     }
 
     protected ResultSet executeWithList(List<Object> parameters) {
-        LOGGER.debug("CQL: {} with parameters {}...", preparedStatement.getQueryString(), parameters);
+        logger.debug("CQL: {} with parameters {}...", preparedStatement.getQueryString(), parameters);
         return session.execute(preparedStatement.bind(parameters.toArray(new Object[parameters.size()])));
     }
 

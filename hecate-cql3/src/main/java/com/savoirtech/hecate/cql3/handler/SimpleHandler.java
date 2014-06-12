@@ -17,8 +17,8 @@
 package com.savoirtech.hecate.cql3.handler;
 
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.handler.delegate.ColumnHandlerDelegate;
+import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 
 import java.util.Arrays;
 
@@ -37,8 +37,8 @@ public class SimpleHandler extends AbstractColumnHandler<Object, Object> {
 
 
     @Override
-    public Object getInsertValue(Object facetValue, SaveContext context) {
-        return facetValue == null ? null : getDelegate().convertToInsertValue(facetValue, context);
+    public Object getInsertValue(Object facetValue, Dehydrator dehydrator) {
+        return facetValue == null ? null : getDelegate().convertToInsertValue(facetValue, dehydrator);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

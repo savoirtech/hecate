@@ -18,8 +18,8 @@ package com.savoirtech.hecate.cql3.handler;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.handler.delegate.ColumnHandlerDelegate;
+import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ public class ArrayHandler extends AbstractColumnHandler<List<Object>, Object> {
 
 
     @Override
-    public List<Object> getInsertValue(Object array, SaveContext context) {
+    public List<Object> getInsertValue(Object array, Dehydrator dehydrator) {
         if (array == null) {
             return null;
         }
@@ -55,7 +55,7 @@ public class ArrayHandler extends AbstractColumnHandler<List<Object>, Object> {
         final List<Object> columnValues = new ArrayList<>(length);
         for (int i = 0; i < length; ++i) {
             final Object value = Array.get(array, i);
-            columnValues.add(getDelegate().convertToInsertValue(value, context));
+            columnValues.add(getDelegate().convertToInsertValue(value, dehydrator));
         }
         return columnValues;
     }

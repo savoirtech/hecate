@@ -16,17 +16,8 @@
 
 package com.savoirtech.hecate.cql3.persistence;
 
-public interface Persister {
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
+public interface PersistenceContext {
 
-    PojoDelete delete();
-
-    PojoFindByKey findByKey();
-
-    PojoFindByKeys findByKeys();
-
-    PojoFindForDelete findForDelete();
+    IPojoSave createSave(Class<?> pojoType, String tableName);
 
 }

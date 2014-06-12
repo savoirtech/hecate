@@ -20,7 +20,7 @@ import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
 import com.savoirtech.hecate.cql3.handler.context.QueryContext;
-import com.savoirtech.hecate.cql3.handler.context.SaveContext;
+import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 import com.savoirtech.hecate.cql3.util.Callback;
 
 public class ScalarDelegate implements ColumnHandlerDelegate {
@@ -43,7 +43,7 @@ public class ScalarDelegate implements ColumnHandlerDelegate {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public Object convertToInsertValue(Object facetValue, SaveContext saveContext) {
+    public Object convertToInsertValue(Object facetValue, Dehydrator dehydrator) {
         return valueConverter.toCassandraValue(facetValue);
     }
 

@@ -18,8 +18,8 @@ package com.savoirtech.hecate.cql3.handler;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.handler.delegate.ColumnHandlerDelegate;
+import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,14 +45,14 @@ public class MapHandler extends AbstractColumnHandler<Map<Object, Object>, Map<O
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public Map<Object, Object> getInsertValue(Map<Object, Object> facetValue, SaveContext context) {
+    public Map<Object, Object> getInsertValue(Map<Object, Object> facetValue, Dehydrator dehydrator) {
         if (facetValue == null) {
             return null;
         }
         Map<Object, Object> columnValue = new HashMap<>();
         for (Map.Entry<Object, Object> entry : facetValue.entrySet()) {
             columnValue.put(keyConverter.toCassandraValue(entry.getKey()),
-                    getDelegate().convertToInsertValue(entry.getValue(), context));
+                    getDelegate().convertToInsertValue(entry.getValue(), dehydrator));
         }
         return columnValue;
     }

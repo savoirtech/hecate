@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.cql3.mapping.def;
 
+import com.datastax.driver.core.Session;
+import com.google.common.collect.MapMaker;
 import com.savoirtech.hecate.cql3.handler.ColumnHandlerFactory;
 import com.savoirtech.hecate.cql3.handler.def.DefaultColumnHandlerFactory;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
@@ -25,35 +27,52 @@ import com.savoirtech.hecate.cql3.meta.FacetMetadata;
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
 import com.savoirtech.hecate.cql3.meta.PojoMetadataFactory;
 import com.savoirtech.hecate.cql3.meta.def.DefaultPojoMetadataFactory;
+import com.savoirtech.hecate.cql3.schema.CreateVerifier;
+import com.savoirtech.hecate.cql3.schema.SchemaVerifier;
+
+import java.util.Map;
 
 public class DefaultPojoMappingFactory implements PojoMappingFactory {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
+    private final Session session;
     private PojoMetadataFactory pojoMetadataFactory = new DefaultPojoMetadataFactory();
     private ColumnHandlerFactory columnHandlerFactory = new DefaultColumnHandlerFactory();
+    private SchemaVerifier schemaVerifier = new CreateVerifier();
+    private final Map<String, PojoMapping> pojoMappings;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoMappingFactory() {
+    public DefaultPojoMappingFactory(Session session) {
+        this.session = session;
         this.pojoMetadataFactory = new DefaultPojoMetadataFactory();
         final DefaultColumnHandlerFactory handlerFactory = new DefaultColumnHandlerFactory();
         handlerFactory.setPojoMetadataFactory(pojoMetadataFactory);
         this.columnHandlerFactory = handlerFactory;
+        this.pojoMappings = new MapMaker().makeMap();
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // PojoMappingFactory Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+    @SuppressWarnings("unchecked")
     public PojoMapping getPojoMapping(Class<?> pojoType, String tableName) {
-        PojoMetadata pojoMetadata = pojoMetadataFactory.getPojoMetadata(pojoType);
-        final PojoMapping pojoMapping = new PojoMapping(pojoMetadata, tableName);
-        for (FacetMetadata facet : pojoMetadata.getFacets().values()) {
-            pojoMapping.addFacet(new FacetMapping(facet, columnHandlerFactory.getColumnHandler(facet)));
+        final String key = key(pojoType, tableName);
+        PojoMapping pojoMapping = pojoMappings.get(key);
+        if (pojoMapping == null) {
+            PojoMetadata pojoMetadata = pojoMetadataFactory.getPojoMetadata(pojoType);
+            pojoMapping = new PojoMapping(pojoMetadata, tableName);
+            for (FacetMetadata facet : pojoMetadata.getFacets().values()) {
+                pojoMapping.addFacet(new FacetMapping(facet, columnHandlerFactory.getColumnHandler(facet)));
+            }
+            schemaVerifier.verifySchema(session, pojoMapping);
+            pojoMappings.put(key, pojoMapping);
+            pojoMappings.put(key(pojoType, pojoMapping.getTableName()), pojoMapping);
         }
         return pojoMapping;
     }
@@ -62,7 +81,23 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    public void setColumnHandlerFactory(ColumnHandlerFactory columnHandlerFactory) {
+        this.columnHandlerFactory = columnHandlerFactory;
+    }
+
     public void setPojoMetadataFactory(PojoMetadataFactory pojoMetadataFactory) {
         this.pojoMetadataFactory = pojoMetadataFactory;
+    }
+
+    public void setSchemaVerifier(SchemaVerifier schemaVerifier) {
+        this.schemaVerifier = schemaVerifier;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    private String key(Class<?> pojoType, String tableName) {
+        return pojoType.getCanonicalName() + "@" + tableName;
     }
 }

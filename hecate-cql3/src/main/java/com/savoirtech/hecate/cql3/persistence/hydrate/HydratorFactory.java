@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.cql3.persistence.hydrate;
 
+import com.savoirtech.hecate.cql3.persistence.Hydrator;
+
 public interface HydratorFactory {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods

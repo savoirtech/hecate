@@ -23,8 +23,6 @@ import com.savoirtech.hecate.cql3.mapping.PojoMappingFactory;
 import com.savoirtech.hecate.cql3.mapping.def.DefaultPojoMappingFactory;
 import com.savoirtech.hecate.cql3.persistence.Persister;
 import com.savoirtech.hecate.cql3.persistence.PersisterFactory;
-import com.savoirtech.hecate.cql3.schema.CreateVerifier;
-import com.savoirtech.hecate.cql3.schema.SchemaVerifier;
 
 import java.util.Map;
 
@@ -34,8 +32,8 @@ public class DefaultPersisterFactory implements PersisterFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Session session;
-    private final PojoMappingFactory pojoMappingFactory = new DefaultPojoMappingFactory();
-    private SchemaVerifier schemaVerifier = new CreateVerifier();
+    private PojoMappingFactory pojoMappingFactory;
+
 
     private final Map<String, Persister> persisters;
 
@@ -43,7 +41,7 @@ public class DefaultPersisterFactory implements PersisterFactory {
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static final String key(Class<?> pojoType, String tableName) {
+    private static String key(Class<?> pojoType, String tableName) {
         return pojoType.getCanonicalName() + "@" + tableName;
     }
 
@@ -54,6 +52,7 @@ public class DefaultPersisterFactory implements PersisterFactory {
     public DefaultPersisterFactory(Session session) {
         this.session = session;
         this.persisters = new MapMaker().makeMap();
+        this.pojoMappingFactory = new DefaultPojoMappingFactory(session);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -66,7 +65,6 @@ public class DefaultPersisterFactory implements PersisterFactory {
         Persister persister = persisters.get(key);
         if (persister == null) {
             final PojoMapping pojoMapping = pojoMappingFactory.getPojoMapping(pojoType, tableName);
-            schemaVerifier.verifySchema(session, pojoMapping);
             persister = new DefaultPersister(session, pojoMapping);
             persisters.put(key, persister);
             if (tableName == null) {

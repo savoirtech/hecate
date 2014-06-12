@@ -14,52 +14,32 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3.handler;
+package com.savoirtech.hecate.cql3.persistence.def;
 
-import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.handler.delegate.ColumnHandlerDelegate;
-import com.savoirtech.hecate.cql3.persistence.Dehydrator;
+import com.savoirtech.hecate.cql3.persistence.Disintegrator;
 
-import java.util.ArrayList;
-import java.util.List;
+public class DefaultDisintegrator implements Disintegrator {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
-public class ListHandler extends AbstractColumnHandler<List<Object>, List<Object>> {
+    private final DefaultPersistenceContext persistenceContext;
+
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ListHandler(ColumnHandlerDelegate delegate) {
-        super(delegate, DataType.list(delegate.getDataType()));
+    public DefaultDisintegrator(DefaultPersistenceContext persistenceContext) {
+        this.persistenceContext = persistenceContext;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// ColumnHandler Implementation
+// Disintegrator Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
 
     @Override
-    public List<Object> getInsertValue(List<Object> facetValue, Dehydrator dehydrator) {
-        if (facetValue == null) {
-            return null;
-        }
-        return copyFacetValues(facetValue, new ArrayList<>(facetValue.size()), dehydrator);
-    }
+    public void disintegrate(Class<?> pojoType, String tableName, Iterable<Object> identifiers) {
 
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    @Override
-    protected List<Object> convertToFacetValue(List<Object> columnValues, ValueConverter converter) {
-        if (columnValues == null) {
-            return null;
-        }
-        return copyColumnValues(columnValues, new ArrayList<>(columnValues.size()), converter);
-    }
-
-    @Override
-    protected Iterable<Object> toColumnValues(List<Object> columnValue) {
-        return columnValue;
     }
 }

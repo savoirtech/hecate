@@ -20,8 +20,8 @@ import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
 import com.savoirtech.hecate.cql3.handler.context.QueryContext;
-import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.handler.delegate.ColumnHandlerDelegate;
+import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 import com.savoirtech.hecate.cql3.util.Callback;
 
 import java.util.Collection;
@@ -104,9 +104,9 @@ public abstract class AbstractColumnHandler<C, F> implements ColumnHandler<C, F>
         return facetValues;
     }
 
-    protected <T extends Collection<Object>> T copyFacetValues(Collection<Object> facetValues, T columnValues, SaveContext context) {
+    protected <T extends Collection<Object>> T copyFacetValues(Collection<Object> facetValues, T columnValues, Dehydrator dehydrator) {
         for (Object value : facetValues) {
-            columnValues.add(getDelegate().convertToInsertValue(value, context));
+            columnValues.add(getDelegate().convertToInsertValue(value, dehydrator));
         }
         return columnValues;
     }

@@ -14,33 +14,31 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3.persistence;
+package com.savoirtech.hecate.cql3.persistence.def;
 
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.savoirtech.hecate.cql3.handler.context.SaveContext;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
+import com.savoirtech.hecate.cql3.persistence.Dehydrator;
+import com.savoirtech.hecate.cql3.persistence.IPojoSave;
+import com.savoirtech.hecate.cql3.persistence.PojoPersistenceStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PojoSave extends PojoPersistenceStatement {
-//----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
+public class DefaultPojoSave extends PojoPersistenceStatement implements IPojoSave {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PojoSave.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPojoSave.class);
 
-//----------------------------------------------------------------------------------------------------------------------
-// Constructors
-//----------------------------------------------------------------------------------------------------------------------
+    private final DefaultPersistenceContext persistenceContext;
 
-    public PojoSave(Session session, PojoMapping mapping) {
-        super(session, createInsert(mapping), mapping);
+    public DefaultPojoSave(DefaultPersistenceContext persistenceContext, Session session, PojoMapping pojoMapping) {
+        super(session, createInsert(pojoMapping), pojoMapping);
+        this.persistenceContext = persistenceContext;
     }
 
     private static Insert createInsert(PojoMapping mapping) {
@@ -53,15 +51,17 @@ public class PojoSave extends PojoPersistenceStatement {
         return insert;
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
 
-    public void execute(Object pojo, SaveContext saveContext) {
+    @Override
+    public void execute(Object pojo) {
+        execute(persistenceContext.newDehydrator(), pojo);
+    }
+
+    void execute(Dehydrator dehydrator, Object pojo) {
         List<Object> parameters = new ArrayList<>(getPojoMapping().getFacetMappings().size());
         for (FacetMapping mapping : getPojoMapping().getFacetMappings()) {
             Object facetValue = mapping.getFacetMetadata().getFacet().get(pojo);
-            parameters.add(mapping.getColumnHandler().getInsertValue(facetValue, saveContext));
+            parameters.add(mapping.getColumnHandler().getInsertValue(facetValue, dehydrator));
         }
         parameters.add(getPojoMapping().getPojoMetadata().getDefaultTtl());
         executeWithList(parameters);

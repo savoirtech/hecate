@@ -16,60 +16,61 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
-import com.datastax.driver.core.Session;
-import com.savoirtech.hecate.cql3.mapping.PojoMapping;
-import com.savoirtech.hecate.cql3.persistence.Persister;
-import com.savoirtech.hecate.cql3.persistence.PojoDelete;
-import com.savoirtech.hecate.cql3.persistence.PojoFindByKey;
-import com.savoirtech.hecate.cql3.persistence.PojoFindByKeys;
-import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
+import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 
-public class DefaultPersister implements Persister {
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class DefaultDehydrator implements Dehydrator {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final PojoFindByKey findByKey;
-    private final PojoFindByKeys findByKeys;
-    private final PojoDelete delete;
-    private final PojoFindForDelete findForDelete;
+    private final Queue<PersistenceTask> tasks = new LinkedList<>();
+    private final DefaultPersistenceContext persistenceContext;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPersister(Session session, PojoMapping mapping) {
-        this.findByKey = new PojoFindByKey(session, mapping);
-        this.findByKeys = new PojoFindByKeys(session, mapping);
-        this.delete = new PojoDelete(session, mapping);
-        this.findForDelete = mapping.isCascading() ? new PojoFindForDelete(session, mapping) : null;
+    public DefaultDehydrator(DefaultPersistenceContext persistenceContext) {
+        this.persistenceContext = persistenceContext;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Persister Implementation
+// Dehydrator Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public PojoDelete delete() {
-        return delete;
-    }
-
-    @Override
-    public PojoFindByKey findByKey() {
-        return findByKey;
-    }
-
-    @Override
-    public PojoFindByKeys findByKeys() {
-        return findByKeys;
+    public void dehydrate(Class<?> pojoType, String tableName, Object identifier, Object pojo) {
+        tasks.add(new DehydratePojoTask(pojoType, tableName, pojo));
+        while (!tasks.isEmpty()) {
+            tasks.poll().execute();
+        }
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Other Methods
+// Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Override
-    public PojoFindForDelete findForDelete() {
-        return findForDelete;
+    private final class DehydratePojoTask implements PersistenceTask {
+        private final Class<?> pojoType;
+        private final String tableName;
+        private final Object pojo;
+
+        public DehydratePojoTask(Class<?> pojoType, String tableName, Object pojo) {
+            this.pojoType = pojoType;
+            this.tableName = tableName;
+            this.pojo = pojo;
+        }
+
+        @Override
+        public void execute() {
+            persistenceContext.createSave(pojoType, tableName).execute(DefaultDehydrator.this, pojo);
+        }
+    }
+
+    private interface PersistenceTask {
+        void execute();
     }
 }
