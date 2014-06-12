@@ -16,7 +16,7 @@
 
 package com.savoirtech.hecate.cql3.meta;
 
-import com.savoirtech.hecate.cql3.util.CassandraUtils;
+import com.savoirtech.hecate.cql3.util.HecateUtils;
 import com.savoirtech.hecate.cql3.value.Facet;
 import org.apache.commons.lang3.Validate;
 
@@ -38,11 +38,11 @@ public class FacetMetadata {
 
     public FacetMetadata(Facet facet) {
         this.facet = Validate.notNull(facet, "Facet cannot be null.");
-        this.columnName = CassandraUtils.columnName(facet);
-        this.identifier = CassandraUtils.isIdentifier(facet);
-        this.tableName = CassandraUtils.tableName(facet);
-        this.indexName = CassandraUtils.indexName(facet);
-        this.indexed = CassandraUtils.isIndexed(facet);
+        this.columnName = HecateUtils.columnName(facet);
+        this.identifier = HecateUtils.isIdentifier(facet);
+        this.tableName = HecateUtils.tableName(facet);
+        this.indexName = HecateUtils.indexName(facet);
+        this.indexed = HecateUtils.isIndexed(facet);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

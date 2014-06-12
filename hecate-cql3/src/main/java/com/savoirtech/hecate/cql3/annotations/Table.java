@@ -21,7 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static com.savoirtech.hecate.cql3.util.CassandraUtils.*;
+import static com.savoirtech.hecate.cql3.util.HecateUtils.*;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Retention(RetentionPolicy.RUNTIME)

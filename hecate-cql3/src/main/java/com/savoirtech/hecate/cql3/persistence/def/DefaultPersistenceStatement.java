@@ -22,19 +22,14 @@ import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
-import org.apache.commons.lang3.Validate;
+import com.savoirtech.hecate.cql3.util.HecateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 public class DefaultPersistenceStatement {
 //----------------------------------------------------------------------------------------------------------------------
@@ -54,10 +49,10 @@ public class DefaultPersistenceStatement {
 
     protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping, List<FacetMapping> parameterMappings) {
         this.persistenceContext = persistenceContext;
+        logger.info("{}: {}", pojoMapping.getPojoMetadata().getPojoType().getSimpleName(), statement);
         this.preparedStatement = persistenceContext.getSession().prepare(statement);
         this.pojoMapping = pojoMapping;
         this.parameterMappings = new ArrayList<>(parameterMappings);
-        logger.info("{}: {}", pojoMapping.getPojoMetadata().getPojoType().getSimpleName(), statement);
     }
 
     protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping, FacetMapping... parameterMappings) {
@@ -89,54 +84,7 @@ public class DefaultPersistenceStatement {
     }
 
     protected ResultSet executeStatementList(List<Object> parameters) {
-        Validate.isTrue(parameters.size() == parameterMappings.size(), "Expected %d parameters, but received %d.", parameterMappings.size(), parameters.size());
-        return executeStatementRaw(convertParameters(parameters));
-    }
-
-    private List<Object> convertParameters(List<Object> parameters) {
-        if (parameters.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<Object> converted = new ArrayList<>(parameters.size());
-        int index = 0;
-        for (Object parameter : parameters) {
-            converted.add(convert(parameter, parameterMappings.get(index)));
-            index++;
-        }
-        return converted;
-    }
-
-    @SuppressWarnings("unchecked")
-    private Object convert(Object parameter, FacetMapping facetMapping) {
-        if (parameter == null) {
-            return null;
-        }
-        if (parameter.getClass().isArray()) {
-            return convertArray(parameter, facetMapping);
-        }
-        if (List.class.isInstance(parameter)) {
-            return convertCollectionParameter((List<Object>) parameter, new LinkedList<>(), facetMapping);
-        }
-        if (Set.class.isInstance(parameter)) {
-            return convertCollectionParameter((Set<Object>) parameter, new HashSet<>(), facetMapping);
-        }
-        return facetMapping.getColumnHandler().convertElement(parameter);
-    }
-
-    private Object convertArray(Object parameter, FacetMapping facetMapping) {
-        final int length = Array.getLength(parameter);
-        Object copy = Array.newInstance(parameter.getClass().getComponentType(), length);
-        for (int i = 0; i < length; ++i) {
-            Array.set(copy, i, facetMapping.getColumnHandler().convertElement(Array.get(parameter, i)));
-        }
-        return copy;
-    }
-
-    private <T extends Collection<Object>> T convertCollectionParameter(Collection<Object> parameters, T converted, FacetMapping facetMapping) {
-        for (Object parameterElement : parameters) {
-            converted.add(facetMapping.getColumnHandler().convertElement(parameterElement));
-        }
-        return converted;
+        return executeStatementRaw(HecateUtils.convertParameters(parameters, parameterMappings));
     }
 
     protected ResultSet executeStatementRaw(List<Object> parameters) {

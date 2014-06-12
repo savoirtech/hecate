@@ -19,7 +19,7 @@ package com.savoirtech.hecate.cql3.meta;
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
 import com.savoirtech.hecate.cql3.exception.HecateException;
-import com.savoirtech.hecate.cql3.util.CassandraUtils;
+import com.savoirtech.hecate.cql3.util.HecateUtils;
 import org.apache.commons.lang3.Validate;
 
 import java.util.Collections;
@@ -44,8 +44,8 @@ public class PojoMetadata {
     public PojoMetadata(Class<?> pojoType) {
         this.pojoType = Validate.notNull(pojoType, "POJO type cannot be null.");
         Validate.isTrue(ReflectionUtils.isInstantiable(pojoType), "Unable to instantiate POJOs of type %s", pojoType.getName());
-        this.defaultTableName = CassandraUtils.tableName(pojoType);
-        this.timeToLive = CassandraUtils.ttl(pojoType);
+        this.defaultTableName = HecateUtils.tableName(pojoType);
+        this.timeToLive = HecateUtils.ttl(pojoType);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

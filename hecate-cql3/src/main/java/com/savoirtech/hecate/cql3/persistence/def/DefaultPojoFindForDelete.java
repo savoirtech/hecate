@@ -23,7 +23,7 @@ import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.persistence.Evaporator;
 import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
-import com.savoirtech.hecate.cql3.util.CassandraUtils;
+import com.savoirtech.hecate.cql3.util.HecateUtils;
 
 import java.util.List;
 
@@ -72,7 +72,7 @@ public class DefaultPojoFindForDelete extends DefaultPersistenceStatement implem
         int columnIndex = 0;
         for (FacetMapping mapping : getPojoMapping().getFacetMappings()) {
             if (mapping.getColumnHandler().isCascading()) {
-                Object columnValue = CassandraUtils.getValue(row, columnIndex, mapping.getColumnHandler().getColumnType());
+                Object columnValue = HecateUtils.getValue(row, columnIndex, mapping.getColumnHandler().getColumnType());
                 mapping.getColumnHandler().getDeletionIdentifiers(columnValue, evaporator);
                 columnIndex++;
             }

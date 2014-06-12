@@ -25,15 +25,9 @@ public interface PojoQueryBuilder<P> {
 
     PojoQueryBuilder<P> eq(String facetName);
 
-    PojoQueryBuilder<P> eq(String facetName, Object value);
-
     PojoQueryBuilder<P> gt(String facetName);
 
-    PojoQueryBuilder<P> gt(String facetName, Object value);
-
     PojoQueryBuilder<P> gte(String facetName);
-
-    PojoQueryBuilder<P> gte(String facetName, Object value);
 
     PojoQueryBuilder<P> identifierEquals();
 
@@ -41,13 +35,7 @@ public interface PojoQueryBuilder<P> {
 
     PojoQueryBuilder<P> in(String facetName);
 
-    PojoQueryBuilder<P> in(String facetName, Object value);
-
     PojoQueryBuilder<P> lt(String facetName);
 
-    PojoQueryBuilder<P> lt(String facetName, Object value);
-
     PojoQueryBuilder<P> lte(String facetName);
-
-    PojoQueryBuilder<P> lte(String facetName, Object value);
 }

@@ -64,34 +64,19 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public DefaultPojoQueryBuilder<P> eq(String facetName) {
-        return eq(facetName, QueryBuilder.bindMarker());
-    }
-
-    @Override
-    public DefaultPojoQueryBuilder<P> eq(String facetName, Object value) {
-        where.and(QueryBuilder.eq(lookupColumn(facetName), value));
+        where.and(QueryBuilder.eq(lookupColumn(facetName), QueryBuilder.bindMarker()));
         return this;
     }
 
     @Override
     public DefaultPojoQueryBuilder<P> gt(String facetName) {
-        return gt(facetName, QueryBuilder.bindMarker());
-    }
-
-    @Override
-    public DefaultPojoQueryBuilder<P> gt(String facetName, Object value) {
-        where.and(QueryBuilder.gt(lookupColumn(facetName), value));
+        where.and(QueryBuilder.gt(lookupColumn(facetName), QueryBuilder.bindMarker()));
         return this;
     }
 
     @Override
     public DefaultPojoQueryBuilder<P> gte(String facetName) {
-        return gte(facetName, QueryBuilder.bindMarker());
-    }
-
-    @Override
-    public DefaultPojoQueryBuilder<P> gte(String facetName, Object value) {
-        where.and(QueryBuilder.gte(lookupColumn(facetName), value));
+        where.and(QueryBuilder.gte(lookupColumn(facetName), QueryBuilder.bindMarker()));
         return this;
     }
 
@@ -107,34 +92,19 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public DefaultPojoQueryBuilder<P> in(String facetName) {
-        return in(facetName, QueryBuilder.bindMarker());
-    }
-
-    @Override
-    public DefaultPojoQueryBuilder<P> in(String facetName, Object value) {
-        where.and(QueryBuilder.in(lookupColumn(facetName), value));
+        where.and(QueryBuilder.in(lookupColumn(facetName), QueryBuilder.bindMarker()));
         return this;
     }
 
     @Override
     public DefaultPojoQueryBuilder<P> lt(String facetName) {
-        return lt(facetName, QueryBuilder.bindMarker());
-    }
-
-    @Override
-    public DefaultPojoQueryBuilder<P> lt(String facetName, Object value) {
-        where.and(QueryBuilder.lt(lookupColumn(facetName), value));
+        QueryBuilder.lt(lookupColumn(facetName), QueryBuilder.bindMarker());
         return this;
     }
 
     @Override
     public DefaultPojoQueryBuilder<P> lte(String facetName) {
-        return lte(facetName, QueryBuilder.bindMarker());
-    }
-
-    @Override
-    public DefaultPojoQueryBuilder<P> lte(String facetName, Object value) {
-        where.and(QueryBuilder.lte(lookupColumn(facetName), value));
+        where.and(QueryBuilder.lte(lookupColumn(facetName), QueryBuilder.bindMarker()));
         return this;
     }
 

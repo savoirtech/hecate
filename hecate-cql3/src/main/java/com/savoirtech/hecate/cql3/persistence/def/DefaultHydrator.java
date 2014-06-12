@@ -22,7 +22,7 @@ import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.util.Callback;
-import com.savoirtech.hecate.cql3.util.CassandraUtils;
+import com.savoirtech.hecate.cql3.util.HecateUtils;
 import com.savoirtech.hecate.cql3.value.Facet;
 
 import java.util.List;
@@ -44,11 +44,11 @@ public class DefaultHydrator extends PersistenceTaskExecutor implements Hydrator
     @SuppressWarnings("unchecked")
     public <P> P hydrate(PojoMapping pojoMappinge, Row row) {
         final ColumnHandler<Object, Object> identifierHandler = pojoMappinge.getIdentifierMapping().getColumnHandler();
-        Object identifierColumnValue = CassandraUtils.getValue(row, 0, identifierHandler.getColumnType());
+        Object identifierColumnValue = HecateUtils.getValue(row, 0, identifierHandler.getColumnType());
         Object pojo = newPojo(pojoMappinge.getPojoMetadata().getPojoType(), identifierHandler.convertIdentifier(identifierColumnValue));
         int columnIndex = 0;
         for (FacetMapping facetMapping : pojoMappinge.getFacetMappings()) {
-            Object columnValue = CassandraUtils.getValue(row, columnIndex, facetMapping.getColumnHandler().getColumnType());
+            Object columnValue = HecateUtils.getValue(row, columnIndex, facetMapping.getColumnHandler().getColumnType());
             facetMapping.getColumnHandler().injectFacetValue(new SetFacetCallback(pojo, facetMapping.getFacetMetadata().getFacet()), columnValue, this);
             columnIndex++;
         }
