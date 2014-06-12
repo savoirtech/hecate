@@ -23,9 +23,15 @@ public interface PojoQueryBuilder<P> {
 
     PojoQuery<P> build();
 
+    PojoQueryBuilder<P> eq(String facetName, Object value);
+
     PojoQueryBuilder<P> eq(String facetName);
 
+    PojoQueryBuilder<P> gt(String facetName, Object value);
+
     PojoQueryBuilder<P> gt(String facetName);
+
+    PojoQueryBuilder<P> gte(String facetName, Object value);
 
     PojoQueryBuilder<P> gte(String facetName);
 
@@ -33,9 +39,15 @@ public interface PojoQueryBuilder<P> {
 
     PojoQueryBuilder<P> identifierIn();
 
+    PojoQueryBuilder<P> in(String facetName, Object value);
+
     PojoQueryBuilder<P> in(String facetName);
 
+    PojoQueryBuilder<P> lt(String facetName, Object value);
+
     PojoQueryBuilder<P> lt(String facetName);
+
+    PojoQueryBuilder<P> lte(String facetName, Object value);
 
     PojoQueryBuilder<P> lte(String facetName);
 }

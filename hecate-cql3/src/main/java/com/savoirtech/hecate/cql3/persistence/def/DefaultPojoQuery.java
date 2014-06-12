@@ -35,9 +35,16 @@ public class DefaultPojoQuery<P> extends DefaultPersistenceStatement implements 
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
+
     public DefaultPojoQuery(DefaultPersistenceContext persistenceContext, Select.Where statement, PojoMapping pojoMapping, List<FacetMapping> parameterMappings) {
         super(persistenceContext, statement, pojoMapping, parameterMappings);
     }
+
+    public DefaultPojoQuery(DefaultPersistenceContext persistenceContext, Select.Where statement, PojoMapping pojoMapping, List<InjectedParameter> injectedParameters, List<FacetMapping> parameterMappings) {
+        super(persistenceContext, statement, pojoMapping, injectedParameters, parameterMappings);
+    }
+
+
 
 //----------------------------------------------------------------------------------------------------------------------
 // PojoQuery Implementation

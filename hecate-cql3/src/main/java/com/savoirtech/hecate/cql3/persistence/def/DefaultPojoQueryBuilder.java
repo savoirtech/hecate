@@ -34,6 +34,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     private final PojoMapping mapping;
     private final Select.Where where;
     private final List<FacetMapping> parameterMappings = new LinkedList<>();
+    private final List<InjectedParameter> injectedParameters = new LinkedList<>();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -59,7 +60,13 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public DefaultPojoQuery<P> build() {
-        return new DefaultPojoQuery<>(persistenceContext, where, mapping, parameterMappings);
+        return new DefaultPojoQuery<>(persistenceContext, where, mapping, injectedParameters, parameterMappings);
+    }
+
+    @Override
+    public PojoQueryBuilder<P> eq(String facetName, Object value) {
+        injectedParameters.add(new InjectedParameter(parameterMappings.size(), value));
+        return eq(facetName);
     }
 
     @Override
@@ -69,9 +76,21 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     }
 
     @Override
+    public PojoQueryBuilder<P> gt(String facetName, Object value) {
+        injectedParameters.add(new InjectedParameter(parameterMappings.size(), value));
+        return gt(facetName);
+    }
+
+    @Override
     public DefaultPojoQueryBuilder<P> gt(String facetName) {
         where.and(QueryBuilder.gt(lookupColumn(facetName), QueryBuilder.bindMarker()));
         return this;
+    }
+
+    @Override
+    public PojoQueryBuilder<P> gte(String facetName, Object value) {
+        injectedParameters.add(new InjectedParameter(parameterMappings.size(), value));
+        return gte(facetName);
     }
 
     @Override
@@ -91,9 +110,21 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     }
 
     @Override
+    public PojoQueryBuilder<P> in(String facetName, Object value) {
+        injectedParameters.add(new InjectedParameter(parameterMappings.size(), value));
+        return in(facetName);
+    }
+
+    @Override
     public DefaultPojoQueryBuilder<P> in(String facetName) {
         where.and(QueryBuilder.in(lookupColumn(facetName), QueryBuilder.bindMarker()));
         return this;
+    }
+
+    @Override
+    public PojoQueryBuilder<P> lt(String facetName, Object value) {
+        injectedParameters.add(new InjectedParameter(parameterMappings.size(), value));
+        return lt(facetName);
     }
 
     @Override
@@ -102,6 +133,12 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         return this;
     }
 
+    @Override
+    public PojoQueryBuilder<P> lte(String facetName, Object value) {
+        injectedParameters.add(new InjectedParameter(parameterMappings.size(), value));
+        return lte(facetName);
+    }
+    
     @Override
     public DefaultPojoQueryBuilder<P> lte(String facetName) {
         where.and(QueryBuilder.lte(lookupColumn(facetName), QueryBuilder.bindMarker()));

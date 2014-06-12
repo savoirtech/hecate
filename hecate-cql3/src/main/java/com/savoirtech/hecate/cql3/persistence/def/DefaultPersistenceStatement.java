@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -42,21 +43,38 @@ public class DefaultPersistenceStatement {
     private final PreparedStatement preparedStatement;
     private final PojoMapping pojoMapping;
     private final List<FacetMapping> parameterMappings;
+    private final List<InjectedParameter> injectedParameters;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
+    protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping, FacetMapping... parameterMappings) {
+        this(persistenceContext, statement, pojoMapping, Collections.<InjectedParameter>emptyList(), Arrays.asList(parameterMappings));
+    }
+
     protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping, List<FacetMapping> parameterMappings) {
+        this(persistenceContext, statement, pojoMapping, Collections.<InjectedParameter>emptyList(), parameterMappings);
+    }
+
+    protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping, List<InjectedParameter> injectedParameters, List<FacetMapping> parameterMappings) {
         this.persistenceContext = persistenceContext;
-        logger.info("{}: {}", pojoMapping.getPojoMetadata().getPojoType().getSimpleName(), statement);
+        this.injectedParameters = new ArrayList<>(injectedParameters);
+
+        if (injectedParameters.isEmpty()) {
+            logger.info("{}: {}", pojoMapping.getPojoMetadata().getPojoType().getSimpleName(), statement, injectedParameters);
+        } else {
+            Collections.sort(this.injectedParameters);
+            logger.info("{}: {} with injected parameters {}", pojoMapping.getPojoMetadata().getPojoType().getSimpleName(), statement, injectedParameters);
+        }
+
         this.preparedStatement = persistenceContext.getSession().prepare(statement);
         this.pojoMapping = pojoMapping;
         this.parameterMappings = new ArrayList<>(parameterMappings);
     }
 
-    protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping, FacetMapping... parameterMappings) {
-        this(persistenceContext, statement, pojoMapping, Arrays.asList(parameterMappings));
+    protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping, List<InjectedParameter> injectedParameters, FacetMapping... parameterMappings) {
+        this(persistenceContext, statement, pojoMapping, injectedParameters, Arrays.asList(parameterMappings));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -84,7 +102,19 @@ public class DefaultPersistenceStatement {
     }
 
     protected ResultSet executeStatementList(List<Object> parameters) {
-        return executeStatementRaw(HecateUtils.convertParameters(parameters, parameterMappings));
+        return executeStatementRaw(HecateUtils.convertParameters(injected(parameters), parameterMappings));
+    }
+
+    private List<Object> injected(List<Object> parameters) {
+        if (injectedParameters.isEmpty()) {
+            return parameters;
+        }
+        final List<Object> injected = new ArrayList<>(parameters.size() + injectedParameters.size());
+        injected.addAll(parameters);
+        for (InjectedParameter parameter : injectedParameters) {
+            parameter.injectInto(injected);
+        }
+        return injected;
     }
 
     protected ResultSet executeStatementRaw(List<Object> parameters) {

@@ -175,6 +175,22 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
     }
 
     @Test
+    public void testWithInjectedParameters() {
+        DefaultPersistenceContext context = new DefaultPersistenceContext(connect());
+
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(context);
+
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("Duke");
+        dao.save(pojo);
+
+        final PojoQuery<SimplePojo> query = context.find(SimplePojo.class).eq("name", "Duke").build();
+        SimplePojo found = query.execute().one();
+        assertNotNull(found);
+    }
+
+    @Test
     public void testWithArrayField() {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
