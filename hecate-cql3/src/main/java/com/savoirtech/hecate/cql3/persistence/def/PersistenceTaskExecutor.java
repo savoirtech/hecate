@@ -16,13 +16,13 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.savoirtech.hecate.cql3.ReflectionUtils;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -31,12 +31,14 @@ public class PersistenceTaskExecutor {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
+    public static final int DEFAULT_POJO_CACHE_SIZE = 5000;
+
     private final DefaultPersistenceContext persistenceContext;
     private final Queue<PersistenceTask> queue = new LinkedList<>();
 
     private final Set<String> visitedCache = new HashSet<>();
 
-    private final Map<String, Object> pojoCache = new HashMap<>();
+    private final Cache<String, Object> pojoCache = CacheBuilder.newBuilder().maximumSize(DEFAULT_POJO_CACHE_SIZE).build();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -60,22 +62,9 @@ public class PersistenceTaskExecutor {
         }
     }
 
-    protected boolean isVisited(Class<?> pojoType, String tableName, Object identifier) {
-        final String key = visitedCacheKey(pojoType, tableName, identifier);
-        if (visitedCache.contains(key)) {
-            return true;
-        }
-        visitedCache.add(key);
-        return false;
-    }
-
-    private String visitedCacheKey(Class<?> pojoType, String tableName, Object identifier) {
-        return pojoType.getName() + ":" + tableName + ":" + identifier;
-    }
-
     protected Object newPojo(Class<?> pojoType, Object identifier) {
         final String key = pojoCacheKey(pojoType, identifier);
-        Object pojo = pojoCache.get(key);
+        Object pojo = pojoCache.getIfPresent(key);
         if (pojo == null) {
             pojo = ReflectionUtils.instantiate(pojoType);
             pojoCache.put(key, pojo);
@@ -97,5 +86,9 @@ public class PersistenceTaskExecutor {
             }
         }
         return pruned;
+    }
+
+    private String visitedCacheKey(Class<?> pojoType, String tableName, Object identifier) {
+        return pojoType.getName() + ":" + tableName + ":" + identifier;
     }
 }
