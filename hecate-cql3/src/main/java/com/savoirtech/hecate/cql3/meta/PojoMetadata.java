@@ -115,15 +115,24 @@ public class PojoMetadata {
 //----------------------------------------------------------------------------------------------------------------------
 
     public void addFacet(FacetMetadata facetMetadata) {
-        facets.put(facetMetadata.getColumnName(), facetMetadata);
+        final String facetName = facetMetadata.getFacet().getName();
+        if (facets.containsKey(facetName)) {
+            throw new HecateException(String.format("Duplicate facets found (%s).", facetName));
+        }
+        facets.put(facetName, facetMetadata);
         if (facetMetadata.isIdentifier()) {
             if (identifierFacet != null) {
-                throw new HecateException(String.format("Duplicate identifiers found %s and %s.", facetMetadata.getColumnName(), identifierFacet.getColumnName()));
+                throw new HecateException(String.format("Duplicate identifiers found %s and %s.", facetName, identifierFacet.getFacet().getName()));
             }
             identifierFacet = facetMetadata;
         }
     }
 
+    /**
+     * Returns a mapping from the facet's name to the facet.
+     *
+     * @return a mapping from the facet's name to the facet
+     */
     public Map<String, FacetMetadata> getFacets() {
         return Collections.unmodifiableMap(facets);
     }
