@@ -23,6 +23,7 @@ import com.savoirtech.hecate.cql3.entities.SimplePojo;
 import com.savoirtech.hecate.cql3.persistence.PojoQuery;
 import com.savoirtech.hecate.cql3.persistence.def.DefaultPersistenceContext;
 import com.savoirtech.hecate.cql3.test.CassandraTestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -174,6 +175,22 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertNotNull(found);
     }
 
+    @Test
+    @Ignore("Need to figure this out (allow filtering required for anded queries)")
+    public void testWithMixedParameters() {
+        DefaultPersistenceContext context = new DefaultPersistenceContext(connect());
+
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(context);
+
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("Nums");
+        pojo.setNums(SimplePojo.Nums.Three);
+        dao.save(pojo);
+        final PojoQuery<SimplePojo> query = context.find(SimplePojo.class).eq("nums").eq("name", "Duke").build();
+        SimplePojo found = query.execute(SimplePojo.Nums.Three).one();
+        assertNotNull(found);
+    }
     @Test
     public void testWithInjectedParameters() {
         DefaultPersistenceContext context = new DefaultPersistenceContext(connect());
