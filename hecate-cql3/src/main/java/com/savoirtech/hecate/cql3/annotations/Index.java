@@ -16,17 +16,19 @@
 
 package com.savoirtech.hecate.cql3.annotations;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface ColumnName {
+@Target({ElementType.FIELD, ElementType.METHOD})
+public @interface Index {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    String value();
+    String name() default StringUtils.EMPTY;
 }

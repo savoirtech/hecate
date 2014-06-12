@@ -21,7 +21,7 @@ import com.datastax.driver.core.Row;
 import com.google.common.collect.Lists;
 import com.savoirtech.hecate.cql3.annotations.Id;
 import com.savoirtech.hecate.cql3.annotations.IdColumn;
-import com.savoirtech.hecate.cql3.annotations.TableName;
+import com.savoirtech.hecate.cql3.annotations.Table;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericCqlDao;
 import com.savoirtech.hecate.cql3.dao.abstracts.GenericPojoGraphDao;
 import com.savoirtech.hecate.cql3.exception.HecateException;
@@ -457,12 +457,13 @@ public class ReflectionUtils {
         }
     }
 
+
     public static String tableName(Field field) {
-        if (field.isAnnotationPresent(TableName.class)) {
-            return field.getAnnotation(TableName.class).value();
-        } else {
-            return field.getName();
+        Table annot = field.getAnnotation(Table.class);
+        if (annot != null && StringUtils.isNotEmpty(annot.name())) {
+            return annot.name();
         }
+        return field.getName();
     }
 
     public static Class typeToClass(Type type, ClassLoader cl) throws ClassNotFoundException {

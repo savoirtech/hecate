@@ -17,7 +17,7 @@
 package com.savoirtech.hecate.cql3.entities;
 
 import com.savoirtech.hecate.cql3.annotations.IdColumn;
-import com.savoirtech.hecate.cql3.annotations.TableName;
+import com.savoirtech.hecate.cql3.annotations.Table;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,19 +34,19 @@ public class Parent {
     @IdColumn
     long id;
 
-    @TableName("child")
+    @Table(name = "child")
     Child child;
 
-    @TableName("childlist")
+    @Table(name = "childlist")
     List<Child> childList = new ArrayList<>();
 
-    @TableName("childset")
+    @Table(name = "childset")
     Set<Child> childSet = new HashSet<>();
 
-    @TableName("childmap")
+    @Table(name = "childmap")
     Map<String, Child> childMap = new HashMap<>();
 
-    @TableName("longchildmap")
+    @Table(name = "longchildmap")
     Map<Long, Child> longChildMap = new HashMap<>();
 
 //----------------------------------------------------------------------------------------------------------------------

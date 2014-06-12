@@ -63,7 +63,7 @@ public class DefaultPojoSave extends DefaultPersistenceStatement implements Pojo
             final Object facetValue = mapping.getFacetMetadata().getFacet().get(pojo);
             parameters.add(mapping.getColumnHandler().getInsertValue(facetValue, dehydrator));
         }
-        parameters.add(getPojoMapping().getPojoMetadata().getDefaultTtl());
+        parameters.add(getPojoMapping().getPojoMetadata().getTimeToLive());
         executeStatementRaw(parameters);
     }
 }

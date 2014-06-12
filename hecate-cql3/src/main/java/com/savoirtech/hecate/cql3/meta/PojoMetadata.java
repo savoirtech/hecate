@@ -18,9 +18,8 @@ package com.savoirtech.hecate.cql3.meta;
 
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
-import com.savoirtech.hecate.cql3.annotations.TableName;
-import com.savoirtech.hecate.cql3.annotations.Ttl;
 import com.savoirtech.hecate.cql3.exception.HecateException;
+import com.savoirtech.hecate.cql3.util.CassandraUtils;
 import org.apache.commons.lang3.Validate;
 
 import java.util.Collections;
@@ -34,18 +33,9 @@ public class PojoMetadata {
 
     private final Class<?> pojoType;
     private final String defaultTableName;
-    private final int defaultTtl;
+    private final int timeToLive;
     private final Map<String, FacetMetadata> facets = new HashMap<>();
     private FacetMetadata identifierFacet;
-
-//----------------------------------------------------------------------------------------------------------------------
-// Static Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    static String tableNameOf(Class<?> pojoType) {
-        TableName annot = pojoType.getAnnotation(TableName.class);
-        return annot == null ? pojoType.getSimpleName() : annot.value();
-    }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -54,13 +44,8 @@ public class PojoMetadata {
     public PojoMetadata(Class<?> pojoType) {
         this.pojoType = Validate.notNull(pojoType, "POJO type cannot be null.");
         Validate.isTrue(ReflectionUtils.isInstantiable(pojoType), "Unable to instantiate POJOs of type %s", pojoType.getName());
-        this.defaultTableName = tableNameOf(pojoType);
-        this.defaultTtl = timeToLiveOf(pojoType);
-    }
-
-    private static int timeToLiveOf(Class<?> pojoType) {
-        Ttl annot = pojoType.getAnnotation(Ttl.class);
-        return annot == null ? 0 : annot.value();
+        this.defaultTableName = CassandraUtils.tableName(pojoType);
+        this.timeToLive = CassandraUtils.ttl(pojoType);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -71,8 +56,8 @@ public class PojoMetadata {
         return defaultTableName;
     }
 
-    public Integer getDefaultTtl() {
-        return defaultTtl;
+    public int getTimeToLive() {
+        return timeToLive;
     }
 
     public FacetMetadata getIdentifierFacet() {

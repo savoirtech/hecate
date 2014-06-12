@@ -140,12 +140,8 @@ public class DefaultPersistenceStatement {
     }
 
     protected ResultSet executeStatementRaw(List<Object> parameters) {
-        logger.debug("CQL: {} with parameters {}...", preparedStatement.getQueryString(), parameters);
+        logger.debug("CQL: {} with parameters {}", preparedStatement.getQueryString(), parameters);
         BoundStatement boundStatement = preparedStatement.bind(parameters.toArray(new Object[parameters.size()]));
-//        for (Object parameter : parameters) {
-//            logger.debug("Binding value {}...", parameter);
-//            bind(parameter);
-//        }
         return persistenceContext.getSession().execute(boundStatement);
     }
 

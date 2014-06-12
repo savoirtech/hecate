@@ -21,12 +21,37 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import static com.savoirtech.hecate.cql3.util.CassandraUtils.*;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.TYPE})
-public @interface TableName {
+public @interface Table {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    String value();
+    double bloom_filter_fp_chance() default UNSPECIFIED_CHANCE;
+
+    String caching() default "";
+
+    String clustering_order() default EMPTY;
+
+    String compaction() default EMPTY;
+
+    String compression() default EMPTY;
+
+    double dclocal_read_repair_chance() default UNSPECIFIED_CHANCE;
+
+    long gc_grace_seconds() default UNSPECIFIED_TIME;
+
+    String name() default EMPTY;
+
+    boolean populate_io_cache_on_flush() default false;
+
+    double read_repair_chance() default UNSPECIFIED_CHANCE;
+
+    boolean replicate_on_write() default true;
+
+    int ttl() default 0;
 }

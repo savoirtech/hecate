@@ -65,6 +65,11 @@ public class DefaultPersistenceContext implements PersistenceContext {
     }
 
     @Override
+    public <P> DefaultPojoQueryBuilder<P> find(Class<P> pojoType) {
+        return find(pojoType, null);
+    }
+
+    @Override
     public <P> DefaultPojoQueryBuilder<P> find(Class<P> pojoType, String tableName) {
         return new DefaultPojoQueryBuilder<>(this, pojoMappingFactory.getPojoMapping(pojoType, tableName));
     }

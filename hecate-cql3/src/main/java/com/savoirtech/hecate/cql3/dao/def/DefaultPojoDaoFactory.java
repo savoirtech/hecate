@@ -36,6 +36,10 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
         this.persistenceContext = new DefaultPersistenceContext(session);
     }
 
+    public DefaultPojoDaoFactory(DefaultPersistenceContext persistenceContext) {
+        this.persistenceContext = persistenceContext;
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // PojoDaoFactory Implementation
 //----------------------------------------------------------------------------------------------------------------------

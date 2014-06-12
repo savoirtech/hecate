@@ -17,14 +17,15 @@
 package com.savoirtech.hecate.cql3.entities;
 
 import com.savoirtech.hecate.cql3.annotations.Id;
-import com.savoirtech.hecate.cql3.annotations.TableName;
+import com.savoirtech.hecate.cql3.annotations.Index;
+import com.savoirtech.hecate.cql3.annotations.Table;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-@TableName("simpletons")
+@Table(name = "simpletons")
 public class SimplePojo {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
@@ -33,6 +34,7 @@ public class SimplePojo {
     @Id
     private String id = UUID.randomUUID().toString();
 
+    @Index(name = "name_ndx")
     private String name;
 
     private int[] ints;
@@ -43,6 +45,7 @@ public class SimplePojo {
 
     private Map<Integer, String> mapOfStrings;
 
+    @Index
     private Nums nums;
 
     private NestedPojo[] pojoArray;

@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.cql3.schema;
 
 import com.datastax.driver.core.Session;
+import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -45,5 +46,22 @@ public class CreateVerifier implements SchemaVerifier {
         cql.append(")");
         LOGGER.info("Creating table for type {}: {}", mapping.getPojoMetadata().getPojoType().getCanonicalName(), cql);
         session.execute(cql.toString());
+
+        createIndexes(session, mapping);
+    }
+
+    private void createIndexes(Session session, PojoMapping mapping) {
+        for (FacetMapping facetMapping : mapping.getFacetMappings()) {
+            if (facetMapping.getFacetMetadata().isIndexed()) {
+
+                final String cql = String.format("CREATE INDEX %s ON %s.%s (%s)",
+                        facetMapping.getFacetMetadata().getIndexName(),
+                        session.getLoggedKeyspace(),
+                        mapping.getTableName(),
+                        facetMapping.getFacetMetadata().getColumnName());
+                LOGGER.info("Creating index: {}", cql);
+                session.execute(cql);
+            }
+        }
     }
 }

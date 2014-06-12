@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.cql3.persistence;
 
 import com.savoirtech.hecate.cql3.persistence.def.DefaultPojoQuery;
+import com.savoirtech.hecate.cql3.persistence.def.DefaultPojoQueryBuilder;
 
 public interface PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
@@ -25,6 +26,8 @@ public interface PersistenceContext {
 
     PojoDelete delete(Class<?> pojoType, String tableName);
 
+
+    <P> DefaultPojoQueryBuilder<P> find(Class<P> pojoType);
 
     <P> PojoQueryBuilder<P> find(Class<P> pojoType, String tableName);
 

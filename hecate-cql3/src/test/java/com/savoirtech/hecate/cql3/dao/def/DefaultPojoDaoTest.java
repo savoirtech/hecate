@@ -20,6 +20,8 @@ import com.google.common.collect.Sets;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.entities.NestedPojo;
 import com.savoirtech.hecate.cql3.entities.SimplePojo;
+import com.savoirtech.hecate.cql3.persistence.PojoQuery;
+import com.savoirtech.hecate.cql3.persistence.def.DefaultPersistenceContext;
 import com.savoirtech.hecate.cql3.test.CassandraTestCase;
 import org.junit.Test;
 
@@ -71,6 +73,54 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         dao.delete(pojo.getId());
         assertNull(dao.findByKey(pojo.getId()));
         assertNull(nestedPojoDao.findByKey(nestedPojo.getId()));
+    }
+
+    @Test
+    public void testSelectAll() {
+        DefaultPersistenceContext context = new DefaultPersistenceContext(connect());
+
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(context);
+
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("Duke");
+        dao.save(pojo);
+
+        final PojoQuery<SimplePojo> query = context.find(SimplePojo.class).build();
+        SimplePojo found = query.execute().one();
+        assertNotNull(found);
+    }
+
+    @Test
+    public void testSearchingByEnumField() {
+        DefaultPersistenceContext context = new DefaultPersistenceContext(connect());
+
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(context);
+
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setNums(SimplePojo.Nums.Three);
+        dao.save(pojo);
+
+        final PojoQuery<SimplePojo> query = context.find(SimplePojo.class).eq("nums").build();
+        SimplePojo found = query.execute(SimplePojo.Nums.Three).one();
+        assertNotNull(found);
+    }
+
+    @Test
+    public void testFindByIndexedField() {
+        DefaultPersistenceContext context = new DefaultPersistenceContext(connect());
+
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(context);
+
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("Duke");
+        dao.save(pojo);
+
+        final PojoQuery<SimplePojo> query = context.find(SimplePojo.class).eq("name").build();
+        SimplePojo found = query.execute("Duke").one();
+        assertNotNull(found);
     }
 
     @Test
