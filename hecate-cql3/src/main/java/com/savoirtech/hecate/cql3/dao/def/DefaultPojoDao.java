@@ -18,20 +18,16 @@ package com.savoirtech.hecate.cql3.dao.def;
 
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
-import com.savoirtech.hecate.cql3.handler.context.QueryContext;
-import com.savoirtech.hecate.cql3.meta.PojoMetadata;
-import com.savoirtech.hecate.cql3.persistence.PersistenceContext;
 import com.savoirtech.hecate.cql3.persistence.Persister;
 import com.savoirtech.hecate.cql3.persistence.PersisterFactory;
 import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
-import com.savoirtech.hecate.cql3.util.Callback;
+import com.savoirtech.hecate.cql3.persistence.PojoQuery;
+import com.savoirtech.hecate.cql3.persistence.def.DefaultPersistenceContext;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -41,21 +37,23 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final PersisterFactory persisterFactory;
-    private final PersistenceContext persistenceContext;
+    private final DefaultPersistenceContext persistenceContext;
     private final Persister rootPersister;
     private final Class<P> rootPojoType;
     private final String rootTableName;
+    private final PojoQuery<P> findByKey;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoDao(PersisterFactory persisterFactory, PersistenceContext persistenceContext, Class<P> rootPojoType, String rootTableName) {
+    public DefaultPojoDao(PersisterFactory persisterFactory, DefaultPersistenceContext persistenceContext, Class<P> rootPojoType, String rootTableName) {
         this.persisterFactory = persisterFactory;
         this.persistenceContext = persistenceContext;
         this.rootPersister = persisterFactory.getPersister(rootPojoType, rootTableName);
         this.rootPojoType = rootPojoType;
         this.rootTableName = rootTableName;
+        this.findByKey = persistenceContext.find(rootPojoType, rootTableName).identifierEquals().build();
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -73,19 +71,13 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
     @Override
     @SuppressWarnings("unchecked")
     public P findByKey(K key) {
-        final Queue<PersistenceTask> tasks = new LinkedList<>();
-        P root = (P) rootPersister.findByKey().find(key, new QueryContextImpl(tasks));
-        executeTasks(tasks);
-        return root;
+        return persistenceContext.findByKey(rootPojoType, rootTableName).execute(persistenceContext.newHydrator(), key).one();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public List<P> findByKeys(Iterable<K> keys) {
-        final Queue<PersistenceTask> tasks = new LinkedList<>();
-        List<P> roots = (List<P>) rootPersister.findByKeys().execute((Iterable<Object>) keys, new QueryContextImpl(tasks));
-        executeTasks(tasks);
-        return roots;
+        return persistenceContext.findByKeys(rootPojoType, rootTableName).execute(persistenceContext.newHydrator(), keys).list();
     }
 
     @Override
@@ -153,68 +145,8 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
         }
     }
 
-    private final class HydratePojosTask implements PersistenceTask {
-        private final Class<?> pojoType;
-        private final String tableName;
-        private final Iterable<Object> identifiers;
-        private final QueryContext context;
-        private final Callback<List<Object>> target;
-
-        private HydratePojosTask(Class<?> pojoType, String tableName, Iterable<Object> identifiers, Callback<List<Object>> target, QueryContext context) {
-            this.pojoType = pojoType;
-            this.tableName = tableName;
-            this.identifiers = identifiers;
-            this.context = context;
-            this.target = target;
-        }
-
-        @Override
-        public void execute() {
-            final List<Object> pojos = persisterFactory.getPersister(pojoType, tableName).findByKeys().execute(identifiers, context);
-            target.execute(pojos);
-        }
-    }
-
     private interface PersistenceTask {
         void execute();
-    }
-
-    private final class QueryContextImpl implements QueryContext {
-        private final Queue<PersistenceTask> items;
-        private final VisitedPojoCache cache = new VisitedPojoCache();
-        private final Map<String, Object> pojoCache = new HashMap<>();
-
-
-        private QueryContextImpl(Queue<PersistenceTask> items) {
-            this.items = items;
-        }
-
-        @Override
-        public void addPojos(Class<?> pojoType, String tableName, Iterable<Object> identifiers, Callback<List<Object>> target) {
-            Set<Object> pruned = cache.prune(pojoType, tableName, identifiers);
-            if (pruned.iterator().hasNext()) {
-                items.add(new HydratePojosTask(pojoType, tableName, pruned, target, this));
-            }
-        }
-
-        @Override
-        public Map<Object, Object> newPojoMap(PojoMetadata pojoMetadata, Iterable<Object> identifiers) {
-            Map<Object, Object> result = new HashMap<>();
-            for (Object identifier : identifiers) {
-                final String key = pojoCacheKey(pojoMetadata.getPojoType(), identifier);
-                Object pojo = pojoCache.get(key);
-                if (pojo == null) {
-                    pojo = pojoMetadata.newPojo(identifier);
-                    pojoCache.put(key, pojo);
-                }
-                result.put(identifier, pojo);
-            }
-            return result;
-        }
-
-        private String pojoCacheKey(Class<?> pojoType, Object identifier) {
-            return pojoType.getCanonicalName() + ":" + identifier;
-        }
     }
 
     private final class VisitedPojoCache {

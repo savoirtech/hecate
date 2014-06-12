@@ -23,10 +23,6 @@ public interface Persister {
 
     PojoDelete delete();
 
-    PojoFindByKey findByKey();
-
-    PojoFindByKeys findByKeys();
-
     PojoFindForDelete findForDelete();
 
 }

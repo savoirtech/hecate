@@ -19,10 +19,10 @@ package com.savoirtech.hecate.cql3.handler.delegate;
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
-import com.savoirtech.hecate.cql3.handler.context.QueryContext;
 import com.savoirtech.hecate.cql3.meta.FacetMetadata;
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
+import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.util.Callback;
 import com.savoirtech.hecate.cql3.value.Facet;
 
@@ -70,6 +70,11 @@ public class PojoDelegate implements ColumnHandlerDelegate {
     }
 
     @Override
+    public Object convertIdentifier(Object columnValue) {
+        throw new UnsupportedOperationException("POJOs cannot be identifiers!");
+    }
+
+    @Override
     public Object convertToInsertValue(Object facetValue, Dehydrator dehydrator) {
         final Object identifier = identifierConverter.toCassandraValue(pojoMetadata.getIdentifierFacet().getFacet().get(facetValue));
         dehydrator.dehydrate(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifier, facetValue);
@@ -77,12 +82,12 @@ public class PojoDelegate implements ColumnHandlerDelegate {
     }
 
     @Override
-    public void createValueConverter(Callback<ValueConverter> target, Iterable<Object> columnValues, QueryContext context) {
+    public void createValueConverter(Callback<ValueConverter> target, Iterable<Object> columnValues, Hydrator hydrator) {
         final Set<Object> identifiers = new HashSet<>();
         for (Object columnValue : columnValues) {
             identifiers.add(identifierConverter.fromCassandraValue(columnValue));
         }
-        context.addPojos(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifiers, new PojoResultsCallback(target, identifierConverter, pojoMetadata.getIdentifierFacet().getFacet()));
+        hydrator.hydrate(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifiers, new PojoResultsCallback(target, identifierConverter, pojoMetadata.getIdentifierFacet().getFacet()));
     }
 
     @Override

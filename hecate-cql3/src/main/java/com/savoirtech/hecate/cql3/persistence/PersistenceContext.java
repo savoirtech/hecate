@@ -16,8 +16,18 @@
 
 package com.savoirtech.hecate.cql3.persistence;
 
+import com.savoirtech.hecate.cql3.persistence.def.DefaultPojoQuery;
+
 public interface PersistenceContext {
 
     PojoSave createSave(Class<?> pojoType, String tableName);
 
+    <P> PojoQueryBuilder<P> find(Class<P> pojoType, String tableName);
+
+
+    @SuppressWarnings("unchecked")
+    <P> PojoQuery<P> findByKeys(Class<P> pojoType, String tableName);
+
+    @SuppressWarnings("unchecked")
+    <P> DefaultPojoQuery<P> findByKey(Class<P> pojoType, String tableName);
 }

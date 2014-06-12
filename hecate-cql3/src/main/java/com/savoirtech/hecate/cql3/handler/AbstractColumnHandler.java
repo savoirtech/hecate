@@ -19,9 +19,9 @@ package com.savoirtech.hecate.cql3.handler;
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
-import com.savoirtech.hecate.cql3.handler.context.QueryContext;
 import com.savoirtech.hecate.cql3.handler.delegate.ColumnHandlerDelegate;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
+import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.util.Callback;
 
 import java.util.Collection;
@@ -61,6 +61,12 @@ public abstract class AbstractColumnHandler<C, F> implements ColumnHandler<C, F>
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public F convertIdentifier(C columnValue) {
+        return (F) getDelegate().convertIdentifier(columnValue);
+    }
+
+    @Override
     public DataType getColumnType() {
         return columnType;
     }
@@ -74,9 +80,9 @@ public abstract class AbstractColumnHandler<C, F> implements ColumnHandler<C, F>
     }
 
     @Override
-    public void injectFacetValue(Callback<F> target, C columnValue, QueryContext context) {
+    public void injectFacetValue(Callback<F> target, C columnValue, Hydrator hydrator) {
         if (columnValue != null) {
-            getDelegate().createValueConverter(new ValueConverterCallback(target, columnValue), toColumnValues(columnValue), context);
+            getDelegate().createValueConverter(new ValueConverterCallback(target, columnValue), toColumnValues(columnValue), hydrator);
         }
     }
 

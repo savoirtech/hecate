@@ -16,7 +16,6 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
-import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
@@ -43,8 +42,8 @@ public class DefaultPojoSave extends PojoPersistenceStatement implements PojoSav
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoSave(DefaultPersistenceContext persistenceContext, Session session, PojoMapping pojoMapping) {
-        super(session, createInsert(pojoMapping), pojoMapping);
+    public DefaultPojoSave(DefaultPersistenceContext persistenceContext, PojoMapping pojoMapping) {
+        super(persistenceContext.getSession(), createInsert(pojoMapping), pojoMapping);
         this.persistenceContext = persistenceContext;
     }
 

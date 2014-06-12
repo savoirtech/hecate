@@ -18,23 +18,13 @@ package com.savoirtech.hecate.cql3.persistence.def;
 
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
-public class DefaultDehydrator implements Dehydrator {
-//----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
-
-    private final Queue<PersistenceTask> tasks = new LinkedList<>();
-    private final DefaultPersistenceContext persistenceContext;
-
+public class DefaultDehydrator extends PersistenceTaskExecutor implements Dehydrator {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultDehydrator(DefaultPersistenceContext persistenceContext) {
-        this.persistenceContext = persistenceContext;
+        super(persistenceContext);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -43,10 +33,8 @@ public class DefaultDehydrator implements Dehydrator {
 
     @Override
     public void dehydrate(Class<?> pojoType, String tableName, Object identifier, Object pojo) {
-        tasks.add(new DehydratePojoTask(pojoType, tableName, pojo));
-        while (!tasks.isEmpty()) {
-            tasks.poll().execute();
-        }
+        enqueue(new DehydratePojoTask(pojoType, tableName, pojo));
+        executeTasks();
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -65,12 +53,8 @@ public class DefaultDehydrator implements Dehydrator {
         }
 
         @Override
-        public void execute() {
+        public void execute(DefaultPersistenceContext persistenceContext) {
             persistenceContext.createSave(pojoType, tableName).execute(DefaultDehydrator.this, pojo);
         }
-    }
-
-    private interface PersistenceTask {
-        void execute();
     }
 }

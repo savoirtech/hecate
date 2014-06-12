@@ -14,30 +14,12 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3.handler;
+package com.savoirtech.hecate.cql3.persistence;
 
-import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
-import com.savoirtech.hecate.cql3.persistence.Dehydrator;
-import com.savoirtech.hecate.cql3.persistence.Hydrator;
-import com.savoirtech.hecate.cql3.util.Callback;
-
-public interface ColumnHandler<C, F> {
+public interface Evaporator {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    DataType getColumnType();
-
-    F convertIdentifier(C columnValue);
-
-    void getDeletionIdentifiers(C columnValue, DeleteContext context);
-
-    void injectFacetValue(Callback<F> target, C columnValue, Hydrator hydrator);
-
-    C getInsertValue(F facetValue, Dehydrator dehydrator);
-
-    Object convertElement(Object parameterValue);
-
-    boolean isCascading();
+    void disintegrate(Class<?> pojoType, String tableName, Iterable<Object> identifiers);
 }

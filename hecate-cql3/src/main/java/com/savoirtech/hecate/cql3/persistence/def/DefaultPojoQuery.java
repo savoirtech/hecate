@@ -66,14 +66,14 @@ public class DefaultPojoQuery<P> implements PojoQuery<P> {
         return execute(persistenceContext.newHydrator(), parameters);
     }
 
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
     public PojoQueryResult<P> execute(Hydrator hydrator, Object... parameters) {
         Validate.isTrue(parameters.length == parameterMappings.length, "Expected %d parameters, but received %d.", parameterMappings.length, parameters.length);
         return new PojoQueryResultImpl(persistenceContext.getSession().execute(preparedStatement.bind(convertParameters(parameters))), hydrator);
     }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
 
     private Object[] convertParameters(Object... parameters) {
         if (ArrayUtils.isEmpty(parameters)) {
@@ -177,7 +177,8 @@ public class DefaultPojoQuery<P> implements PojoQuery<P> {
         @Override
         @SuppressWarnings("unchecked")
         public P one() {
-            return (P) hydrator.hydrate(pojoMapping, resultSet.one());
+            final Row row = resultSet.one();
+            return row == null ? null : (P) hydrator.hydrate(pojoMapping, row);
         }
     }
 }

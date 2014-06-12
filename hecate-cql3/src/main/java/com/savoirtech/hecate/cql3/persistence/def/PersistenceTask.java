@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.cql3.persistence;
+package com.savoirtech.hecate.cql3.persistence.def;
 
-public interface Disintegrator {
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    void disintegrate(Class<?> pojoType, String tableName, Iterable<Object> identifiers);
+interface PersistenceTask {
+    void execute(DefaultPersistenceContext context);
 }

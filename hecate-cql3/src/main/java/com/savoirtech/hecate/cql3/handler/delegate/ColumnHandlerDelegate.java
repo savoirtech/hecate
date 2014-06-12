@@ -19,8 +19,8 @@ package com.savoirtech.hecate.cql3.handler.delegate;
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
-import com.savoirtech.hecate.cql3.handler.context.QueryContext;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
+import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.util.Callback;
 
 public interface ColumnHandlerDelegate {
@@ -32,11 +32,13 @@ public interface ColumnHandlerDelegate {
 
     Object convertToInsertValue(Object facetValue, Dehydrator dehydrator);
 
+    Object convertIdentifier(Object columnValue);
+
     DataType getDataType();
 
     Object convertElement(Object parameterValue);
 
-    void createValueConverter(Callback<ValueConverter> target, Iterable<Object> columnValues, QueryContext context);
+    void createValueConverter(Callback<ValueConverter> target, Iterable<Object> columnValues, Hydrator hydrator);
 
     boolean isCascading();
 }

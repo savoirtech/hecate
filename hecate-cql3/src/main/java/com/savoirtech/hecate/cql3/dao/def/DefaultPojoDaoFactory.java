@@ -19,7 +19,6 @@ package com.savoirtech.hecate.cql3.dao.def;
 import com.datastax.driver.core.Session;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.dao.PojoDaoFactory;
-import com.savoirtech.hecate.cql3.persistence.PersistenceContext;
 import com.savoirtech.hecate.cql3.persistence.PersisterFactory;
 import com.savoirtech.hecate.cql3.persistence.def.DefaultPersistenceContext;
 import com.savoirtech.hecate.cql3.persistence.def.DefaultPersisterFactory;
@@ -30,7 +29,7 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final PersisterFactory persisterFactory;
-    private final PersistenceContext persistenceContext;
+    private final DefaultPersistenceContext persistenceContext;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors

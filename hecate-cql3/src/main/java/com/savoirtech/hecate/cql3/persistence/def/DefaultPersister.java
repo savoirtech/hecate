@@ -20,8 +20,6 @@ import com.datastax.driver.core.Session;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.persistence.Persister;
 import com.savoirtech.hecate.cql3.persistence.PojoDelete;
-import com.savoirtech.hecate.cql3.persistence.PojoFindByKey;
-import com.savoirtech.hecate.cql3.persistence.PojoFindByKeys;
 import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
 
 public class DefaultPersister implements Persister {
@@ -29,8 +27,6 @@ public class DefaultPersister implements Persister {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final PojoFindByKey findByKey;
-    private final PojoFindByKeys findByKeys;
     private final PojoDelete delete;
     private final PojoFindForDelete findForDelete;
 
@@ -39,8 +35,6 @@ public class DefaultPersister implements Persister {
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPersister(Session session, PojoMapping mapping) {
-        this.findByKey = new PojoFindByKey(session, mapping);
-        this.findByKeys = new PojoFindByKeys(session, mapping);
         this.delete = new PojoDelete(session, mapping);
         this.findForDelete = mapping.isCascading() ? new PojoFindForDelete(session, mapping) : null;
     }
@@ -53,20 +47,6 @@ public class DefaultPersister implements Persister {
     public PojoDelete delete() {
         return delete;
     }
-
-    @Override
-    public PojoFindByKey findByKey() {
-        return findByKey;
-    }
-
-    @Override
-    public PojoFindByKeys findByKeys() {
-        return findByKeys;
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
 
     @Override
     public PojoFindForDelete findForDelete() {

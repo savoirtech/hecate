@@ -16,9 +16,9 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
-import com.savoirtech.hecate.cql3.persistence.Disintegrator;
+import com.savoirtech.hecate.cql3.persistence.Evaporator;
 
-public class DefaultDisintegrator implements Disintegrator {
+public class DefaultEvaporator implements Evaporator {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ public class DefaultDisintegrator implements Disintegrator {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultDisintegrator(DefaultPersistenceContext persistenceContext) {
+    public DefaultEvaporator(DefaultPersistenceContext persistenceContext) {
         this.persistenceContext = persistenceContext;
     }
 

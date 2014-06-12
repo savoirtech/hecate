@@ -19,8 +19,8 @@ package com.savoirtech.hecate.cql3.handler.delegate;
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
-import com.savoirtech.hecate.cql3.handler.context.QueryContext;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
+import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.util.Callback;
 
 public class ScalarDelegate implements ColumnHandlerDelegate {
@@ -63,10 +63,14 @@ public class ScalarDelegate implements ColumnHandlerDelegate {
     }
 
     @Override
-    public void createValueConverter(Callback<ValueConverter> target, Iterable<Object> columnValues, QueryContext context) {
+    public void createValueConverter(Callback<ValueConverter> target, Iterable<Object> columnValues, Hydrator hydrator) {
         target.execute(valueConverter);
     }
 
+    @Override
+    public Object convertIdentifier(Object columnValue) {
+        return valueConverter.fromCassandraValue(columnValue);
+    }
 
     @Override
     public boolean isCascading() {

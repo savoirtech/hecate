@@ -17,12 +17,16 @@
 package com.savoirtech.hecate.cql3.persistence.def;
 
 import com.datastax.driver.core.Session;
+import com.google.common.collect.MapMaker;
+import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMappingFactory;
 import com.savoirtech.hecate.cql3.mapping.def.DefaultPojoMappingFactory;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
-import com.savoirtech.hecate.cql3.persistence.Disintegrator;
+import com.savoirtech.hecate.cql3.persistence.Evaporator;
 import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.persistence.PersistenceContext;
+
+import java.util.Map;
 
 public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
@@ -30,7 +34,10 @@ public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Session session;
-    private PojoMappingFactory pojoMappingFactory;
+    private final PojoMappingFactory pojoMappingFactory;
+    private final StatementCache<DefaultPojoQuery<?>> findByKeyCache;
+    private final StatementCache<DefaultPojoQuery<?>> findByKeysCache;
+    private final StatementCache<DefaultPojoSave> saveCache;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -39,6 +46,9 @@ public class DefaultPersistenceContext implements PersistenceContext {
     public DefaultPersistenceContext(Session session) {
         this.session = session;
         this.pojoMappingFactory = new DefaultPojoMappingFactory(session);
+        this.findByKeysCache = new StatementCache<>(new FindByKeysFactory());
+        this.findByKeyCache = new StatementCache<>(new FindByKeyFactory());
+        this.saveCache = new StatementCache<>(new PojoSaveFactory());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -47,7 +57,24 @@ public class DefaultPersistenceContext implements PersistenceContext {
 
     @Override
     public DefaultPojoSave createSave(Class<?> pojoType, String tableName) {
-        return new DefaultPojoSave(this, session, pojoMappingFactory.getPojoMapping(pojoType, tableName));
+        return saveCache.get(pojoType, tableName);
+    }
+
+    @Override
+    public <P> DefaultPojoQueryBuilder<P> find(Class<P> pojoType, String tableName) {
+        return new DefaultPojoQueryBuilder<>(this, pojoMappingFactory.getPojoMapping(pojoType, tableName));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <P> DefaultPojoQuery<P> findByKey(Class<P> pojoType, String tableName) {
+        return (DefaultPojoQuery<P>) findByKeyCache.get(pojoType, tableName);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <P> DefaultPojoQuery<P> findByKeys(Class<P> pojoType, String tableName) {
+        return (DefaultPojoQuery<P>) findByKeysCache.get(pojoType, tableName);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -58,23 +85,79 @@ public class DefaultPersistenceContext implements PersistenceContext {
         return session;
     }
 
-    public void setPojoMappingFactory(PojoMappingFactory pojoMappingFactory) {
-        this.pojoMappingFactory = pojoMappingFactory;
-    }
-
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Dehydrator newDehydrator() {
+    private DefaultPojoQueryBuilder<?> find(PojoMapping mapping) {
+        return new DefaultPojoQueryBuilder<>(this, mapping);
+    }
+
+    public Dehydrator newDehydrator() {
         return new DefaultDehydrator(this);
     }
 
-    Disintegrator newDisintegrator() {
-        return new DefaultDisintegrator(this);
+    public Evaporator newDisintegrator() {
+        return new DefaultEvaporator(this);
     }
 
-    Hydrator newHydrator() {
+    public Hydrator newHydrator() {
         return new DefaultHydrator(this);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    private class FindByKeyFactory implements StatementFactory<DefaultPojoQuery<?>> {
+        @Override
+        public DefaultPojoQuery<?> create(PojoMapping pojoMapping) {
+            return find(pojoMapping).identifierEquals().build();
+        }
+    }
+
+    private class FindByKeysFactory implements StatementFactory<DefaultPojoQuery<?>> {
+        @Override
+        public DefaultPojoQuery<?> create(PojoMapping pojoMapping) {
+            return find(pojoMapping).identifierIn().build();
+        }
+    }
+
+    private final class PojoSaveFactory implements StatementFactory<DefaultPojoSave> {
+        @Override
+        public DefaultPojoSave create(PojoMapping pojoMapping) {
+            return new DefaultPojoSave(DefaultPersistenceContext.this, pojoMapping);
+        }
+    }
+
+    private class StatementCache<T> {
+        private final Map<String, T> cache;
+        private final StatementFactory<T> factory;
+
+        private StatementCache(StatementFactory<T> factory) {
+            this.factory = factory;
+            this.cache = new MapMaker().makeMap();
+        }
+
+        public T get(Class<?> pojoType, String tableName) {
+            final String key = keyFor(pojoType, tableName);
+
+            T value = cache.get(key);
+            if (value == null) {
+                final PojoMapping mapping = pojoMappingFactory.getPojoMapping(pojoType, tableName);
+                value = factory.create(mapping);
+                cache.put(key, value);
+                cache.put(keyFor(pojoType, mapping.getTableName()), value);
+            }
+            return value;
+        }
+
+        private String keyFor(Class<?> pojoType, String tableName) {
+            return pojoType.getCanonicalName() + "@" + tableName;
+        }
+    }
+
+    private interface StatementFactory<T> {
+        T create(PojoMapping pojoMapping);
     }
 }
