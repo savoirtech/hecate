@@ -18,9 +18,9 @@ package com.savoirtech.hecate.cql3.handler;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
 import com.savoirtech.hecate.cql3.handler.delegate.ColumnHandlerDelegate;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
+import com.savoirtech.hecate.cql3.persistence.Evaporator;
 import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.util.Callback;
 
@@ -73,7 +73,7 @@ public abstract class AbstractColumnHandler<C, F> implements ColumnHandler<C, F>
 
     @Override
     @SuppressWarnings("unchecked")
-    public void getDeletionIdentifiers(C columnValue, DeleteContext context) {
+    public void getDeletionIdentifiers(C columnValue, Evaporator context) {
         if (columnValue != null) {
             getDelegate().collectDeletionIdentifiers(toColumnValues(columnValue), context);
         }

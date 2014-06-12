@@ -18,10 +18,10 @@ package com.savoirtech.hecate.cql3.handler.delegate;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
 import com.savoirtech.hecate.cql3.meta.FacetMetadata;
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
+import com.savoirtech.hecate.cql3.persistence.Evaporator;
 import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.util.Callback;
 import com.savoirtech.hecate.cql3.value.Facet;
@@ -56,12 +56,12 @@ public class PojoDelegate implements ColumnHandlerDelegate {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void collectDeletionIdentifiers(Iterable<Object> columnValues, DeleteContext context) {
+    public void collectDeletionIdentifiers(Iterable<Object> columnValues, Evaporator evaporator) {
         final Set<Object> identifiers = new HashSet<>();
         for (Object columnValue : columnValues) {
             identifiers.add(identifierConverter.fromCassandraValue(columnValue));
         }
-        context.addDeletedIdentifiers(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifiers);
+        evaporator.evaporate(pojoMetadata.getPojoType(), facetMetadata.getTableName(), identifiers);
     }
 
     @Override

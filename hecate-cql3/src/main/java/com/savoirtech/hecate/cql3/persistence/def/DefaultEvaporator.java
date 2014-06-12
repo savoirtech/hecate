@@ -18,28 +18,49 @@ package com.savoirtech.hecate.cql3.persistence.def;
 
 import com.savoirtech.hecate.cql3.persistence.Evaporator;
 
-public class DefaultEvaporator implements Evaporator {
-//----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
+import java.util.List;
 
-    private final DefaultPersistenceContext persistenceContext;
-
+public class DefaultEvaporator extends PersistenceTaskExecutor implements Evaporator {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultEvaporator(DefaultPersistenceContext persistenceContext) {
-        this.persistenceContext = persistenceContext;
+        super(persistenceContext);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Disintegrator Implementation
+// Evaporator Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
-    public void disintegrate(Class<?> pojoType, String tableName, Iterable<Object> identifiers) {
+    public void evaporate(Class<?> pojoType, String tableName, Iterable<Object> identifiers) {
+        List<Object> pruned = pruneIdentifiers(pojoType, tableName, identifiers);
+        if (!pruned.isEmpty()) {
+            enqueue(new DeletePojosTask(pojoType, tableName, pruned));
+        }
+        executeTasks();
+    }
 
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    private final class DeletePojosTask implements PersistenceTask {
+        private final Class<?> pojoType;
+        private final String tableName;
+        private final Iterable<Object> identifiers;
+
+        private DeletePojosTask(Class<?> pojoType, String tableName, Iterable<Object> identifiers) {
+            this.pojoType = pojoType;
+            this.tableName = tableName;
+            this.identifiers = identifiers;
+        }
+
+        @Override
+        public void execute(DefaultPersistenceContext context) {
+
+            context.delete(pojoType, tableName).execute(DefaultEvaporator.this, identifiers);
+        }
     }
 }

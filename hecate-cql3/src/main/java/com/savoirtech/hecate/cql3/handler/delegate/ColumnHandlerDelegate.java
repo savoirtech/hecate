@@ -18,8 +18,8 @@ package com.savoirtech.hecate.cql3.handler.delegate;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
-import com.savoirtech.hecate.cql3.handler.context.DeleteContext;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
+import com.savoirtech.hecate.cql3.persistence.Evaporator;
 import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.util.Callback;
 
@@ -28,7 +28,7 @@ public interface ColumnHandlerDelegate {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void collectDeletionIdentifiers(Iterable<Object> columnValues, DeleteContext context);
+    void collectDeletionIdentifiers(Iterable<Object> columnValues, Evaporator evaporator);
 
     Object convertToInsertValue(Object facetValue, Dehydrator dehydrator);
 

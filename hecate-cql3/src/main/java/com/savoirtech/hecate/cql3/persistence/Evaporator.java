@@ -21,5 +21,5 @@ public interface Evaporator {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void disintegrate(Class<?> pojoType, String tableName, Iterable<Object> identifiers);
+    void evaporate(Class<?> pojoType, String tableName, Iterable<Object> identifiers);
 }

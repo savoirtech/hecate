@@ -38,6 +38,8 @@ public class DefaultPersistenceContext implements PersistenceContext {
     private final StatementCache<DefaultPojoQuery<?>> findByKeyCache;
     private final StatementCache<DefaultPojoQuery<?>> findByKeysCache;
     private final StatementCache<DefaultPojoSave> saveCache;
+    private final StatementCache<DefaultPojoFindForDelete> findForDeleteCache;
+    private final StatementCache<DefaultPojoDelete> deleteCache;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -48,7 +50,9 @@ public class DefaultPersistenceContext implements PersistenceContext {
         this.pojoMappingFactory = new DefaultPojoMappingFactory(session);
         this.findByKeysCache = new StatementCache<>(new FindByKeysFactory());
         this.findByKeyCache = new StatementCache<>(new FindByKeyFactory());
-        this.saveCache = new StatementCache<>(new PojoSaveFactory());
+        this.saveCache = new StatementCache<>(new SaveFactory());
+        this.findForDeleteCache = new StatementCache<>(new FindForDeleteFactory());
+        this.deleteCache = new StatementCache<>(new DeleteFactory());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -56,8 +60,13 @@ public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public DefaultPojoSave createSave(Class<?> pojoType, String tableName) {
+    public DefaultPojoSave save(Class<?> pojoType, String tableName) {
         return saveCache.get(pojoType, tableName);
+    }
+
+    @Override
+    public DefaultPojoDelete delete(Class<?> pojoType, String tableName) {
+        return deleteCache.get(pojoType, tableName);
     }
 
     @Override
@@ -81,7 +90,7 @@ public class DefaultPersistenceContext implements PersistenceContext {
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Session getSession() {
+    public Session getSession() {
         return session;
     }
 
@@ -93,11 +102,15 @@ public class DefaultPersistenceContext implements PersistenceContext {
         return new DefaultPojoQueryBuilder<>(this, mapping);
     }
 
+    public DefaultPojoFindForDelete findForDelete(Class<?> pojoType, String tableName) {
+        return findForDeleteCache.get(pojoType, tableName);
+    }
+
     public Dehydrator newDehydrator() {
         return new DefaultDehydrator(this);
     }
 
-    public Evaporator newDisintegrator() {
+    public Evaporator newEvaporator() {
         return new DefaultEvaporator(this);
     }
 
@@ -123,7 +136,21 @@ public class DefaultPersistenceContext implements PersistenceContext {
         }
     }
 
-    private final class PojoSaveFactory implements StatementFactory<DefaultPojoSave> {
+    private final class FindForDeleteFactory implements StatementFactory<DefaultPojoFindForDelete> {
+        @Override
+        public DefaultPojoFindForDelete create(PojoMapping pojoMapping) {
+            return new DefaultPojoFindForDelete(DefaultPersistenceContext.this, pojoMapping);
+        }
+    }
+
+    private final class DeleteFactory implements StatementFactory<DefaultPojoDelete> {
+        @Override
+        public DefaultPojoDelete create(PojoMapping pojoMapping) {
+            return new DefaultPojoDelete(DefaultPersistenceContext.this, pojoMapping);
+        }
+    }
+
+    private final class SaveFactory implements StatementFactory<DefaultPojoSave> {
         @Override
         public DefaultPojoSave create(PojoMapping pojoMapping) {
             return new DefaultPojoSave(DefaultPersistenceContext.this, pojoMapping);

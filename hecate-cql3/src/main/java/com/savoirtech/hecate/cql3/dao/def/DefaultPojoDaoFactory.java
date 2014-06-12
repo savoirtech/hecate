@@ -19,16 +19,13 @@ package com.savoirtech.hecate.cql3.dao.def;
 import com.datastax.driver.core.Session;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.dao.PojoDaoFactory;
-import com.savoirtech.hecate.cql3.persistence.PersisterFactory;
 import com.savoirtech.hecate.cql3.persistence.def.DefaultPersistenceContext;
-import com.savoirtech.hecate.cql3.persistence.def.DefaultPersisterFactory;
 
 public class DefaultPojoDaoFactory implements PojoDaoFactory {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final PersisterFactory persisterFactory;
     private final DefaultPersistenceContext persistenceContext;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -36,7 +33,6 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoDaoFactory(Session session) {
-        this.persisterFactory = new DefaultPersisterFactory(session);
         this.persistenceContext = new DefaultPersistenceContext(session);
     }
 
@@ -51,6 +47,6 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 
     @Override
     public <K, P> PojoDao<K, P> createPojoDao(Class<P> pojoType, String tableName) {
-        return new DefaultPojoDao<>(persisterFactory, persistenceContext, pojoType, tableName);
+        return new DefaultPojoDao<>(persistenceContext, pojoType, tableName);
     }
 }

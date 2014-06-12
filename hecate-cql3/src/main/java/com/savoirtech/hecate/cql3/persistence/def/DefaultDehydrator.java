@@ -54,7 +54,7 @@ public class DefaultDehydrator extends PersistenceTaskExecutor implements Dehydr
 
         @Override
         public void execute(DefaultPersistenceContext persistenceContext) {
-            persistenceContext.createSave(pojoType, tableName).execute(DefaultDehydrator.this, pojo);
+            persistenceContext.save(pojoType, tableName).execute(DefaultDehydrator.this, pojo);
         }
     }
 }

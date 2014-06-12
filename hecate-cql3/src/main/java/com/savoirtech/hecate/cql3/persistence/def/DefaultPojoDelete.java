@@ -16,40 +16,38 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.querybuilder.Delete;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
-import com.savoirtech.hecate.cql3.persistence.Persister;
+import com.savoirtech.hecate.cql3.persistence.Evaporator;
 import com.savoirtech.hecate.cql3.persistence.PojoDelete;
-import com.savoirtech.hecate.cql3.persistence.PojoFindForDelete;
 
-public class DefaultPersister implements Persister {
-//----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 
-    private final PojoDelete delete;
-    private final PojoFindForDelete findForDelete;
-
+public class DefaultPojoDelete extends DefaultPersistenceStatement implements PojoDelete {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPersister(Session session, PojoMapping mapping) {
-        this.delete = new PojoDelete(session, mapping);
-        this.findForDelete = mapping.isCascading() ? new PojoFindForDelete(session, mapping) : null;
+    public DefaultPojoDelete(DefaultPersistenceContext persistenceContext, PojoMapping mapping) {
+        super(persistenceContext, createDelete(mapping), mapping, mapping.getIdentifierMapping());
+    }
+
+    private static Delete.Where createDelete(PojoMapping mapping) {
+        return delete().from(mapping.getTableName()).where(in(mapping.getIdentifierMapping().getFacetMetadata().getColumnName(), bindMarker()));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Persister Implementation
+// PojoDelete Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Override
-    public PojoDelete delete() {
-        return delete;
+    public void execute(Iterable<Object> keys) {
+        execute(getPersistenceContext().newEvaporator(), keys);
     }
 
-    @Override
-    public PojoFindForDelete findForDelete() {
-        return findForDelete;
+    public void execute(Evaporator evaporator, Iterable<Object> keys) {
+        getPersistenceContext().findForDelete(getPojoMapping().getPojoMetadata().getPojoType(), getPojoMapping().getTableName()).execute(keys, evaporator);
+        executeStatementArgs(toList(keys));
     }
+
+
 }

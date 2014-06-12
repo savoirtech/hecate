@@ -21,30 +21,18 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
-import com.savoirtech.hecate.cql3.persistence.PojoPersistenceStatement;
 import com.savoirtech.hecate.cql3.persistence.PojoSave;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultPojoSave extends PojoPersistenceStatement implements PojoSave {
-//----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPojoSave.class);
-
-    private final DefaultPersistenceContext persistenceContext;
-
+public class DefaultPojoSave extends DefaultPersistenceStatement implements PojoSave {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoSave(DefaultPersistenceContext persistenceContext, PojoMapping pojoMapping) {
-        super(persistenceContext.getSession(), createInsert(pojoMapping), pojoMapping);
-        this.persistenceContext = persistenceContext;
+        super(persistenceContext, createInsert(pojoMapping), pojoMapping, pojoMapping.getFacetMappings());
     }
 
     private static Insert createInsert(PojoMapping mapping) {
@@ -60,10 +48,9 @@ public class DefaultPojoSave extends PojoPersistenceStatement implements PojoSav
 // PojoSave Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public void execute(Object pojo) {
-        execute(persistenceContext.newDehydrator(), pojo);
+        execute(getPersistenceContext().newDehydrator(), pojo);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -71,12 +58,12 @@ public class DefaultPojoSave extends PojoPersistenceStatement implements PojoSav
 //----------------------------------------------------------------------------------------------------------------------
 
     void execute(Dehydrator dehydrator, Object pojo) {
-        List<Object> parameters = new ArrayList<>(getPojoMapping().getFacetMappings().size());
+        List<Object> parameters = new ArrayList<>(getPojoMapping().getFacetMappings().size() + 1);
         for (FacetMapping mapping : getPojoMapping().getFacetMappings()) {
-            Object facetValue = mapping.getFacetMetadata().getFacet().get(pojo);
+            final Object facetValue = mapping.getFacetMetadata().getFacet().get(pojo);
             parameters.add(mapping.getColumnHandler().getInsertValue(facetValue, dehydrator));
         }
         parameters.add(getPojoMapping().getPojoMetadata().getDefaultTtl());
-        executeWithList(parameters);
+        executeStatementRaw(parameters);
     }
 }

@@ -20,7 +20,10 @@ import com.savoirtech.hecate.cql3.persistence.def.DefaultPojoQuery;
 
 public interface PersistenceContext {
 
-    PojoSave createSave(Class<?> pojoType, String tableName);
+    PojoSave save(Class<?> pojoType, String tableName);
+
+    PojoDelete delete(Class<?> pojoType, String tableName);
+
 
     <P> PojoQueryBuilder<P> find(Class<P> pojoType, String tableName);
 
