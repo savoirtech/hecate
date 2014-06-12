@@ -58,7 +58,6 @@
         <url>https://github.com/savoirtech/hecate</url>
         <connection>scm:git:git@github.com:savoirtech/hecate.git</connection>
         <developerConnection>scm:git:git@github.com:savoirtech/hecate.git</developerConnection>
-        <tag>hecate-parent-1.0.24</tag>
     </scm>
 
     <distributionManagement>
