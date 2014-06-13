@@ -16,8 +16,6 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
-import java.util.Map;
-
 import com.datastax.driver.core.Session;
 import com.google.common.collect.MapMaker;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
@@ -28,6 +26,8 @@ import com.savoirtech.hecate.cql3.persistence.Evaporator;
 import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.persistence.PersistenceContext;
 import com.savoirtech.hecate.cql3.persistence.PojoSave;
+
+import java.util.Map;
 
 public class DefaultPersistenceContext implements PersistenceContext {
     //----------------------------------------------------------------------------------------------------------------------
@@ -48,8 +48,12 @@ public class DefaultPersistenceContext implements PersistenceContext {
     //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPersistenceContext(Session session) {
+        this(session, new DefaultPojoMappingFactory(session));
+    }
+
+    public DefaultPersistenceContext(Session session, PojoMappingFactory pojoMappingFactory) {
         this.session = session;
-        this.pojoMappingFactory = new DefaultPojoMappingFactory(session);
+        this.pojoMappingFactory = pojoMappingFactory;
         this.findByKeysCache = new StatementCache<>(new FindByKeysFactory());
         this.findByKeyCache = new StatementCache<>(new FindByKeyFactory());
         this.saveCache = new StatementCache<>(new SaveFactory());

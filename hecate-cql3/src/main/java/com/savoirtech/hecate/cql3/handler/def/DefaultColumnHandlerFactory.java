@@ -46,8 +46,8 @@ public class DefaultColumnHandlerFactory implements ColumnHandlerFactory {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private ValueConverterRegistry registry = DefaultValueConverterRegistry.defaultRegistry();
-    private PojoMetadataFactory pojoMetadataFactory = new DefaultPojoMetadataFactory();
+    private final ValueConverterRegistry registry;
+    private final PojoMetadataFactory pojoMetadataFactory;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
@@ -70,10 +70,28 @@ public class DefaultColumnHandlerFactory implements ColumnHandlerFactory {
     }
 
 //----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
+    public DefaultColumnHandlerFactory() {
+        this(DefaultValueConverterRegistry.defaultRegistry(), new DefaultPojoMetadataFactory());
+    }
+
+    public DefaultColumnHandlerFactory(PojoMetadataFactory pojoMetadataFactory) {
+        this(DefaultValueConverterRegistry.defaultRegistry(), pojoMetadataFactory);
+    }
+
+    public DefaultColumnHandlerFactory(ValueConverterRegistry registry, PojoMetadataFactory pojoMetadataFactory) {
+        this.registry = registry;
+        this.pojoMetadataFactory = pojoMetadataFactory;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
 // ColumnHandlerFactory Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
+    @SuppressWarnings("unchecked")
     public ColumnHandler<Object, Object> getColumnHandler(FacetMetadata facetMetadata) {
         final GenericType facetType = facetMetadata.getFacet().getType();
         final Class<?> elementType = elementType(facetType);
@@ -85,18 +103,6 @@ public class DefaultColumnHandlerFactory implements ColumnHandlerFactory {
             final PojoMetadata pojoMetadata = pojoMetadataFactory.getPojoMetadata(pojoType);
             return createColumnHandler(facetType, new PojoDelegate(pojoMetadata, facetMetadata, getIdentifierConverter(pojoMetadata)));
         }
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    public void setPojoMetadataFactory(PojoMetadataFactory pojoMetadataFactory) {
-        this.pojoMetadataFactory = pojoMetadataFactory;
-    }
-
-    public void setRegistry(ValueConverterRegistry registry) {
-        this.registry = registry;
     }
 
 //----------------------------------------------------------------------------------------------------------------------

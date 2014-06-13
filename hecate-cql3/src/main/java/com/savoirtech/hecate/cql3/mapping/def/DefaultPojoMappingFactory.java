@@ -38,21 +38,29 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Session session;
-    private PojoMetadataFactory pojoMetadataFactory = new DefaultPojoMetadataFactory();
-    private ColumnHandlerFactory columnHandlerFactory = new DefaultColumnHandlerFactory();
-    private SchemaVerifier schemaVerifier = new CreateVerifier();
+    private final PojoMetadataFactory pojoMetadataFactory;
+    private final ColumnHandlerFactory columnHandlerFactory;
+    private final SchemaVerifier schemaVerifier;
     private final Map<String, PojoMapping> pojoMappings;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
+
+    public DefaultPojoMappingFactory(Session session, PojoMetadataFactory pojoMetadataFactory, ColumnHandlerFactory columnHandlerFactory, SchemaVerifier schemaVerifier) {
+        this.session = session;
+        this.pojoMetadataFactory = pojoMetadataFactory;
+        this.columnHandlerFactory = columnHandlerFactory;
+        this.schemaVerifier = schemaVerifier;
+        this.pojoMappings = new MapMaker().makeMap();
+    }
+
     public DefaultPojoMappingFactory(Session session) {
         this.session = session;
         this.pojoMetadataFactory = new DefaultPojoMetadataFactory();
-        final DefaultColumnHandlerFactory handlerFactory = new DefaultColumnHandlerFactory();
-        handlerFactory.setPojoMetadataFactory(pojoMetadataFactory);
-        this.columnHandlerFactory = handlerFactory;
+        this.columnHandlerFactory = new DefaultColumnHandlerFactory(pojoMetadataFactory);
+        this.schemaVerifier = new CreateVerifier();
         this.pojoMappings = new MapMaker().makeMap();
     }
 
@@ -75,22 +83,6 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
             pojoMappings.put(key(pojoType, pojoMapping.getTableName()), pojoMapping);
         }
         return pojoMapping;
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    public void setColumnHandlerFactory(ColumnHandlerFactory columnHandlerFactory) {
-        this.columnHandlerFactory = columnHandlerFactory;
-    }
-
-    public void setPojoMetadataFactory(PojoMetadataFactory pojoMetadataFactory) {
-        this.pojoMetadataFactory = pojoMetadataFactory;
-    }
-
-    public void setSchemaVerifier(SchemaVerifier schemaVerifier) {
-        this.schemaVerifier = schemaVerifier;
     }
 
 //----------------------------------------------------------------------------------------------------------------------

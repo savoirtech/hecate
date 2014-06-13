@@ -33,18 +33,31 @@ public class DefaultPojoMetadataFactory implements PojoMetadataFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Map<Class<?>, PojoMetadata> pojoMetadatas;
-    private FacetProvider facetProvider = new FieldFacetProvider();
+    private final FacetProvider facetProvider;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoMetadataFactory() {
-        pojoMetadatas = new MapMaker().makeMap();
+        this(new MapMaker().<Class<?>, PojoMetadata>makeMap(), new FieldFacetProvider());
+    }
+
+    public DefaultPojoMetadataFactory(FacetProvider facetProvider) {
+        this(new MapMaker().<Class<?>, PojoMetadata>makeMap(), facetProvider);
     }
 
     public DefaultPojoMetadataFactory(int concurrencyLevel) {
-        pojoMetadatas = new MapMaker().concurrencyLevel(concurrencyLevel).makeMap();
+        this(new MapMaker().concurrencyLevel(concurrencyLevel).<Class<?>, PojoMetadata>makeMap(), new FieldFacetProvider());
+    }
+
+    public DefaultPojoMetadataFactory(FacetProvider facetProvider, int concurrencyLevel) {
+        this(new MapMaker().concurrencyLevel(concurrencyLevel).<Class<?>, PojoMetadata>makeMap(), facetProvider);
+    }
+
+    private DefaultPojoMetadataFactory(Map<Class<?>, PojoMetadata> pojoMetadatas, FacetProvider facetProvider) {
+        this.pojoMetadatas = pojoMetadatas;
+        this.facetProvider = facetProvider;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -63,13 +76,5 @@ public class DefaultPojoMetadataFactory implements PojoMetadataFactory {
         }
         Validate.isTrue(pojoMetadata.getIdentifierFacet() != null, "Invalid POJO type %s (no identifier found).", pojoType.getCanonicalName());
         return pojoMetadata;
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    public void setFacetProvider(FacetProvider facetProvider) {
-        this.facetProvider = facetProvider;
     }
 }
