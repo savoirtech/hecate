@@ -16,14 +16,15 @@
 
 package com.savoirtech.hecate.cql3.value.field;
 
-import com.savoirtech.hecate.cql3.ReflectionUtils;
-import com.savoirtech.hecate.cql3.value.Facet;
-import com.savoirtech.hecate.cql3.value.FacetProvider;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.savoirtech.hecate.cql3.ReflectionUtils;
+import com.savoirtech.hecate.cql3.annotations.Transient;
+import com.savoirtech.hecate.cql3.value.Facet;
+import com.savoirtech.hecate.cql3.value.FacetProvider;
 
 public class FieldFacetProvider implements FacetProvider {
 //----------------------------------------------------------------------------------------------------------------------
@@ -50,6 +51,7 @@ public class FieldFacetProvider implements FacetProvider {
         final int mods = field.getModifiers();
         return !(Modifier.isFinal(mods) ||
                 Modifier.isTransient(mods) ||
-                Modifier.isStatic(mods));
+                Modifier.isStatic(mods) ||
+                field.isAnnotationPresent(Transient.class));
     }
 }

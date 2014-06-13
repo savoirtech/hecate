@@ -16,14 +16,17 @@
 
 package com.savoirtech.hecate.cql3.value.field;
 
-import com.savoirtech.hecate.cql3.annotations.Id;
-import com.savoirtech.hecate.cql3.value.Facet;
-import org.junit.Test;
-
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import com.savoirtech.hecate.cql3.annotations.Id;
+import com.savoirtech.hecate.cql3.annotations.Transient;
+import com.savoirtech.hecate.cql3.value.Facet;
+import org.junit.Test;
+
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class FieldFacetProviderTest {
 //----------------------------------------------------------------------------------------------------------------------
@@ -81,6 +84,13 @@ public class FieldFacetProviderTest {
         assertEquals(1, facets.size());
     }
 
+    @Test
+    public void testWithTransientFields() {
+        FieldFacetProvider provider = new FieldFacetProvider();
+        final List<Facet> facets = provider.getFacets(TransientFields.class);
+        assertEquals(1, facets.size());
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
@@ -100,5 +110,13 @@ public class FieldFacetProviderTest {
 
     private static class PersistentFields {
         private String foo = "hello";
+    }
+
+    private static class TransientFields {
+
+        private String foo = "hello";
+
+        @Transient
+        private String bar = "bye";
     }
 }
