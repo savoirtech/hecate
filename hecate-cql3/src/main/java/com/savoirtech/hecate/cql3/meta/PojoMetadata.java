@@ -17,14 +17,14 @@
 package com.savoirtech.hecate.cql3.meta;
 
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.savoirtech.hecate.cql3.ReflectionUtils;
 import com.savoirtech.hecate.cql3.exception.HecateException;
 import com.savoirtech.hecate.cql3.util.HecateUtils;
 import org.apache.commons.lang3.Validate;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 public class PojoMetadata {
 //----------------------------------------------------------------------------------------------------------------------

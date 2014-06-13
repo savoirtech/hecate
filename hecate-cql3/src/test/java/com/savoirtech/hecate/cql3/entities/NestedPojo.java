@@ -16,9 +16,9 @@
 
 package com.savoirtech.hecate.cql3.entities;
 
-import com.savoirtech.hecate.cql3.annotations.Id;
-
 import java.util.UUID;
+
+import com.savoirtech.hecate.cql3.annotations.Id;
 
 public class NestedPojo {
 //----------------------------------------------------------------------------------------------------------------------
@@ -27,6 +27,8 @@ public class NestedPojo {
 
     @Id
     private String id = UUID.randomUUID().toString();
+
+    private String data;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
@@ -40,7 +42,15 @@ public class NestedPojo {
         this.id = id;
     }
 
-//----------------------------------------------------------------------------------------------------------------------
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
+
+    //----------------------------------------------------------------------------------------------------------------------
 // Canonical Methods
 //----------------------------------------------------------------------------------------------------------------------
 

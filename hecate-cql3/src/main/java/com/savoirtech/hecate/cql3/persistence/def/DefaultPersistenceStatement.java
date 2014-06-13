@@ -16,6 +16,12 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
@@ -26,16 +32,10 @@ import com.savoirtech.hecate.cql3.util.HecateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
 public class DefaultPersistenceStatement {
-//----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Fields
+    //----------------------------------------------------------------------------------------------------------------------
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -45,19 +45,22 @@ public class DefaultPersistenceStatement {
     private final List<FacetMapping> parameterMappings;
     private final List<InjectedParameter> injectedParameters;
 
-//----------------------------------------------------------------------------------------------------------------------
-// Constructors
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Constructors
+    //----------------------------------------------------------------------------------------------------------------------
 
-    protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping, FacetMapping... parameterMappings) {
+    protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping,
+                                          FacetMapping... parameterMappings) {
         this(persistenceContext, statement, pojoMapping, Collections.<InjectedParameter>emptyList(), Arrays.asList(parameterMappings));
     }
 
-    protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping, List<FacetMapping> parameterMappings) {
+    protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping,
+                                          List<FacetMapping> parameterMappings) {
         this(persistenceContext, statement, pojoMapping, Collections.<InjectedParameter>emptyList(), parameterMappings);
     }
 
-    protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping, List<InjectedParameter> injectedParameters, List<FacetMapping> parameterMappings) {
+    protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping,
+                                          List<InjectedParameter> injectedParameters, List<FacetMapping> parameterMappings) {
         this.persistenceContext = persistenceContext;
         this.injectedParameters = new ArrayList<>(injectedParameters);
 
@@ -65,7 +68,8 @@ public class DefaultPersistenceStatement {
             logger.info("{}: {}", pojoMapping.getPojoMetadata().getPojoType().getSimpleName(), statement, injectedParameters);
         } else {
             Collections.sort(this.injectedParameters);
-            logger.info("{}: {} with injected parameters {}", pojoMapping.getPojoMetadata().getPojoType().getSimpleName(), statement, injectedParameters);
+            logger.info("{}: {} with injected parameters {}", pojoMapping.getPojoMetadata().getPojoType().getSimpleName(), statement,
+                injectedParameters);
         }
 
         this.preparedStatement = persistenceContext.getSession().prepare(statement);
@@ -73,13 +77,14 @@ public class DefaultPersistenceStatement {
         this.parameterMappings = new ArrayList<>(parameterMappings);
     }
 
-    protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping, List<InjectedParameter> injectedParameters, FacetMapping... parameterMappings) {
+    protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping,
+                                          List<InjectedParameter> injectedParameters, FacetMapping... parameterMappings) {
         this(persistenceContext, statement, pojoMapping, injectedParameters, Arrays.asList(parameterMappings));
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Getter/Setter Methods
+    //----------------------------------------------------------------------------------------------------------------------
 
     protected DefaultPersistenceContext getPersistenceContext() {
         return persistenceContext;
@@ -89,9 +94,9 @@ public class DefaultPersistenceStatement {
         return pojoMapping;
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Other Methods
+    //----------------------------------------------------------------------------------------------------------------------
 
     protected ResultSet executeStatementArgs(Object... parameters) {
         List<Object> parameterList = new ArrayList<>(parameters.length);
@@ -120,6 +125,7 @@ public class DefaultPersistenceStatement {
     protected ResultSet executeStatementRaw(List<Object> parameters) {
         logger.debug("CQL: {} with parameters {}", preparedStatement.getQueryString(), parameters);
         BoundStatement boundStatement = preparedStatement.bind(parameters.toArray(new Object[parameters.size()]));
+
         return persistenceContext.getSession().execute(boundStatement);
     }
 

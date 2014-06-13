@@ -19,17 +19,24 @@ package com.savoirtech.hecate.cql3.persistence.def;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 
 public class DefaultDehydrator extends PersistenceTaskExecutor implements Dehydrator {
-//----------------------------------------------------------------------------------------------------------------------
-// Constructors
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Constructors
+    //----------------------------------------------------------------------------------------------------------------------
+
+    private int ttl;
 
     public DefaultDehydrator(DefaultPersistenceContext persistenceContext) {
         super(persistenceContext);
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// Dehydrator Implementation
-//----------------------------------------------------------------------------------------------------------------------
+    public DefaultDehydrator(DefaultPersistenceContext persistenceContext, int ttl) {
+        super(persistenceContext);
+        this.ttl = ttl;
+    }
+
+    //----------------------------------------------------------------------------------------------------------------------
+    // Dehydrator Implementation
+    //----------------------------------------------------------------------------------------------------------------------
 
     @Override
     public void dehydrate(Class<?> pojoType, String tableName, Object identifier, Object pojo) {
@@ -37,9 +44,19 @@ public class DefaultDehydrator extends PersistenceTaskExecutor implements Dehydr
         executeTasks();
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// Inner Classes
-//----------------------------------------------------------------------------------------------------------------------
+    @Override
+    public boolean hasGlobalTtl() {
+        return ttl > 0;
+    }
+
+    @Override
+    public Object getTtl() {
+        return ttl;
+    }
+
+    //----------------------------------------------------------------------------------------------------------------------
+    // Inner Classes
+    //----------------------------------------------------------------------------------------------------------------------
 
     private final class DehydratePojoTask implements PersistenceTask {
         private final Class<?> pojoType;

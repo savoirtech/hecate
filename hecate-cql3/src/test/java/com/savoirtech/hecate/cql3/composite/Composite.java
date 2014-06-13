@@ -17,7 +17,9 @@
 package com.savoirtech.hecate.cql3.composite;
 
 import com.savoirtech.hecate.cql3.annotations.Id;
+import com.savoirtech.hecate.cql3.annotations.Table;
 
+@Table(ttl = 86400)
 public class Composite {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
@@ -73,5 +75,16 @@ public class Composite {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "Composite{" +
+            "data='" + data + '\'' +
+            ", id='" + id + '\'' +
+            ", a='" + a + '\'' +
+            ", b='" + b + '\'' +
+            ", c='" + c + '\'' +
+            '}';
     }
 }

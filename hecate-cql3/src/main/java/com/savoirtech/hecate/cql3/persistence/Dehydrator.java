@@ -22,4 +22,8 @@ public interface Dehydrator {
 //----------------------------------------------------------------------------------------------------------------------
 
     void dehydrate(Class<?> pojoType, String tableName, Object identifier, Object pojo);
+
+    boolean hasGlobalTtl();
+
+    Object getTtl();
 }

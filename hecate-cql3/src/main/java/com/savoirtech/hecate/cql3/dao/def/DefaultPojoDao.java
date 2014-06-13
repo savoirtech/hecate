@@ -16,11 +16,11 @@
 
 package com.savoirtech.hecate.cql3.dao.def;
 
-import com.savoirtech.hecate.cql3.dao.PojoDao;
-import com.savoirtech.hecate.cql3.persistence.def.DefaultPersistenceContext;
-
 import java.util.Arrays;
 import java.util.List;
+
+import com.savoirtech.hecate.cql3.dao.PojoDao;
+import com.savoirtech.hecate.cql3.persistence.def.DefaultPersistenceContext;
 
 public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -67,4 +67,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
     public void save(P pojo) {
         persistenceContext.save(rootPojoType, rootTableName).execute(pojo);
     }
+
+    @Override
+    public void save(P pojo, int ttl) { persistenceContext.save(rootPojoType, rootTableName,ttl).execute(pojo); }
 }

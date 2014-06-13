@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
+import java.util.Map;
+
 import com.datastax.driver.core.Session;
 import com.google.common.collect.MapMaker;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
@@ -25,13 +27,12 @@ import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 import com.savoirtech.hecate.cql3.persistence.Evaporator;
 import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.persistence.PersistenceContext;
-
-import java.util.Map;
+import com.savoirtech.hecate.cql3.persistence.PojoSave;
 
 public class DefaultPersistenceContext implements PersistenceContext {
-//----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Fields
+    //----------------------------------------------------------------------------------------------------------------------
 
     private final Session session;
     private final PojoMappingFactory pojoMappingFactory;
@@ -40,10 +41,11 @@ public class DefaultPersistenceContext implements PersistenceContext {
     private final StatementCache<DefaultPojoSave> saveCache;
     private final StatementCache<DefaultPojoFindForDelete> findForDeleteCache;
     private final StatementCache<DefaultPojoDelete> deleteCache;
+    private int ttl;
 
-//----------------------------------------------------------------------------------------------------------------------
-// Constructors
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Constructors
+    //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPersistenceContext(Session session) {
         this.session = session;
@@ -55,9 +57,9 @@ public class DefaultPersistenceContext implements PersistenceContext {
         this.deleteCache = new StatementCache<>(new DeleteFactory());
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// PersistenceContext Implementation
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // PersistenceContext Implementation
+    //----------------------------------------------------------------------------------------------------------------------
 
     @Override
     public DefaultPojoDelete delete(Class<?> pojoType, String tableName) {
@@ -91,17 +93,23 @@ public class DefaultPersistenceContext implements PersistenceContext {
         return saveCache.get(pojoType, tableName);
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
-//----------------------------------------------------------------------------------------------------------------------
+    @Override
+    public PojoSave save(Class<?> pojoType, String tableName, int ttl) {
+        this.ttl = ttl;
+        return saveCache.get(pojoType, tableName);
+    }
+
+    //----------------------------------------------------------------------------------------------------------------------
+    // Getter/Setter Methods
+    //----------------------------------------------------------------------------------------------------------------------
 
     public Session getSession() {
         return session;
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Other Methods
+    //----------------------------------------------------------------------------------------------------------------------
 
     private DefaultPojoQueryBuilder<?> find(PojoMapping mapping) {
         return new DefaultPojoQueryBuilder<>(this, mapping);
@@ -112,7 +120,11 @@ public class DefaultPersistenceContext implements PersistenceContext {
     }
 
     public Dehydrator newDehydrator() {
-        return new DefaultDehydrator(this);
+        if (ttl > 0) {
+            return new DefaultDehydrator(this, ttl);
+        } else {
+            return new DefaultDehydrator(this);
+        }
     }
 
     public Evaporator newEvaporator() {
@@ -123,9 +135,9 @@ public class DefaultPersistenceContext implements PersistenceContext {
         return new DefaultHydrator(this);
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// Inner Classes
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Inner Classes
+    //----------------------------------------------------------------------------------------------------------------------
 
     private final class DeleteFactory implements StatementFactory<DefaultPojoDelete> {
         @Override
@@ -187,6 +199,8 @@ public class DefaultPersistenceContext implements PersistenceContext {
         private String keyFor(Class<?> pojoType, String tableName) {
             return pojoType.getCanonicalName() + "@" + tableName;
         }
+
+
     }
 
     private interface StatementFactory<T> {

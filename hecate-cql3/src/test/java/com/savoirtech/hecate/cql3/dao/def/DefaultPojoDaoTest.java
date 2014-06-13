@@ -16,6 +16,15 @@
 
 package com.savoirtech.hecate.cql3.dao.def;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.google.common.collect.Sets;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.entities.NestedPojo;
@@ -26,18 +35,17 @@ import com.savoirtech.hecate.cql3.test.CassandraTestCase;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class DefaultPojoDaoTest extends CassandraTestCase {
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Other Methods
+    //----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testDelete() throws Exception {
@@ -130,6 +138,67 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
     }
 
     @Test
+    public void testSaveWithTtl() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        dao.save(pojo, 90600);
+
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found);
+        assertEquals("name", found.getName());
+        assertEquals(pojo.getId(), found.getId());
+
+        ResultSet resultSet = connect().execute("SELECT TTL (name) from simpletons");
+        Iterator<Row> iterator = resultSet.iterator();
+        while (iterator.hasNext()) {
+            Row row = iterator.next();
+            assertTrue(row.getInt(0) <= 90600);
+        }
+    }
+
+    @Test
+    public void testWithPojoMapFieldTtl() {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("NAME");
+        Map<String, NestedPojo> pojoMap = new HashMap<>();
+        final NestedPojo nested1 = new NestedPojo();
+        nested1.setData("DATA");
+        final NestedPojo nested2 = new NestedPojo();
+        nested2.setData("DATA");
+        pojoMap.put("one", nested1);
+        pojoMap.put("two", nested2);
+
+        pojo.setPojoMap(pojoMap);
+        dao.save(pojo, 96000);
+
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found.getPojoMap());
+        assertEquals(2, found.getPojoMap().size());
+        assertEquals(nested1, found.getPojoMap().get("one"));
+        assertEquals(nested2, found.getPojoMap().get("two"));
+
+        ResultSet resultSet2 = connect().execute("SELECT TTL (name) from simpletons");
+        Iterator<Row> iterator2 = resultSet2.iterator();
+        while (iterator2.hasNext()) {
+            Row row = iterator2.next();
+            System.out.println(row);
+            assertTrue(row.getInt(0) <= 96000);
+        }
+
+        ResultSet resultSet = connect().execute("SELECT TTL (data) from nestedpojo");
+        Iterator<Row> iterator = resultSet.iterator();
+        while (iterator.hasNext()) {
+            Row row = iterator.next();
+            System.out.println(row);
+            assertTrue(row.getInt(0) <= 96000 && row.getInt(0) > 0);
+        }
+    }
+
+    @Test
     public void testSaveWithCustomTableName() throws Exception {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class, "BOB");
@@ -191,6 +260,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         SimplePojo found = query.execute(SimplePojo.Nums.Three).one();
         assertNotNull(found);
     }
+
     @Test
     public void testWithInjectedParameters() {
         DefaultPersistenceContext context = new DefaultPersistenceContext(connect());

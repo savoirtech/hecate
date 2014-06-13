@@ -30,4 +30,6 @@ public interface PojoDao<K, P> {
     List<P> findByKeys(Iterable<K> keys);
 
     void save(P pojo);
+
+    void save(P pojo, int i);
 }

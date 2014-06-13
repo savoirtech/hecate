@@ -16,15 +16,15 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 import com.savoirtech.hecate.cql3.persistence.PojoSave;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class DefaultPojoSave extends DefaultPersistenceStatement implements PojoSave {
 //----------------------------------------------------------------------------------------------------------------------
@@ -63,7 +63,11 @@ public class DefaultPojoSave extends DefaultPersistenceStatement implements Pojo
             final Object facetValue = mapping.getFacetMetadata().getFacet().get(pojo);
             parameters.add(mapping.getColumnHandler().getInsertValue(facetValue, dehydrator));
         }
-        parameters.add(getPojoMapping().getPojoMetadata().getTimeToLive());
+        if (dehydrator.hasGlobalTtl()) {
+            parameters.add(dehydrator.getTtl());
+        } else {
+            parameters.add(getPojoMapping().getPojoMetadata().getTimeToLive());
+        }
         executeStatementRaw(parameters);
     }
 }

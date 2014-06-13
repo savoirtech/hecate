@@ -32,4 +32,6 @@ public interface PersistenceContext {
     <P> PojoQuery<P> findByKeys(Class<P> pojoType, String tableName);
 
     PojoSave save(Class<?> pojoType, String tableName);
+
+    PojoSave save(Class<?> pojoType, String tableName, int ttl);
 }
