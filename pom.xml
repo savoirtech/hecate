@@ -28,7 +28,7 @@
     <groupId>com.savoirtech.hecate</groupId>
     <artifactId>hecate-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.25-SNAPSHOT</version>
+    <version>1.0.25</version>
     <name>SavoirTech ::: Hecate ::: Parent</name>
 
     <licenses>
@@ -58,7 +58,8 @@
         <url>https://github.com/savoirtech/hecate</url>
         <connection>scm:git:git@github.com:savoirtech/hecate.git</connection>
         <developerConnection>scm:git:git@github.com:savoirtech/hecate.git</developerConnection>
-    </scm>
+      <tag>hecate-parent-1.0.25</tag>
+  </scm>
 
     <distributionManagement>
         <repository>
