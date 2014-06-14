@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.cql3.value.property;
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
+import com.savoirtech.hecate.cql3.annotations.Transient;
 import com.savoirtech.hecate.cql3.value.Facet;
 import com.savoirtech.hecate.cql3.value.FacetProvider;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -36,9 +37,10 @@ public class PropertyFacetProvider implements FacetProvider {
         final PropertyDescriptor[] descriptors = PropertyUtils.getPropertyDescriptors(pojoType);
         final List<Facet> facets = new ArrayList<>(descriptors.length);
         for (PropertyDescriptor descriptor : descriptors) {
+
             final Method readMethod = ReflectionUtils.getReadMethod(pojoType, descriptor);
             final Method writeMethod = ReflectionUtils.getWriteMethod(pojoType, descriptor);
-            if (readMethod != null && writeMethod != null) {
+            if (readMethod != null && writeMethod != null && !readMethod.isAnnotationPresent(Transient.class)) {
                 facets.add(new PropertyFacet(pojoType, descriptor, readMethod, writeMethod));
             }
         }

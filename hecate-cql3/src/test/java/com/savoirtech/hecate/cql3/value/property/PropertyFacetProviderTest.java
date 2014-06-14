@@ -18,6 +18,7 @@ package com.savoirtech.hecate.cql3.value.property;
 
 import com.savoirtech.hecate.cql3.ReflectionUtils;
 import com.savoirtech.hecate.cql3.annotations.Id;
+import com.savoirtech.hecate.cql3.annotations.Transient;
 import com.savoirtech.hecate.cql3.util.GenericType;
 import com.savoirtech.hecate.cql3.value.Facet;
 import org.junit.Test;
@@ -72,6 +73,14 @@ public class PropertyFacetProviderTest {
     }
 
     @Test
+    public void testInheritedProperties() {
+        PropertyFacetProvider provider = new PropertyFacetProvider();
+        final List<Facet> facets = provider.getFacets(Sub.class);
+        assertEquals(1, facets.size());
+        assertEquals("id", facets.get(0).getName());
+    }
+
+    @Test
     public void testWithPrivateGetter() {
         Facet facet = getPropertyValue(PropertiesHolder.class, "privateGetter");
         assertNotNull(facet);
@@ -87,6 +96,13 @@ public class PropertyFacetProviderTest {
         PropertiesHolder holder = new PropertiesHolder();
         facet.set(holder, "foo");
         assertEquals("foo", holder.getPrivateSetter());
+    }
+
+    @Test
+    public void testWithTransientAnnotation() {
+        PropertyFacetProvider provider = new PropertyFacetProvider();
+        final List<Facet> facets = provider.getFacets(TransientPropertyHolder.class);
+        assertEquals(0, facets.size());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -130,6 +146,32 @@ public class PropertyFacetProviderTest {
 
         public void setPrivateGetter(String privateGetter) {
             this.privateGetter = privateGetter;
+        }
+    }
+
+    public static class TransientPropertyHolder {
+        @Transient
+        public String getTransientField() {
+            return null;
+        }
+
+        public void setTransientField(String value) {
+            // do nothing
+        }
+    }
+
+    public static class Sub extends Super {
+    }
+
+    public static abstract class Super {
+        private String id;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
         }
     }
 }
