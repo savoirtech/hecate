@@ -17,9 +17,9 @@
 package com.savoirtech.hecate.cql3.persistence;
 
 public interface PojoQueryBuilder<P> {
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Other Methods
+    //----------------------------------------------------------------------------------------------------------------------
 
     PojoQuery<P> build();
 
@@ -50,4 +50,8 @@ public interface PojoQueryBuilder<P> {
     PojoQueryBuilder<P> lte(String facetName, Object value);
 
     PojoQueryBuilder<P> lte(String facetName);
+
+    PojoQueryBuilder<P> asc(String facetName);
+
+    PojoQueryBuilder<P> desc(String facetName);
 }

@@ -16,34 +16,36 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.persistence.PojoQueryBuilder;
 
-import java.util.LinkedList;
-import java.util.List;
-
 public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
-//----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Fields
+    //----------------------------------------------------------------------------------------------------------------------
 
     private final DefaultPersistenceContext persistenceContext;
     private final PojoMapping mapping;
     private final Select.Where where;
+
     private final List<FacetMapping> parameterMappings = new LinkedList<>();
     private final List<InjectedParameter> injectedParameters = new LinkedList<>();
 
-//----------------------------------------------------------------------------------------------------------------------
-// Constructors
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // Constructors
+    //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoQueryBuilder(DefaultPersistenceContext persistenceContext, PojoMapping mapping) {
         this.mapping = mapping;
         this.persistenceContext = persistenceContext;
         this.where = selectStub(mapping);
+
     }
 
     private static Select.Where selectStub(PojoMapping mapping) {
@@ -54,9 +56,9 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         return select.from(mapping.getTableName()).where();
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// PojoQueryBuilder Implementation
-//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
+    // PojoQueryBuilder Implementation
+    //----------------------------------------------------------------------------------------------------------------------
 
     @Override
     public DefaultPojoQuery<P> build() {
@@ -138,16 +140,28 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         injectedParameters.add(new InjectedParameter(parameterMappings.size(), value));
         return lte(facetName);
     }
-    
+
     @Override
     public DefaultPojoQueryBuilder<P> lte(String facetName) {
         where.and(QueryBuilder.lte(lookupColumn(facetName), QueryBuilder.bindMarker()));
         return this;
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
+    @Override
+    public DefaultPojoQueryBuilder<P> asc(String facetName) {
+        where.orderBy(QueryBuilder.asc(facetName));
+        return this;
+    }
+
+    @Override
+    public DefaultPojoQueryBuilder<P> desc(String facetName) {
+        where.orderBy(QueryBuilder.desc(facetName));
+        return this;
+    }
+
+    //----------------------------------------------------------------------------------------------------------------------
+    // Other Methods
+    //----------------------------------------------------------------------------------------------------------------------
 
     private String identifierName() {
         return mapping.getIdentifierMapping().getFacetMetadata().getFacet().getName();
@@ -160,6 +174,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
                 return facetMapping.getFacetMetadata().getColumnName();
             }
         }
-        throw new IllegalArgumentException(String.format("Facet %s not found on object of type %s.", facetName, mapping.getPojoMetadata().getPojoType().getName()));
+        throw new IllegalArgumentException(String.format("Facet %s not found on object of type %s.", facetName,
+            mapping.getPojoMetadata().getPojoType().getName()));
     }
 }

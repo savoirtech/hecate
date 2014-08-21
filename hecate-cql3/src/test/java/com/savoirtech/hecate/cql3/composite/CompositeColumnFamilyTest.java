@@ -53,6 +53,53 @@ public class CompositeColumnFamilyTest extends CassandraTestCase {
     }
 
     @Test
+    public void tesCompositeTableOrderAsc() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, Composite> dao = factory.createPojoDao(Composite.class);
+        Composite composite = new Composite();
+        composite.setId("NAME");
+        composite.setA("Johan");
+        composite.setB("");
+        composite.setC("C");
+        composite.setData("DATA1");
+
+        dao.save(composite);
+
+        composite.setId("NAME");
+        composite.setA("James");
+        composite.setB("");
+        composite.setC("C");
+        composite.setData("DATA2");
+        dao.save(composite);
+
+        Composite found = dao.findByKey(composite.getId());
+        assertNotNull(found);
+        assertEquals("DATA2", found.getData());
+        assertEquals(composite.getId(), found.getId());
+
+        DefaultPersistenceContext context = new DefaultPersistenceContext(connect());
+
+        PojoQuery query = context.find(Composite.class).eq("id", "NAME").asc("a").build();
+        PojoQueryResult result = query.execute();
+
+        int c = 0;
+        if (result != null) {
+            Iterator res = result.iterate();
+            while (res.hasNext()) {
+                res.next();
+                c++;
+            }
+        }
+
+        assertTrue(c == 2);
+
+        //Delete a specific row.
+
+        //context.delete(Composite.class,"composite").eq("id", "NAME").eq("a","Johan").execute();
+
+    }
+
+    @Test
     public void tesCompositeTable() throws Exception {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, Composite> dao = factory.createPojoDao(Composite.class);
@@ -91,10 +138,56 @@ public class CompositeColumnFamilyTest extends CassandraTestCase {
             }
         }
 
-        assertTrue(c==2);
+        assertTrue(c == 2);
 
         //Delete a specific row.
 
+        //context.delete(Composite.class,"composite").eq("id", "NAME").eq("a","Johan").execute();
+
+    }
+
+    @Test
+    public void tesCompositeTableOrderDesc() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, Composite> dao = factory.createPojoDao(Composite.class);
+        Composite composite = new Composite();
+        composite.setId("NAME");
+        composite.setA("Johan");
+        composite.setB("");
+        composite.setC("C");
+        composite.setData("DATA1");
+
+        dao.save(composite);
+
+        composite.setId("NAME");
+        composite.setA("James");
+        composite.setB("");
+        composite.setC("C");
+        composite.setData("DATA2");
+        dao.save(composite);
+
+        Composite found = dao.findByKey(composite.getId());
+        assertNotNull(found);
+        assertEquals("DATA2", found.getData());
+        assertEquals(composite.getId(), found.getId());
+
+        DefaultPersistenceContext context = new DefaultPersistenceContext(connect());
+
+        PojoQuery query = context.find(Composite.class).eq("id", "NAME").desc("a").build();
+        PojoQueryResult result = query.execute();
+
+        int c = 0;
+        if (result != null) {
+            Iterator res = result.iterate();
+            while (res.hasNext()) {
+                res.next();
+                c++;
+            }
+        }
+
+        assertTrue(c == 2);
+
+        //Delete a specific row.
 
         //context.delete(Composite.class,"composite").eq("id", "NAME").eq("a","Johan").execute();
 
