@@ -5,6 +5,7 @@ Hecate came out of an ASF Licensed effort, originally created by Jeff Genender.
 
 It's initial usage is described here https://oracleus.activeevents.com/2013/connect/sessionDetail.ww?SESSION_ID=3674
 
+======
 
 This has become a library that we use frequently at http://savoirtech.com as we very rapidly can build
 new data models, index, and search those.
