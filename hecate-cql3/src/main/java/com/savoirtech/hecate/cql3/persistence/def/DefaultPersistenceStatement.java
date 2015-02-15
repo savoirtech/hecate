@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2015 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,31 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
+import com.google.common.base.Function;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.util.HecateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
 public class DefaultPersistenceStatement {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
     //----------------------------------------------------------------------------------------------------------------------
     // Fields
     //----------------------------------------------------------------------------------------------------------------------
-
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final DefaultPersistenceContext persistenceContext;
@@ -45,9 +49,17 @@ public class DefaultPersistenceStatement {
     private final List<FacetMapping> parameterMappings;
     private final List<InjectedParameter> injectedParameters;
 
-    //----------------------------------------------------------------------------------------------------------------------
-    // Constructors
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// Static Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    protected static <I> Function<I, Void> toVoid() {
+        return new ToVoidFunction<>();
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
 
     protected DefaultPersistenceStatement(DefaultPersistenceContext persistenceContext, RegularStatement statement, PojoMapping pojoMapping,
                                           FacetMapping... parameterMappings) {
@@ -82,9 +94,13 @@ public class DefaultPersistenceStatement {
         this(persistenceContext, statement, pojoMapping, injectedParameters, Arrays.asList(parameterMappings));
     }
 
-    //----------------------------------------------------------------------------------------------------------------------
-    // Getter/Setter Methods
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public Logger getLogger() {
+        return logger;
+    }
 
     protected DefaultPersistenceContext getPersistenceContext() {
         return persistenceContext;
@@ -94,19 +110,17 @@ public class DefaultPersistenceStatement {
         return pojoMapping;
     }
 
-    //----------------------------------------------------------------------------------------------------------------------
-    // Other Methods
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
-    protected ResultSet executeStatementArgs(Object... parameters) {
+    protected ResultSetFuture executeStatementArgs(Object... parameters) {
         List<Object> parameterList = new ArrayList<>(parameters.length);
-        for (Object parameter : parameters) {
-            parameterList.add(parameter);
-        }
+        Collections.addAll(parameterList, parameters);
         return executeStatementList(parameterList);
     }
 
-    protected ResultSet executeStatementList(List<Object> parameters) {
+    protected ResultSetFuture executeStatementList(List<Object> parameters) {
         return executeStatementRaw(HecateUtils.convertParameters(injected(parameters), parameterMappings));
     }
 
@@ -122,11 +136,11 @@ public class DefaultPersistenceStatement {
         return injected;
     }
 
-    protected ResultSet executeStatementRaw(List<Object> parameters) {
+    protected ResultSetFuture executeStatementRaw(List<Object> parameters) {
         logger.debug("CQL: {} with parameters {}", preparedStatement.getQueryString(), parameters);
         BoundStatement boundStatement = preparedStatement.bind(parameters.toArray(new Object[parameters.size()]));
 
-        return persistenceContext.getSession().execute(boundStatement);
+        return persistenceContext.getSession().executeAsync(boundStatement);
     }
 
     protected <T> List<T> toList(Iterable<T> iterable) {
@@ -135,5 +149,16 @@ public class DefaultPersistenceStatement {
             list.add(element);
         }
         return list;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    protected static class ToVoidFunction<I> implements Function<I, Void> {
+        @Override
+        public Void apply(I input) {
+            return null;
+        }
     }
 }

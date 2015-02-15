@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2015 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 
 package com.savoirtech.hecate.cql3.persistence.def;
 
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.querybuilder.Delete;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.persistence.Evaporator;
 import com.savoirtech.hecate.cql3.persistence.PojoDelete;
@@ -41,15 +44,21 @@ public class DefaultPojoDelete extends DefaultPersistenceStatement implements Po
 //----------------------------------------------------------------------------------------------------------------------
 
     public void execute(Iterable<Object> keys) {
-        execute(getPersistenceContext().newEvaporator(), keys);
+        execute(getPersistenceContext().newEvaporator(), keys).getUninterruptibly();
+    }
+
+    @Override
+    public ListenableFuture<Void> executeAsync(Iterable<Object> keys) {
+        return Futures.transform(execute(getPersistenceContext().newEvaporator(), keys), toVoid());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public void execute(Evaporator evaporator, Iterable<Object> keys) {
+    public ResultSetFuture execute(Evaporator evaporator, Iterable<Object> keys) {
         getPersistenceContext().findForDelete(getPojoMapping().getPojoMetadata().getPojoType(), getPojoMapping().getTableName()).execute(keys, evaporator);
-        executeStatementArgs(toList(keys));
+        return executeStatementArgs(toList(keys));
     }
+
 }

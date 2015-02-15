@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2015 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ public class DefaultPojoFindForDelete extends DefaultPersistenceStatement implem
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
-
     public DefaultPojoFindForDelete(DefaultPersistenceContext persistenceContext, PojoMapping mapping) {
         super(persistenceContext, createSelect(mapping), mapping, mapping.getIdentifierMapping());
     }
@@ -56,7 +55,8 @@ public class DefaultPojoFindForDelete extends DefaultPersistenceStatement implem
     public void execute(Iterable<Object> keys, Evaporator evaporator) {
         final List<Object> keyList = toList(keys);
         if (!keyList.isEmpty()) {
-            final ResultSet resultSet = executeStatementArgs(keyList);
+            getLogger().info("Looking for keys to delete...");
+            final ResultSet resultSet = executeStatementArgs(keyList).getUninterruptibly();
             for (Row row : resultSet) {
                 processRow(row, evaporator);
             }

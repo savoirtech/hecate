@@ -37,9 +37,19 @@ import java.util.List;
 import java.util.Map;
 
 public class DefaultPojoDaoTest extends CassandraTestCase {
-    //----------------------------------------------------------------------------------------------------------------------
-    // Other Methods
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Test
+    public void testFindByKeyAsync() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        dao.save(pojo);
+        assertNotNull(dao.findByKeyAsync(pojo.getId()).get());
+    }
 
     @Test
     public void testDelete() throws Exception {
@@ -50,6 +60,18 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         dao.save(pojo);
         assertNotNull(dao.findByKey(pojo.getId()));
         dao.delete(pojo.getId());
+        assertNull(dao.findByKey(pojo.getId()));
+    }
+
+    @Test
+    public void testDeleteAsync() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        dao.save(pojo);
+        assertNotNull(dao.findByKey(pojo.getId()));
+        dao.deleteAsync(pojo.getId()).get();
         assertNull(dao.findByKey(pojo.getId()));
     }
 
@@ -113,14 +135,79 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertTrue(results.contains(pojo2));
     }
 
-    //----------------------------------------------------------------------------------------------------------------------
-    // Other Methods
-    //----------------------------------------------------------------------------------------------------------------------
+    @Test
+    public void testFindByKeysAsync() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo1 = new SimplePojo();
+        pojo1.setName("name1");
+        dao.save(pojo1);
+
+        final SimplePojo pojo2 = new SimplePojo();
+        pojo2.setName("name2");
+        dao.save(pojo2);
+
+        List<SimplePojo> results = dao.findByKeysAsync(Arrays.asList(pojo1.getId(), pojo2.getId())).get();
+        assertEquals(2, results.size());
+
+        assertTrue(results.contains(pojo1));
+        assertTrue(results.contains(pojo2));
+    }
+
+    @Test
+    public void testListWithMultiple() {
+        final Session session = connect();
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(session);
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo1 = new SimplePojo();
+        pojo1.setName("pojo1");
+        dao.save(pojo1);
+
+        final SimplePojo pojo2 = new SimplePojo();
+        pojo2.setName("pojo2");
+        dao.save(pojo2);
+
+        DefaultPersistenceContext context = new DefaultPersistenceContext(session);
+        PojoQueryResult<SimplePojo> result = context.find(SimplePojo.class).build().execute();
+
+
+        final List<SimplePojo> pojos = result.list();
+        assertNotSame(pojos.get(0), pojos.get(1));
+        assertNotEquals(pojos.get(0), pojos.get(1));
+    }
 
     @Test
     public void testSave() throws Exception {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        dao.save(pojo);
+
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found);
+        assertEquals("name", found.getName());
+        assertEquals(pojo.getId(), found.getId());
+    }
+
+    @Test
+    public void testSaveAsync() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        dao.saveAsync(pojo).get();
+
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found);
+        assertEquals("name", found.getName());
+        assertEquals(pojo.getId(), found.getId());
+    }
+
+    @Test
+    public void testSaveWithCustomTableName() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class, "BOB");
         final SimplePojo pojo = new SimplePojo();
         pojo.setName("name");
         dao.save(pojo);
@@ -151,75 +238,22 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
     }
 
     @Test
-    public void testWithPojoMapFieldTtl() {
+    public void testSaveWithTtlAsync() throws Exception {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
-        final SimplePojo pojo = new SimplePojo();
-        pojo.setName("NAME");
-        Map<String, NestedPojo> pojoMap = new HashMap<>();
-        final NestedPojo nested1 = new NestedPojo();
-        nested1.setData("DATA");
-        final NestedPojo nested2 = new NestedPojo();
-        nested2.setData("DATA");
-        pojoMap.put("one", nested1);
-        pojoMap.put("two", nested2);
-
-        pojo.setPojoMap(pojoMap);
-        dao.save(pojo, 96000);
-
-        final SimplePojo found = dao.findByKey(pojo.getId());
-        assertNotNull(found.getPojoMap());
-        assertEquals(2, found.getPojoMap().size());
-        assertEquals(nested1, found.getPojoMap().get("one"));
-        assertEquals(nested2, found.getPojoMap().get("two"));
-
-        ResultSet resultSet2 = connect().execute("SELECT TTL (name) from simpletons");
-        for (Row row : resultSet2) {
-            System.out.println(row);
-            assertTrue(row.getInt(0) <= 96000);
-        }
-
-        ResultSet resultSet = connect().execute("SELECT TTL (data) from nestedpojo");
-        for (Row row : resultSet) {
-            System.out.println(row);
-            assertTrue(row.getInt(0) <= 96000 && row.getInt(0) > 0);
-        }
-    }
-
-    @Test
-    public void testListWithMultiple() {
-        final Session session = connect();
-        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(session);
-        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
-        final SimplePojo pojo1 = new SimplePojo();
-        pojo1.setName("pojo1");
-        dao.save(pojo1);
-
-        final SimplePojo pojo2 = new SimplePojo();
-        pojo2.setName("pojo2");
-        dao.save(pojo2);
-
-        DefaultPersistenceContext context = new DefaultPersistenceContext(session);
-        PojoQueryResult<SimplePojo> result = context.find(SimplePojo.class).build().execute();
-
-
-        final List<SimplePojo> pojos = result.list();
-        assertNotSame(pojos.get(0), pojos.get(1));
-        assertNotEquals(pojos.get(0), pojos.get(1));
-    }
-
-    @Test
-    public void testSaveWithCustomTableName() throws Exception {
-        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
-        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class, "BOB");
         final SimplePojo pojo = new SimplePojo();
         pojo.setName("name");
-        dao.save(pojo);
+        dao.saveAsync(pojo, 90600).get();
 
         final SimplePojo found = dao.findByKey(pojo.getId());
         assertNotNull(found);
         assertEquals("name", found.getName());
         assertEquals(pojo.getId(), found.getId());
+
+        ResultSet resultSet = connect().execute("SELECT TTL (name) from simpletons");
+        for (Row row : resultSet) {
+            assertTrue(row.getInt(0) <= 90600);
+        }
     }
 
     @Test
@@ -255,39 +289,6 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
     }
 
     @Test
-    @Ignore("Need to figure this out (allow filtering required for anded queries)")
-    public void testWithMixedParameters() {
-        DefaultPersistenceContext context = new DefaultPersistenceContext(connect());
-
-        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(context);
-
-        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
-        final SimplePojo pojo = new SimplePojo();
-        pojo.setName("Nums");
-        pojo.setNums(SimplePojo.Nums.Three);
-        dao.save(pojo);
-        final PojoQuery<SimplePojo> query = context.find(SimplePojo.class).eq("nums").eq("name", "Duke").build();
-        SimplePojo found = query.execute(SimplePojo.Nums.Three).one();
-        assertNotNull(found);
-    }
-
-    @Test
-    public void testWithInjectedParameters() {
-        DefaultPersistenceContext context = new DefaultPersistenceContext(connect());
-
-        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(context);
-
-        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
-        final SimplePojo pojo = new SimplePojo();
-        pojo.setName("Duke");
-        dao.save(pojo);
-
-        final PojoQuery<SimplePojo> query = context.find(SimplePojo.class).eq("name", "Duke").build();
-        SimplePojo found = query.execute().one();
-        assertNotNull(found);
-    }
-
-    @Test
     public void testWithArrayField() {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
@@ -307,6 +308,22 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         dao.save(pojo);
         final SimplePojo found = dao.findByKey(pojo.getId());
         assertEquals(SimplePojo.Nums.Three, found.getNums());
+    }
+
+    @Test
+    public void testWithInjectedParameters() {
+        DefaultPersistenceContext context = new DefaultPersistenceContext(connect());
+
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(context);
+
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("Duke");
+        dao.save(pojo);
+
+        final PojoQuery<SimplePojo> query = context.find(SimplePojo.class).eq("name", "Duke").build();
+        SimplePojo found = query.execute().one();
+        assertNotNull(found);
     }
 
     @Test
@@ -341,6 +358,23 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertEquals("one", found.getMapOfStrings().get(1));
         assertEquals("two", found.getMapOfStrings().get(2));
         assertEquals("three", found.getMapOfStrings().get(3));
+    }
+
+    @Test
+    @Ignore("Need to figure this out (allow filtering required for anded queries)")
+    public void testWithMixedParameters() {
+        DefaultPersistenceContext context = new DefaultPersistenceContext(connect());
+
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(context);
+
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("Nums");
+        pojo.setNums(SimplePojo.Nums.Three);
+        dao.save(pojo);
+        final PojoQuery<SimplePojo> query = context.find(SimplePojo.class).eq("nums").eq("name", "Duke").build();
+        SimplePojo found = query.execute(SimplePojo.Nums.Three).one();
+        assertNotNull(found);
     }
 
     @Test
@@ -400,6 +434,42 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertEquals(2, found.getPojoMap().size());
         assertEquals(nested1, found.getPojoMap().get("one"));
         assertEquals(nested2, found.getPojoMap().get("two"));
+    }
+
+    @Test
+    public void testWithPojoMapFieldTtl() {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("NAME");
+        Map<String, NestedPojo> pojoMap = new HashMap<>();
+        final NestedPojo nested1 = new NestedPojo();
+        nested1.setData("DATA");
+        final NestedPojo nested2 = new NestedPojo();
+        nested2.setData("DATA");
+        pojoMap.put("one", nested1);
+        pojoMap.put("two", nested2);
+
+        pojo.setPojoMap(pojoMap);
+        dao.save(pojo, 96000);
+
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertNotNull(found.getPojoMap());
+        assertEquals(2, found.getPojoMap().size());
+        assertEquals(nested1, found.getPojoMap().get("one"));
+        assertEquals(nested2, found.getPojoMap().get("two"));
+
+        ResultSet resultSet2 = connect().execute("SELECT TTL (name) from simpletons");
+        for (Row row : resultSet2) {
+            System.out.println(row);
+            assertTrue(row.getInt(0) <= 96000);
+        }
+
+        ResultSet resultSet = connect().execute("SELECT TTL (data) from nestedpojo");
+        for (Row row : resultSet) {
+            System.out.println(row);
+            assertTrue(row.getInt(0) <= 96000 && row.getInt(0) > 0);
+        }
     }
 
     @Test

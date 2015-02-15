@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2015 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,12 @@
 package com.savoirtech.hecate.cql3.persistence.def;
 
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.Select;
+import com.google.common.base.Function;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.persistence.Hydrator;
@@ -35,7 +39,6 @@ public class DefaultPojoQuery<P> extends DefaultPersistenceStatement implements 
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-
     public DefaultPojoQuery(DefaultPersistenceContext persistenceContext, Select.Where statement, PojoMapping pojoMapping, List<FacetMapping> parameterMappings) {
         super(persistenceContext, statement, pojoMapping, parameterMappings);
     }
@@ -43,8 +46,6 @@ public class DefaultPojoQuery<P> extends DefaultPersistenceStatement implements 
     public DefaultPojoQuery(DefaultPersistenceContext persistenceContext, Select.Where statement, PojoMapping pojoMapping, List<InjectedParameter> injectedParameters, List<FacetMapping> parameterMappings) {
         super(persistenceContext, statement, pojoMapping, injectedParameters, parameterMappings);
     }
-
-
 
 //----------------------------------------------------------------------------------------------------------------------
 // PojoQuery Implementation
@@ -55,13 +56,27 @@ public class DefaultPojoQuery<P> extends DefaultPersistenceStatement implements 
         return execute(getPersistenceContext().newHydrator(), parameters);
     }
 
+    @Override
+    public ListenableFuture<PojoQueryResult<P>> executeAsync(Object... parameters) {
+        return executeAsync(getPersistenceContext().newHydrator(), parameters);
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoQueryResult<P> execute(Hydrator hydrator, Object... parameters) {
-        final ResultSet resultSet = executeStatementList(Arrays.asList(parameters));
-        return new PojoQueryResultImpl(resultSet, hydrator);
+    public PojoQueryResult<P> execute(final Hydrator hydrator, Object... parameters) {
+        final ResultSetFuture future = executeStatementList(Arrays.asList(parameters));
+        return new PojoQueryResultImpl(future.getUninterruptibly(), hydrator);
+    }
+
+    public ListenableFuture<PojoQueryResult<P>> executeAsync(final Hydrator hydrator, Object... parameters) {
+        return Futures.transform(executeStatementList(Arrays.asList(parameters)), new Function<ResultSet, PojoQueryResult<P>>() {
+            @Override
+            public PojoQueryResult<P> apply(ResultSet input) {
+                return new PojoQueryResultImpl(input, hydrator);
+            }
+        });
     }
 
 //----------------------------------------------------------------------------------------------------------------------
