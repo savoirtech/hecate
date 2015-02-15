@@ -33,6 +33,7 @@ public class DefaultPojoFindForDelete extends DefaultPersistenceStatement implem
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
+
     public DefaultPojoFindForDelete(DefaultPersistenceContext persistenceContext, PojoMapping mapping) {
         super(persistenceContext, createSelect(mapping), mapping, mapping.getIdentifierMapping());
     }
@@ -55,7 +56,6 @@ public class DefaultPojoFindForDelete extends DefaultPersistenceStatement implem
     public void execute(Iterable<Object> keys, Evaporator evaporator) {
         final List<Object> keyList = toList(keys);
         if (!keyList.isEmpty()) {
-            getLogger().info("Looking for keys to delete...");
             final ResultSet resultSet = executeStatementArgs(keyList).getUninterruptibly();
             for (Row row : resultSet) {
                 processRow(row, evaporator);
