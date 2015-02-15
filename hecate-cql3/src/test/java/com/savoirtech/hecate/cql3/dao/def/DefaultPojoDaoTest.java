@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2015 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,31 +16,25 @@
 
 package com.savoirtech.hecate.cql3.dao.def;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 import com.google.common.collect.Sets;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.entities.NestedPojo;
 import com.savoirtech.hecate.cql3.entities.SimplePojo;
 import com.savoirtech.hecate.cql3.persistence.PojoQuery;
+import com.savoirtech.hecate.cql3.persistence.PojoQueryResult;
 import com.savoirtech.hecate.cql3.persistence.def.DefaultPersistenceContext;
 import com.savoirtech.hecate.cql3.test.CassandraTestCase;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DefaultPojoDaoTest extends CassandraTestCase {
     //----------------------------------------------------------------------------------------------------------------------
@@ -151,9 +145,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertEquals(pojo.getId(), found.getId());
 
         ResultSet resultSet = connect().execute("SELECT TTL (name) from simpletons");
-        Iterator<Row> iterator = resultSet.iterator();
-        while (iterator.hasNext()) {
-            Row row = iterator.next();
+        for (Row row : resultSet) {
             assertTrue(row.getInt(0) <= 90600);
         }
     }
@@ -182,20 +174,38 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertEquals(nested2, found.getPojoMap().get("two"));
 
         ResultSet resultSet2 = connect().execute("SELECT TTL (name) from simpletons");
-        Iterator<Row> iterator2 = resultSet2.iterator();
-        while (iterator2.hasNext()) {
-            Row row = iterator2.next();
+        for (Row row : resultSet2) {
             System.out.println(row);
             assertTrue(row.getInt(0) <= 96000);
         }
 
         ResultSet resultSet = connect().execute("SELECT TTL (data) from nestedpojo");
-        Iterator<Row> iterator = resultSet.iterator();
-        while (iterator.hasNext()) {
-            Row row = iterator.next();
+        for (Row row : resultSet) {
             System.out.println(row);
             assertTrue(row.getInt(0) <= 96000 && row.getInt(0) > 0);
         }
+    }
+
+    @Test
+    public void testListWithMultiple() {
+        final Session session = connect();
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(session);
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo1 = new SimplePojo();
+        pojo1.setName("pojo1");
+        dao.save(pojo1);
+
+        final SimplePojo pojo2 = new SimplePojo();
+        pojo2.setName("pojo2");
+        dao.save(pojo2);
+
+        DefaultPersistenceContext context = new DefaultPersistenceContext(session);
+        PojoQueryResult<SimplePojo> result = context.find(SimplePojo.class).build().execute();
+
+
+        final List<SimplePojo> pojos = result.list();
+        assertNotSame(pojos.get(0), pojos.get(1));
+        assertNotEquals(pojos.get(0), pojos.get(1));
     }
 
     @Test
