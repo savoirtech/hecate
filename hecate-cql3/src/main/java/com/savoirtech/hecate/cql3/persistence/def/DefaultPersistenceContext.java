@@ -35,8 +35,6 @@ public class DefaultPersistenceContext implements PersistenceContext {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static final int DEFAULT_MAX_CACHE_SIZE = 1000;
-
     private final Session session;
     private final PojoMappingFactory pojoMappingFactory;
     private final LoadingCache<PojoCacheKey, DefaultPojoQuery<?>> findByKeyCache;
@@ -51,21 +49,17 @@ public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPersistenceContext(Session session) {
-        this(session, new DefaultPojoMappingFactory(session), DEFAULT_MAX_CACHE_SIZE);
+        this(session, new DefaultPojoMappingFactory(session));
     }
 
     public DefaultPersistenceContext(Session session, PojoMappingFactory pojoMappingFactory) {
-        this(session, pojoMappingFactory, DEFAULT_MAX_CACHE_SIZE);
-    }
-
-    public DefaultPersistenceContext(Session session, PojoMappingFactory pojoMappingFactory, int cacheSize) {
         this.session = session;
         this.pojoMappingFactory = pojoMappingFactory;
-        this.findByKeysCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new FindByKeysLoader());
-        this.findByKeyCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new FindByKeyLoader());
-        this.saveCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new SaveLoader());
-        this.findForDeleteCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new FindForDeleteLoader());
-        this.deleteCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new DeleteLoader());
+        this.findByKeysCache = CacheBuilder.newBuilder().build(new FindByKeysLoader());
+        this.findByKeyCache = CacheBuilder.newBuilder().build(new FindByKeyLoader());
+        this.saveCache = CacheBuilder.newBuilder().build(new SaveLoader());
+        this.findForDeleteCache = CacheBuilder.newBuilder().build(new FindForDeleteLoader());
+        this.deleteCache = CacheBuilder.newBuilder().build(new DeleteLoader());
     }
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -53,7 +53,7 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
         this.pojoMetadataFactory = new DefaultPojoMetadataFactory();
         this.columnHandlerFactory = new DefaultColumnHandlerFactory(pojoMetadataFactory);
         this.schemaVerifier = new CreateVerifier();
-        this.pojoMappings = CacheBuilder.newBuilder().maximumSize(1000).build(new PojoMappingCacheLoader());
+        this.pojoMappings = CacheBuilder.newBuilder().build(new PojoMappingCacheLoader());
     }
 
     public DefaultPojoMappingFactory(Session session, PojoMetadataFactory pojoMetadataFactory, ColumnHandlerFactory columnHandlerFactory, SchemaVerifier schemaVerifier) {
@@ -61,7 +61,7 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
         this.pojoMetadataFactory = pojoMetadataFactory;
         this.columnHandlerFactory = columnHandlerFactory;
         this.schemaVerifier = schemaVerifier;
-        this.pojoMappings = CacheBuilder.newBuilder().maximumSize(1000).build(new PojoMappingCacheLoader());
+        this.pojoMappings = CacheBuilder.newBuilder().build(new PojoMappingCacheLoader());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
