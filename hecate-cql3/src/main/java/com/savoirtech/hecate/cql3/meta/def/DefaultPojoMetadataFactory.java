@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2015 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
 
 package com.savoirtech.hecate.cql3.meta.def;
 
-import com.google.common.collect.MapMaker;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.cql3.meta.FacetMetadata;
 import com.savoirtech.hecate.cql3.meta.PojoMetadata;
 import com.savoirtech.hecate.cql3.meta.PojoMetadataFactory;
@@ -25,39 +27,23 @@ import com.savoirtech.hecate.cql3.value.FacetProvider;
 import com.savoirtech.hecate.cql3.value.field.FieldFacetProvider;
 import org.apache.commons.lang3.Validate;
 
-import java.util.Map;
-
 public class DefaultPojoMetadataFactory implements PojoMetadataFactory {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Map<Class<?>, PojoMetadata> pojoMetadatas;
-    private final FacetProvider facetProvider;
+    private final LoadingCache<Class<?>, PojoMetadata> pojoMetadatas;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoMetadataFactory() {
-        this(new MapMaker().<Class<?>, PojoMetadata>makeMap(), new FieldFacetProvider());
+        this(new FieldFacetProvider());
     }
 
-    public DefaultPojoMetadataFactory(FacetProvider facetProvider) {
-        this(new MapMaker().<Class<?>, PojoMetadata>makeMap(), facetProvider);
-    }
-
-    public DefaultPojoMetadataFactory(int concurrencyLevel) {
-        this(new MapMaker().concurrencyLevel(concurrencyLevel).<Class<?>, PojoMetadata>makeMap(), new FieldFacetProvider());
-    }
-
-    public DefaultPojoMetadataFactory(FacetProvider facetProvider, int concurrencyLevel) {
-        this(new MapMaker().concurrencyLevel(concurrencyLevel).<Class<?>, PojoMetadata>makeMap(), facetProvider);
-    }
-
-    private DefaultPojoMetadataFactory(Map<Class<?>, PojoMetadata> pojoMetadatas, FacetProvider facetProvider) {
-        this.pojoMetadatas = pojoMetadatas;
-        this.facetProvider = facetProvider;
+    public DefaultPojoMetadataFactory(final FacetProvider facetProvider) {
+        this.pojoMetadatas = CacheBuilder.newBuilder().build(new PojoMetadataCacheLoader(facetProvider));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -66,15 +52,29 @@ public class DefaultPojoMetadataFactory implements PojoMetadataFactory {
 
     @Override
     public PojoMetadata getPojoMetadata(Class<?> pojoType) {
-        PojoMetadata pojoMetadata = pojoMetadatas.get(pojoType);
-        if (pojoMetadata == null) {
-            pojoMetadata = new PojoMetadata(pojoType);
+        PojoMetadata pojoMetadata = pojoMetadatas.getUnchecked(pojoType);
+        Validate.isTrue(pojoMetadata.getIdentifierFacet() != null, "Invalid POJO type %s (no identifier found).", pojoType.getCanonicalName());
+        return pojoMetadata;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    private static class PojoMetadataCacheLoader extends CacheLoader<Class<?>, PojoMetadata> {
+        private final FacetProvider facetProvider;
+
+        public PojoMetadataCacheLoader(FacetProvider facetProvider) {
+            this.facetProvider = facetProvider;
+        }
+
+        @Override
+        public PojoMetadata load(Class<?> pojoType) throws Exception {
+            PojoMetadata pojoMetadata = new PojoMetadata(pojoType);
             for (Facet facet : facetProvider.getFacets(pojoType)) {
                 pojoMetadata.addFacet(new FacetMetadata(facet));
             }
-            pojoMetadatas.put(pojoType, pojoMetadata);
+            return pojoMetadata;
         }
-        Validate.isTrue(pojoMetadata.getIdentifierFacet() != null, "Invalid POJO type %s (no identifier found).", pojoType.getCanonicalName());
-        return pojoMetadata;
     }
 }

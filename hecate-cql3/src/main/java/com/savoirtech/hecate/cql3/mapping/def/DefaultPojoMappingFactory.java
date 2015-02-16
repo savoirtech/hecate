@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2015 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package com.savoirtech.hecate.cql3.mapping.def;
 
 import com.datastax.driver.core.Session;
-import com.google.common.collect.MapMaker;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.cql3.handler.ColumnHandlerFactory;
 import com.savoirtech.hecate.cql3.handler.def.DefaultColumnHandlerFactory;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
@@ -29,8 +31,7 @@ import com.savoirtech.hecate.cql3.meta.PojoMetadataFactory;
 import com.savoirtech.hecate.cql3.meta.def.DefaultPojoMetadataFactory;
 import com.savoirtech.hecate.cql3.schema.CreateVerifier;
 import com.savoirtech.hecate.cql3.schema.SchemaVerifier;
-
-import java.util.Map;
+import com.savoirtech.hecate.cql3.util.PojoCacheKey;
 
 public class DefaultPojoMappingFactory implements PojoMappingFactory {
 //----------------------------------------------------------------------------------------------------------------------
@@ -41,55 +42,52 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
     private final PojoMetadataFactory pojoMetadataFactory;
     private final ColumnHandlerFactory columnHandlerFactory;
     private final SchemaVerifier schemaVerifier;
-    private final Map<String, PojoMapping> pojoMappings;
+    private final LoadingCache<PojoCacheKey, PojoMapping> pojoMappings;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
-
-
-    public DefaultPojoMappingFactory(Session session, PojoMetadataFactory pojoMetadataFactory, ColumnHandlerFactory columnHandlerFactory, SchemaVerifier schemaVerifier) {
-        this.session = session;
-        this.pojoMetadataFactory = pojoMetadataFactory;
-        this.columnHandlerFactory = columnHandlerFactory;
-        this.schemaVerifier = schemaVerifier;
-        this.pojoMappings = new MapMaker().makeMap();
-    }
 
     public DefaultPojoMappingFactory(Session session) {
         this.session = session;
         this.pojoMetadataFactory = new DefaultPojoMetadataFactory();
         this.columnHandlerFactory = new DefaultColumnHandlerFactory(pojoMetadataFactory);
         this.schemaVerifier = new CreateVerifier();
-        this.pojoMappings = new MapMaker().makeMap();
+        this.pojoMappings = CacheBuilder.newBuilder().maximumSize(1000).build(new PojoMappingCacheLoader());
+    }
+
+    public DefaultPojoMappingFactory(Session session, PojoMetadataFactory pojoMetadataFactory, ColumnHandlerFactory columnHandlerFactory, SchemaVerifier schemaVerifier) {
+        this.session = session;
+        this.pojoMetadataFactory = pojoMetadataFactory;
+        this.columnHandlerFactory = columnHandlerFactory;
+        this.schemaVerifier = schemaVerifier;
+        this.pojoMappings = CacheBuilder.newBuilder().maximumSize(1000).build(new PojoMappingCacheLoader());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // PojoMappingFactory Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    @SuppressWarnings("unchecked")
-    public PojoMapping getPojoMapping(Class<?> pojoType, String tableName) {
-        final String key = key(pojoType, tableName);
-        PojoMapping pojoMapping = pojoMappings.get(key);
-        if (pojoMapping == null) {
-            PojoMetadata pojoMetadata = pojoMetadataFactory.getPojoMetadata(pojoType);
-            pojoMapping = new PojoMapping(pojoMetadata, tableName);
+    @Override
+    public PojoMapping getPojoMapping(PojoCacheKey key) {
+        return pojoMappings.getUnchecked(key);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    private class PojoMappingCacheLoader extends CacheLoader<PojoCacheKey, PojoMapping> {
+        @Override
+        @SuppressWarnings("unchecked")
+        public PojoMapping load(PojoCacheKey key) throws Exception {
+            final PojoMetadata pojoMetadata = pojoMetadataFactory.getPojoMetadata(key.getPojoType());
+            final PojoMapping pojoMapping = new PojoMapping(pojoMetadata, key.getTableName());
             for (FacetMetadata facet : pojoMetadata.getFacets().values()) {
                 pojoMapping.addFacet(new FacetMapping(facet, columnHandlerFactory.getColumnHandler(facet)));
             }
             schemaVerifier.verifySchema(session, pojoMapping);
-            pojoMappings.put(key, pojoMapping);
-            pojoMappings.put(key(pojoType, pojoMapping.getTableName()), pojoMapping);
+            return pojoMapping;
         }
-        return pojoMapping;
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    private String key(Class<?> pojoType, String tableName) {
-        return pojoType.getCanonicalName() + "@" + tableName;
     }
 }

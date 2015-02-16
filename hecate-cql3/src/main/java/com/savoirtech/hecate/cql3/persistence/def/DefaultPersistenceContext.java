@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2015 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package com.savoirtech.hecate.cql3.persistence.def;
 
 import com.datastax.driver.core.Session;
-import com.google.common.collect.MapMaker;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMappingFactory;
 import com.savoirtech.hecate.cql3.mapping.def.DefaultPojoMappingFactory;
@@ -26,48 +28,53 @@ import com.savoirtech.hecate.cql3.persistence.Evaporator;
 import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.persistence.PersistenceContext;
 import com.savoirtech.hecate.cql3.persistence.PojoSave;
-
-import java.util.Map;
+import com.savoirtech.hecate.cql3.util.PojoCacheKey;
 
 public class DefaultPersistenceContext implements PersistenceContext {
-    //----------------------------------------------------------------------------------------------------------------------
-    // Fields
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+    private static final int DEFAULT_MAX_CACHE_SIZE = 1000;
 
     private final Session session;
     private final PojoMappingFactory pojoMappingFactory;
-    private final StatementCache<DefaultPojoQuery<?>> findByKeyCache;
-    private final StatementCache<DefaultPojoQuery<?>> findByKeysCache;
-    private final StatementCache<DefaultPojoSave> saveCache;
-    private final StatementCache<DefaultPojoFindForDelete> findForDeleteCache;
-    private final StatementCache<DefaultPojoDelete> deleteCache;
+    private final LoadingCache<PojoCacheKey, DefaultPojoQuery<?>> findByKeyCache;
+    private final LoadingCache<PojoCacheKey, DefaultPojoQuery<?>> findByKeysCache;
+    private final LoadingCache<PojoCacheKey, DefaultPojoSave> saveCache;
+    private final LoadingCache<PojoCacheKey, DefaultPojoFindForDelete> findForDeleteCache;
+    private final LoadingCache<PojoCacheKey, DefaultPojoDelete> deleteCache;
     private int ttl;
 
-    //----------------------------------------------------------------------------------------------------------------------
-    // Constructors
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPersistenceContext(Session session) {
-        this(session, new DefaultPojoMappingFactory(session));
+        this(session, new DefaultPojoMappingFactory(session), DEFAULT_MAX_CACHE_SIZE);
     }
 
     public DefaultPersistenceContext(Session session, PojoMappingFactory pojoMappingFactory) {
-        this.session = session;
-        this.pojoMappingFactory = pojoMappingFactory;
-        this.findByKeysCache = new StatementCache<>(new FindByKeysFactory());
-        this.findByKeyCache = new StatementCache<>(new FindByKeyFactory());
-        this.saveCache = new StatementCache<>(new SaveFactory());
-        this.findForDeleteCache = new StatementCache<>(new FindForDeleteFactory());
-        this.deleteCache = new StatementCache<>(new DeleteFactory());
+        this(session, pojoMappingFactory, DEFAULT_MAX_CACHE_SIZE);
     }
 
-    //----------------------------------------------------------------------------------------------------------------------
-    // PersistenceContext Implementation
-    //----------------------------------------------------------------------------------------------------------------------
+    public DefaultPersistenceContext(Session session, PojoMappingFactory pojoMappingFactory, int cacheSize) {
+        this.session = session;
+        this.pojoMappingFactory = pojoMappingFactory;
+        this.findByKeysCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new FindByKeysLoader());
+        this.findByKeyCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new FindByKeyLoader());
+        this.saveCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new SaveLoader());
+        this.findForDeleteCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new FindForDeleteLoader());
+        this.deleteCache = CacheBuilder.newBuilder().maximumSize(cacheSize).build(new DeleteLoader());
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// PersistenceContext Implementation
+//----------------------------------------------------------------------------------------------------------------------
 
     @Override
     public DefaultPojoDelete delete(Class<?> pojoType, String tableName) {
-        return deleteCache.get(pojoType, tableName);
+        return deleteCache.getUnchecked(key(pojoType, tableName));
     }
 
     @Override
@@ -77,50 +84,54 @@ public class DefaultPersistenceContext implements PersistenceContext {
 
     @Override
     public <P> DefaultPojoQueryBuilder<P> find(Class<P> pojoType, String tableName) {
-        return new DefaultPojoQueryBuilder<>(this, pojoMappingFactory.getPojoMapping(pojoType, tableName));
+        return new DefaultPojoQueryBuilder<>(this, pojoMappingFactory.getPojoMapping(key(pojoType, tableName)));
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <P> DefaultPojoQuery<P> findByKey(Class<P> pojoType, String tableName) {
-        return (DefaultPojoQuery<P>) findByKeyCache.get(pojoType, tableName);
+        return (DefaultPojoQuery<P>) findByKeyCache.getUnchecked(key(pojoType, tableName));
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <P> DefaultPojoQuery<P> findByKeys(Class<P> pojoType, String tableName) {
-        return (DefaultPojoQuery<P>) findByKeysCache.get(pojoType, tableName);
+        return (DefaultPojoQuery<P>) findByKeysCache.getUnchecked(key(pojoType, tableName));
     }
 
     @Override
     public DefaultPojoSave save(Class<?> pojoType, String tableName) {
-        return saveCache.get(pojoType, tableName);
+        return saveCache.getUnchecked(key(pojoType, tableName));
     }
 
     @Override
     public PojoSave save(Class<?> pojoType, String tableName, int ttl) {
         this.ttl = ttl;
-        return saveCache.get(pojoType, tableName);
+        return saveCache.getUnchecked(key(pojoType, tableName));
     }
 
-    //----------------------------------------------------------------------------------------------------------------------
-    // Getter/Setter Methods
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     public Session getSession() {
         return session;
     }
 
-    //----------------------------------------------------------------------------------------------------------------------
-    // Other Methods
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     private DefaultPojoQueryBuilder<?> find(PojoMapping mapping) {
         return new DefaultPojoQueryBuilder<>(this, mapping);
     }
 
     public DefaultPojoFindForDelete findForDelete(Class<?> pojoType, String tableName) {
-        return findForDeleteCache.get(pojoType, tableName);
+        return findForDeleteCache.getUnchecked(key(pojoType, tableName));
+    }
+
+    private PojoCacheKey key(Class<?> pojoType, String tableName) {
+        return new PojoCacheKey(pojoType, tableName);
     }
 
     public Dehydrator newDehydrator() {
@@ -139,75 +150,55 @@ public class DefaultPersistenceContext implements PersistenceContext {
         return new DefaultHydrator(this);
     }
 
-    //----------------------------------------------------------------------------------------------------------------------
-    // Inner Classes
-    //----------------------------------------------------------------------------------------------------------------------
+    private PojoMapping pojoMapping(PojoCacheKey key) {
+        return pojoMappingFactory.getPojoMapping(key);
+    }
 
-    private final class DeleteFactory implements StatementFactory<DefaultPojoDelete> {
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    private final class DeleteLoader extends PojoMappingCacheLoader<DefaultPojoDelete> {
         @Override
-        public DefaultPojoDelete create(PojoMapping pojoMapping) {
+        protected DefaultPojoDelete load(PojoMapping pojoMapping) {
             return new DefaultPojoDelete(DefaultPersistenceContext.this, pojoMapping);
         }
     }
 
-    private class FindByKeyFactory implements StatementFactory<DefaultPojoQuery<?>> {
+    private class FindByKeyLoader extends PojoMappingCacheLoader<DefaultPojoQuery<?>> {
         @Override
-        public DefaultPojoQuery<?> create(PojoMapping pojoMapping) {
+        protected DefaultPojoQuery<?> load(PojoMapping pojoMapping) {
             return find(pojoMapping).identifierEquals().build();
         }
     }
 
-    private class FindByKeysFactory implements StatementFactory<DefaultPojoQuery<?>> {
+    private class FindByKeysLoader extends PojoMappingCacheLoader<DefaultPojoQuery<?>> {
         @Override
-        public DefaultPojoQuery<?> create(PojoMapping pojoMapping) {
+        protected DefaultPojoQuery<?> load(PojoMapping pojoMapping) {
             return find(pojoMapping).identifierIn().build();
         }
     }
 
-    private final class FindForDeleteFactory implements StatementFactory<DefaultPojoFindForDelete> {
+    private final class FindForDeleteLoader extends PojoMappingCacheLoader<DefaultPojoFindForDelete> {
         @Override
-        public DefaultPojoFindForDelete create(PojoMapping pojoMapping) {
+        protected DefaultPojoFindForDelete load(PojoMapping pojoMapping) {
             return new DefaultPojoFindForDelete(DefaultPersistenceContext.this, pojoMapping);
         }
     }
 
-    private final class SaveFactory implements StatementFactory<DefaultPojoSave> {
+    private abstract class PojoMappingCacheLoader<T> extends CacheLoader<PojoCacheKey, T> {
         @Override
-        public DefaultPojoSave create(PojoMapping pojoMapping) {
+        public final T load(PojoCacheKey key) throws Exception {
+            return load(pojoMapping(key));
+        }
+
+        protected abstract T load(PojoMapping pojoMapping);
+    }
+
+    private final class SaveLoader extends PojoMappingCacheLoader<DefaultPojoSave> {
+        @Override
+        protected DefaultPojoSave load(PojoMapping pojoMapping) {
             return new DefaultPojoSave(DefaultPersistenceContext.this, pojoMapping);
         }
-    }
-
-    private final class StatementCache<T> {
-        private final Map<String, T> cache;
-        private final StatementFactory<T> factory;
-
-        private StatementCache(StatementFactory<T> factory) {
-            this.factory = factory;
-            this.cache = new MapMaker().makeMap();
-        }
-
-        public T get(Class<?> pojoType, String tableName) {
-            final String key = keyFor(pojoType, tableName);
-
-            T value = cache.get(key);
-            if (value == null) {
-                final PojoMapping mapping = pojoMappingFactory.getPojoMapping(pojoType, tableName);
-                value = factory.create(mapping);
-                cache.put(key, value);
-                cache.put(keyFor(pojoType, mapping.getTableName()), value);
-            }
-            return value;
-        }
-
-        private String keyFor(Class<?> pojoType, String tableName) {
-            return pojoType.getCanonicalName() + "@" + tableName;
-        }
-
-
-    }
-
-    private interface StatementFactory<T> {
-        T create(PojoMapping pojoMapping);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2015 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@
 
 package com.savoirtech.hecate.cql3.mapping;
 
+import com.savoirtech.hecate.cql3.util.PojoCacheKey;
+
 public interface PojoMappingFactory {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    PojoMapping getPojoMapping(Class<?> pojoType, String tableName);
+    PojoMapping getPojoMapping(PojoCacheKey key);
 }

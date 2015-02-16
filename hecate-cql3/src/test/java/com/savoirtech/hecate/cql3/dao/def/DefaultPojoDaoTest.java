@@ -20,6 +20,9 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.entities.NestedPojo;
 import com.savoirtech.hecate.cql3.entities.SimplePojo;
@@ -35,21 +38,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 
 public class DefaultPojoDaoTest extends CassandraTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
-
-    @Test
-    public void testFindByKeyAsync() throws Exception {
-        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
-        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
-        final SimplePojo pojo = new SimplePojo();
-        pojo.setName("name");
-        dao.save(pojo);
-        assertNotNull(dao.findByKeyAsync(pojo.getId()).get());
-    }
 
     @Test
     public void testDelete() throws Exception {
@@ -71,8 +66,16 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         pojo.setName("name");
         dao.save(pojo);
         assertNotNull(dao.findByKey(pojo.getId()));
-        dao.deleteAsync(pojo.getId()).get();
+        awaitFuture(dao.deleteAsync(pojo.getId()));
+
         assertNull(dao.findByKey(pojo.getId()));
+    }
+
+    private <T> T awaitFuture(ListenableFuture<T> future) throws InterruptedException, ExecutionException {
+        final LatchedFutureCallback<T> callback = new LatchedFutureCallback<T>();
+        Futures.addCallback(future, callback);
+        callback.latch.await();
+        return future.get();
     }
 
     @Test
@@ -117,6 +120,16 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
     }
 
     @Test
+    public void testFindByKeyAsync() throws Exception {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        dao.save(pojo);
+        assertNotNull(awaitFuture(dao.findByKeyAsync(pojo.getId())));
+    }
+
+    @Test
     public void testFindByKeys() {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
@@ -147,7 +160,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         pojo2.setName("name2");
         dao.save(pojo2);
 
-        List<SimplePojo> results = dao.findByKeysAsync(Arrays.asList(pojo1.getId(), pojo2.getId())).get();
+        List<SimplePojo> results = awaitFuture(dao.findByKeysAsync(Arrays.asList(pojo1.getId(), pojo2.getId())));
         assertEquals(2, results.size());
 
         assertTrue(results.contains(pojo1));
@@ -196,7 +209,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
         final SimplePojo pojo = new SimplePojo();
         pojo.setName("name");
-        dao.saveAsync(pojo).get();
+        awaitFuture(dao.saveAsync(pojo));
 
         final SimplePojo found = dao.findByKey(pojo.getId());
         assertNotNull(found);
@@ -243,7 +256,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
         final SimplePojo pojo = new SimplePojo();
         pojo.setName("name");
-        dao.saveAsync(pojo, 90600).get();
+        awaitFuture(dao.saveAsync(pojo, 90600));
 
         final SimplePojo found = dao.findByKey(pojo.getId());
         assertNotNull(found);
@@ -502,5 +515,23 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         assertTrue(found.getSetOfStrings().contains("one"));
         assertTrue(found.getSetOfStrings().contains("two"));
         assertTrue(found.getSetOfStrings().contains("three"));
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    private static class LatchedFutureCallback<T> implements FutureCallback<T> {
+        private final CountDownLatch latch = new CountDownLatch(1);
+
+        @Override
+        public void onSuccess(T result) {
+            latch.countDown();
+        }
+
+        @Override
+        public void onFailure(Throwable t) {
+            latch.countDown();
+        }
     }
 }
