@@ -40,6 +40,9 @@ public class PersonRepositoryImpl implements PersonRepository {
 // PersonRepository Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+    public void loadSampleData() {
+        dao.save(new Person("123456789", "Slappy", "White"));
+    }
 
     @Override
     public Person findBySsn(String ssn) {

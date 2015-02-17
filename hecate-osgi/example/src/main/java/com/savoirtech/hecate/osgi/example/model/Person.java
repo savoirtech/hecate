@@ -16,16 +16,32 @@
 
 package com.savoirtech.hecate.osgi.example.model;
 
+import com.savoirtech.hecate.cql3.annotations.Id;
+
 public class Person {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
+    @Id
     private String ssn;
 
     private String firstName;
 
     private String lastName;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
+    public Person() {
+    }
+
+    public Person(String ssn, String firstName, String lastName) {
+        this.ssn = ssn;
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods

@@ -151,5 +151,7 @@ public class HecateFeaturesIT extends Assert {
         // Do nothing (injecting repository verifies)
         assertBundleActive("com.savoirtech.hecate.cql3");
         assertBundleActive("com.savoirtech.hecate.osgi.example");
+
+        assertNotNull(personRepository.findBySsn("123456789"));
     }
 }

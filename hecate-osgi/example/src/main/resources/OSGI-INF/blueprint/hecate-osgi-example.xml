@@ -21,7 +21,8 @@
     <bean id="pojoDaoFactory" class="com.savoirtech.hecate.osgi.example.factory.PojoDaoFactoryFactory"
           factory-method="createFactory"/>
 
-    <bean id="personRepository" class="com.savoirtech.hecate.osgi.example.impl.PersonRepositoryImpl">
+    <bean id="personRepository" class="com.savoirtech.hecate.osgi.example.impl.PersonRepositoryImpl"
+          init-method="loadSampleData">
         <argument ref="pojoDaoFactory"/>
     </bean>
 

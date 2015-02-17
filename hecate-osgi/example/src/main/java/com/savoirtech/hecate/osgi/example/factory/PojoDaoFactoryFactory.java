@@ -26,6 +26,8 @@ public class PojoDaoFactoryFactory {
     public static PojoDaoFactory createFactory() {
         Cluster cluster = Cluster.builder().addContactPoint("localhost").withPort(9142).build();
         Session session = cluster.newSession();
-        return new DefaultPojoDaoFactory(session);
+        session.execute(String.format("CREATE KEYSPACE IF NOT EXISTS %s WITH replication = {'class':'SimpleStrategy', 'replication_factor':1};", "hecate"));
+        session.close();
+        return new DefaultPojoDaoFactory(cluster.connect("hecate"));
     }
 }

@@ -110,6 +110,7 @@
                 <configuration>
                     <startNativeTransport>true</startNativeTransport>
                     <keyspace>hecate</keyspace>
+                    <nativeTransportPort>9142</nativeTransportPort>
                 </configuration>
                 <executions>
                     <execution>
