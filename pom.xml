@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <version>9</version>
     </parent>
 
     <groupId>com.savoirtech.hecate</groupId>
@@ -60,14 +60,6 @@
         <developerConnection>scm:git:git@github.com:savoirtech/hecate.git</developerConnection>
         <tag>hecate-parent-1.0.25</tag>
     </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
