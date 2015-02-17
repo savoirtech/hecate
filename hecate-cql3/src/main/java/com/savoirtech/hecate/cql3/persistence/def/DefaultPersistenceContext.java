@@ -27,7 +27,6 @@ import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 import com.savoirtech.hecate.cql3.persistence.Evaporator;
 import com.savoirtech.hecate.cql3.persistence.Hydrator;
 import com.savoirtech.hecate.cql3.persistence.PersistenceContext;
-import com.savoirtech.hecate.cql3.persistence.PojoSave;
 import com.savoirtech.hecate.cql3.util.PojoCacheKey;
 
 public class DefaultPersistenceContext implements PersistenceContext {
@@ -42,7 +41,6 @@ public class DefaultPersistenceContext implements PersistenceContext {
     private final LoadingCache<PojoCacheKey, DefaultPojoSave> saveCache;
     private final LoadingCache<PojoCacheKey, DefaultPojoFindForDelete> findForDeleteCache;
     private final LoadingCache<PojoCacheKey, DefaultPojoDelete> deleteCache;
-    private int ttl;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -98,12 +96,6 @@ public class DefaultPersistenceContext implements PersistenceContext {
         return saveCache.getUnchecked(key(pojoType, tableName));
     }
 
-    @Override
-    public PojoSave save(Class<?> pojoType, String tableName, int ttl) {
-        this.ttl = ttl;
-        return saveCache.getUnchecked(key(pojoType, tableName));
-    }
-
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
@@ -128,12 +120,8 @@ public class DefaultPersistenceContext implements PersistenceContext {
         return new PojoCacheKey(pojoType, tableName);
     }
 
-    public Dehydrator newDehydrator() {
-        if (ttl > 0) {
-            return new DefaultDehydrator(this, ttl);
-        } else {
-            return new DefaultDehydrator(this);
-        }
+    public Dehydrator newDehydrator(Integer ttl) {
+        return new DefaultDehydrator(this, ttl);
     }
 
     public Evaporator newEvaporator() {

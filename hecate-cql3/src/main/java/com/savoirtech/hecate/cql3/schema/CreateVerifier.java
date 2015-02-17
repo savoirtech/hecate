@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2015 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.cql3.schema;
 
 import com.datastax.driver.core.Session;
+import com.savoirtech.hecate.cql3.exception.HecateException;
 import com.savoirtech.hecate.cql3.mapping.FacetMapping;
 import com.savoirtech.hecate.cql3.mapping.PojoMapping;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +38,9 @@ public class CreateVerifier implements SchemaVerifier {
     @Override
     public void verifySchema(Session session, PojoMapping mapping) {
         final StringBuilder cql = new StringBuilder();
+        if (session.getLoggedKeyspace() == null) {
+            throw new HecateException("Session is not logged into a keyspace (use Cluster.connect(<keyspace>) or USE CQL call).");
+        }
         cql.append("CREATE TABLE IF NOT EXISTS ");
         cql.append(session.getLoggedKeyspace());
         cql.append(".");

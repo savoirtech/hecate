@@ -25,5 +25,9 @@ public interface PojoSave {
 
     void execute(Object pojo);
 
+    void execute(Object pojo, Integer ttl);
+
     ListenableFuture<Void> executeAsync(Object pojo);
+
+    ListenableFuture<Void> executeAsync(Object pojo, Integer ttl);
 }

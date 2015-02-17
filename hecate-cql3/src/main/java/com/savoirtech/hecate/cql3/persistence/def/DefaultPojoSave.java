@@ -53,12 +53,22 @@ public class DefaultPojoSave extends DefaultPersistenceStatement implements Pojo
 
     @Override
     public void execute(Object pojo) {
-        execute(getPersistenceContext().newDehydrator(), pojo).getUninterruptibly();
+        execute(pojo, null);
+    }
+
+    @Override
+    public void execute(Object pojo, Integer ttl) {
+        execute(getPersistenceContext().newDehydrator(ttl), pojo).getUninterruptibly();
     }
 
     @Override
     public ListenableFuture<Void> executeAsync(Object pojo) {
-        return Futures.transform(execute(getPersistenceContext().newDehydrator(), pojo), toVoid());
+        return executeAsync(pojo, null);
+    }
+
+    @Override
+    public ListenableFuture<Void> executeAsync(Object pojo, Integer ttl) {
+        return Futures.transform(execute(getPersistenceContext().newDehydrator(ttl), pojo), toVoid());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -71,8 +81,9 @@ public class DefaultPojoSave extends DefaultPersistenceStatement implements Pojo
             final Object facetValue = mapping.getFacetMetadata().getFacet().get(pojo);
             parameters.add(mapping.getColumnHandler().getInsertValue(facetValue, dehydrator));
         }
-        if (dehydrator.hasGlobalTtl()) {
-            parameters.add(dehydrator.getTtl());
+        final Integer ttl = dehydrator.getTtl();
+        if (ttl != null) {
+            parameters.add(ttl);
         } else {
             parameters.add(getPojoMapping().getPojoMetadata().getTimeToLive());
         }

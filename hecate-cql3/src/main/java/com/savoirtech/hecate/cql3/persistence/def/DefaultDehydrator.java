@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2015 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,24 +19,24 @@ package com.savoirtech.hecate.cql3.persistence.def;
 import com.savoirtech.hecate.cql3.persistence.Dehydrator;
 
 public class DefaultDehydrator extends PersistenceTaskExecutor implements Dehydrator {
-    //----------------------------------------------------------------------------------------------------------------------
-    // Constructors
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
-    private int ttl;
+    private final Integer ttl;
 
-    public DefaultDehydrator(DefaultPersistenceContext persistenceContext) {
-        super(persistenceContext);
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultDehydrator(DefaultPersistenceContext persistenceContext, int ttl) {
+    public DefaultDehydrator(DefaultPersistenceContext persistenceContext, Integer ttl) {
         super(persistenceContext);
         this.ttl = ttl;
     }
 
-    //----------------------------------------------------------------------------------------------------------------------
-    // Dehydrator Implementation
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// Dehydrator Implementation
+//----------------------------------------------------------------------------------------------------------------------
 
     @Override
     public void dehydrate(Class<?> pojoType, String tableName, Object identifier, Object pojo) {
@@ -45,18 +45,13 @@ public class DefaultDehydrator extends PersistenceTaskExecutor implements Dehydr
     }
 
     @Override
-    public boolean hasGlobalTtl() {
-        return ttl > 0;
-    }
-
-    @Override
-    public Object getTtl() {
+    public Integer getTtl() {
         return ttl;
     }
 
-    //----------------------------------------------------------------------------------------------------------------------
-    // Inner Classes
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
 
     private final class DehydratePojoTask implements PersistenceTask {
         private final Class<?> pojoType;

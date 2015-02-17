@@ -91,7 +91,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 
     @Override
     public void save(P pojo, int ttl) {
-        persistenceContext.save(rootPojoType, rootTableName, ttl).execute(pojo);
+        persistenceContext.save(rootPojoType, rootTableName).execute(pojo, ttl);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class DefaultPojoDao<K, P> implements PojoDao<K, P> {
 
     @Override
     public ListenableFuture<Void> saveAsync(P pojo, int ttl) {
-        return persistenceContext.save(rootPojoType, rootTableName, ttl).executeAsync(pojo);
+        return persistenceContext.save(rootPojoType, rootTableName).executeAsync(pojo, ttl);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
