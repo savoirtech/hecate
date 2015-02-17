@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2015 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,5 @@ public interface Dehydrator {
 
     void dehydrate(Class<?> pojoType, String tableName, Object identifier, Object pojo);
 
-    boolean hasGlobalTtl();
-
-    Object getTtl();
+    Integer getTtl();
 }

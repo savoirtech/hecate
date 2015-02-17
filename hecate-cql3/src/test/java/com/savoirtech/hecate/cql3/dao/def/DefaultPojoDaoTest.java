@@ -23,6 +23,7 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.savoirtech.hecate.cql3.dao.PojoDao;
 import com.savoirtech.hecate.cql3.entities.NestedPojo;
 import com.savoirtech.hecate.cql3.entities.SimplePojo;
@@ -45,6 +46,15 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
+
+    @Test(expected = UncheckedExecutionException.class)
+    public void testWhenNotLoggedIntoKeyspace() {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(getCluster().newSession());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("Nope");
+        dao.save(pojo);
+    }
 
     @Test
     public void testDelete() throws Exception {
