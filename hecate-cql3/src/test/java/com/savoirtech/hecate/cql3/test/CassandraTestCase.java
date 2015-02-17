@@ -19,6 +19,7 @@ package com.savoirtech.hecate.cql3.test;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -60,5 +61,10 @@ public class CassandraTestCase extends Assert {
         session.execute(String.format("CREATE KEYSPACE IF NOT EXISTS %s WITH replication = {'class':'SimpleStrategy', 'replication_factor':1};", KEYSPACE_NAME));
         logger.debug("Keyspace {} created successfully.", KEYSPACE_NAME);
         session.close();
+    }
+
+    @After
+    public void closeCluster() {
+        cluster.close();
     }
 }

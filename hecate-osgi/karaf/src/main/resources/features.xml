@@ -1,0 +1,61 @@
+<!--
+  ~ Copyright (c) 2012-2015 Savoir Technologies, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<features name="hecate" xmlns="http://karaf.apache.org/xmlns/features/v1.2.0">
+
+    <feature name="hecate" version="${project.version}">
+        <feature version="${cassandra-driver-version}">cassandra-driver</feature>
+        <feature version="${commons-lang3-version}">commons-lang3</feature>
+        <feature version="${commons-beanutils-version}">commons-beanutils</feature>
+        <feature version="${commons-collections-version}">commons-collections</feature>
+
+        <bundle>mvn:com.savoirtech.hecate/hecate-cql3/${project.version}</bundle>
+    </feature>
+
+    <feature name="hecate-osgi-example" version="${project.version}">
+        <bundle>mvn:com.savoirtech.hecate/hecate-osgi-example/${project.version}</bundle>
+    </feature>
+
+    <feature name="cassandra-driver" version="${cassandra-driver-version}">
+        <feature version="${guava-version}">guava</feature>
+        <feature version="${codahale-metrics-version}">codahale-metrics</feature>
+
+        <bundle>mvn:com.google.guava/guava/14.0.1</bundle>
+        <bundle>mvn:io.netty/netty/3.9.6.Final</bundle>
+        <bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
+        <bundle>mvn:com.datastax.cassandra/cassandra-driver-core/${cassandra-driver-version}</bundle>
+    </feature>
+
+    <feature name="guava" version="${guava-version}">
+        <bundle>mvn:com.google.guava/guava/${guava-version}</bundle>
+    </feature>
+
+    <feature name="commons-beanutils" version="${commons-beanutils-version}">
+        <bundle>mvn:commons-beanutils/commons-beanutils/${commons-beanutils-version}</bundle>
+    </feature>
+
+    <feature name="commons-collections" version="${commons-collections-version}">
+        <bundle>mvn:commons-collections/commons-collections/${commons-collections-version}</bundle>
+    </feature>
+
+    <feature name="commons-lang3" version="${commons-lang3-version}">
+        <bundle>mvn:org.apache.commons/commons-lang3/${commons-lang3-version}</bundle>
+    </feature>
+
+    <feature name="codahale-metrics" version="${codahale-metrics-version}">
+        <bundle>mvn:com.codahale.metrics/metrics-core/${codahale-metrics-version}</bundle>
+    </feature>
+</features>
