@@ -22,6 +22,7 @@ import com.savoirtech.hecate.cql3.convert.NativeConverter;
 import com.savoirtech.hecate.cql3.convert.ValueConverter;
 import com.savoirtech.hecate.cql3.convert.ValueConverterProvider;
 import com.savoirtech.hecate.cql3.convert.ValueConverterRegistry;
+import com.savoirtech.hecate.cql3.convert.binary.ByteArrayConverter;
 import com.savoirtech.hecate.cql3.convert.enumeration.EnumConverterProvider;
 import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +66,9 @@ public class DefaultValueConverterRegistry implements ValueConverterRegistry {
         registry.registerConverter(Long.class, NativeConverter.LONG);
         registry.registerConverter(String.class, NativeConverter.STRING);
         registry.registerConverter(UUID.class, NativeConverter.UUID);
+        registry.registerConverter(ByteBuffer.class, NativeConverter.BLOB);
         registry.registerConverter(Enum.class, new EnumConverterProvider());
+        registry.registerConverter(byte[].class, new ByteArrayConverter());
         return registry;
     }
 

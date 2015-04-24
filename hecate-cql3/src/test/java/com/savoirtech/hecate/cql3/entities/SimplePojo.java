@@ -20,6 +20,7 @@ import com.savoirtech.hecate.cql3.annotations.Id;
 import com.savoirtech.hecate.cql3.annotations.Index;
 import com.savoirtech.hecate.cql3.annotations.Table;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +39,10 @@ public class SimplePojo {
     private String name;
 
     private int[] ints;
+
+    private byte[] bytes;
+
+    private ByteBuffer byteBuffer;
 
     private List<String> listOfStrings;
 
@@ -156,6 +161,22 @@ public class SimplePojo {
 
     public void setSetOfStrings(Set<String> setOfStrings) {
         this.setOfStrings = setOfStrings;
+    }
+
+    public byte[] getBytes() {
+        return bytes;
+    }
+
+    public void setBytes(byte[] bytes) {
+        this.bytes = bytes;
+    }
+
+    public ByteBuffer getByteBuffer() {
+        return byteBuffer;
+    }
+
+    public void setByteBuffer(ByteBuffer buff) {
+        this.byteBuffer = buff;
     }
 
 //----------------------------------------------------------------------------------------------------------------------

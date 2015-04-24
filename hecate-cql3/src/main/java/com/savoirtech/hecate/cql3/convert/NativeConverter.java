@@ -34,7 +34,7 @@ public final class NativeConverter implements ValueConverter {
     public static final ValueConverter INET = new NativeConverter(DataType.inet());
     public static final ValueConverter BIG_DECIMAL = new NativeConverter(DataType.decimal());
     public static final ValueConverter BIG_INTEGER = new NativeConverter(DataType.varint());
-
+    public static final ValueConverter BLOB = new NativeConverter(DataType.blob());
     private final DataType dataType;
 
 //----------------------------------------------------------------------------------------------------------------------

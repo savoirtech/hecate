@@ -94,6 +94,10 @@ public class DefaultColumnHandlerFactory implements ColumnHandlerFactory {
     @SuppressWarnings("unchecked")
     public ColumnHandler<Object, Object> getColumnHandler(FacetMetadata facetMetadata) {
         final GenericType facetType = facetMetadata.getFacet().getType();
+        ValueConverter facetConverter = registry.getValueConverter(facetType.getRawType());
+        if (facetConverter != null) {
+            return new SimpleHandler(new ScalarDelegate(facetConverter));
+        }
         final Class<?> elementType = elementType(facetType);
         ValueConverter converter = registry.getValueConverter(elementType);
         if (converter != null) {

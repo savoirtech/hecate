@@ -16,6 +16,7 @@
 
 package com.savoirtech.hecate.cql3.dao.def;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -278,7 +279,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
     }
 
     @Test
-    public void testWithArrayField() {
+    public void testWithIntArrayField() {
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
         final SimplePojo pojo = new SimplePojo();
@@ -286,6 +287,28 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         dao.save(pojo);
         final SimplePojo found = dao.findByKey(pojo.getId());
         assertArrayEquals(pojo.getInts(), found.getInts());
+    }
+
+    @Test
+    public void testWithByteArrayField() {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setBytes(new byte[]{1, 2, 3});
+        dao.save(pojo);
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertArrayEquals(pojo.getBytes(), found.getBytes());
+    }
+
+    @Test
+    public void testWithByteBufferField() {
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setByteBuffer(ByteBuffer.wrap(new byte[]{1, 2, 3}));
+        dao.save(pojo);
+        final SimplePojo found = dao.findByKey(pojo.getId());
+        assertEquals(pojo.getByteBuffer(), found.getByteBuffer());
     }
 
     @Test
