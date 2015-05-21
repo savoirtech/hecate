@@ -47,10 +47,13 @@ public class MappedQueryResult<T> implements QueryResult<T> {
 
     @Override
     public Iterator<T> iterator() {
-        Iterator<T> transformed = Iterators.transform(resultSet.iterator(), mapper::map);
+        Iterator<T> transformed = Iterators.transform(resultSet.iterator(), row -> {
+            T value = mapper.map(row);
+            mapper.mappingComplete();
+            return value;
+        });
         mapper.mappingComplete();
         return transformed;
-
     }
 
     @Override
