@@ -35,18 +35,13 @@ public class EmbeddedColumnType implements ColumnType {
 
 
     @Override
-    public Object convertParameterValue(Object facetValue) {
-        return facetValue != null;
-    }
-
-    @Override
     public DataType getDataType() {
         return DataType.cboolean();
     }
 
     @Override
-    public Object getInsertValue(Dehydrator dehydrator, Object facetValue) {
-        return facetValue != null;
+    public boolean isCascadable() {
+        return false;
     }
 
     @Override
@@ -56,5 +51,15 @@ public class EmbeddedColumnType implements ColumnType {
         } else {
             facet.setValue(pojo, null);
         }
+    }
+
+    @Override
+    public Object toCassandraValue(Object facetValue) {
+        return facetValue != null;
+    }
+
+    @Override
+    public Object toCassandraValue(Dehydrator dehydrator, Object facetValue) {
+        return facetValue != null;
     }
 }

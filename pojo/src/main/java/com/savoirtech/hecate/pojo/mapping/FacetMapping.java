@@ -39,10 +39,6 @@ public class FacetMapping {
         this.columnType = columnType;
     }
 
-    public String toString() {
-        return facet.getName() + "@" + facet.getColumnName();
-    }
-
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
@@ -56,8 +52,24 @@ public class FacetMapping {
     }
 
 //----------------------------------------------------------------------------------------------------------------------
+// Canonical Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public String toString() {
+        return facet.getName() + "@" + facet.getColumnName();
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
+
+    public boolean isCascadeDelete() {
+        return columnType.isCascadable() && facet.isCascadeDelete();
+    }
+
+    public boolean isCascadeSave() {
+        return columnType.isCascadable() && facet.isCascadeSave();
+    }
 
     public boolean isClusteringColumn() {
         return facet.hasAnnotation(ClusteringColumn.class);

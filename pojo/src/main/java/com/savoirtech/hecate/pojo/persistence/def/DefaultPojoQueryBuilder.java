@@ -192,7 +192,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     private InjectedParameter injected(String facetName, Object value) {
         FacetMapping facetMapping = lookupMapping(facetName);
-        Object cassandraValue = facetMapping.getColumnType().convertParameterValue(value);
+        Object cassandraValue = facetMapping.getColumnType().toCassandraValue(value);
         return new InjectedParameter(parameterMappings.size(), cassandraValue);
     }
 

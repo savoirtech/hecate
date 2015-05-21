@@ -56,7 +56,7 @@ public class SetColumnType extends ElementColumnType<Set<Object>,Set<Object>> {
     @Override
     protected void setFacetValueInternal(Hydrator hydrator, Object pojo, Facet facet, Set<Object> cassandraValues) {
         elementHandler.resolveElements(cassandraValues, hydrator, resolver -> {
-            final Set<Object> facetValues = cassandraValues.stream().map(resolver::resolveElement).collect(Collectors.toSet());
+            final Set<Object> facetValues = cassandraValues.stream().map(resolver::resolveElement).filter(val -> val != null).collect(Collectors.toSet());
             facet.setValue(pojo, facetValues);
         });
     }

@@ -68,6 +68,11 @@ public class SubFacet implements Facet {
     }
 
     @Override
+    public <A extends Annotation> boolean hasAnnotation(Class<A> annotationType) {
+        return child.hasAnnotation(annotationType);
+    }
+
+    @Override
     public void setValue(Object pojo, Object value) {
         Object parentValue = parentValue(pojo);
         if (parentValue != null) {

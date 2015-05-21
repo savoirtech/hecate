@@ -16,6 +16,7 @@
 
 package com.savoirtech.hecate.pojo.util;
 
+import com.savoirtech.hecate.annotation.Cascade;
 import com.savoirtech.hecate.annotation.Column;
 import com.savoirtech.hecate.annotation.Table;
 import com.savoirtech.hecate.annotation.Ttl;
@@ -48,6 +49,16 @@ public class PojoUtils {
     public static int getTtl(Class<?> pojoClass) {
         Ttl ttl = Validate.notNull(pojoClass).getAnnotation(Ttl.class);
         return ttl != null ? ttl.value() : 0;
+    }
+
+    public static boolean isCascadeDelete(Facet facet) {
+        Cascade cascade = facet.getAnnotation(Cascade.class);
+        return cascade == null || cascade.delete();
+    }
+
+    public static boolean isCascadeSave(Facet facet) {
+        Cascade cascade = facet.getAnnotation(Cascade.class);
+        return cascade == null || cascade.save();
     }
 
     public static <T> T newPojo(Class<T> pojoClass) {

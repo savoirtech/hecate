@@ -19,10 +19,7 @@ package com.savoirtech.hecate.pojo.dao.def;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.savoirtech.hecate.annotation.ClusteringColumn;
-import com.savoirtech.hecate.annotation.Embedded;
-import com.savoirtech.hecate.annotation.Id;
-import com.savoirtech.hecate.annotation.PartitionKey;
+import com.savoirtech.hecate.annotation.*;
 import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
@@ -100,9 +97,41 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         });
     }
 
+    @Test
+    public void testWithoutCascading() {
+        withSession(session -> {
+            DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry());
+            factory.setVerifier(new CreateSchemaVerifier(session));
+            PojoMapping<PersonWithoutCascade> mapping = factory.createPojoMapping(PersonWithoutCascade.class);
+            PersistenceContext persistenceContext = new DefaultPersistenceContext(session);
+            PojoDao<String, PersonWithoutCascade> dao = new DefaultPojoDao<String, PersonWithoutCascade>(mapping, persistenceContext);
+            PersonWithoutCascade p = new PersonWithoutCascade();
+            p.firstName = "Slappy";
+            p.lastName = "White";
+            p.ssn = "123456789";
+            p.dependents = Sets.newHashSet(new Dependent("foo", "bar"));
+            dao.save(p);
+
+            PersonWithoutCascade found = dao.findById("123456789");
+            assertNotNull(found);
+            assertTrue(found.dependents.isEmpty());
+        });
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
+
+    public static class PersonWithoutCascade {
+        @Id
+        private String ssn;
+
+        private String firstName;
+        private String lastName;
+
+        @Cascade(save = false)
+        private Set<Dependent> dependents;
+    }
 
     public static class Dependent {
         @Id

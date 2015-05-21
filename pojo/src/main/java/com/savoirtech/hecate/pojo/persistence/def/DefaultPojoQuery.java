@@ -63,7 +63,7 @@ public class DefaultPojoQuery<P> extends PojoStatement<P> implements PojoQuery<P
         List<Object> cassandraValues = new ArrayList<>(parameterMappings.size() + injectedParameters.size());
         int index = 0;
         for (FacetMapping mapping : parameterMappings) {
-            cassandraValues.add(mapping.getColumnType().convertParameterValue(parameters[index]));
+            cassandraValues.add(mapping.getColumnType().toCassandraValue(parameters[index]));
             index++;
         }
         cassandraValues = injected(cassandraValues);

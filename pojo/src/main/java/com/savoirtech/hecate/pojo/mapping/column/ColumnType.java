@@ -26,11 +26,13 @@ public interface ColumnType {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Object convertParameterValue(Object facetValue);
+    Object toCassandraValue(Object facetValue);
 
     DataType getDataType();
 
-    Object getInsertValue(Dehydrator dehydrator, Object facetValue);
+    Object toCassandraValue(Dehydrator dehydrator, Object facetValue);
 
     void setFacetValue(Hydrator hydrator, Object pojo, Facet facet, Object cassandraValue);
+
+    boolean isCascadable();
 }

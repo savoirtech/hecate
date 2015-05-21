@@ -35,6 +35,11 @@ public abstract class ReflectionFacet implements Facet {
     }
 
     @Override
+    public <A extends Annotation> boolean hasAnnotation(Class<A> annotationType) {
+        return getAnnotationSource().isAnnotationPresent(annotationType);
+    }
+
+    @Override
     public void setValue(Object pojo, Object value) {
         try {
             logger.trace("Setting {} to value '{}'.", this.getName(), value);

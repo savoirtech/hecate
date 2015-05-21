@@ -41,7 +41,6 @@ public class DefaultPojoInsert<P> extends PojoStatement<P> implements PojoInsert
 // PojoInsert Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public void insert(P pojo, Dehydrator dehydrator, List<Consumer<Statement>> modifiers) {
         insert(pojo, dehydrator, getPojoMapping().getTtl(), modifiers);
@@ -61,7 +60,13 @@ public class DefaultPojoInsert<P> extends PojoStatement<P> implements PojoInsert
 //----------------------------------------------------------------------------------------------------------------------
 
     private void collectParameters(List<Object> parameters, P pojo, Dehydrator dehydrator, List<FacetMapping> mappings) {
-        mappings.forEach(mapping -> parameters.add(mapping.getColumnType().getInsertValue(dehydrator, mapping.getFacet().getValue(pojo))));
+        mappings.forEach(mapping -> {
+            final Object facetValue = mapping.getFacet().getValue(pojo);
+            parameters.add(mapping.isCascadeSave() ?
+                            mapping.getColumnType().toCassandraValue(dehydrator, facetValue) :
+                            mapping.getColumnType().toCassandraValue(facetValue)
+            );
+        });
     }
 
     @Override

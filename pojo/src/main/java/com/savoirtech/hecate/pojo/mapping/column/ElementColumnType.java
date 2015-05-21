@@ -57,11 +57,11 @@ public abstract class ElementColumnType<F,C> implements ColumnType {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Object convertParameterValue(Object facetValue) {
+    public Object toCassandraValue(Object facetValue) {
         if(facetValue == null) {
             return null;
         }
-        return convertParameterValueInternal((F)facetValue);
+        return convertParameterValueInternal((F) facetValue);
     }
 
     @Override
@@ -71,11 +71,16 @@ public abstract class ElementColumnType<F,C> implements ColumnType {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Object getInsertValue(Dehydrator dehydrator, Object facetValue) {
+    public Object toCassandraValue(Dehydrator dehydrator, Object facetValue) {
         if (facetValue == null) {
             return null;
         }
         return getInsertValueInternal(dehydrator, (F) facetValue);
+    }
+
+    @Override
+    public boolean isCascadable() {
+        return elementHandler.isCascadable();
     }
 
     @Override
@@ -91,10 +96,11 @@ public abstract class ElementColumnType<F,C> implements ColumnType {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected Function<Object,Object> toParameterValue() {
-        return elementHandler::getParameterValue;
-    }
     protected Function<Object, Object> toInsertValue(Dehydrator dehydrator) {
         return element -> elementHandler.getInsertValue(element, dehydrator);
+    }
+
+    protected Function<Object,Object> toParameterValue() {
+        return elementHandler::getParameterValue;
     }
 }

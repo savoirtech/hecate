@@ -29,4 +29,6 @@ public interface ElementHandler {
     Object getParameterValue(Object facetValue);
 
     void resolveElements(Iterable<Object> cassandraValue, Hydrator hydrator,ElementInjector injector);
+
+    boolean isCascadable();
 }

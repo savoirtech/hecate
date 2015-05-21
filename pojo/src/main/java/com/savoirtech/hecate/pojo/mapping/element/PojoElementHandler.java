@@ -60,6 +60,11 @@ public class PojoElementHandler implements ElementHandler {
     }
 
     @Override
+    public boolean isCascadable() {
+        return true;
+    }
+
+    @Override
     public void resolveElements(Iterable<Object> cassandraValue, Hydrator hydrator,ElementInjector injector) {
         hydrator.resolveElements(pojoMapping,cassandraValue,injector);
     }

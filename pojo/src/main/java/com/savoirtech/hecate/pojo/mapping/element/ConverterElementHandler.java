@@ -56,6 +56,11 @@ public class ConverterElementHandler implements ElementHandler {
     }
 
     @Override
+    public boolean isCascadable() {
+        return false;
+    }
+
+    @Override
     public void resolveElements(Iterable<Object> cassandraValue, Hydrator hydrator,ElementInjector injector) {
         injector.injectElement(converter::fromCassandraValue);
     }

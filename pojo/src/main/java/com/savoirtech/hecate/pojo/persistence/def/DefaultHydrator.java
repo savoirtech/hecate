@@ -61,7 +61,7 @@ public class DefaultHydrator implements Hydrator {
                     List<?> pojos = persistenceContext.findByIds(mapping).execute(ids).list();
                     for (Object pojo : pojos) {
                         final Object idFacetValue = mapping.getForeignKeyMapping().getFacet().getValue(pojo);
-                        final Object idCassandraValue = mapping.getForeignKeyMapping().getColumnType().convertParameterValue(idFacetValue);
+                        final Object idCassandraValue = mapping.getForeignKeyMapping().getColumnType().toCassandraValue(idFacetValue);
                         idToPojo.put(idCassandraValue,pojo);
                     }
                 }

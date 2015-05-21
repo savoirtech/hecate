@@ -56,7 +56,7 @@ public class ListColumnType extends ElementColumnType<List<Object>,List<Object>>
     @Override
     protected void setFacetValueInternal(Hydrator hydrator, Object pojo, Facet facet, final List<Object> cassandraValues) {
         elementHandler.resolveElements(cassandraValues, hydrator, resolver -> {
-            final List<Object> facetValues = cassandraValues.stream().map(resolver::resolveElement).collect(Collectors.toList());
+            final List<Object> facetValues = cassandraValues.stream().map(resolver::resolveElement).filter(val -> val != null).collect(Collectors.toList());
             facet.setValue(pojo, facetValues);
         });
     }

@@ -52,6 +52,8 @@ public class PojoMapping<P> {
     private final List<FacetMapping> idMappings;
     private final List<FacetMapping> simpleMappings;
     private final int ttl;
+    private final boolean cascadeDelete;
+    private final boolean cascadeSave;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
@@ -85,6 +87,8 @@ public class PojoMapping<P> {
             throw new HecateException("No key fields found for class %s.", pojoClass.getSimpleName());
         }
         this.ttl = PojoUtils.getTtl(pojoClass);
+        this.cascadeSave = simpleMappings.stream().filter(FacetMapping::isCascadeSave).findFirst().isPresent();
+        this.cascadeDelete = simpleMappings.stream().filter(FacetMapping::isCascadeDelete).findFirst().isPresent();
     }
 
     private static List<FacetMapping> toIdMappings(List<FacetMapping> allMappings) {
@@ -109,6 +113,14 @@ public class PojoMapping<P> {
 
     public int getTtl() {
         return ttl;
+    }
+
+    public boolean isCascadeDelete() {
+        return cascadeDelete;
+    }
+
+    public boolean isCascadeSave() {
+        return cascadeSave;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
