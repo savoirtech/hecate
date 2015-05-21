@@ -14,36 +14,12 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.facet;
+package com.savoirtech.hecate.pojo.mapping;
 
-import com.savoirtech.hecate.pojo.util.GenericType;
-import com.savoirtech.hecate.pojo.util.PojoUtils;
-
-import java.lang.annotation.Annotation;
-import java.util.List;
-
-public interface Facet {
+public interface PojoMappingVerifier {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    <A extends Annotation> A getAnnotation(Class<A> annotationType);
-
-    default String getColumnName() {
-        return PojoUtils.getColumnName(this);
-    }
-
-    String getName();
-
-    GenericType getType();
-
-    Object getValue(Object pojo);
-
-    default <A extends Annotation> boolean hasAnnotation(Class<A> annotationType) {
-        return getAnnotation(annotationType) != null;
-    }
-
-    void setValue(Object pojo, Object value);
-
-    List<Facet> subFacets(boolean allowNullParent);
+    void verify(PojoMapping<?> mapping);
 }

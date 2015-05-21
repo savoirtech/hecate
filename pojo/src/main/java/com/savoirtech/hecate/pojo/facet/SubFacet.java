@@ -16,8 +16,8 @@
 
 package com.savoirtech.hecate.pojo.facet;
 
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.util.GenericType;
-import com.savoirtech.hecate.pojo.util.PojoUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -30,20 +30,16 @@ public class SubFacet implements Facet {
     public static final String SEPARATOR = ".";
     private final Facet parent;
     private final Facet child;
-    private final boolean createParent;
+    private final boolean allowNullParent;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public SubFacet(Facet parent, Facet child) {
-        this(parent, child, false);
-    }
-    
-    public SubFacet(Facet parent, Facet child, boolean createParent) {
+    public SubFacet(Facet parent, Facet child, boolean allowNullParent) {
         this.parent = parent;
         this.child = child;
-        this.createParent = createParent;
+        this.allowNullParent = allowNullParent;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -80,8 +76,8 @@ public class SubFacet implements Facet {
     }
 
     @Override
-    public List<Facet> subFacets() {
-        return child.subFacets();
+    public List<Facet> subFacets(boolean allowNullParent) {
+        return child.subFacets(allowNullParent);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -89,11 +85,10 @@ public class SubFacet implements Facet {
 //----------------------------------------------------------------------------------------------------------------------
 
     private Object parentValue(Object pojo) {
-        Object value = parent.getValue(pojo);
-        if (createParent && value == null) {
-            value = PojoUtils.newPojo(parent.getType().getRawType());
-            parent.setValue(pojo, value);
+        Object parentValue = parent.getValue(pojo);
+        if(parentValue == null && !allowNullParent) {
+            throw new HecateException("Null not allowed for %s", getName());
         }
-        return value;
+        return parentValue;
     }
 }

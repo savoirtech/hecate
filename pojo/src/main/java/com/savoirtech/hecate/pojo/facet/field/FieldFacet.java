@@ -33,6 +33,7 @@ public class FieldFacet extends ReflectionFacet {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
+
     private static final Logger LOGGER = LoggerFactory.getLogger(FieldFacet.class);
 
     private final Field field;
@@ -63,8 +64,8 @@ public class FieldFacet extends ReflectionFacet {
     }
 
     @Override
-    public List<Facet> subFacets() {
-        return FieldFacetProvider.facetsOf(type.getRawType()).stream().map(facet -> new SubFacet(this, facet)).collect(Collectors.toList());
+    public List<Facet> subFacets(boolean allowNullParent) {
+        return FieldFacetProvider.facetsOf(type.getRawType()).stream().map(facet -> new SubFacet(this, facet, allowNullParent)).collect(Collectors.toList());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -83,7 +84,6 @@ public class FieldFacet extends ReflectionFacet {
 
     @Override
     public void setValueReflectively(Object pojo, Object value) throws ReflectiveOperationException {
-        LOGGER.debug("Setting field {} to value {}...", field.getName(), value);
         field.set(pojo, value);
     }
 }

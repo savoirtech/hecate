@@ -18,6 +18,8 @@ package com.savoirtech.hecate.pojo.facet.reflect;
 
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.facet.Facet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
@@ -25,6 +27,7 @@ import java.lang.reflect.AccessibleObject;
 public abstract class ReflectionFacet implements Facet {
 
     protected abstract AccessibleObject getAnnotationSource();
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
@@ -34,6 +37,7 @@ public abstract class ReflectionFacet implements Facet {
     @Override
     public void setValue(Object pojo, Object value) {
         try {
+            logger.trace("Setting {} to value '{}'.", this.getName(), value);
             setValueReflectively(pojo, value);
         } catch (ReflectiveOperationException e) {
             throw new HecateException(e, "Unable to set value for facet %s.", getName());

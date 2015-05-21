@@ -19,11 +19,16 @@ package com.savoirtech.hecate.pojo.dao.def;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.savoirtech.hecate.annotation.ClusteringColumn;
+import com.savoirtech.hecate.annotation.Embedded;
 import com.savoirtech.hecate.annotation.Id;
+import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
+import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.def.DefaultPojoMappingFactory;
+import com.savoirtech.hecate.pojo.mapping.verify.CreateSchemaVerifier;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.def.DefaultPersistenceContext;
 import com.savoirtech.hecate.test.CassandraTestCase;
@@ -43,22 +48,55 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
     public void testInsert() {
         withSession(session -> {
             DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry());
-            PojoMapping<Dependent> dependentPojoMapping = factory.createPojoMapping(Dependent.class);
-            session.execute(dependentPojoMapping.createCreateStatement());
-
+            factory.setVerifier(new CreateSchemaVerifier(session));
             PojoMapping<Person> mapping = factory.createPojoMapping(Person.class);
-            session.execute(mapping.createCreateStatement());
             PersistenceContext persistenceContext = new DefaultPersistenceContext(session);
             DefaultPojoDao<String, Person> dao = new DefaultPojoDao<>(mapping, persistenceContext);
             Person p = new Person();
             p.firstName = "Slappy";
             p.lastName = "White";
             p.ssn = "123456789";
+            p.stringSet = Sets.newHashSet("one", "two", "three");
+            p.stringList = Lists.newArrayList("a", "b", "c");
+            p.stringMap = Maps.toMap(Arrays.asList("a", "aa", "aaa"), String::length);
+            p.stringArray = new String[]{"foo", "bar"};
+            p.dependent = new Dependent("bar", "Bar");
+            p.dependentSet = Sets.newHashSet(new Dependent("foo", "Foo"));
+            p.dependentList = Lists.newArrayList(new Dependent("baz", "Baz"));
+            p.dependentArray = new Dependent[]{new Dependent("hello", "world")};
+            p.dependentMap = Maps.toMap(Arrays.asList("one", "two", "three"), str -> new Dependent(str,str + "_nick"));
+
+            Address home = new Address();
+            home.address1 = "123 Main St.";
+            home.address2 = "Apt. A";
+            home.city = "Chestertonfieldville";
+            home.state = "IA";
+            home.zip = "12345";
+            p.home = home;
             dao.save(p);
 
             Person found = dao.findById("123456789");
             assertNotNull(found);
             assertEquals("Slappy", found.firstName);
+        });
+    }
+
+    @Test
+    public void testInsertWithEmbeddedKey() {
+        withSession(session -> {
+            DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry());
+            factory.setVerifier(new CreateSchemaVerifier(session));
+            PojoMapping<WithEmbeddedKey> mapping = factory.createPojoMapping(WithEmbeddedKey.class);
+            PersistenceContext persistenceContext = new DefaultPersistenceContext(session);
+            PojoDao<EmbeddedKey, WithEmbeddedKey> dao = new DefaultPojoDao<EmbeddedKey, WithEmbeddedKey>(mapping, persistenceContext);
+            WithEmbeddedKey pojo = new WithEmbeddedKey();
+            pojo.key = new EmbeddedKey();
+            pojo.key.cluster = "cluster1";
+            pojo.key.partition1 = "partition1Value";
+            pojo.key.partition2 = "partition2Value";
+            pojo.foo = "Foo";
+            pojo.bar = "Bar";
+            dao.save(pojo);
         });
     }
 
@@ -73,9 +111,9 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         private String nickname;
 
         public Dependent() {
-            
+
         }
-        
+
         public String toString() {
             return nickname;
         }
@@ -90,23 +128,60 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         @Id
         private String ssn;
 
+        @Embedded
+        private Address home;
+
+        @Embedded
+        private Address business;
+
         private String lastName;
         private String firstName;
 
-        private Set<String> stringSet = Sets.newHashSet("one", "two", "three");
+        private Set<String> stringSet;
 
-        private List<String> stringList = Lists.newArrayList("a", "b", "c");
-        
-        private Map<String,Integer> stringMap = Maps.toMap(Arrays.asList("a", "aa", "aaa"), String::length);
+        private List<String> stringList;
 
-        private String[] stringArray = new String[] {"foo", "bar"};
+        private Map<String, Integer> stringMap;
 
-        private Dependent dependent = new Dependent("bar", "Bar");
+        private String[] stringArray;
 
-        private Set<Dependent> dependentSet = Sets.newHashSet(new Dependent("foo", "Foo"));
+        private Dependent dependent;
 
-        private List<Dependent> dependentList = Lists.newArrayList(new Dependent("baz", "Baz"));
+        private Set<Dependent> dependentSet;
 
-        private Dependent[] dependentArray = new Dependent[] {new Dependent("hello", "world")};
+        private List<Dependent> dependentList;
+
+        private Map<String,Dependent> dependentMap;
+
+        private Dependent[] dependentArray;
+    }
+
+    public static class Address {
+        private String address1;
+        private String address2;
+        private String city;
+        private String state;
+        private String zip;
+
+    }
+
+    public static class EmbeddedKey {
+        @PartitionKey
+        private String partition1;
+
+        @PartitionKey
+        private String partition2;
+
+        @ClusteringColumn
+        private String cluster;
+    }
+
+    public static class WithEmbeddedKey {
+        @Id
+        private EmbeddedKey key;
+
+        private String foo;
+        private String bar;
+
     }
 }

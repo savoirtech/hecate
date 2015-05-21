@@ -64,8 +64,8 @@ public class PropertyFacet extends ReflectionFacet {
     }
 
     @Override
-    public List<Facet> subFacets() {
-        return PropertyFacetProvider.facetsOf(type.getRawType()).stream().map(facet -> new SubFacet(this, facet)).collect(Collectors.toList());
+    public List<Facet> subFacets(boolean allowNullParent) {
+        return PropertyFacetProvider.facetsOf(type.getRawType()).stream().map(facet -> new SubFacet(this, facet, allowNullParent)).collect(Collectors.toList());
     }
 
 //----------------------------------------------------------------------------------------------------------------------

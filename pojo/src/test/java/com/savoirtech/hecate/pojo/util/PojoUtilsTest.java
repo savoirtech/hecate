@@ -39,7 +39,7 @@ public class PojoUtilsTest extends Assert {
         assertEquals("field_name", PojoUtils.getColumnName(fieldOf(PojoType.class, "fieldName")));
         assertEquals("Bar", PojoUtils.getColumnName(fieldOf(AnnotatedPojoType.class, "fieldName")));
 
-        assertEquals("child_string_property", PojoUtils.getColumnName(new SubFacet(fieldOf(Parent.class, "child"), fieldOf(Child.class, "stringProperty"))));
+        assertEquals("child_string_property", PojoUtils.getColumnName(new SubFacet(fieldOf(Parent.class, "child"), fieldOf(Child.class, "stringProperty"), true)));
     }
 
     private static class PojoType {

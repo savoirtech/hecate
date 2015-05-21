@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.pojo.facet;
 
 import com.savoirtech.hecate.annotation.Column;
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,39 +34,33 @@ public class SubFacetTest extends Assert {
     @Before
     public void setUpFacet() {
         FacetProvider facetProvider = new FieldFacetProvider();
-        final Map<String,Facet> parentFacets = facetProvider.getFacetsAsMap(Parent.class);
-        final Map<String,Facet> childFacets = facetProvider.getFacetsAsMap(Child.class);
+        final Map<String, Facet> parentFacets = facetProvider.getFacetsAsMap(Parent.class);
+        final Map<String, Facet> childFacets = facetProvider.getFacetsAsMap(Child.class);
         childFacet = childFacets.get("property");
-        strictFacet = new SubFacet(parentFacets.get("child"), childFacet);
-        lenientFacet = new SubFacet(parentFacets.get("child"),childFacet, true);
+        Facet parentFacet = parentFacets.get("child");
+        strictFacet = new SubFacet(parentFacet, childFacet, false);
+        lenientFacet = new SubFacet(parentFacet, childFacet, true);
     }
 
-    @Test
+    @Test(expected = HecateException.class)
     public void testStrictSetValue() {
         Parent parent = new Parent();
         strictFacet.setValue(parent, "test_value");
-        assertNull(parent.child);
-        parent.child = new Child();
-        strictFacet.setValue(parent, "test_value");
-        assertEquals("test_value", parent.child.property);
     }
 
-    @Test
+    @Test(expected = HecateException.class)
     public void testStrictGetValue() {
         Parent parent = new Parent();
-        assertNull(strictFacet.getValue(parent));
-        parent.child = new Child();
-        assertNull(strictFacet.getValue(parent));
-        parent.child.property = "foo";
-        assertEquals("foo", strictFacet.getValue(parent));
+        strictFacet.getValue(parent);
     }
 
     @Test
     public void testLenientSetValue() {
         Parent parent = new Parent();
-
         lenientFacet.setValue(parent, "test_value");
-        assertNotNull(parent.child);
+        assertNull(parent.child);
+        parent.child = new Child();
+        lenientFacet.setValue(parent, "test_value");
         assertEquals("test_value", parent.child.property);
     }
 
@@ -73,9 +68,10 @@ public class SubFacetTest extends Assert {
     public void testLenientGetValue() {
         Parent parent = new Parent();
         assertNull(lenientFacet.getValue(parent));
-        assertNotNull(parent.child);
-        parent.child.property = "foo";
-        assertEquals("foo", lenientFacet.getValue(parent));
+        parent.child = new Child();
+        assertNull(lenientFacet.getValue(parent));
+        parent.child.property = "test_value";
+        assertEquals("test_value", lenientFacet.getValue(parent));
     }
 
     @Test
