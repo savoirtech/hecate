@@ -18,6 +18,14 @@ package com.savoirtech.hecate.core.mapping;
 
 import com.datastax.driver.core.Row;
 
+@FunctionalInterface
 public interface RowMapper<T> {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
     T map(Row row);
+    default void mappingComplete() {
+        // Do nothing;
+    }
 }

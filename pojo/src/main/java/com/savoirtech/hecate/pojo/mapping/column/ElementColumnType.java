@@ -17,12 +17,14 @@
 package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.mapping.element.ElementHandler;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
+import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
 import java.util.function.Function;
 
-public abstract class ElementColumnType<T> implements ColumnType {
+public abstract class ElementColumnType<F,C> implements ColumnType {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -41,13 +43,26 @@ public abstract class ElementColumnType<T> implements ColumnType {
 // Abstract Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    protected abstract C convertParameterValueInternal(F facetValue);
+
     protected abstract DataType getDataTypeInternal(DataType elementType);
 
-    protected abstract Object getInsertValueInternal(Dehydrator dehydrator, T facetValue);
+    protected abstract C getInsertValueInternal(Dehydrator dehydrator, F facetValue);
+    
+    protected abstract void setFacetValueInternal(Hydrator hydrator, Object pojo, Facet facet, C cassandraValue);
 
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Object convertParameterValue(Object facetValue) {
+        if(facetValue == null) {
+            return null;
+        }
+        return convertParameterValueInternal((F)facetValue);
+    }
 
     @Override
     public DataType getDataType() {
@@ -60,13 +75,25 @@ public abstract class ElementColumnType<T> implements ColumnType {
         if (facetValue == null) {
             return null;
         }
-        return getInsertValueInternal(dehydrator, (T) facetValue);
+        return getInsertValueInternal(dehydrator, (F) facetValue);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void setFacetValue(Hydrator hydrator, Object pojo, Facet facet, Object cassandraValue) {
+        if(cassandraValue == null) {
+            facet.setValue(pojo, null);
+        }
+        setFacetValueInternal(hydrator, pojo, facet, (C)cassandraValue);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    protected Function<Object,Object> toParameterValue() {
+        return elementHandler::getParameterValue;
+    }
     protected Function<Object, Object> toInsertValue(Dehydrator dehydrator) {
         return element -> elementHandler.getInsertValue(element, dehydrator);
     }

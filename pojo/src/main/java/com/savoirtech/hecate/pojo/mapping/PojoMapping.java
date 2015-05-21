@@ -18,6 +18,7 @@ package com.savoirtech.hecate.pojo.mapping;
 
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
@@ -25,6 +26,7 @@ import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.Id;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.exception.HecateException;
+import com.savoirtech.hecate.pojo.util.PojoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +51,7 @@ public class PojoMapping<P> {
     private final String tableName;
     private final List<FacetMapping> idMappings;
     private final List<FacetMapping> simpleMappings;
+    private final int ttl;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
@@ -81,6 +84,7 @@ public class PojoMapping<P> {
         if (idMappings.isEmpty()) {
             throw new HecateException("No key fields found for class %s.", pojoClass.getSimpleName());
         }
+        this.ttl = PojoUtils.getTtl(pojoClass);
     }
 
     private static List<FacetMapping> toIdMappings(List<FacetMapping> allMappings) {
@@ -101,6 +105,10 @@ public class PojoMapping<P> {
 
     public Class<P> getPojoClass() {
         return pojoClass;
+    }
+
+    public int getTtl() {
+        return ttl;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -137,6 +145,7 @@ public class PojoMapping<P> {
         Insert insert = insertInto(tableName);
         idMappings.forEach(mapping -> insert.value(mapping.getFacet().getColumnName(), bindMarker()));
         simpleMappings.forEach(mapping -> insert.value(mapping.getFacet().getColumnName(), bindMarker()));
+        insert.using(QueryBuilder.ttl(QueryBuilder.bindMarker()));
         return insert;
     }
 

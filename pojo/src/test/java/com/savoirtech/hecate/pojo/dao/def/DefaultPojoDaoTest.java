@@ -55,6 +55,10 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
             p.lastName = "White";
             p.ssn = "123456789";
             dao.save(p);
+
+            Person found = dao.findById("123456789");
+            assertNotNull(found);
+            assertEquals("Slappy", found.firstName);
         });
     }
 
@@ -62,7 +66,27 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static class Person {
+    public static class Dependent {
+        @Id
+        private String id;
+
+        private String nickname;
+
+        public Dependent() {
+            
+        }
+        
+        public String toString() {
+            return nickname;
+        }
+
+        public Dependent(String id, String nickname) {
+            this.id = id;
+            this.nickname = nickname;
+        }
+    }
+
+    public static class Person {
         @Id
         private String ssn;
 
@@ -84,18 +108,5 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         private List<Dependent> dependentList = Lists.newArrayList(new Dependent("baz", "Baz"));
 
         private Dependent[] dependentArray = new Dependent[] {new Dependent("hello", "world")};
-    }
-
-    private static class Dependent {
-
-        @Id
-        private String id;
-
-        private String nickname;
-
-        public Dependent(String id, String nickname) {
-            this.id = id;
-            this.nickname = nickname;
-        }
     }
 }

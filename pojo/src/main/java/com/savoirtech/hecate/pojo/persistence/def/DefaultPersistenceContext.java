@@ -21,9 +21,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
-import com.savoirtech.hecate.pojo.persistence.PojoInsert;
+import com.savoirtech.hecate.pojo.persistence.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +36,8 @@ public class DefaultPersistenceContext implements PersistenceContext {
     private final Session session;
 
     private final LoadingCache<PojoMapping<?>, PojoInsert<?>> insertCache = CacheBuilder.newBuilder().build(new InsertCacheLoader());
-
+    private final LoadingCache<PojoMapping<?>,PojoQuery<?>> findByIdCache = CacheBuilder.newBuilder().build(new FindByIdCacheLoader());
+    private final LoadingCache<PojoMapping<?>,PojoQuery<?>> findByIdsCache = CacheBuilder.newBuilder().build(new FindByIdsCacheLoader());
     private final List<Consumer<Statement>> defaultStatementModifiers;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -61,10 +60,32 @@ public class DefaultPersistenceContext implements PersistenceContext {
     }
 
     @Override
-    public ResultSet executeStatement(Statement statement, Consumer<Statement>... statementModifiers) {
+    public Hydrator createHydrator() {
+        return new DefaultHydrator(this);
+    }
+
+    @Override
+    public ResultSet executeStatement(Statement statement, List<Consumer<Statement>> statementModifiers) {
         defaultStatementModifiers.stream().forEach(mod -> mod.accept(statement));
-        Arrays.stream(statementModifiers).forEach(mod -> mod.accept(statement));
+        statementModifiers.stream().forEach(mod -> mod.accept(statement));
         return session.execute(statement);
+    }
+
+    @Override
+    public <P> PojoQueryBuilder<P> find(PojoMapping<P> mapping) {
+        return new DefaultPojoQueryBuilder<>(this, mapping);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <P> PojoQuery<P> findById(PojoMapping<P> mapping) {
+        return (PojoQuery<P>)findByIdCache.getUnchecked(mapping);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <P> PojoQuery<P> findByIds(PojoMapping<P> mapping) {
+        return (PojoQuery<P>)findByIdsCache.getUnchecked(mapping);
     }
 
     @Override
@@ -81,6 +102,20 @@ public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
+
+    private class FindByIdCacheLoader extends CacheLoader<PojoMapping<?>, PojoQuery<?>> {
+        @Override
+        public PojoQuery<?> load(PojoMapping<?> key) throws Exception {
+            return find(key).identifierEquals().build();
+        }
+    }
+
+    private class FindByIdsCacheLoader extends CacheLoader<PojoMapping<?>, PojoQuery<?>> {
+        @Override
+        public PojoQuery<?> load(PojoMapping<?> key) throws Exception {
+            return find(key).identifierIn().build();
+        }
+    }
 
     private class InsertCacheLoader extends CacheLoader<PojoMapping<?>, PojoInsert<?>> {
         @Override

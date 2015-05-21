@@ -17,13 +17,15 @@
 package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.mapping.element.ElementHandler;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
+import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class SetColumnType extends ElementColumnType<Set<Object>> {
+public class SetColumnType extends ElementColumnType<Set<Object>,Set<Object>> {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
@@ -37,12 +39,25 @@ public class SetColumnType extends ElementColumnType<Set<Object>> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
+    protected Set<Object> convertParameterValueInternal(Set<Object> facetValue) {
+        return facetValue.stream().map(toParameterValue()).collect(Collectors.toSet());
+    }
+
+    @Override
     protected DataType getDataTypeInternal(DataType elementType) {
         return DataType.set(elementType);
     }
 
     @Override
-    protected Object getInsertValueInternal(Dehydrator dehydrator, Set<Object> facetValue) {
+    protected Set<Object> getInsertValueInternal(Dehydrator dehydrator, Set<Object> facetValue) {
         return facetValue.stream().map(toInsertValue(dehydrator)).collect(Collectors.toSet());
+    }
+
+    @Override
+    protected void setFacetValueInternal(Hydrator hydrator, Object pojo, Facet facet, Set<Object> cassandraValues) {
+        elementHandler.resolveElements(cassandraValues, hydrator, resolver -> {
+            final Set<Object> facetValues = cassandraValues.stream().map(resolver::resolveElement).collect(Collectors.toSet());
+            facet.setValue(pojo, facetValues);
+        });
     }
 }

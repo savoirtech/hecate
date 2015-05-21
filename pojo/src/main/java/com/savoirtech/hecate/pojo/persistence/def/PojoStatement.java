@@ -72,6 +72,10 @@ public abstract class PojoStatement<P> implements Supplier<PreparedStatement> {
         return logger;
     }
 
+    protected PersistenceContext getPersistenceContext() {
+        return persistenceContext;
+    }
+
     protected PojoMapping<P> getPojoMapping() {
         return pojoMapping;
     }
@@ -80,7 +84,7 @@ public abstract class PojoStatement<P> implements Supplier<PreparedStatement> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected ResultSet executeStatementRaw(List<Object> parameters, Consumer<Statement>... modifiers) {
+    protected ResultSet executeStatement(List<Object> parameters, List<Consumer<Statement>> modifiers) {
         getLogger().debug("CQL: {} with parameters {}", statementSupplier.get().getQueryString(), parameters);
         BoundStatement boundStatement = statementSupplier.get().bind(parameters.toArray(new Object[parameters.size()]));
         return persistenceContext.executeStatement(boundStatement, modifiers);

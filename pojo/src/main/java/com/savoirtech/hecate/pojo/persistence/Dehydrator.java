@@ -17,13 +17,17 @@
 package com.savoirtech.hecate.pojo.persistence;
 
 
+import com.datastax.driver.core.Statement;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 public interface Dehydrator {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
-    <P> void dehydrate(PojoMapping<P> pojoMapping, P... pojos);
+    <P> void dehydrate(PojoMapping<P> pojoMapping, Iterable<P> pojos);
 
-    void execute();
+    void execute(List<Consumer<Statement>> modifiers);
 }

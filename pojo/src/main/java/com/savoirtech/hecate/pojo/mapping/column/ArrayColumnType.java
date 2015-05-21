@@ -17,15 +17,17 @@
 package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.mapping.element.ElementHandler;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
+import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class ArrayColumnType extends ElementColumnType<Object> {
+public class ArrayColumnType extends ElementColumnType<Object,List<Object>> {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
@@ -39,19 +41,39 @@ public class ArrayColumnType extends ElementColumnType<Object> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
+    protected List<Object> convertParameterValueInternal(Object facetValue) {
+        return convertArray(facetValue, toParameterValue());
+    }
+
+    @Override
     protected DataType getDataTypeInternal(DataType elementType) {
         return DataType.list(elementType);
     }
 
     @Override
-    protected Object getInsertValueInternal(Dehydrator dehydrator, Object array) {
+    protected List<Object> getInsertValueInternal(Dehydrator dehydrator, Object array) {
+        return convertArray(array, toInsertValue(dehydrator));
+    }
+
+    private List<Object> convertArray(Object array, Function<Object, Object> elementConverter) {
         final int length = Array.getLength(array);
         final List<Object> columnValues = new ArrayList<>(length);
-        Function<Object, Object> toInsertValue = toInsertValue(dehydrator);
         for (int i = 0; i < length; ++i) {
             final Object value = Array.get(array, i);
-            columnValues.add(toInsertValue.apply(value));
+            columnValues.add(elementConverter.apply(value));
         }
         return columnValues;
+    }
+
+    @Override
+    protected void setFacetValueInternal(Hydrator hydrator, Object pojo, Facet facet, List<Object> cassandraValues) {
+        elementHandler.resolveElements(cassandraValues, hydrator, resolver -> {
+            Object array = Array.newInstance(facet.getType().getArrayElementType().getRawType(),cassandraValues.size());
+            int index = 0;
+            for (Object cassandraValue : cassandraValues) {
+                Array.set(array, index, resolver.resolveElement(cassandraValue));
+            }
+            facet.setValue(pojo, array);
+        });
     }
 }

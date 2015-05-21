@@ -18,14 +18,16 @@ package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.convert.Converter;
+import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.mapping.element.ElementHandler;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
+import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class MapColumnType extends ElementColumnType<Map<Object,Object>> {
+public class MapColumnType extends ElementColumnType<Map<Object, Object>, Map<Object, Object>> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -51,12 +53,35 @@ public class MapColumnType extends ElementColumnType<Map<Object,Object>> {
     }
 
     @Override
-    protected Object getInsertValueInternal(Dehydrator dehydrator, Map<Object, Object> facetValue) {
-        Map<Object,Object> value = new HashMap<>();
-        Function<Object, Object> toInsertValue = toInsertValue(dehydrator);
+    protected Map<Object, Object> getInsertValueInternal(Dehydrator dehydrator, Map<Object, Object> facetValue) {
+        Function<Object, Object> elementConverter = toInsertValue(dehydrator);
+        return convertMap(facetValue, elementConverter);
+    }
+
+    private Map<Object, Object> convertMap(Map<Object, Object> facetValue, Function<Object, Object> elementConverter) {
+        Map<Object, Object> value = new HashMap<>();
         for (Map.Entry<Object, Object> entry : facetValue.entrySet()) {
-            value.put(keyConverter.toCassandraValue(entry.getKey()), toInsertValue.apply(entry.getValue()));
+            value.put(keyConverter.toCassandraValue(entry.getKey()), elementConverter.apply(entry.getValue()));
         }
         return value;
+    }
+
+    @Override
+    protected Map<Object, Object> convertParameterValueInternal(Map<Object, Object> facetValue) {
+        return convertMap(facetValue, toParameterValue());
+    }
+
+    @Override
+    protected void setFacetValueInternal(Hydrator hydrator, Object pojo, Facet facet, Map<Object, Object> cassandraValue) {
+        elementHandler.resolveElements(cassandraValue.values(), hydrator, resolver -> {
+            Map<Object, Object> facetValue = new HashMap<>();
+            for (Map.Entry<Object, Object> entry : cassandraValue.entrySet()) {
+                final Object value = resolver.resolveElement(entry.getValue());
+                if (value != null) {
+                    facetValue.put(keyConverter.fromCassandraValue(entry.getKey()), value);
+                }
+            }
+            facet.setValue(pojo, facetValue);
+        });
     }
 }

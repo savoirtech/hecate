@@ -18,8 +18,10 @@ package com.savoirtech.hecate.pojo.persistence;
 
 import com.datastax.driver.core.Statement;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public interface PojoInsert<P> {
-    void insert(P pojo, Dehydrator dehydrator, Consumer<Statement>... modifiers);
+    void insert(P pojo, Dehydrator dehydrator, List<Consumer<Statement>> modifiers);
+    void insert(P pojo, Dehydrator dehydrator, int ttl, List<Consumer<Statement>> modifiers);
 }

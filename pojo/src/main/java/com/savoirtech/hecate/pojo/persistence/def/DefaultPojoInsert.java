@@ -38,23 +38,34 @@ public class DefaultPojoInsert<P> extends PojoStatement<P> implements PojoInsert
     }
 
 //----------------------------------------------------------------------------------------------------------------------
+// PojoInsert Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
+
+    @Override
+    public void insert(P pojo, Dehydrator dehydrator, List<Consumer<Statement>> modifiers) {
+        insert(pojo, dehydrator, getPojoMapping().getTtl(), modifiers);
+    }
+
+    @Override
+    public void insert(P pojo, Dehydrator dehydrator, int ttl, List<Consumer<Statement>> modifiers) {
+        List<Object> parameters = new LinkedList<>();
+        collectParameters(parameters, pojo, dehydrator, getPojoMapping().getIdMappings());
+        collectParameters(parameters, pojo, dehydrator, getPojoMapping().getSimpleMappings());
+        parameters.add(ttl);
+        executeStatement(parameters, modifiers);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
+
+    private void collectParameters(List<Object> parameters, P pojo, Dehydrator dehydrator, List<FacetMapping> mappings) {
+        mappings.forEach(mapping -> parameters.add(mapping.getColumnType().getInsertValue(dehydrator, mapping.getFacet().getValue(pojo))));
+    }
 
     @Override
     protected RegularStatement createStatement() {
         return getPojoMapping().createInsertStatement();
-    }
-
-    @Override
-    public void insert(P pojo, Dehydrator dehydrator, Consumer<Statement>... modifiers) {
-        List<Object> parameters = new LinkedList<>();
-        collectParameters(parameters, pojo, dehydrator, getPojoMapping().getIdMappings());
-        collectParameters(parameters, pojo, dehydrator, getPojoMapping().getSimpleMappings());
-        executeStatementRaw(parameters, modifiers);
-    }
-
-    private void collectParameters(List<Object> parameters, P pojo, Dehydrator dehydrator, List<FacetMapping> mappings) {
-        mappings.forEach(mapping -> parameters.add(mapping.getColumnType().getInsertValue(dehydrator, mapping.getFacet().getValue(pojo))));
     }
 }

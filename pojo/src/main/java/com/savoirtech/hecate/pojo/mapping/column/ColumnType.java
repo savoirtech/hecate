@@ -17,10 +17,20 @@
 package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
+import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
 public interface ColumnType {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    Object convertParameterValue(Object facetValue);
+
     DataType getDataType();
 
     Object getInsertValue(Dehydrator dehydrator, Object facetValue);
+
+    void setFacetValue(Hydrator hydrator, Object pojo, Facet facet, Object cassandraValue);
 }

@@ -18,12 +18,14 @@ package com.savoirtech.hecate.pojo.util;
 
 import com.savoirtech.hecate.annotation.Column;
 import com.savoirtech.hecate.annotation.Table;
+import com.savoirtech.hecate.annotation.Ttl;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.SubFacet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,8 +45,15 @@ public class PojoUtils {
         return table != null ? table.value() : underscoreSeparated(pojoClass.getSimpleName());
     }
 
+    public static int getTtl(Class<?> pojoClass) {
+        Ttl ttl = Validate.notNull(pojoClass).getAnnotation(Ttl.class);
+        return ttl != null ? ttl.value() : 0;
+    }
+
     public static <T> T newPojo(Class<T> pojoClass) {
         try {
+            Constructor<T> constructor = pojoClass.getConstructor();
+            constructor.setAccessible(true);
             return Validate.notNull(pojoClass).newInstance();
         } catch (ReflectiveOperationException e) {
             throw new HecateException(e, "Unable to instantiate object of type %s.", pojoClass.getCanonicalName());

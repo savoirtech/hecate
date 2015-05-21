@@ -16,34 +16,42 @@
 
 package com.savoirtech.hecate.pojo.persistence;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Statement;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-
-import java.util.List;
-import java.util.function.Consumer;
-
-
-public interface PersistenceContext {
+public interface PojoQueryBuilder<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Dehydrator createDehydrator();
-
-    Hydrator createHydrator();
-
-    ResultSet executeStatement(Statement statement, List<Consumer<Statement>> statementModifiers);
+    PojoQueryBuilder<P> asc(String facetName);
     
-    <P> PojoInsert<P> insert(PojoMapping<P> mapping);
+    PojoQuery<P> build();
 
-    PreparedStatement prepare(RegularStatement statement);
+    PojoQueryBuilder<P> desc(String facetName);
 
-    <P> PojoQueryBuilder<P> find(PojoMapping<P> mapping);
+    PojoQueryBuilder<P> eq(String facetName);
 
-    <P> PojoQuery<P> findById(PojoMapping<P> mapping);
+    PojoQueryBuilder<P> eq(String facetName, Object value);
 
-    <P> PojoQuery<P> findByIds(PojoMapping<P> mapping);
+    PojoQueryBuilder<P> gt(String facetName);
+
+    PojoQueryBuilder<P> gt(String facetName, Object value);
+
+    PojoQueryBuilder<P> gte(String facetName);
+
+    PojoQueryBuilder<P> gte(String facetName, Object value);
+
+    PojoQueryBuilder<P> identifierEquals();
+
+    PojoQueryBuilder<P> identifierIn();
+
+    PojoQueryBuilder<P> in(String facetName);
+
+    PojoQueryBuilder<P> in(String facetName, Object value);
+
+    PojoQueryBuilder<P> lt(String facetName);
+
+    PojoQueryBuilder<P> lt(String facetName, Object value);
+
+    PojoQueryBuilder<P> lte(String facetName);
+
+    PojoQueryBuilder<P> lte(String facetName, Object value);
 }

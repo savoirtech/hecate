@@ -19,6 +19,7 @@ package com.savoirtech.hecate.pojo.mapping.element;
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
+import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
 public class ConverterElementHandler implements ElementHandler {
 //----------------------------------------------------------------------------------------------------------------------
@@ -47,5 +48,15 @@ public class ConverterElementHandler implements ElementHandler {
     @Override
     public Object getInsertValue(Object facetValue, Dehydrator dehydrator) {
         return converter.toCassandraValue(facetValue);
+    }
+
+    @Override
+    public Object getParameterValue(Object facetValue) {
+        return converter.toCassandraValue(facetValue);
+    }
+
+    @Override
+    public void resolveElements(Iterable<Object> cassandraValue, Hydrator hydrator,ElementInjector injector) {
+        injector.injectElement(converter::fromCassandraValue);
     }
 }

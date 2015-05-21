@@ -47,16 +47,23 @@ public class MappedQueryResult<T> implements QueryResult<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return Iterators.transform(resultSet.iterator(), mapper::map);
+        Iterator<T> transformed = Iterators.transform(resultSet.iterator(), mapper::map);
+        mapper.mappingComplete();
+        return transformed;
+
     }
 
     @Override
     public List<T> list() {
-        return resultSet.all().stream().map(mapper::map).collect(Collectors.toList());
+        List<T> result = resultSet.all().stream().map(mapper::map).collect(Collectors.toList());
+        mapper.mappingComplete();
+        return result;
     }
 
     @Override
     public T one() {
-        return mapper.map(resultSet.one());
+        T result = mapper.map(resultSet.one());
+        mapper.mappingComplete();
+        return result;
     }
 }

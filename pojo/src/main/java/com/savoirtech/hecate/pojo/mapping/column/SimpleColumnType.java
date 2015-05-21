@@ -17,10 +17,14 @@
 package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.mapping.element.ElementHandler;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
+import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
-public class SimpleColumnType extends ElementColumnType<Object> {
+import java.util.Collections;
+
+public class SimpleColumnType extends ElementColumnType<Object,Object> {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
@@ -34,12 +38,24 @@ public class SimpleColumnType extends ElementColumnType<Object> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
+    protected Object convertParameterValueInternal(Object facetValue) {
+        return toParameterValue().apply(facetValue);
+    }
+
+    @Override
     protected DataType getDataTypeInternal(DataType elementType) {
         return elementType;
     }
 
     @Override
     protected Object getInsertValueInternal(Dehydrator dehydrator, Object facetValue) {
-        return facetValue == null ? null : toInsertValue(dehydrator).apply(facetValue);
+        return toInsertValue(dehydrator).apply(facetValue);
+    }
+
+    @Override
+    protected void setFacetValueInternal(Hydrator hydrator, Object pojo, Facet facet, Object cassandraValue) {
+        elementHandler.resolveElements(Collections.singleton(cassandraValue),
+                hydrator,
+                resolver -> facet.setValue(pojo, resolver.resolveElement(cassandraValue)));
     }
 }

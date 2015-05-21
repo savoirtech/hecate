@@ -16,17 +16,10 @@
 
 package com.savoirtech.hecate.pojo.mapping.element;
 
-import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.Hydrator;
+public interface ElementInjector {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
-public interface ElementHandler {
-
-    DataType getDataType();
-
-    Object getInsertValue(Object facetValue, Dehydrator dehydrator);
-
-    Object getParameterValue(Object facetValue);
-
-    void resolveElements(Iterable<Object> cassandraValue, Hydrator hydrator,ElementInjector injector);
+    void injectElement(ElementResolver resolver);
 }

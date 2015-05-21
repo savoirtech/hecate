@@ -19,6 +19,9 @@ package com.savoirtech.hecate.pojo.mapping.element;
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
+import com.savoirtech.hecate.pojo.persistence.Hydrator;
+
+import java.util.Collections;
 
 public class PojoElementHandler implements ElementHandler {
 //----------------------------------------------------------------------------------------------------------------------
@@ -47,7 +50,17 @@ public class PojoElementHandler implements ElementHandler {
 
     @Override
     public Object getInsertValue(Object pojo, Dehydrator dehydrator) {
-        dehydrator.dehydrate(pojoMapping, pojo);
+        dehydrator.dehydrate(pojoMapping, Collections.singleton(pojo));
         return pojoMapping.getForeignKeyMapping().getFacet().getValue(pojo);
+    }
+
+    @Override
+    public Object getParameterValue(Object pojo) {
+        return pojoMapping.getForeignKeyMapping().getFacet().getValue(pojo);
+    }
+
+    @Override
+    public void resolveElements(Iterable<Object> cassandraValue, Hydrator hydrator,ElementInjector injector) {
+        hydrator.resolveElements(pojoMapping,cassandraValue,injector);
     }
 }

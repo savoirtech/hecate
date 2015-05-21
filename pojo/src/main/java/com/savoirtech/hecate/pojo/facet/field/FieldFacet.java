@@ -21,6 +21,8 @@ import com.savoirtech.hecate.pojo.facet.SubFacet;
 import com.savoirtech.hecate.pojo.facet.reflect.ReflectionFacet;
 import com.savoirtech.hecate.pojo.util.GenericType;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
@@ -31,6 +33,7 @@ public class FieldFacet extends ReflectionFacet {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
+    private static final Logger LOGGER = LoggerFactory.getLogger(FieldFacet.class);
 
     private final Field field;
     private final GenericType type;
@@ -80,6 +83,7 @@ public class FieldFacet extends ReflectionFacet {
 
     @Override
     public void setValueReflectively(Object pojo, Object value) throws ReflectiveOperationException {
+        LOGGER.debug("Setting field {} to value {}...", field.getName(), value);
         field.set(pojo, value);
     }
 }

@@ -14,61 +14,51 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.dao.def;
+package com.savoirtech.hecate.pojo.mapping.row;
 
-import com.datastax.driver.core.Statement;
-import com.savoirtech.hecate.core.query.QueryResult;
-import com.savoirtech.hecate.pojo.dao.PojoDao;
+import com.datastax.driver.core.Row;
+import com.savoirtech.hecate.core.mapping.RowMapper;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
+import com.savoirtech.hecate.pojo.persistence.Hydrator;
+import com.savoirtech.hecate.pojo.util.CqlUtils;
+import com.savoirtech.hecate.pojo.util.PojoUtils;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.function.Consumer;
+import java.util.Iterator;
+import java.util.List;
 
-public class DefaultPojoDao<I,P> implements PojoDao<I,P> {
+public class HydratorRowMapper<P> implements RowMapper<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final PojoMapping<P> pojoMapping;
-    private final PersistenceContext persistenceContext;
+    private final PojoMapping<P> mapping;
+    private final Hydrator hydrator;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoDao(PojoMapping<P> pojoMapping, PersistenceContext persistenceContext) {
-        this.pojoMapping = pojoMapping;
-        this.persistenceContext = persistenceContext;
+    public HydratorRowMapper(PojoMapping<P> mapping, Hydrator hydrator) {
+        this.mapping = mapping;
+        this.hydrator = hydrator;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// PojoDao Implementation
+// RowMapper Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    
     @Override
-    public void delete(I id) {
-
+    public P map(Row row) {
+        P pojo = PojoUtils.newPojo(mapping.getPojoClass());
+        List<Object> columns = CqlUtils.toList(row);
+        Iterator<Object> cassandraValues = columns.iterator();
+        mapping.getIdMappings().forEach(facetMapping -> facetMapping.getColumnType().setFacetValue(hydrator,pojo, facetMapping.getFacet(),cassandraValues.next()));
+        mapping.getSimpleMappings().forEach(facetMapping -> facetMapping.getColumnType().setFacetValue(hydrator,pojo, facetMapping.getFacet(),cassandraValues.next()));
+        return pojo;
     }
 
     @Override
-    public P findById(I id) {
-        return persistenceContext.findById(pojoMapping).execute(id).one();
-    }
-
-    @Override
-    public QueryResult<P> findByIds(Iterable<I> ids) {
-        return persistenceContext.findByIds(pojoMapping).execute(ids);
-    }
-
-    @Override
-    @SafeVarargs
-    public final void save(P pojo, Consumer<Statement>... modifiers) {
-        Dehydrator dehydrator = persistenceContext.createDehydrator();
-        dehydrator.dehydrate(pojoMapping, Collections.singleton(pojo));
-        dehydrator.execute(Arrays.asList(modifiers));
+    public void mappingComplete() {
+        hydrator.execute();
     }
 }

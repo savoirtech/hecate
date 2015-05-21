@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.element;
+package com.savoirtech.hecate.pojo.persistence;
 
-import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.Hydrator;
+import com.savoirtech.hecate.core.mapping.MappedQueryResult;
 
-public interface ElementHandler {
+public interface PojoQuery<P> {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
-    DataType getDataType();
-
-    Object getInsertValue(Object facetValue, Dehydrator dehydrator);
-
-    Object getParameterValue(Object facetValue);
-
-    void resolveElements(Iterable<Object> cassandraValue, Hydrator hydrator,ElementInjector injector);
+    MappedQueryResult<P> execute(Object... parameters);
 }
