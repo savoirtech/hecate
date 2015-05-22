@@ -17,63 +17,58 @@
 package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.mapping.element.ElementHandler;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class ArrayColumnType extends ElementColumnType<Object,List<Object>> {
+public class ArrayColumnType implements ColumnType<List<Object>,Object>{
 //----------------------------------------------------------------------------------------------------------------------
-// Constructors
+// ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ArrayColumnType(ElementHandler elementHandler) {
-        super(elementHandler);
+    @Override
+    public Iterable<Object> columnElements(List<Object> columnValue) {
+        return columnValue;
+    }
+    
+    @Override
+    public Iterable<Object> facetElements(Object array) {
+        return arrayToList(array, element -> element);
+    }
+
+    @Override
+    public List<Object> getColumnValue(Object array, Function<Object, Object> function) {
+        return arrayToList(array, function);
+    }
+
+    @Override
+    public DataType getDataType(DataType elementDataType) {
+        return DataType.list(elementDataType);
+    }
+
+    @Override
+    public Object getFacetValue(List<Object> columnValue, Function<Object, Object> function, Class<?> elementType) {
+        Object array = Array.newInstance(elementType,columnValue.size());
+        int index = 0;
+        for (Object element : columnValue) {
+            Array.set(array,index,function.apply(element));
+        }
+        return array;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Override
-    protected List<Object> convertParameterValueInternal(Object facetValue) {
-        return convertArray(facetValue, toParameterValue());
-    }
-
-    @Override
-    protected DataType getDataTypeInternal(DataType elementType) {
-        return DataType.list(elementType);
-    }
-
-    @Override
-    protected List<Object> getInsertValueInternal(Dehydrator dehydrator, Object array) {
-        return convertArray(array, toInsertValue(dehydrator));
-    }
-
-    private List<Object> convertArray(Object array, Function<Object, Object> elementConverter) {
+    protected List<Object> arrayToList(Object array, Function<Object, Object> elementConverter) {
         final int length = Array.getLength(array);
-        final List<Object> columnValues = new ArrayList<>(length);
-        for (int i = 0; i < length; ++i) {
-            final Object value = Array.get(array, i);
-            columnValues.add(elementConverter.apply(value));
+        final List<Object> list = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            final Object elementValue = Array.get(array, i);
+            list.add(elementConverter.apply(elementValue));
         }
-        return columnValues;
-    }
-
-    @Override
-    protected void setFacetValueInternal(Hydrator hydrator, Object pojo, Facet facet, List<Object> cassandraValues) {
-        elementHandler.resolveElements(cassandraValues, hydrator, resolver -> {
-            Object array = Array.newInstance(facet.getType().getArrayElementType().getRawType(),cassandraValues.size());
-            int index = 0;
-            for (Object cassandraValue : cassandraValues) {
-                Array.set(array, index, resolver.resolveElement(cassandraValue));
-            }
-            facet.setValue(pojo, array);
-        });
+        return list;
     }
 }

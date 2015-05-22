@@ -25,14 +25,13 @@ import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
-import com.savoirtech.hecate.pojo.mapping.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMappingFactory;
 import com.savoirtech.hecate.pojo.mapping.PojoMappingVerifier;
 import com.savoirtech.hecate.pojo.mapping.column.*;
-import com.savoirtech.hecate.pojo.mapping.element.ConverterElementHandler;
-import com.savoirtech.hecate.pojo.mapping.element.ElementHandler;
-import com.savoirtech.hecate.pojo.mapping.element.PojoElementHandler;
+import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.ReferenceFacetMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.util.GenericType;
 import com.savoirtech.hecate.pojo.util.PojoUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -52,9 +51,9 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPojoMappingFactory.class);
     private final FacetProvider facetProvider;
     private final ConverterRegistry converterRegistry;
-    private final Map<Class<?>, Function<Facet, ColumnType>> columnTypeOverrides = new HashMap<>();
+    private final Map<Class<?>, Function<GenericType, ColumnType>> columnTypeOverrides = new HashMap<>();
 
-    private final LoadingCache<Pair<Class<?>,String>,PojoMapping<?>> mappingCache = CacheBuilder.newBuilder().build(new MappingCacheLoader());
+    private final LoadingCache<Pair<Class<?>, String>, PojoMapping<?>> mappingCache = CacheBuilder.newBuilder().build(new MappingCacheLoader());
     private PojoMappingVerifier verifier;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -65,19 +64,9 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
         this.facetProvider = facetProvider;
         this.converterRegistry = converterRegistry;
 
-        columnTypeOverrides.put(Set.class, facet -> new SetColumnType(createElementHandler(facet, facet.getType().getSetElementType())));
-        columnTypeOverrides.put(List.class, facet -> new ListColumnType(createElementHandler(facet, facet.getType().getListElementType())));
-        columnTypeOverrides.put(Map.class, facet -> new MapColumnType(converterRegistry.getRequiredConverter(facet.getType().getMapKeyType()), createElementHandler(facet, facet.getType().getMapValueType())));
-    }
-
-    private ElementHandler createElementHandler(Facet facet, GenericType elementType) {
-        Converter converter = converterRegistry.getConverter(elementType);
-        if (converter == null) {
-            Table table = facet.getAnnotation(Table.class);
-            return new PojoElementHandler(createPojoMapping(elementType.getRawType(), table == null ? PojoUtils.getTableName(elementType.getRawType()) : table.value()));
-        } else {
-            return new ConverterElementHandler(converter);
-        }
+        columnTypeOverrides.put(Set.class, facetType -> new SetColumnType());
+        columnTypeOverrides.put(List.class, facetType -> new ListColumnType());
+        columnTypeOverrides.put(Map.class, facetType -> new MapColumnType(converterRegistry.getRequiredConverter(facetType.getMapKeyType())));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -92,7 +81,7 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
     @Override
     @SuppressWarnings("unchecked")
     public <P> PojoMapping<P> createPojoMapping(Class<P> pojoClass, String tableName) {
-        return (PojoMapping<P>)mappingCache.getUnchecked(new ImmutablePair<>(pojoClass, tableName));
+        return (PojoMapping<P>) mappingCache.getUnchecked(new ImmutablePair<>(pojoClass, tableName));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -107,41 +96,59 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private void addIdMappings(Facet idFacet, List<FacetMapping> mappings) {
+    private void addIdMappings(Facet idFacet, List<ScalarFacetMapping> mappings) {
         final Converter converter = converterRegistry.getConverter(idFacet.getType());
         if (converter == null) {
             addEmbeddedMappings(idFacet, false, mappings, facet -> {
-                if(!facet.hasAnnotation(PartitionKey.class) && !facet.hasAnnotation(ClusteringColumn.class)) {
+                if (!facet.hasAnnotation(PartitionKey.class) && !facet.hasAnnotation(ClusteringColumn.class)) {
                     throw new HecateException("Sub-facet %s found on @Id facet %s does not contain @PrimaryKey or @ClusteringColumn annotation.", facet.getName(), idFacet.getName());
                 }
             });
         } else {
-            mappings.add(new FacetMapping(idFacet, new SimpleColumnType(new ConverterElementHandler(converter))));
+            mappings.add(new ScalarFacetMapping(idFacet, SimpleColumnType.INSTANCE, converter));
         }
     }
 
-    private void addEmbeddedMappings(Facet parentFacet, boolean allowNullParent, List<FacetMapping> target, Consumer<Facet> verifier) {
-        if(allowNullParent) {
-            target.add(new FacetMapping(parentFacet,EmbeddedColumnType.INSTANCE));
+    private void addEmbeddedMappings(Facet parentFacet, boolean allowNullParent, List<ScalarFacetMapping> target, Consumer<Facet> verifier) {
+        if (allowNullParent) {
+            target.add(new ScalarFacetMapping(parentFacet, EmbeddedColumnType.INSTANCE, Converter.NULL_CONVERTER));
         }
         List<Facet> subFacets = parentFacet.subFacets(allowNullParent);
         for (Facet subFacet : subFacets) {
             verifier.accept(subFacet);
-            target.add(new FacetMapping(subFacet, new SimpleColumnType(new ConverterElementHandler(converterRegistry.getRequiredConverter(subFacet.getType())))));
+            target.add(new ScalarFacetMapping(subFacet, SimpleColumnType.INSTANCE, converterRegistry.getRequiredConverter(subFacet.getType())));
         }
     }
 
     private void addMappings(Facet facet, List<FacetMapping> mappings) {
         GenericType facetType = facet.getType();
-        Function<Facet, ColumnType> override = columnTypeOverrides.get(facetType.getRawType());
-        if (override != null) {
-            mappings.add(new FacetMapping(facet, override.apply(facet)));
-        } else if (facetType.getRawType().isArray()) {
-            mappings.add(new FacetMapping(facet, new ArrayColumnType(createElementHandler(facet, facetType.getArrayElementType()))));
-        } else if(facet.hasAnnotation(Embedded.class)) {
-            addEmbeddedMappings(facet,true,mappings, subFacet -> {});
+        final ColumnType<?, ?> columnType = createColumnType(facet);
+        final Converter converter = converterRegistry.getConverter(facet.getType().getElementType());
+        if (facet.hasAnnotation(Embedded.class)) {
+            LOGGER.info("Creating scalar mapping for {}...", facet.getName());
+            mappings.add(new ScalarFacetMapping(facet, columnType, Converter.NULL_CONVERTER));
+        } else if (converter != null) {
+            LOGGER.info("Creating scalar mapping for {}...", facet.getName());
+            mappings.add(new ScalarFacetMapping(facet, columnType, converter));
         } else {
-            mappings.add(new FacetMapping(facet, new SimpleColumnType(createElementHandler(facet, facetType))));
+            LOGGER.info("Creating reference mapping for {}...", facet.getName());
+            Table table = facet.getAnnotation(Table.class);
+            final String tableName = table == null ? PojoUtils.getTableName(facetType.getElementType().getRawType()) : table.value();
+            mappings.add(new ReferenceFacetMapping(facet, columnType, createPojoMapping(facetType.getElementType().getRawType(), tableName)));
+        }
+    }
+
+    private ColumnType<?, ?> createColumnType(Facet facet) {
+        final GenericType facetType = facet.getType();
+        Function<GenericType, ColumnType> override = columnTypeOverrides.get(facetType.getRawType());
+        if (override != null) {
+            return override.apply(facetType);
+        } else if (facetType.getRawType().isArray()) {
+            return new ArrayColumnType();
+        } else if (facet.hasAnnotation(Embedded.class)) {
+            return EmbeddedColumnType.INSTANCE;
+        } else {
+            return SimpleColumnType.INSTANCE;
         }
     }
 
@@ -149,21 +156,22 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private class MappingCacheLoader extends CacheLoader<Pair<Class<?>,String>,PojoMapping<?>> {
+    private class MappingCacheLoader extends CacheLoader<Pair<Class<?>, String>, PojoMapping<?>> {
         @Override
         public PojoMapping<?> load(Pair<Class<?>, String> key) throws Exception {
-            LOGGER.debug("Creating mapping for class %s in table %s", key.getKey().getCanonicalName(), key.getValue());
-            List<FacetMapping> mappings = new LinkedList<>();
+            LOGGER.debug("Creating mapping for class {} in table {}.", key.getKey().getCanonicalName(), key.getValue());
+            final List<ScalarFacetMapping> idMappings = new LinkedList<>();
+            final List<FacetMapping> simpleMappings = new LinkedList<>();
             List<Facet> facets = facetProvider.getFacets(key.getLeft());
             for (Facet facet : facets) {
                 if (facet.hasAnnotation(Id.class)) {
-                    addIdMappings(facet, mappings);
+                    addIdMappings(facet, idMappings);
                 } else {
-                    addMappings(facet, mappings);
+                    addMappings(facet, simpleMappings);
                 }
             }
-            PojoMapping<?> mapping = new PojoMapping<>(key.getLeft(), key.getRight(), mappings);
-            if(verifier != null) {
+            PojoMapping<?> mapping = new PojoMapping<>(key.getLeft(), key.getRight(), idMappings, simpleMappings);
+            if (verifier != null) {
                 verifier.verify(mapping);
             }
             return mapping;

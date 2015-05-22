@@ -17,10 +17,17 @@
 package com.savoirtech.hecate.pojo.persistence;
 
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.element.ElementInjector;
+
+import java.util.function.Consumer;
 
 public interface Hydrator {
-    void resolveElements(PojoMapping<?> pojoMapping, Iterable<Object> cassandraValues, ElementInjector injector);
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     void execute();
+
+    Object getPojo(PojoMapping<?> mapping, Object id);
+    
+    void resolveElements(PojoMapping<?> pojoMapping, Iterable<Object> cassandraValues, Consumer<Hydrator> callback);
 }

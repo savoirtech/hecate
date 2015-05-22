@@ -46,6 +46,11 @@ public class PojoUtils {
         return table != null ? table.value() : underscoreSeparated(pojoClass.getSimpleName());
     }
 
+    public static String getTableName(Facet facet) {
+        Table table = Validate.notNull(facet).getAnnotation(Table.class);
+        return table != null ? table.value() : getTableName(facet.getType().getRawType());
+    }
+
     public static int getTtl(Class<?> pojoClass) {
         Ttl ttl = Validate.notNull(pojoClass).getAnnotation(Ttl.class);
         return ttl != null ? ttl.value() : 0;

@@ -20,7 +20,7 @@ import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
-import com.savoirtech.hecate.pojo.mapping.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.row.HydratorRowMapper;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
@@ -60,14 +60,14 @@ public class DefaultPojoQuery<P> extends PojoStatement<P> implements PojoQuery<P
             throw new HecateException("Expected %d parameters, but only received %d.", parameterMappings.size(), parameters.length);
         }
 
-        List<Object> cassandraValues = new ArrayList<>(parameterMappings.size() + injectedParameters.size());
+        List<Object> columnValues = new ArrayList<>(parameterMappings.size() + injectedParameters.size());
         int index = 0;
         for (FacetMapping mapping : parameterMappings) {
-            cassandraValues.add(mapping.getColumnType().toCassandraValue(parameters[index]));
+            columnValues.add(mapping.getColumnValueForFacetValue(parameters[index]));
             index++;
         }
-        cassandraValues = injected(cassandraValues);
-        return new MappedQueryResult<>(executeStatement(cassandraValues, Collections.emptyList()),new HydratorRowMapper<>(getPojoMapping(),getPersistenceContext().createHydrator()));
+        columnValues = injected(columnValues);
+        return new MappedQueryResult<>(executeStatement(columnValues, Collections.emptyList()),new HydratorRowMapper<>(getPojoMapping(),getPersistenceContext().createHydrator()));
     }
 
 //----------------------------------------------------------------------------------------------------------------------

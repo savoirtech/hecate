@@ -19,8 +19,9 @@ package com.savoirtech.hecate.pojo.persistence.def;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.mapping.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoQueryBuilder;
 
@@ -183,7 +184,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     private String identifierColumn() {
-        List<FacetMapping> idMappings = pojoMapping.getIdMappings();
+        List<ScalarFacetMapping> idMappings = pojoMapping.getIdMappings();
         if (idMappings.size() > 1) {
             throw new HecateException("Composite primary keys not supported.");
         }
@@ -192,7 +193,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     private InjectedParameter injected(String facetName, Object value) {
         FacetMapping facetMapping = lookupMapping(facetName);
-        Object cassandraValue = facetMapping.getColumnType().toCassandraValue(value);
+        Object cassandraValue = facetMapping.getColumnValueForFacetValue(value);
         return new InjectedParameter(parameterMappings.size(), cassandraValue);
     }
 

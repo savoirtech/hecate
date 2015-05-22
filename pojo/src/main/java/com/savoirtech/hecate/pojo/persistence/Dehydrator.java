@@ -27,7 +27,8 @@ public interface Dehydrator {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
-    <P> void dehydrate(PojoMapping<P> pojoMapping, Iterable<P> pojos);
+
+    void dehydrate(PojoMapping<?> pojoMapping, Iterable<?> pojos);
 
     void execute(List<Consumer<Statement>> modifiers);
 }

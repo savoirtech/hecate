@@ -17,22 +17,21 @@
 package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
-public interface ColumnType {
+import java.util.function.Function;
+
+public interface ColumnType<C,F> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Object toCassandraValue(Object facetValue);
+    C getColumnValue(F facetValue, Function<Object, Object> function);
 
-    DataType getDataType();
+    DataType getDataType(DataType elementDataType);
+    
+    F getFacetValue(C columnValue, Function<Object,Object> function, Class<?> elementType);
+    
+    Iterable<Object> facetElements(F facetValue);
 
-    Object toCassandraValue(Dehydrator dehydrator, Object facetValue);
-
-    void setFacetValue(Hydrator hydrator, Object pojo, Facet facet, Object cassandraValue);
-
-    boolean isCascadable();
+    Iterable<Object> columnElements(C columnValue);
 }

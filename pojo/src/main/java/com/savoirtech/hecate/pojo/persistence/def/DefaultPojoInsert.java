@@ -18,8 +18,13 @@ package com.savoirtech.hecate.pojo.persistence.def;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
-import com.savoirtech.hecate.pojo.mapping.FacetMapping;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.FacetMappingVisitor;
+import com.savoirtech.hecate.pojo.mapping.facet.ReferenceFacetMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoInsert;
@@ -27,6 +32,9 @@ import com.savoirtech.hecate.pojo.persistence.PojoInsert;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 
 public class DefaultPojoInsert<P> extends PojoStatement<P> implements PojoInsert<P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -59,18 +67,48 @@ public class DefaultPojoInsert<P> extends PojoStatement<P> implements PojoInsert
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private void collectParameters(List<Object> parameters, P pojo, Dehydrator dehydrator, List<FacetMapping> mappings) {
-        mappings.forEach(mapping -> {
-            final Object facetValue = mapping.getFacet().getValue(pojo);
-            parameters.add(mapping.isCascadeSave() ?
-                            mapping.getColumnType().toCassandraValue(dehydrator, facetValue) :
-                            mapping.getColumnType().toCassandraValue(facetValue)
-            );
-        });
+    @SuppressWarnings("unchecked")
+    private void collectParameters(List<Object> parameters, P pojo, Dehydrator dehydrator, List<? extends FacetMapping> mappings) {
+        mappings.forEach(mapping -> mapping.accept(new InsertVisitor(parameters, pojo, dehydrator)));
     }
 
     @Override
     protected RegularStatement createStatement() {
-        return getPojoMapping().createInsertStatement();
+        Insert insert = insertInto(getPojoMapping().getTableName());
+        getPojoMapping().getIdMappings().forEach(mapping -> insert.value(mapping.getFacet().getColumnName(), bindMarker()));
+        getPojoMapping().getSimpleMappings().forEach(mapping -> insert.value(mapping.getFacet().getColumnName(), bindMarker()));
+        insert.using(QueryBuilder.ttl(QueryBuilder.bindMarker()));
+        return insert;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    private class InsertVisitor implements FacetMappingVisitor {
+        private final List<Object> parameters;
+        private final P pojo;
+        private final Dehydrator dehydrator;
+
+        public InsertVisitor(List<Object> parameters, P pojo, Dehydrator dehydrator) {
+            this.parameters = parameters;
+            this.pojo = pojo;
+            this.dehydrator = dehydrator;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void visitReference(ReferenceFacetMapping referenceMapping) {
+            Object columnValue = referenceMapping.getColumnValue(pojo);
+            parameters.add(columnValue);
+            if(referenceMapping.getFacet().isCascadeSave()) {
+                dehydrator.dehydrate(referenceMapping.getElementMapping(),referenceMapping.getReferences(pojo));
+            }
+        }
+
+        @Override
+        public void visitScalar(ScalarFacetMapping scalarMapping) {
+            parameters.add(scalarMapping.getColumnValue(pojo));
+        }
     }
 }

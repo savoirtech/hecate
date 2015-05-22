@@ -18,16 +18,12 @@ package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.convert.Converter;
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.mapping.element.ElementHandler;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class MapColumnType extends ElementColumnType<Map<Object, Object>, Map<Object, Object>> {
+public class MapColumnType implements ColumnType<Map<Object, Object>, Map<Object, Object>> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -38,50 +34,45 @@ public class MapColumnType extends ElementColumnType<Map<Object, Object>, Map<Ob
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public MapColumnType(Converter keyConverter, ElementHandler elementHandler) {
-        super(elementHandler);
+    public MapColumnType(Converter keyConverter) {
         this.keyConverter = keyConverter;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Other Methods
+// ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+
     @Override
-    protected DataType getDataTypeInternal(DataType elementType) {
-        return DataType.map(keyConverter.getDataType(), elementType);
+    public Iterable<Object> columnElements(Map<Object, Object> columnValue) {
+        return columnValue.values();
     }
 
     @Override
-    protected Map<Object, Object> getInsertValueInternal(Dehydrator dehydrator, Map<Object, Object> facetValue) {
-        Function<Object, Object> elementConverter = toInsertValue(dehydrator);
-        return convertMap(facetValue, elementConverter);
+    public Iterable<Object> facetElements(Map<Object, Object> facetValue) {
+        return facetValue.values();
     }
 
-    private Map<Object, Object> convertMap(Map<Object, Object> facetValue, Function<Object, Object> elementConverter) {
-        Map<Object, Object> value = new HashMap<>();
+    @Override
+    public Map<Object, Object> getColumnValue(Map<Object, Object> facetValue, Function<Object, Object> elementConverter) {
+        Map<Object, Object> columnValue = new HashMap<>();
         for (Map.Entry<Object, Object> entry : facetValue.entrySet()) {
-            value.put(keyConverter.toCassandraValue(entry.getKey()), elementConverter.apply(entry.getValue()));
+            columnValue.put(keyConverter.toColumnValue(entry.getKey()),elementConverter.apply(entry.getValue()));
         }
-        return value;
+        return columnValue;
     }
 
     @Override
-    protected Map<Object, Object> convertParameterValueInternal(Map<Object, Object> facetValue) {
-        return convertMap(facetValue, toParameterValue());
+    public DataType getDataType(DataType elementDataType) {
+        return DataType.map(keyConverter.getDataType(), elementDataType);
     }
 
     @Override
-    protected void setFacetValueInternal(Hydrator hydrator, Object pojo, Facet facet, Map<Object, Object> cassandraValue) {
-        elementHandler.resolveElements(cassandraValue.values(), hydrator, resolver -> {
-            Map<Object, Object> facetValue = new HashMap<>();
-            for (Map.Entry<Object, Object> entry : cassandraValue.entrySet()) {
-                final Object value = resolver.resolveElement(entry.getValue());
-                if (value != null) {
-                    facetValue.put(keyConverter.fromCassandraValue(entry.getKey()), value);
-                }
-            }
-            facet.setValue(pojo, facetValue);
-        });
+    public Map<Object, Object> getFacetValue(Map<Object, Object> columnValue, Function<Object, Object> function, Class<?> elementType) {
+        Map<Object,Object> facetValue = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : columnValue.entrySet()) {
+            facetValue.put(keyConverter.toFacetValue(entry.getKey()),function.apply(entry.getValue()));
+        }
+        return facetValue;
     }
 }

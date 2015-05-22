@@ -22,19 +22,22 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
+import com.savoirtech.hecate.annotation.Cascade;
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.Id;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.exception.HecateException;
+import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.FacetMappingVisitor;
+import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.util.PojoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,7 +52,7 @@ public class PojoMapping<P> {
 
     private final Class<P> pojoClass;
     private final String tableName;
-    private final List<FacetMapping> idMappings;
+    private final List<ScalarFacetMapping> idMappings;
     private final List<FacetMapping> simpleMappings;
     private final int ttl;
     private final boolean cascadeDelete;
@@ -59,7 +62,7 @@ public class PojoMapping<P> {
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static <A extends Annotation> Stream<FacetMapping> annotatedWith(List<FacetMapping> mappings, Class<A> annotationType) {
+    private static <A extends Annotation,M extends FacetMapping> Stream<M> annotatedWith(List<M> mappings, Class<A> annotationType) {
         return mappings.stream().filter(mapping -> mapping.getFacet().hasAnnotation(annotationType));
     }
 
@@ -75,32 +78,24 @@ public class PojoMapping<P> {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoMapping(Class<P> pojoClass, String tableName, List<FacetMapping> facetMappings) {
+    public PojoMapping(Class<P> pojoClass, String tableName, List<ScalarFacetMapping> idMappings, List<FacetMapping> simpleMappings) {
         this.pojoClass = pojoClass;
         this.tableName = tableName;
-        this.idMappings = toIdMappings(facetMappings);
-        this.simpleMappings = facetMappings.stream()
-                .filter(mapping -> !idMappings.contains(mapping))
-                .sorted((left, right) -> left.getFacet().getColumnName().compareTo(right.getFacet().getColumnName()))
-                .collect(Collectors.toList());
-        if (idMappings.isEmpty()) {
-            throw new HecateException("No key fields found for class %s.", pojoClass.getSimpleName());
-        }
+        this.idMappings = sorted(idMappings);
+        this.simpleMappings = simpleMappings;
         this.ttl = PojoUtils.getTtl(pojoClass);
-        this.cascadeSave = simpleMappings.stream().filter(FacetMapping::isCascadeSave).findFirst().isPresent();
-        this.cascadeDelete = simpleMappings.stream().filter(FacetMapping::isCascadeDelete).findFirst().isPresent();
+        this.cascadeSave = simpleMappings.stream().filter(FacetMapping::isReference).filter(mapping -> !mapping.getFacet().hasAnnotation(Cascade.class) || mapping.getFacet().getAnnotation(Cascade.class).save()).findFirst().isPresent();
+        this.cascadeDelete = simpleMappings.stream().filter(FacetMapping::isReference).filter(mapping -> !mapping.getFacet().hasAnnotation(Cascade.class) || mapping.getFacet().getAnnotation(Cascade.class).delete()).findFirst().isPresent();
     }
 
-    private static List<FacetMapping> toIdMappings(List<FacetMapping> allMappings) {
-        Optional<FacetMapping> id = annotatedWith(allMappings, Id.class).findFirst();
-        if (id.isPresent()) {
-            return Collections.singletonList(id.get());
-        } else {
-            List<FacetMapping> idMappings = new LinkedList<>();
-            idMappings.addAll(annotatedWith(allMappings, PartitionKey.class).sorted((left, right) -> partitionKey(left).order() - partitionKey(right).order()).collect(Collectors.toList()));
-            idMappings.addAll(annotatedWith(allMappings, ClusteringColumn.class).sorted((left, right) -> clusteringColumn(left).order() - clusteringColumn(right).order()).collect(Collectors.toList()));
-            return idMappings;
+    private static List<ScalarFacetMapping> sorted(List<ScalarFacetMapping> idMappings) {
+        if(idMappings.size() > 1) {
+            List<ScalarFacetMapping> sorted = new ArrayList<>(idMappings.size());
+            sorted.addAll(annotatedWith(idMappings,PartitionKey.class).sorted((left,right) -> partitionKey(left).order() - partitionKey(right).order()).collect(Collectors.toList()));
+            sorted.addAll(annotatedWith(idMappings, ClusteringColumn.class).sorted((left, right) -> clusteringColumn(left).order() - clusteringColumn(right).order()).collect(Collectors.toList()));
+            return sorted;
         }
+        return idMappings;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -109,6 +104,10 @@ public class PojoMapping<P> {
 
     public Class<P> getPojoClass() {
         return pojoClass;
+    }
+
+    public String getTableName() {
+        return tableName;
     }
 
     public int getTtl() {
@@ -138,27 +137,36 @@ public class PojoMapping<P> {
     public Create createCreateStatement() {
         Create create = SchemaBuilder.createTable(tableName);
         idMappings.forEach(mapping -> {
-            if (mapping.isPartitionKey()) {
+            if (mapping.getFacet().hasAnnotation(PartitionKey.class) || mapping.getFacet().hasAnnotation(Id.class)) {
                 LOGGER.debug("Adding partition key column {}...", mapping.getFacet().getColumnName());
-                create.addPartitionKey(mapping.getFacet().getColumnName(), mapping.getColumnType().getDataType());
-            } else if (mapping.isClusteringColumn()) {
+                create.addPartitionKey(mapping.getFacet().getColumnName(), mapping.getDataType());
+            } else if (mapping.getFacet().hasAnnotation(ClusteringColumn.class)) {
                 LOGGER.debug("Adding clustering column {}...", mapping.getFacet().getColumnName());
-                create.addClusteringColumn(mapping.getFacet().getColumnName(), mapping.getColumnType().getDataType());
+                create.addClusteringColumn(mapping.getFacet().getColumnName(), mapping.getDataType());
             }
         });
 
         simpleMappings.forEach(mapping -> {
             LOGGER.debug("Adding simple column {}...", mapping.getFacet().getColumnName());
-            create.addColumn(mapping.getFacet().getColumnName(), mapping.getColumnType().getDataType());
+            create.addColumn(mapping.getFacet().getColumnName(), mapping.getDataType());
         });
         create.ifNotExists();
         return create;
     }
-
+    
     public Delete createDeleteStatement() {
         Delete delete = delete().from(tableName);
-        idMappings.forEach(mapping -> delete.where(eq(mapping.getFacet().getColumnName(), bindMarker())));
+        idMappings.forEach(mapping -> delete.where(in(mapping.getFacet().getColumnName(), bindMarker())));
         return delete;
+    }
+
+    public Select.Where createFindForDeleteStatement() {
+        if(!isCascadeDelete()) {
+            throw new HecateException("POJO class %s does not support cascaded deletes.", getPojoClass().getCanonicalName());
+        }
+        Select.Selection select = select();
+        simpleMappings.stream().filter(FacetMapping::isReference).forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
+        return select.from(tableName).where(in(getForeignKeyMapping().getFacet().getColumnName(),bindMarker()));
     }
 
     public Insert createInsertStatement() {
@@ -176,7 +184,7 @@ public class PojoMapping<P> {
         return select.from(tableName).where();
     }
 
-    public FacetMapping getForeignKeyMapping() {
+    public ScalarFacetMapping getForeignKeyMapping() {
         if (idMappings.size() == 1) {
             return idMappings.get(0);
         } else {
@@ -184,11 +192,15 @@ public class PojoMapping<P> {
         }
     }
 
-    public List<FacetMapping> getIdMappings() {
+    public List<ScalarFacetMapping> getIdMappings() {
         return Collections.unmodifiableList(idMappings);
     }
 
     public List<FacetMapping> getSimpleMappings() {
         return Collections.unmodifiableList(simpleMappings);
+    }
+
+    public void visitFacetMappings(FacetMappingVisitor visitor) {
+
     }
 }

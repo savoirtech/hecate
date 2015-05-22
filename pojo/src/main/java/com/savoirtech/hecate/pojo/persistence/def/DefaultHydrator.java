@@ -19,13 +19,13 @@ package com.savoirtech.hecate.pojo.persistence.def;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.element.ElementInjector;
 import com.savoirtech.hecate.pojo.persistence.Hydrator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class DefaultHydrator implements Hydrator {
 //----------------------------------------------------------------------------------------------------------------------
@@ -33,9 +33,9 @@ public class DefaultHydrator implements Hydrator {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final PersistenceContext persistenceContext;
-    private final List<Pair<PojoMapping<?>,ElementInjector>> injectors = new LinkedList<>();
+    private final List<Pair<PojoMapping<?>, Consumer<Hydrator>>> callbacks = new LinkedList<>();
     private final Multimap<PojoMapping<?>, Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
-    private final Map<PojoMapping,Map<Object,Object>> resolved = new HashMap<>();
+    private final Map<PojoMapping, Map<Object, Object>> resolved = new HashMap<>();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -51,45 +51,49 @@ public class DefaultHydrator implements Hydrator {
 
     @Override
     public void execute() {
-        while(!agenda.isEmpty()) {
+        while (!agenda.isEmpty()) {
             final Set<PojoMapping<?>> pojoMappings = new HashSet<>(agenda.keySet());
             pojoMappings.forEach(mapping -> {
-                Map<Object,Object> idToPojo = getOrCreateIdToPojo(mapping);
+                Map<Object, Object> idToPojo = getOrCreateIdToPojo(mapping);
                 List<Object> ids = new ArrayList<>(agenda.removeAll(mapping));
                 ids.removeAll(idToPojo.keySet());
-                if(!ids.isEmpty()) {
+                if (!ids.isEmpty()) {
                     List<?> pojos = persistenceContext.findByIds(mapping).execute(ids).list();
                     for (Object pojo : pojos) {
-                        final Object idFacetValue = mapping.getForeignKeyMapping().getFacet().getValue(pojo);
-                        final Object idCassandraValue = mapping.getForeignKeyMapping().getColumnType().toCassandraValue(idFacetValue);
-                        idToPojo.put(idCassandraValue,pojo);
+                        idToPojo.put(mapping.getForeignKeyMapping().getColumnValue(pojo), pojo);
                     }
                 }
             });
         }
-        for (Pair<PojoMapping<?>, ElementInjector> injector : injectors) {
-            final Map<Object,Object> idToPojo = resolved.get(injector.getLeft());
-            if(idToPojo != null) {
-                injector.getRight().injectElement(idToPojo::get);
+        for (Pair<PojoMapping<?>, Consumer<Hydrator>> injector : callbacks) {
+            final Map<Object, Object> idToPojo = resolved.get(injector.getLeft());
+            if (idToPojo != null) {
+                injector.getRight().accept(this);
             }
         }
     }
 
     @Override
-    public void resolveElements(PojoMapping<?> pojoMapping, Iterable<Object> cassandraValues, ElementInjector injector) {
+    public Object getPojo(PojoMapping<?> mapping, Object id) {
+        final Map<Object, Object> idToPojo = resolved.get(mapping);
+        return idToPojo == null ? null : idToPojo.get(id);
+    }
+
+    @Override
+    public void resolveElements(PojoMapping<?> pojoMapping, Iterable<Object> cassandraValues, Consumer<Hydrator> callback) {
         agenda.putAll(pojoMapping, cassandraValues);
-        injectors.add(new ImmutablePair<>(pojoMapping, injector));
+        callbacks.add(new ImmutablePair<>(pojoMapping, callback));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private Map<Object,Object> getOrCreateIdToPojo(PojoMapping<?> mapping) {
-        Map<Object,Object> idToPojo = resolved.get(mapping);
-        if(idToPojo == null) {
+    private Map<Object, Object> getOrCreateIdToPojo(PojoMapping<?> mapping) {
+        Map<Object, Object> idToPojo = resolved.get(mapping);
+        if (idToPojo == null) {
             idToPojo = new HashMap<>();
-            resolved.put(mapping,idToPojo);
+            resolved.put(mapping, idToPojo);
         }
         return idToPojo;
     }

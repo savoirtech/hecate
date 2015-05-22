@@ -16,5 +16,14 @@
 
 package com.savoirtech.hecate.pojo.persistence;
 
+import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+
 public interface Evaporator {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    void evaporate(PojoMapping<?> mapping, Iterable<Object> ids);
+
+    void execute();
 }

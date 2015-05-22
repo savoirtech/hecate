@@ -17,12 +17,12 @@
 package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.Hydrator;
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.util.PojoUtils;
 
-public class EmbeddedColumnType implements ColumnType {
+import java.util.function.Function;
+
+public class EmbeddedColumnType implements ColumnType<Boolean,Object> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -35,31 +35,27 @@ public class EmbeddedColumnType implements ColumnType {
 
 
     @Override
-    public DataType getDataType() {
+    public Boolean getColumnValue(Object facetValue, Function<Object, Object> function) {
+        return true;
+    }
+
+    @Override
+    public DataType getDataType(DataType elementDataType) {
         return DataType.cboolean();
     }
 
     @Override
-    public boolean isCascadable() {
-        return false;
+    public Object getFacetValue(Boolean columnValue, Function<Object, Object> function, Class<?> elementType) {
+        return PojoUtils.newPojo(elementType);
     }
 
     @Override
-    public void setFacetValue(Hydrator hydrator, Object pojo, Facet facet, Object cassandraValue) {
-        if (Boolean.TRUE.equals(cassandraValue)) {
-            facet.setValue(pojo, PojoUtils.newPojo(facet.getType().getRawType()));
-        } else {
-            facet.setValue(pojo, null);
-        }
+    public Iterable<Object> facetElements(Object facetValue) {
+        throw new HecateException("Embedded object columns are not reference-capable.");
     }
 
     @Override
-    public Object toCassandraValue(Object facetValue) {
-        return facetValue != null;
-    }
-
-    @Override
-    public Object toCassandraValue(Dehydrator dehydrator, Object facetValue) {
-        return facetValue != null;
+    public Iterable<Object> columnElements(Boolean columnValue) {
+        throw new HecateException("Embedded object columns are not reference-capable.");
     }
 }

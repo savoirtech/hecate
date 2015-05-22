@@ -17,47 +17,39 @@
 package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.mapping.element.ElementHandler;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ListColumnType extends ElementColumnType<List<Object>,List<Object>> {
+public class ListColumnType implements ColumnType<List<Object>,List<Object>> {
 //----------------------------------------------------------------------------------------------------------------------
-// Constructors
+// ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ListColumnType(ElementHandler elementHandler) {
-        super(elementHandler);
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected DataType getDataTypeInternal(DataType elementType) {
-        return DataType.list(elementType);
+    public Iterable<Object> columnElements(List<Object> columnValue) {
+        return columnValue;
     }
 
     @Override
-    protected List<Object> getInsertValueInternal(Dehydrator dehydrator, List<Object> facetValue) {
-        return facetValue.stream().map(toInsertValue(dehydrator)).collect(Collectors.toList());
+    public Iterable<Object> facetElements(List<Object> facetValue) {
+        return facetValue;
     }
 
     @Override
-    protected List<Object> convertParameterValueInternal(List<Object> facetValue) {
-        return facetValue.stream().map(toParameterValue()).collect(Collectors.toList());
+    public List<Object> getColumnValue(List<Object> facetValue, Function<Object, Object> function) {
+        return facetValue.stream().map(function).collect(Collectors.toList());
     }
 
     @Override
-    protected void setFacetValueInternal(Hydrator hydrator, Object pojo, Facet facet, final List<Object> cassandraValues) {
-        elementHandler.resolveElements(cassandraValues, hydrator, resolver -> {
-            final List<Object> facetValues = cassandraValues.stream().map(resolver::resolveElement).filter(val -> val != null).collect(Collectors.toList());
-            facet.setValue(pojo, facetValues);
-        });
+    public DataType getDataType(DataType elementDataType) {
+        return DataType.list(elementDataType);
+    }
+
+    @Override
+    public List<Object> getFacetValue(List<Object> columnValue, Function<Object, Object> function, Class<?> elementType) {
+        return columnValue.stream().map(function).filter(val -> val != null).collect(Collectors.toList());
     }
 }

@@ -19,6 +19,9 @@ package com.savoirtech.hecate.pojo.mapping.row;
 import com.datastax.driver.core.Row;
 import com.savoirtech.hecate.core.mapping.RowMapper;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.FacetMappingVisitor;
+import com.savoirtech.hecate.pojo.mapping.facet.ReferenceFacetMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.Hydrator;
 import com.savoirtech.hecate.pojo.util.CqlUtils;
 import com.savoirtech.hecate.pojo.util.PojoUtils;
@@ -51,9 +54,23 @@ public class HydratorRowMapper<P> implements RowMapper<P> {
     public P map(Row row) {
         P pojo = PojoUtils.newPojo(mapping.getPojoClass());
         List<Object> columns = CqlUtils.toList(row);
-        Iterator<Object> cassandraValues = columns.iterator();
-        mapping.getIdMappings().forEach(facetMapping -> facetMapping.getColumnType().setFacetValue(hydrator,pojo, facetMapping.getFacet(),cassandraValues.next()));
-        mapping.getSimpleMappings().forEach(facetMapping -> facetMapping.getColumnType().setFacetValue(hydrator,pojo, facetMapping.getFacet(),cassandraValues.next()));
+        Iterator<Object> columnValues = columns.iterator();
+        FacetMappingVisitor visitor = new FacetMappingVisitor() {
+            @Override
+            public void visitReference(final ReferenceFacetMapping referenceMapping) {
+                final Object columnValue = columnValues.next();
+                hydrator.resolveElements(referenceMapping.getElementMapping(),
+                        referenceMapping.getColumnType().columnElements(columnValue),
+                        hydrator -> referenceMapping.setFacetValue(pojo, columnValue, id -> hydrator.getPojo(referenceMapping.getElementMapping(), id)));
+            }
+
+            @Override
+            public void visitScalar(ScalarFacetMapping scalarMapping) {
+                scalarMapping.setFacetValue(pojo, columnValues.next());
+            }
+        };
+        mapping.getIdMappings().forEach(mapping -> mapping.accept(visitor));
+        mapping.getSimpleMappings().forEach(mapping -> mapping.accept(visitor));
         return pojo;
     }
 

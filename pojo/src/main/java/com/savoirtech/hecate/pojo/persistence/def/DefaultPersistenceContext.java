@@ -21,9 +21,9 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+import com.savoirtech.hecate.pojo.mapping.PojoMappingFactory;
 import com.savoirtech.hecate.pojo.persistence.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -34,20 +34,23 @@ public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Session session;
+    private final PojoMappingFactory pojoMappingFactory;
+    private final List<Consumer<Statement>> defaultStatementModifiers;
 
     private final LoadingCache<PojoMapping<?>, PojoInsert<?>> insertCache = CacheBuilder.newBuilder().build(new InsertCacheLoader());
     private final LoadingCache<PojoMapping<?>,PojoQuery<?>> findByIdCache = CacheBuilder.newBuilder().build(new FindByIdCacheLoader());
     private final LoadingCache<PojoMapping<?>,PojoQuery<?>> findByIdsCache = CacheBuilder.newBuilder().build(new FindByIdsCacheLoader());
-    private final List<Consumer<Statement>> defaultStatementModifiers;
 
+    private final LoadingCache<PojoMapping<?>,PojoDelete<?>> deleteCache = CacheBuilder.newBuilder().build(new DeleteCacheLoader());
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    @SafeVarargs
-    public DefaultPersistenceContext(Session session, Consumer<Statement>... statementModifiers) {
+
+    public DefaultPersistenceContext(Session session, PojoMappingFactory pojoMappingFactory, List<Consumer<Statement>> defaultStatementModifiers) {
         this.session = session;
-        this.defaultStatementModifiers = Arrays.asList(statementModifiers);
+        this.pojoMappingFactory = pojoMappingFactory;
+        this.defaultStatementModifiers = defaultStatementModifiers;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -69,6 +72,16 @@ public class DefaultPersistenceContext implements PersistenceContext {
         defaultStatementModifiers.stream().forEach(mod -> mod.accept(statement));
         statementModifiers.stream().forEach(mod -> mod.accept(statement));
         return session.execute(statement);
+    }
+
+    @Override
+    public Evaporator createEvaporator() {
+        return new DefaultEvaporator(this);
+    }
+
+    @Override
+    public <P> PojoDelete delete(PojoMapping<P> mapping) {
+        return deleteCache.getUnchecked(mapping);
     }
 
     @Override
@@ -121,6 +134,13 @@ public class DefaultPersistenceContext implements PersistenceContext {
         @Override
         public PojoInsert<?> load(PojoMapping<?> key) throws Exception {
             return new DefaultPojoInsert<>(DefaultPersistenceContext.this, key);
+        }
+    }
+
+    private class DeleteCacheLoader extends CacheLoader<PojoMapping<?>, PojoDelete<?>> {
+        @Override
+        public PojoDelete<?> load(PojoMapping<?> key) throws Exception {
+            return new DefaultPojoDelete<>(DefaultPersistenceContext.this, key);
         }
     }
 }

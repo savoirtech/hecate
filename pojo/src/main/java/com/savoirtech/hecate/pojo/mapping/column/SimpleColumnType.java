@@ -17,45 +17,39 @@
 package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.mapping.element.ElementHandler;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
 import java.util.Collections;
+import java.util.function.Function;
 
-public class SimpleColumnType extends ElementColumnType<Object,Object> {
+public class SimpleColumnType implements ColumnType<Object,Object> {
 //----------------------------------------------------------------------------------------------------------------------
-// Constructors
+// ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    public SimpleColumnType(ElementHandler elementHandler) {
-        super(elementHandler);
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
+    public static final SimpleColumnType INSTANCE = new SimpleColumnType();
 
     @Override
-    protected Object convertParameterValueInternal(Object facetValue) {
-        return toParameterValue().apply(facetValue);
+    public Iterable<Object> columnElements(Object columnValue) {
+        return Collections.singleton(columnValue);
     }
 
     @Override
-    protected DataType getDataTypeInternal(DataType elementType) {
-        return elementType;
+    public Object getColumnValue(Object facetValue, Function<Object, Object> function) {
+        return function.apply(facetValue);
     }
 
     @Override
-    protected Object getInsertValueInternal(Dehydrator dehydrator, Object facetValue) {
-        return toInsertValue(dehydrator).apply(facetValue);
+    public DataType getDataType(DataType elementDataType) {
+        return elementDataType;
     }
 
     @Override
-    protected void setFacetValueInternal(Hydrator hydrator, Object pojo, Facet facet, Object cassandraValue) {
-        elementHandler.resolveElements(Collections.singleton(cassandraValue),
-                hydrator,
-                resolver -> facet.setValue(pojo, resolver.resolveElement(cassandraValue)));
+    public Object getFacetValue(Object columnValue, Function<Object, Object> function, Class<?> elementType) {
+        return function.apply(columnValue);
+    }
+
+    @Override
+    public Iterable<Object> facetElements(Object facetValue) {
+        return Collections.singleton(facetValue);
     }
 }

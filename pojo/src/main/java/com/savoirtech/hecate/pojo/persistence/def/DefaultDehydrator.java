@@ -36,7 +36,7 @@ public class DefaultDehydrator implements Dehydrator {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final PersistenceContext persistenceContext;
-    private final Multimap<PojoMapping<?>,Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
+    private final Multimap<PojoMapping<Object>, Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -51,29 +51,19 @@ public class DefaultDehydrator implements Dehydrator {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public <P> void dehydrate(PojoMapping<P> pojoMapping, Iterable<P> pojos) {
-        agenda.putAll(pojoMapping, pojos);
-    }
-    
     @SuppressWarnings("unchecked")
+    public void dehydrate(PojoMapping<?> pojoMapping, Iterable<?> pojos) {
+        agenda.putAll((PojoMapping<Object>)pojoMapping, pojos);
+    }
+
     public void execute(List<Consumer<Statement>> modifiers) {
-        while(!agenda.isEmpty()) {
-            final Set<PojoMapping<?>> pojoMappings = new HashSet<>(agenda.keySet());
+        while (!agenda.isEmpty()) {
+            final Set<PojoMapping<Object>> pojoMappings = new HashSet<>(agenda.keySet());
             pojoMappings.forEach(mapping -> {
                 Collection<Object> pojos = agenda.removeAll(mapping);
-                insertPojos((PojoMapping<Object>) mapping, pojos, modifiers);
+                PojoInsert<Object> insert = persistenceContext.insert(mapping);
+                pojos.forEach(pojo -> insert.insert(pojo, this, modifiers));
             });
-        }
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    private <P> void insertPojos(PojoMapping<P> mapping, Collection<P> pojos, List<Consumer<Statement>> modifiers) {
-        PojoInsert<P> insert = persistenceContext.insert(mapping);
-        for (P pojo : pojos) {
-            insert.insert(pojo, this, modifiers);
         }
     }
 }

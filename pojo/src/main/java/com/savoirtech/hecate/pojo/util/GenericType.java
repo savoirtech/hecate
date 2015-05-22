@@ -73,8 +73,32 @@ public class GenericType {
         return new GenericType(declaringClass, rawType.getComponentType());
     }
 
+    public GenericType getElementType() {
+        if (Set.class.equals(rawType)) {
+            return getSetElementType();
+        } else if (Map.class.equals(rawType)) {
+            return getMapValueType();
+        } else if (List.class.equals(rawType)) {
+            return getListElementType();
+        } else if (rawType.isArray()) {
+            return getArrayElementType();
+        }
+        return this;
+    }
+
     public GenericType getListElementType() {
         return getTypeArgument(LIST_ELEMENT_TYPE_VAR, List.class);
+    }
+
+    private <T> GenericType getTypeArgument(TypeVariable<Class<T>> variable, Class<T> toType) {
+        final Map<TypeVariable<?>, Type> typeArguments = TypeUtils.getTypeArguments(type, toType);
+        if (typeArguments != null) {
+            final Type arg = typeArguments.get(variable);
+            if (arg != null) {
+                return new GenericType(declaringClass, arg);
+            }
+        }
+        throw new HecateException("Unable to resolve type argument %s.", variable);
     }
 
     public GenericType getMapKeyType() {
@@ -87,16 +111,5 @@ public class GenericType {
 
     public GenericType getSetElementType() {
         return getTypeArgument(SET_ELEMENT_TYPE_VAR, Set.class);
-    }
-
-    public <T> GenericType getTypeArgument(TypeVariable<Class<T>> variable, Class<T> toType) {
-        final Map<TypeVariable<?>, Type> typeArguments = TypeUtils.getTypeArguments(type, toType);
-        if (typeArguments != null) {
-            final Type arg = typeArguments.get(variable);
-            if (arg != null) {
-                return new GenericType(declaringClass, arg);
-            }
-        }
-        throw new HecateException("Unable to resolve type argument %s.", variable);
     }
 }

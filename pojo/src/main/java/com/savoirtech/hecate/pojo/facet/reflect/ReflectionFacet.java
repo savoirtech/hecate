@@ -42,7 +42,7 @@ public abstract class ReflectionFacet implements Facet {
     @Override
     public void setValue(Object pojo, Object value) {
         try {
-            logger.trace("Setting {} to value '{}'.", this.getName(), value);
+            logger.debug("Setting {} to value '{}'.", this.getName(), value);
             setValueReflectively(pojo, value);
         } catch (ReflectiveOperationException e) {
             throw new HecateException(e, "Unable to set value for facet %s.", getName());
@@ -52,10 +52,15 @@ public abstract class ReflectionFacet implements Facet {
     @Override
     public Object getValue(Object pojo) {
         try {
+
             return getValueReflectively(pojo);
         } catch (ReflectiveOperationException e) {
             throw new HecateException(e, "Unable to get value for facet %s.",getName());
         }
+    }
+
+    public String toString() {
+        return getName();
     }
 
     protected abstract Object getValueReflectively(Object pojo) throws ReflectiveOperationException;

@@ -35,9 +35,13 @@ public interface PersistenceContext {
 
     Hydrator createHydrator();
 
+    Evaporator createEvaporator();
+
     ResultSet executeStatement(Statement statement, List<Consumer<Statement>> statementModifiers);
     
     <P> PojoInsert<P> insert(PojoMapping<P> mapping);
+
+    <P> PojoDelete delete(PojoMapping<P> mapping);
 
     PreparedStatement prepare(RegularStatement statement);
 
