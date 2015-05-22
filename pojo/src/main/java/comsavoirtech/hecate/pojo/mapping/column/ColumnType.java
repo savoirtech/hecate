@@ -14,37 +14,24 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.convert.binary;
+package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.convert.Converter;
 
-import java.nio.ByteBuffer;
+import java.util.function.Function;
 
-public class ByteArrayConverter implements Converter {
+public interface ColumnType<C,F> {
 //----------------------------------------------------------------------------------------------------------------------
-// Converter Implementation
+// Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    C getColumnValue(F facetValue, Function<Object, Object> function);
 
-    @Override
-    public Object toFacetValue(Object value) {
-        if(value == null) {
-            return null;
-        }
-        ByteBuffer buff = (ByteBuffer)value;
-        byte[] bytes = new byte[buff.remaining()];
-        buff.get(bytes);
-        return bytes;
-    }
+    DataType getDataType(DataType elementDataType);
+    
+    F getFacetValue(C columnValue, Function<Object,Object> function, Class<?> elementType);
+    
+    Iterable<Object> facetElements(F facetValue);
 
-    @Override
-    public DataType getDataType() {
-        return DataType.blob();
-    }
-
-    @Override
-    public Object toColumnValue(Object value) {
-        return value == null ? null : ByteBuffer.wrap((byte[]) value);
-    }
+    Iterable<Object> columnElements(C columnValue);
 }

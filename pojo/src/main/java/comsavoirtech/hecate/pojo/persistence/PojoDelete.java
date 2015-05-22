@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.element;
+package com.savoirtech.hecate.pojo.persistence;
 
-public interface ElementResolver {
-    Object resolveElement(Object cassandraValue);
+import com.datastax.driver.core.Statement;
+
+import java.util.List;
+import java.util.function.Consumer;
+
+public interface PojoDelete<P> {
+    void delete(Iterable<Object> ids, Evaporator evaporator, List<Consumer<Statement>> modifiers);
 }

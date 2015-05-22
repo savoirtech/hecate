@@ -14,58 +14,53 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.element;
+package com.savoirtech.hecate.pojo.persistence.def;
 
-import com.datastax.driver.core.DataType;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.Hydrator;
+import com.savoirtech.hecate.pojo.persistence.Evaporator;
+import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 
-import java.util.Collections;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
-public class PojoElementHandler implements ElementHandler {
+public class DefaultEvaporator implements Evaporator {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final PojoMapping<Object> pojoMapping;
+    private final Multimap<PojoMapping<?>, Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
+    private final PersistenceContext persistenceContext;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    @SuppressWarnings("unchecked")
-    public PojoElementHandler(PojoMapping<?> pojoMapping) {
-        this.pojoMapping = (PojoMapping<Object>)pojoMapping;
+    public DefaultEvaporator(PersistenceContext persistenceContext) {
+        this.persistenceContext = persistenceContext;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// ElementHandler Implementation
+// Evaporator Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+
     @Override
-    public DataType getDataType() {
-        return pojoMapping.getForeignKeyMapping().getColumnType().getDataType();
+    public void evaporate(PojoMapping<?> mapping, Iterable<Object> ids) {
+        agenda.putAll(mapping, ids);
     }
 
     @Override
-    public Object getInsertValue(Object pojo, Dehydrator dehydrator) {
-        dehydrator.dehydrate(pojoMapping, Collections.singleton(pojo));
-        return pojoMapping.getForeignKeyMapping().getFacet().getValue(pojo);
-    }
-
-    @Override
-    public Object getParameterValue(Object pojo) {
-        return pojoMapping.getForeignKeyMapping().getFacet().getValue(pojo);
-    }
-
-    @Override
-    public boolean isCascadable() {
-        return true;
-    }
-
-    @Override
-    public void resolveElements(Iterable<Object> cassandraValue, Hydrator hydrator,ElementInjector injector) {
-        hydrator.resolveElements(pojoMapping,cassandraValue,injector);
+    public void execute() {
+        while(!agenda.isEmpty()) {
+            final Set<PojoMapping<?>> pojoMappings = new HashSet<>(agenda.keySet());
+            pojoMappings.forEach(mapping -> {
+                Collection<Object> ids = agenda.removeAll(mapping);
+                if(mapping.isCascadeDelete()) {
+                }
+            });
+        }
     }
 }

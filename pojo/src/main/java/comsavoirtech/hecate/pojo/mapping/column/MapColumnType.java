@@ -14,54 +14,65 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.element;
+package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.convert.Converter;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.Hydrator;
 
-public class ConverterElementHandler implements ElementHandler {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+public class MapColumnType implements ColumnType<Map<Object, Object>, Map<Object, Object>> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Converter converter;
+    private final Converter keyConverter;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ConverterElementHandler(Converter converter) {
-        this.converter = converter;
+    public MapColumnType(Converter keyConverter) {
+        this.keyConverter = keyConverter;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// ElementHandler Implementation
+// ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+
     @Override
-    public DataType getDataType() {
-        return converter.getDataType();
+    public Iterable<Object> columnElements(Map<Object, Object> columnValue) {
+        return columnValue.values();
     }
 
     @Override
-    public Object getInsertValue(Object facetValue, Dehydrator dehydrator) {
-        return converter.toCassandraValue(facetValue);
+    public Iterable<Object> facetElements(Map<Object, Object> facetValue) {
+        return facetValue.values();
     }
 
     @Override
-    public Object getParameterValue(Object facetValue) {
-        return converter.toCassandraValue(facetValue);
+    public Map<Object, Object> getColumnValue(Map<Object, Object> facetValue, Function<Object, Object> elementConverter) {
+        Map<Object, Object> columnValue = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : facetValue.entrySet()) {
+            columnValue.put(keyConverter.toColumnValue(entry.getKey()),elementConverter.apply(entry.getValue()));
+        }
+        return columnValue;
     }
 
     @Override
-    public boolean isCascadable() {
-        return false;
+    public DataType getDataType(DataType elementDataType) {
+        return DataType.map(keyConverter.getDataType(), elementDataType);
     }
 
     @Override
-    public void resolveElements(Iterable<Object> cassandraValue, Hydrator hydrator,ElementInjector injector) {
-        injector.injectElement(converter::fromCassandraValue);
+    public Map<Object, Object> getFacetValue(Map<Object, Object> columnValue, Function<Object, Object> function, Class<?> elementType) {
+        Map<Object,Object> facetValue = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : columnValue.entrySet()) {
+            facetValue.put(keyConverter.toFacetValue(entry.getKey()),function.apply(entry.getValue()));
+        }
+        return facetValue;
     }
 }

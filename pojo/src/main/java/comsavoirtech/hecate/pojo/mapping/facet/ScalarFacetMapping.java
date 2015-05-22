@@ -14,68 +14,68 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping;
+package com.savoirtech.hecate.pojo.mapping.facet;
 
-import com.savoirtech.hecate.annotation.ClusteringColumn;
-import com.savoirtech.hecate.annotation.Id;
-import com.savoirtech.hecate.annotation.PartitionKey;
+import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.mapping.column.ColumnType;
 
-public class FacetMapping {
+import java.util.function.Function;
+
+public class ScalarFacetMapping extends AbstractFacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Facet facet;
-    private final ColumnType columnType;
+    private final Converter elementConverter;
+    private final DataType dataType;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public FacetMapping(Facet facet, ColumnType columnType) {
-        this.facet = facet;
-        this.columnType = columnType;
+    @SuppressWarnings("unchecked")
+    public ScalarFacetMapping(Facet facet, ColumnType<?,?> columnType, Converter elementConverter) {
+        super(facet, (ColumnType<Object,Object>)columnType);
+        this.elementConverter = elementConverter;
+        this.dataType = columnType.getDataType(elementConverter.getDataType());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
+// FacetMapping Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ColumnType getColumnType() {
-        return columnType;
+    @Override
+    public void accept(FacetMappingVisitor visitor) {
+        visitor.visitScalar(this);
     }
 
-    public Facet getFacet() {
-        return facet;
+    @Override
+    public DataType getDataType() {
+        return dataType;
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// Canonical Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    public String toString() {
-        return facet.getName() + "@" + facet.getColumnName();
+    @Override
+    public boolean isReference() {
+        return false;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public boolean isCascadeDelete() {
-        return columnType.isCascadable() && facet.isCascadeDelete();
+    @Override
+    protected Function<Object, Object> elementColumnValue() {
+        return elementConverter::toColumnValue;
     }
 
-    public boolean isCascadeSave() {
-        return columnType.isCascadable() && facet.isCascadeSave();
-    }
-
-    public boolean isClusteringColumn() {
-        return facet.hasAnnotation(ClusteringColumn.class);
-    }
-
-    public boolean isPartitionKey() {
-        return facet.hasAnnotation(Id.class) || facet.hasAnnotation(PartitionKey.class);
+    public void setFacetValue(Object pojo, Object columnValue) {
+        if(columnValue == null) {
+            getFacet().setValue(pojo, null);
+        }
+        else {
+            getFacet().setValue(pojo, getColumnType().getFacetValue(columnValue, elementConverter::toFacetValue, getFacet().getType().getElementType().getRawType()));
+        }
     }
 }

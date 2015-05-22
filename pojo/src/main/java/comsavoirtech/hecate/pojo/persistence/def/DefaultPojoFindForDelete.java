@@ -14,45 +14,43 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.convert;
+package com.savoirtech.hecate.pojo.persistence.def;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.Statement;
+import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+import com.savoirtech.hecate.pojo.persistence.Evaporator;
+import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
+import com.savoirtech.hecate.pojo.persistence.PojoFindForDelete;
 
-public interface Converter {
+import java.util.List;
+import java.util.function.Consumer;
+
+public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements PojoFindForDelete {
 //----------------------------------------------------------------------------------------------------------------------
-// Fields
+// Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    Converter NULL_CONVERTER = new NullConverter();
+    public DefaultPojoFindForDelete(PersistenceContext persistenceContext, PojoMapping<P> pojoMapping) {
+        super(persistenceContext, pojoMapping);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// PojoFindForDelete Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
+
+    @Override
+    public void execute(Iterable<Object> ids, Evaporator evaporator, List<Consumer<Statement>> modifiers) {
+        
+    }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Object toFacetValue(Object value);
-
-    DataType getDataType();
-
-    Object toColumnValue(Object value);
-
-//----------------------------------------------------------------------------------------------------------------------
-// Inner Classes
-//----------------------------------------------------------------------------------------------------------------------
-
-    class NullConverter implements Converter {
-        @Override
-        public Object toFacetValue(Object value) {
-            return null;
-        }
-
-        @Override
-        public DataType getDataType() {
-            return null;
-        }
-
-        @Override
-        public Object toColumnValue(Object value) {
-            return null;
-        }
+    @Override
+    protected RegularStatement createStatement() {
+        return null;
     }
 }

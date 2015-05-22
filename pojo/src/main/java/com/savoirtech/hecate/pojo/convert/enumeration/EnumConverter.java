@@ -39,7 +39,7 @@ public class EnumConverter implements Converter {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public Object fromCassandraValue(Object value) {
+    public Object toFacetValue(Object value) {
         if (value == null) {
             return null;
         }
@@ -52,7 +52,7 @@ public class EnumConverter implements Converter {
     }
 
     @Override
-    public Object toCassandraValue(Object value) {
+    public Object toColumnValue(Object value) {
         if (value == null) {
             return null;
         }

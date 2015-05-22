@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.element;
+package com.savoirtech.hecate.pojo.persistence;
 
-public interface ElementInjector {
+import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+
+import java.util.function.Consumer;
+
+public interface Hydrator {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void injectElement(ElementResolver resolver);
+    void execute();
+
+    Object getPojo(PojoMapping<?> mapping, Object id);
+    
+    void resolveElements(PojoMapping<?> pojoMapping, Iterable<Object> cassandraValues, Consumer<Hydrator> callback);
 }

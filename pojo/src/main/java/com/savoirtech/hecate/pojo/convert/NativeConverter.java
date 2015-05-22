@@ -52,7 +52,7 @@ public final class NativeConverter implements Converter {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Object fromCassandraValue(Object value) {
+    public Object toFacetValue(Object value) {
         return value;
     }
 
@@ -62,7 +62,7 @@ public final class NativeConverter implements Converter {
     }
 
     @Override
-    public Object toCassandraValue(Object value) {
+    public Object toColumnValue(Object value) {
         return value;
     }
 }

@@ -14,37 +14,42 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.convert.binary;
+package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.convert.Converter;
 
-import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.function.Function;
 
-public class ByteArrayConverter implements Converter {
+public class SimpleColumnType implements ColumnType<Object,Object> {
 //----------------------------------------------------------------------------------------------------------------------
-// Converter Implementation
+// ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+    public static final SimpleColumnType INSTANCE = new SimpleColumnType();
 
     @Override
-    public Object toFacetValue(Object value) {
-        if(value == null) {
-            return null;
-        }
-        ByteBuffer buff = (ByteBuffer)value;
-        byte[] bytes = new byte[buff.remaining()];
-        buff.get(bytes);
-        return bytes;
+    public Iterable<Object> columnElements(Object columnValue) {
+        return Collections.singleton(columnValue);
     }
 
     @Override
-    public DataType getDataType() {
-        return DataType.blob();
+    public Object getColumnValue(Object facetValue, Function<Object, Object> function) {
+        return function.apply(facetValue);
     }
 
     @Override
-    public Object toColumnValue(Object value) {
-        return value == null ? null : ByteBuffer.wrap((byte[]) value);
+    public DataType getDataType(DataType elementDataType) {
+        return elementDataType;
+    }
+
+    @Override
+    public Object getFacetValue(Object columnValue, Function<Object, Object> function, Class<?> elementType) {
+        return function.apply(columnValue);
+    }
+
+    @Override
+    public Iterable<Object> facetElements(Object facetValue) {
+        return Collections.singleton(facetValue);
     }
 }

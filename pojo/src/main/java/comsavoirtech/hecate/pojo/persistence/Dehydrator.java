@@ -14,37 +14,21 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.convert.binary;
+package com.savoirtech.hecate.pojo.persistence;
 
-import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.convert.Converter;
 
-import java.nio.ByteBuffer;
+import com.datastax.driver.core.Statement;
+import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 
-public class ByteArrayConverter implements Converter {
+import java.util.List;
+import java.util.function.Consumer;
+
+public interface Dehydrator {
 //----------------------------------------------------------------------------------------------------------------------
-// Converter Implementation
+// Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    void dehydrate(PojoMapping<?> pojoMapping, Iterable<?> pojos);
 
-    @Override
-    public Object toFacetValue(Object value) {
-        if(value == null) {
-            return null;
-        }
-        ByteBuffer buff = (ByteBuffer)value;
-        byte[] bytes = new byte[buff.remaining()];
-        buff.get(bytes);
-        return bytes;
-    }
-
-    @Override
-    public DataType getDataType() {
-        return DataType.blob();
-    }
-
-    @Override
-    public Object toColumnValue(Object value) {
-        return value == null ? null : ByteBuffer.wrap((byte[]) value);
-    }
+    void execute(List<Consumer<Statement>> modifiers);
 }

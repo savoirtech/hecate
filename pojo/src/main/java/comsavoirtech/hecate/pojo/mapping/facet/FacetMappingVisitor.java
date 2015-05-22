@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.element;
+package com.savoirtech.hecate.pojo.mapping.facet;
 
-import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.Hydrator;
+public interface FacetMappingVisitor {
+    void visitReference(ReferenceFacetMapping referenceMapping);
+    void visitScalar(ScalarFacetMapping scalarMapping);
 
-public interface ElementHandler {
-
-    DataType getDataType();
-
-    Object getInsertValue(Object facetValue, Dehydrator dehydrator);
-
-    Object getParameterValue(Object facetValue);
-
-    void resolveElements(Iterable<Object> cassandraValue, Hydrator hydrator,ElementInjector injector);
-
-    boolean isCascadable();
 }

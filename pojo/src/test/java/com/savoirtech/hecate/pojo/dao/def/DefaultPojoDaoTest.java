@@ -31,10 +31,7 @@ import com.savoirtech.hecate.pojo.persistence.def.DefaultPersistenceContext;
 import com.savoirtech.hecate.test.CassandraTestCase;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DefaultPojoDaoTest extends CassandraTestCase {
 //----------------------------------------------------------------------------------------------------------------------
@@ -47,7 +44,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
             DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry());
             factory.setVerifier(new CreateSchemaVerifier(session));
             PojoMapping<Person> mapping = factory.createPojoMapping(Person.class);
-            PersistenceContext persistenceContext = new DefaultPersistenceContext(session);
+            PersistenceContext persistenceContext = new DefaultPersistenceContext(session,factory, Collections.emptyList());
             DefaultPojoDao<String, Person> dao = new DefaultPojoDao<>(mapping, persistenceContext);
             Person p = new Person();
             p.firstName = "Slappy";
@@ -84,7 +81,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
             DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry());
             factory.setVerifier(new CreateSchemaVerifier(session));
             PojoMapping<WithEmbeddedKey> mapping = factory.createPojoMapping(WithEmbeddedKey.class);
-            PersistenceContext persistenceContext = new DefaultPersistenceContext(session);
+            PersistenceContext persistenceContext = new DefaultPersistenceContext(session,factory, Collections.emptyList());
             PojoDao<EmbeddedKey, WithEmbeddedKey> dao = new DefaultPojoDao<EmbeddedKey, WithEmbeddedKey>(mapping, persistenceContext);
             WithEmbeddedKey pojo = new WithEmbeddedKey();
             pojo.key = new EmbeddedKey();
@@ -103,7 +100,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
             DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry());
             factory.setVerifier(new CreateSchemaVerifier(session));
             PojoMapping<PersonWithoutCascade> mapping = factory.createPojoMapping(PersonWithoutCascade.class);
-            PersistenceContext persistenceContext = new DefaultPersistenceContext(session);
+            PersistenceContext persistenceContext = new DefaultPersistenceContext(session,factory, Collections.emptyList());
             PojoDao<String, PersonWithoutCascade> dao = new DefaultPojoDao<String, PersonWithoutCascade>(mapping, persistenceContext);
             PersonWithoutCascade p = new PersonWithoutCascade();
             p.firstName = "Slappy";

@@ -14,45 +14,48 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.convert;
+package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.core.exception.HecateException;
+import com.savoirtech.hecate.pojo.util.PojoUtils;
 
-public interface Converter {
+import java.util.function.Function;
+
+public class EmbeddedColumnType implements ColumnType<Boolean,Object> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    Converter NULL_CONVERTER = new NullConverter();
+    public static final EmbeddedColumnType INSTANCE = new EmbeddedColumnType();
 
 //----------------------------------------------------------------------------------------------------------------------
-// Other Methods
+// ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    Object toFacetValue(Object value);
 
-    DataType getDataType();
+    @Override
+    public Boolean getColumnValue(Object facetValue, Function<Object, Object> function) {
+        return true;
+    }
 
-    Object toColumnValue(Object value);
+    @Override
+    public DataType getDataType(DataType elementDataType) {
+        return DataType.cboolean();
+    }
 
-//----------------------------------------------------------------------------------------------------------------------
-// Inner Classes
-//----------------------------------------------------------------------------------------------------------------------
+    @Override
+    public Object getFacetValue(Boolean columnValue, Function<Object, Object> function, Class<?> elementType) {
+        return PojoUtils.newPojo(elementType);
+    }
 
-    class NullConverter implements Converter {
-        @Override
-        public Object toFacetValue(Object value) {
-            return null;
-        }
+    @Override
+    public Iterable<Object> facetElements(Object facetValue) {
+        throw new HecateException("Embedded object columns are not reference-capable.");
+    }
 
-        @Override
-        public DataType getDataType() {
-            return null;
-        }
-
-        @Override
-        public Object toColumnValue(Object value) {
-            return null;
-        }
+    @Override
+    public Iterable<Object> columnElements(Boolean columnValue) {
+        throw new HecateException("Embedded object columns are not reference-capable.");
     }
 }
