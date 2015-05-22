@@ -16,7 +16,11 @@
 
 package com.savoirtech.hecate.pojo.persistence;
 
+import com.datastax.driver.core.Statement;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 public interface Evaporator {
 //----------------------------------------------------------------------------------------------------------------------
@@ -25,5 +29,5 @@ public interface Evaporator {
 
     void evaporate(PojoMapping<?> mapping, Iterable<Object> ids);
 
-    void execute();
+    void execute(List<Consumer<Statement>> modifiers);
 }

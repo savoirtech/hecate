@@ -40,12 +40,12 @@ public class DefaultPersistenceContext implements PersistenceContext {
     private final LoadingCache<PojoMapping<?>, PojoInsert<?>> insertCache = CacheBuilder.newBuilder().build(new InsertCacheLoader());
     private final LoadingCache<PojoMapping<?>,PojoQuery<?>> findByIdCache = CacheBuilder.newBuilder().build(new FindByIdCacheLoader());
     private final LoadingCache<PojoMapping<?>,PojoQuery<?>> findByIdsCache = CacheBuilder.newBuilder().build(new FindByIdsCacheLoader());
-
+    private final LoadingCache<PojoMapping<?>,PojoFindForDelete> findForDeleteCache = CacheBuilder.newBuilder().build(new FindForDeleteCacheLoader());
     private final LoadingCache<PojoMapping<?>,PojoDelete<?>> deleteCache = CacheBuilder.newBuilder().build(new DeleteCacheLoader());
+
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
-
 
     public DefaultPersistenceContext(Session session, PojoMappingFactory pojoMappingFactory, List<Consumer<Statement>> defaultStatementModifiers) {
         this.session = session;
@@ -63,8 +63,18 @@ public class DefaultPersistenceContext implements PersistenceContext {
     }
 
     @Override
+    public Evaporator createEvaporator() {
+        return new DefaultEvaporator(this);
+    }
+
+    @Override
     public Hydrator createHydrator() {
         return new DefaultHydrator(this);
+    }
+
+    @Override
+    public <P> PojoDelete delete(PojoMapping<P> mapping) {
+        return deleteCache.getUnchecked(mapping);
     }
 
     @Override
@@ -72,16 +82,6 @@ public class DefaultPersistenceContext implements PersistenceContext {
         defaultStatementModifiers.stream().forEach(mod -> mod.accept(statement));
         statementModifiers.stream().forEach(mod -> mod.accept(statement));
         return session.execute(statement);
-    }
-
-    @Override
-    public Evaporator createEvaporator() {
-        return new DefaultEvaporator(this);
-    }
-
-    @Override
-    public <P> PojoDelete delete(PojoMapping<P> mapping) {
-        return deleteCache.getUnchecked(mapping);
     }
 
     @Override
@@ -102,6 +102,11 @@ public class DefaultPersistenceContext implements PersistenceContext {
     }
 
     @Override
+    public <P> PojoFindForDelete findForDelete(PojoMapping<P> mapping) {
+        return findForDeleteCache.getUnchecked(mapping);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <P> PojoInsert<P> insert(PojoMapping<P> mapping) {
         return (PojoInsert<P>)insertCache.getUnchecked(mapping);
@@ -115,6 +120,13 @@ public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
+
+    private class DeleteCacheLoader extends CacheLoader<PojoMapping<?>, PojoDelete<?>> {
+        @Override
+        public PojoDelete<?> load(PojoMapping<?> key) throws Exception {
+            return new DefaultPojoDelete<>(DefaultPersistenceContext.this, key);
+        }
+    }
 
     private class FindByIdCacheLoader extends CacheLoader<PojoMapping<?>, PojoQuery<?>> {
         @Override
@@ -130,17 +142,17 @@ public class DefaultPersistenceContext implements PersistenceContext {
         }
     }
 
+    private class FindForDeleteCacheLoader extends CacheLoader<PojoMapping<?>, PojoFindForDelete> {
+        @Override
+        public PojoFindForDelete load(PojoMapping<?> key) throws Exception {
+            return new DefaultPojoFindForDelete<>(DefaultPersistenceContext.this, key);
+        }
+    }
+
     private class InsertCacheLoader extends CacheLoader<PojoMapping<?>, PojoInsert<?>> {
         @Override
         public PojoInsert<?> load(PojoMapping<?> key) throws Exception {
             return new DefaultPojoInsert<>(DefaultPersistenceContext.this, key);
-        }
-    }
-
-    private class DeleteCacheLoader extends CacheLoader<PojoMapping<?>, PojoDelete<?>> {
-        @Override
-        public PojoDelete<?> load(PojoMapping<?> key) throws Exception {
-            return new DefaultPojoDelete<>(DefaultPersistenceContext.this, key);
         }
     }
 }

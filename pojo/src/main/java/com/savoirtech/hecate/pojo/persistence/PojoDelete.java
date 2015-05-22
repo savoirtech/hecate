@@ -22,5 +22,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public interface PojoDelete<P> {
-    void delete(Iterable<Object> ids, Evaporator evaporator, List<Consumer<Statement>> modifiers);
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    void delete(Iterable<Object> ids, List<Consumer<Statement>> modifiers);
 }

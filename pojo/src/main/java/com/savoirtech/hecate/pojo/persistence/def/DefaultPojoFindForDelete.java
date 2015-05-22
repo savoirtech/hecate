@@ -17,32 +17,73 @@
 package com.savoirtech.hecate.pojo.persistence.def;
 
 import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+import com.google.common.collect.Lists;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.FacetMappingVisitor;
+import com.savoirtech.hecate.pojo.mapping.facet.ReferenceFacetMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.Evaporator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoFindForDelete;
+import com.savoirtech.hecate.pojo.util.CqlUtils;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements PojoFindForDelete {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+    private final List<ReferenceFacetMapping> facetMappings;
+
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoFindForDelete(PersistenceContext persistenceContext, PojoMapping<P> pojoMapping) {
         super(persistenceContext, pojoMapping);
+        this.facetMappings = new LinkedList<>();
+        for (FacetMapping mapping : pojoMapping.getSimpleMappings()) {
+            mapping.accept(new FacetMappingVisitor() {
+                @Override
+                public void visitReference(ReferenceFacetMapping referenceMapping) {
+                    if(referenceMapping.getFacet().isCascadeDelete()) {
+                        facetMappings.add(referenceMapping);
+                    }
+                }
+
+                @Override
+                public void visitScalar(ScalarFacetMapping scalarMapping) {
+
+                }
+            });
+        }
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // PojoFindForDelete Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public void execute(Iterable<Object> ids, Evaporator evaporator, List<Consumer<Statement>> modifiers) {
-        
+        List<Object> parameters = Arrays.asList(Lists.newArrayList(ids));
+        ResultSet rows = executeStatement(parameters, modifiers);
+        for (Row row : rows) {
+            Iterator<Object> columnValues = CqlUtils.toList(row).iterator();
+            for (ReferenceFacetMapping mapping : facetMappings) {
+                evaporator.evaporate(mapping.getElementMapping(), mapping.getColumnType().columnElements(columnValues.next()));
+            }
+        }
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -51,6 +92,10 @@ public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements Poj
 
     @Override
     protected RegularStatement createStatement() {
-        return null;
+        Select.Selection select = QueryBuilder.select();
+        facetMappings.forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
+        return select
+                .from(getPojoMapping().getTableName())
+                .where(QueryBuilder.in(getPojoMapping().getForeignKeyMapping().getFacet().getColumnName(), QueryBuilder.bindMarker()));
     }
 }

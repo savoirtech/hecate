@@ -26,7 +26,7 @@ public interface PojoDao<I, P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void delete(I id);
+    void delete(I id, Consumer<Statement>... modifiers);
 
     P findById(I id);
 

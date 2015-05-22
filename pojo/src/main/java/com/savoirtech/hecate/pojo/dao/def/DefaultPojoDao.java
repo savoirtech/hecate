@@ -21,6 +21,7 @@ import com.savoirtech.hecate.core.query.QueryResult;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
+import com.savoirtech.hecate.pojo.persistence.Evaporator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 
 import java.util.Arrays;
@@ -50,8 +51,10 @@ public class DefaultPojoDao<I,P> implements PojoDao<I,P> {
 
     
     @Override
-    public void delete(I id) {
-
+    public void delete(I id, Consumer<Statement>... modifiers) {
+        Evaporator evaporator = persistenceContext.createEvaporator();
+        evaporator.evaporate(pojoMapping, Collections.singleton(id));
+        evaporator.execute(Arrays.asList(modifiers));
     }
 
     @Override

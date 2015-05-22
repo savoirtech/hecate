@@ -29,4 +29,6 @@ public @interface ClusteringColumn {
 //----------------------------------------------------------------------------------------------------------------------
 
     int order() default 0;
+
+    boolean descending() default false;
 }

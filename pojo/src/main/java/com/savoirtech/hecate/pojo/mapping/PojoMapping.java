@@ -55,7 +55,7 @@ public class PojoMapping<P> {
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static <A extends Annotation,M extends FacetMapping> Stream<M> annotatedWith(List<M> mappings, Class<A> annotationType) {
+    private static <A extends Annotation, M extends FacetMapping> Stream<M> annotatedWith(List<M> mappings, Class<A> annotationType) {
         return mappings.stream().filter(mapping -> mapping.getFacet().hasAnnotation(annotationType));
     }
 
@@ -75,16 +75,16 @@ public class PojoMapping<P> {
         this.pojoClass = pojoClass;
         this.tableName = tableName;
         this.idMappings = sorted(idMappings);
-        this.simpleMappings = simpleMappings.stream().sorted((left,right) -> left.getFacet().getColumnName().compareTo(right.getFacet().getColumnName())).collect(Collectors.toList());
+        this.simpleMappings = simpleMappings.stream().sorted((left, right) -> left.getFacet().getColumnName().compareTo(right.getFacet().getColumnName())).collect(Collectors.toList());
         this.ttl = PojoUtils.getTtl(pojoClass);
         this.cascadeSave = simpleMappings.stream().filter(FacetMapping::isReference).filter(mapping -> !mapping.getFacet().hasAnnotation(Cascade.class) || mapping.getFacet().getAnnotation(Cascade.class).save()).findFirst().isPresent();
         this.cascadeDelete = simpleMappings.stream().filter(FacetMapping::isReference).filter(mapping -> !mapping.getFacet().hasAnnotation(Cascade.class) || mapping.getFacet().getAnnotation(Cascade.class).delete()).findFirst().isPresent();
     }
 
     private static List<ScalarFacetMapping> sorted(List<ScalarFacetMapping> idMappings) {
-        if(idMappings.size() > 1) {
+        if (idMappings.size() > 1) {
             List<ScalarFacetMapping> sorted = new ArrayList<>(idMappings.size());
-            sorted.addAll(annotatedWith(idMappings,PartitionKey.class).sorted((left,right) -> partitionKey(left).order() - partitionKey(right).order()).collect(Collectors.toList()));
+            sorted.addAll(annotatedWith(idMappings, PartitionKey.class).sorted((left, right) -> partitionKey(left).order() - partitionKey(right).order()).collect(Collectors.toList()));
             sorted.addAll(annotatedWith(idMappings, ClusteringColumn.class).sorted((left, right) -> clusteringColumn(left).order() - clusteringColumn(right).order()).collect(Collectors.toList()));
             return sorted;
         }
@@ -130,12 +130,13 @@ public class PojoMapping<P> {
     public Create createCreateStatement() {
         Create create = SchemaBuilder.createTable(tableName);
         idMappings.forEach(mapping -> {
+            String columnName = mapping.getFacet().getColumnName();
             if (mapping.getFacet().hasAnnotation(PartitionKey.class) || mapping.getFacet().hasAnnotation(Id.class)) {
-                LOGGER.debug("Adding partition key column {}...", mapping.getFacet().getColumnName());
-                create.addPartitionKey(mapping.getFacet().getColumnName(), mapping.getDataType());
+                LOGGER.debug("Adding partition key column {}...", columnName);
+                create.addPartitionKey(columnName, mapping.getDataType());
             } else if (mapping.getFacet().hasAnnotation(ClusteringColumn.class)) {
-                LOGGER.debug("Adding clustering column {}...", mapping.getFacet().getColumnName());
-                create.addClusteringColumn(mapping.getFacet().getColumnName(), mapping.getDataType());
+                LOGGER.debug("Adding clustering column {}...", columnName);
+                create.addClusteringColumn(columnName, mapping.getDataType());
             }
         });
 

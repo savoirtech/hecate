@@ -72,6 +72,8 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
             Person found = dao.findById("123456789");
             assertNotNull(found);
             assertEquals("Slappy", found.firstName);
+            dao.delete("123456789");
+            assertNull(dao.findById("123456789"));
         });
     }
 
@@ -112,6 +114,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
             PersonWithoutCascade found = dao.findById("123456789");
             assertNotNull(found);
             assertTrue(found.dependents.isEmpty());
+
         });
     }
 

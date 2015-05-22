@@ -128,7 +128,7 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
         @PartitionKey(order = 0)
         private String countryCode;
 
-        @ClusteringColumn(order = 1)
+        @ClusteringColumn(order = 1,descending = true)
         private String zip;
 
         @PartitionKey(order = 1)

@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.core.mapping;
 
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.google.common.collect.Iterators;
 import com.savoirtech.hecate.core.query.QueryResult;
 
@@ -65,7 +66,11 @@ public class MappedQueryResult<T> implements QueryResult<T> {
 
     @Override
     public T one() {
-        T result = mapper.map(resultSet.one());
+        Row row = resultSet.one();
+        if(row == null) {
+            return null;
+        }
+        T result = mapper.map(row);
         mapper.mappingComplete();
         return result;
     }
