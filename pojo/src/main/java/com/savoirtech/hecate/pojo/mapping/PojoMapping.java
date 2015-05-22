@@ -16,10 +16,6 @@
 
 package com.savoirtech.hecate.pojo.mapping;
 
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 import com.savoirtech.hecate.annotation.Cascade;
@@ -28,7 +24,6 @@ import com.savoirtech.hecate.annotation.Id;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
-import com.savoirtech.hecate.pojo.mapping.facet.FacetMappingVisitor;
 import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.util.PojoUtils;
 import org.slf4j.Logger;
@@ -40,8 +35,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 
 public class PojoMapping<P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -82,7 +75,7 @@ public class PojoMapping<P> {
         this.pojoClass = pojoClass;
         this.tableName = tableName;
         this.idMappings = sorted(idMappings);
-        this.simpleMappings = simpleMappings;
+        this.simpleMappings = simpleMappings.stream().sorted((left,right) -> left.getFacet().getColumnName().compareTo(right.getFacet().getColumnName())).collect(Collectors.toList());
         this.ttl = PojoUtils.getTtl(pojoClass);
         this.cascadeSave = simpleMappings.stream().filter(FacetMapping::isReference).filter(mapping -> !mapping.getFacet().hasAnnotation(Cascade.class) || mapping.getFacet().getAnnotation(Cascade.class).save()).findFirst().isPresent();
         this.cascadeDelete = simpleMappings.stream().filter(FacetMapping::isReference).filter(mapping -> !mapping.getFacet().hasAnnotation(Cascade.class) || mapping.getFacet().getAnnotation(Cascade.class).delete()).findFirst().isPresent();
@@ -127,7 +120,7 @@ public class PojoMapping<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     public String toString() {
-        return pojoClass.getCanonicalName() + "@" + tableName;
+        return pojoClass.getSimpleName() + "@" + tableName;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -153,36 +146,6 @@ public class PojoMapping<P> {
         create.ifNotExists();
         return create;
     }
-    
-    public Delete createDeleteStatement() {
-        Delete delete = delete().from(tableName);
-        idMappings.forEach(mapping -> delete.where(in(mapping.getFacet().getColumnName(), bindMarker())));
-        return delete;
-    }
-
-    public Select.Where createFindForDeleteStatement() {
-        if(!isCascadeDelete()) {
-            throw new HecateException("POJO class %s does not support cascaded deletes.", getPojoClass().getCanonicalName());
-        }
-        Select.Selection select = select();
-        simpleMappings.stream().filter(FacetMapping::isReference).forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
-        return select.from(tableName).where(in(getForeignKeyMapping().getFacet().getColumnName(),bindMarker()));
-    }
-
-    public Insert createInsertStatement() {
-        Insert insert = insertInto(tableName);
-        idMappings.forEach(mapping -> insert.value(mapping.getFacet().getColumnName(), bindMarker()));
-        simpleMappings.forEach(mapping -> insert.value(mapping.getFacet().getColumnName(), bindMarker()));
-        insert.using(QueryBuilder.ttl(QueryBuilder.bindMarker()));
-        return insert;
-    }
-
-    public Select.Where createSelectStatement() {
-        Select.Selection select = select();
-        idMappings.forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
-        simpleMappings.forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
-        return select.from(tableName).where();
-    }
 
     public ScalarFacetMapping getForeignKeyMapping() {
         if (idMappings.size() == 1) {
@@ -198,9 +161,5 @@ public class PojoMapping<P> {
 
     public List<FacetMapping> getSimpleMappings() {
         return Collections.unmodifiableList(simpleMappings);
-    }
-
-    public void visitFacetMappings(FacetMappingVisitor visitor) {
-
     }
 }

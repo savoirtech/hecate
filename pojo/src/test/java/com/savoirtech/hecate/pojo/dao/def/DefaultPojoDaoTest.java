@@ -127,6 +127,7 @@ public class DefaultPojoDaoTest extends CassandraTestCase {
         private String lastName;
 
         @Cascade(save = false)
+        @Table("foo")
         private Set<Dependent> dependents;
     }
 

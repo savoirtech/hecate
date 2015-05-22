@@ -125,13 +125,13 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
         final ColumnType<?, ?> columnType = createColumnType(facet);
         final Converter converter = converterRegistry.getConverter(facet.getType().getElementType());
         if (facet.hasAnnotation(Embedded.class)) {
-            LOGGER.info("Creating scalar mapping for {}...", facet.getName());
+            LOGGER.debug("Creating scalar mapping for {}...", facet.getName());
             mappings.add(new ScalarFacetMapping(facet, columnType, Converter.NULL_CONVERTER));
         } else if (converter != null) {
-            LOGGER.info("Creating scalar mapping for {}...", facet.getName());
+            LOGGER.debug("Creating scalar mapping for {}...", facet.getName());
             mappings.add(new ScalarFacetMapping(facet, columnType, converter));
         } else {
-            LOGGER.info("Creating reference mapping for {}...", facet.getName());
+            LOGGER.debug("Creating reference mapping for {}...", facet.getName());
             Table table = facet.getAnnotation(Table.class);
             final String tableName = table == null ? PojoUtils.getTableName(facetType.getElementType().getRawType()) : table.value();
             mappings.add(new ReferenceFacetMapping(facet, columnType, createPojoMapping(facetType.getElementType().getRawType(), tableName)));

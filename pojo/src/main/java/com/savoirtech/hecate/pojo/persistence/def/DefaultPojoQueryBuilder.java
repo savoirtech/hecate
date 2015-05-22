@@ -30,6 +30,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+
 public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
@@ -49,10 +51,16 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     public DefaultPojoQueryBuilder(PersistenceContext persistenceContext, PojoMapping<P> pojoMapping) {
         this.pojoMapping = pojoMapping;
         this.persistenceContext = persistenceContext;
-        this.where = pojoMapping.createSelectStatement();
+        this.where = createSelect(pojoMapping);
         this.facetMappings = toFacetMappingsMap(pojoMapping);
     }
 
+    private static Select.Where createSelect(PojoMapping<?> pojoMapping) {
+        Select.Selection select = select();
+        pojoMapping.getIdMappings().forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
+        pojoMapping.getSimpleMappings().forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
+        return select.from(pojoMapping.getTableName()).where();
+    }
     private static Map<String, FacetMapping> toFacetMappingsMap(PojoMapping<?> pojoMapping) {
         Map<String, FacetMapping> mappings = new HashMap<>();
         pojoMapping.getIdMappings().forEach(mapping -> mappings.put(mapping.getFacet().getName(), mapping));

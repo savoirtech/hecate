@@ -16,14 +16,22 @@
 
 package com.savoirtech.hecate.pojo.mapping.def;
 
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.Column;
 import com.savoirtech.hecate.annotation.Id;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
+import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
 import com.savoirtech.hecate.test.AbstractTestCase;
 import org.apache.commons.math3.util.Pair;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
 //----------------------------------------------------------------------------------------------------------------------
@@ -36,55 +44,47 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-//    @Test
-//    public void testCompositeKey() {
-//        PojoMapping<CensusData> mapping = createMapping(CensusData.class);
-//        assertColumnNames(mapping.getIdMappings(), "id_country_code", "id_state", "id_zip");
-//    }
-//
-//    private <P> PojoMapping<P> createMapping(Class<P> pojoClass) {
-//        PojoMapping<P> mapping = factory.createPojoMapping(pojoClass);
-//        logger.info("{} schema:\n{}\n", pojoClass.getSimpleName(), mapping.createCreateStatement());
-//        logger.info("{} insert: {}", pojoClass.getSimpleName(), mapping.createInsertStatement());
-//        logger.info("{} delete: {}", pojoClass.getSimpleName(), mapping.createDeleteStatement());
-//        logger.info("{} select: {}", pojoClass.getSimpleName(), mapping.createSelectStatement());
-//        return mapping;
-//    }
-//
-//    private void assertColumnNames(List<FacetMapping> mappings, String... names) {
-//        assertEquals(Arrays.asList(names), mappings.stream().map(mapping -> mapping.getFacet().getColumnName()).collect(Collectors.toList()));
-//    }
-//
-//    @Test
-//    public void testSimpleKey() {
-//        PojoMapping<Person> mapping = createMapping(Person.class);
-//        assertColumnNames(mapping.getIdMappings(), "id");
-//        assertColumnNames(mapping.getSimpleMappings(), "first_name", "last_name", "ssn");
-//    }
-//
-//    @Test(expected = UncheckedExecutionException.class)
-//    public void testWithNoConverter() {
-//        createMapping(NoId.class);
-//    }
-//
-//    @Test(expected = UncheckedExecutionException.class)
-//    public void testWithNoConverterFoundOnIdType() {
-//        createMapping(NoConverter.class);
-//    }
-//
-//    @Test(expected = UncheckedExecutionException.class)
-//    public void testWithNonKeyField() {
-//        createMapping(WithNonKey.class);
-//    }
+    @Test
+    public void testCompositeKey() {
+        PojoMapping<CensusData> mapping = createMapping(CensusData.class);
+        assertColumnNames(mapping.getIdMappings(), "id_country_code", "id_state", "id_zip");
+    }
+
+    private <P> PojoMapping<P> createMapping(Class<P> pojoClass) {
+        PojoMapping<P> mapping = factory.createPojoMapping(pojoClass);
+        logger.info("{} schema:\n{}\n", pojoClass.getSimpleName(), mapping.createCreateStatement());
+        return mapping;
+    }
+
+    private void assertColumnNames(List<? extends FacetMapping> mappings, String... names) {
+        assertEquals(Arrays.asList(names), mappings.stream().map(mapping -> mapping.getFacet().getColumnName()).collect(Collectors.toList()));
+    }
+
+    @Test
+    public void testSimpleKey() {
+        PojoMapping<Person> mapping = createMapping(Person.class);
+        assertColumnNames(mapping.getIdMappings(), "id");
+        assertColumnNames(mapping.getSimpleMappings(), "first_name", "last_name", "ssn");
+    }
+
+    @Test(expected = UncheckedExecutionException.class)
+    public void testWithNoConverter() {
+        createMapping(NoConverter.class);
+    }
+
+    @Test(expected = UncheckedExecutionException.class)
+    public void testWithNoConverterFoundOnIdType() {
+        createMapping(NoConverter.class);
+    }
+
+    @Test(expected = UncheckedExecutionException.class)
+    public void testWithNonKeyField() {
+        createMapping(WithNonKey.class);
+    }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
-
-    private static class NoId {
-        private String property1;
-        private String property2;
-    }
 
     private static class CensusData {
         @Id
@@ -106,9 +106,9 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
         private Pair<String,String> pair2;
     }
 
-    public static class WithNonKey {
-        @Id
-        private NonKeyField key;
+    private static class NoId {
+        private String property1;
+        private String property2;
     }
 
     public static class NonKeyField {
@@ -133,5 +133,10 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
 
         @PartitionKey(order = 1)
         private String state;
+    }
+
+    public static class WithNonKey {
+        @Id
+        private NonKeyField key;
     }
 }

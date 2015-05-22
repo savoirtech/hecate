@@ -18,6 +18,8 @@ package com.savoirtech.hecate.pojo.persistence.def;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.Evaporator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
@@ -26,22 +28,37 @@ import com.savoirtech.hecate.pojo.persistence.PojoDelete;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.in;
+
 public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete<P> {
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoDelete(PersistenceContext persistenceContext, PojoMapping<P> pojoMapping) {
         super(persistenceContext, pojoMapping);
     }
 
-    @Override
-    protected RegularStatement createStatement() {
-        return getPojoMapping().createDeleteStatement();
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// PojoDelete Implementation
+//----------------------------------------------------------------------------------------------------------------------
 
     @Override
     public void delete(Iterable<Object> ids, Evaporator evaporator, List<Consumer<Statement>> modifiers) {
         if(getPojoMapping().isCascadeDelete()){
-
         }
         evaporator.evaporate(getPojoMapping(),ids);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    protected RegularStatement createStatement() {
+        Delete delete = QueryBuilder.delete().from(getPojoMapping().getTableName());
+        getPojoMapping().getIdMappings().forEach(mapping -> delete.where(in(mapping.getFacet().getColumnName(), bindMarker())));
+        return delete;
     }
 }
