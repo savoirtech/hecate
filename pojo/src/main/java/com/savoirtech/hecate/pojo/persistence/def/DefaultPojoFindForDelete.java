@@ -31,7 +31,7 @@ import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.Evaporator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoFindForDelete;
-import com.savoirtech.hecate.pojo.util.CqlUtils;
+import com.savoirtech.hecate.core.util.CqlUtils;
 
 import java.util.Collections;
 import java.util.Iterator;

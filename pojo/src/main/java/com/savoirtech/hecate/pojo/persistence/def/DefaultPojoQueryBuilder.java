@@ -19,12 +19,11 @@ package com.savoirtech.hecate.pojo.persistence.def;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoQueryBuilder;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +88,6 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public DefaultPojoQuery<P> build() {
-        LOGGER.info("Creating query {} with mappings {} and injected parameters {}.", where.getQueryString(), StringUtils.join(parameterMappings, ", "), StringUtils.join(injectedParameters, ", "));
         return new DefaultPojoQuery<>(persistenceContext, pojoMapping, where, parameterMappings, injectedParameters);
     }
 

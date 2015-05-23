@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.util;
+package com.savoirtech.hecate.core.util;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ResultSet;
@@ -100,7 +100,7 @@ public class CqlUtilsTest extends CassandraTestCase {
     }
 
     @Test
-    public void testGetValueVarchar() throws Exception {
+    public void testGetValue() throws Exception {
         withSession(session -> {
             Select.Selection selection = select().column("id");
             columns.stream().map(col -> "test_" + col.getLeft().getName()).forEach(selection::column);

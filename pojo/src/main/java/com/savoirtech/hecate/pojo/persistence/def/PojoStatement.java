@@ -63,7 +63,7 @@ public abstract class PojoStatement<P> implements Supplier<PreparedStatement> {
     @Override
     public PreparedStatement get() {
         RegularStatement statement = createStatement();
-        getLogger().info("{}: {}", getPojoMapping().getPojoClass().getSimpleName(), statement.getQueryString());
+        getLogger().debug("{}: {}", getPojoMapping().getPojoClass().getSimpleName(), statement.getQueryString());
         return persistenceContext.prepare(statement);
     }
 

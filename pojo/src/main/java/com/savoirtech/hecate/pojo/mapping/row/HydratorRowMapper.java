@@ -23,7 +23,7 @@ import com.savoirtech.hecate.pojo.mapping.FacetMappingVisitor;
 import com.savoirtech.hecate.pojo.mapping.ReferenceFacetMapping;
 import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.Hydrator;
-import com.savoirtech.hecate.pojo.util.CqlUtils;
+import com.savoirtech.hecate.core.util.CqlUtils;
 import com.savoirtech.hecate.pojo.util.PojoUtils;
 
 import java.util.Iterator;
