@@ -93,13 +93,6 @@
         <maven.jacoco.plugin.version>0.7.4.201502262128</maven.jacoco.plugin.version>
         <maven.bundle.plugin.version>2.5.4</maven.bundle.plugin.version>
 
-        <!--
-        Sonar/JaCoCo Integration Test Coverage Fix
-        -->
-        <jacoco.out.path>${session.executionRootDirectory}/target</jacoco.out.path>
-        <jacoco.out.file>jacoco-it.exec</jacoco.out.file>
-        <sonar.jacoco.itReportPath>${env.WORKSPACE}/target/${jacoco.out.file}</sonar.jacoco.itReportPath>
-
     </properties>
 
     <build>
