@@ -19,16 +19,16 @@ package com.savoirtech.hecate.pojo.persistence.def;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoQueryBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 
@@ -37,6 +37,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPojoQueryBuilder.class);
     private final PersistenceContext persistenceContext;
     private final PojoMapping<P> pojoMapping;
     private final Map<String, FacetMapping> facetMappings;
@@ -61,6 +62,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         pojoMapping.getSimpleMappings().forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
         return select.from(pojoMapping.getTableName()).where();
     }
+
     private static Map<String, FacetMapping> toFacetMappingsMap(PojoMapping<?> pojoMapping) {
         Map<String, FacetMapping> mappings = new HashMap<>();
         pojoMapping.getIdMappings().forEach(mapping -> mappings.put(mapping.getFacet().getName(), mapping));
@@ -84,6 +86,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public DefaultPojoQuery<P> build() {
+        LOGGER.info("Creating query {} with mappings {} and injected parameters {}.", where.getQueryString(), StringUtils.join(parameterMappings, ", "), StringUtils.join(injectedParameters, ", "));
         return new DefaultPojoQuery<>(persistenceContext, pojoMapping, where, parameterMappings, injectedParameters);
     }
 
@@ -103,8 +106,11 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public PojoQueryBuilder<P> eq(String facetName, Object value) {
-        injectedParameters.add(injected(facetName, value));
-        return eq(facetName);
+        FacetMapping mapping = lookupMapping(facetName);
+        String columnName = mapping.getFacet().getColumnName();
+        where.and(QueryBuilder.eq(columnName, QueryBuilder.bindMarker()));
+        injectParameter(mapping,value);
+        return this;
     }
 
     @Override
@@ -117,8 +123,11 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public PojoQueryBuilder<P> gt(String facetName, Object value) {
-        injectedParameters.add(injected(facetName, value));
-        return gt(facetName);
+        FacetMapping mapping = lookupMapping(facetName);
+        String columnName = mapping.getFacet().getColumnName();
+        where.and(QueryBuilder.gt(columnName, QueryBuilder.bindMarker()));
+        injectParameter(mapping,value);
+        return this;
     }
 
     @Override
@@ -131,8 +140,11 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public PojoQueryBuilder<P> gte(String facetName, Object value) {
-        injectedParameters.add(injected(facetName, value));
-        return gte(facetName);
+        FacetMapping mapping = lookupMapping(facetName);
+        String columnName = mapping.getFacet().getColumnName();
+        where.and(QueryBuilder.gte(columnName, QueryBuilder.bindMarker()));
+        injectParameter(mapping,value);
+        return this;
     }
 
     @Override
@@ -155,8 +167,11 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public PojoQueryBuilder<P> in(String facetName, Object value) {
-        injectedParameters.add(injected(facetName, value));
-        return in(facetName);
+        FacetMapping mapping = lookupMapping(facetName);
+        String columnName = mapping.getFacet().getColumnName();
+        where.and(QueryBuilder.in(columnName, QueryBuilder.bindMarker()));
+        injectParameter(mapping,value);
+        return this;
     }
 
     @Override
@@ -169,8 +184,11 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public PojoQueryBuilder<P> lt(String facetName, Object value) {
-        injectedParameters.add(injected(facetName, value));
-        return lt(facetName);
+        FacetMapping mapping = lookupMapping(facetName);
+        String columnName = mapping.getFacet().getColumnName();
+        where.and(QueryBuilder.lt(columnName, QueryBuilder.bindMarker()));
+        injectParameter(mapping,value);
+        return this;
     }
 
     @Override
@@ -183,8 +201,11 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public PojoQueryBuilder<P> lte(String facetName, Object value) {
-        injectedParameters.add(injected(facetName, value));
-        return lte(facetName);
+        FacetMapping mapping = lookupMapping(facetName);
+        String columnName = mapping.getFacet().getColumnName();
+        where.and(QueryBuilder.lte(columnName, QueryBuilder.bindMarker()));
+        injectParameter(mapping,value);
+        return this;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -199,10 +220,9 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         return idMappings.get(0).getFacet().getColumnName();
     }
 
-    private InjectedParameter injected(String facetName, Object value) {
-        FacetMapping facetMapping = lookupMapping(facetName);
-        Object cassandraValue = facetMapping.getColumnValueForFacetValue(value);
-        return new InjectedParameter(parameterMappings.size(), cassandraValue);
+    private void injectParameter(FacetMapping facetMapping, Object value) {
+        Object columnValue = facetMapping.getColumnValueForFacetValue(value);
+        injectedParameters.add(new InjectedParameter(parameterMappings.size(), columnValue));
     }
 
     private FacetMapping lookupMapping(String facetName) {

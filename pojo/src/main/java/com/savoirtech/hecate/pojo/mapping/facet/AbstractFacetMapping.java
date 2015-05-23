@@ -76,6 +76,10 @@ public abstract class AbstractFacetMapping implements FacetMapping {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    public String toString() {
+        return getFacet().getName() + " @ " + getFacet().getColumnName();
+    }
+
     protected Object facetValue(Object pojo) {
         return facet.getValue(pojo);
     }

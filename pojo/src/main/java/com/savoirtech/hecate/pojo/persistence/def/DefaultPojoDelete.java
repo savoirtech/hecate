@@ -52,7 +52,10 @@ public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete
         List<ScalarFacetMapping> idMappings = getPojoMapping().getIdMappings();
         if(idMappings.size() > 1) {
             for (Object compositeKey : ids) {
-                final List<Object> parameters = idMappings.stream().map(mapping -> mapping.getColumnValueForFacetValue(compositeKey)).collect(Collectors.toList());
+                final List<Object> parameters = idMappings.stream().map(mapping -> {
+                    final Object facetValue = mapping.getFacet().flatten().getValue(compositeKey);
+                    return mapping.getColumnValueForFacetValue(facetValue);
+                }).collect(Collectors.toList());
                 executeStatement(parameters, modifiers);
             }
         }

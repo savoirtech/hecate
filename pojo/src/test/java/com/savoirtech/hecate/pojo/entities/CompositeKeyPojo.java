@@ -14,31 +14,37 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.convert;
+package com.savoirtech.hecate.pojo.entities;
 
-import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.util.GenericType;
+import com.savoirtech.hecate.annotation.Id;
 
-public interface ConverterRegistry {
+public class CompositeKeyPojo {
 //----------------------------------------------------------------------------------------------------------------------
-// Other Methods
+// Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    Converter getConverter(Class<?> valueType);
+    @Id
+    private CompositeKey key;
 
-    default Converter getConverter(GenericType genericType) {
-        return genericType == null ? null : getConverter(genericType.getRawType());
+    private String data;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public String getData() {
+        return data;
     }
 
-    default Converter getRequiredConverter(Class<?> valueType) {
-        Converter converter = getConverter(valueType);
-        if(converter == null) {
-            throw new HecateException("No converter found for type %s.", valueType.getCanonicalName());
-        }
-        return converter;
+    public void setData(String data) {
+        this.data = data;
     }
 
-    default Converter getRequiredConverter(GenericType genericType) {
-        return genericType == null ? null : getRequiredConverter(genericType.getRawType());
+    public CompositeKey getKey() {
+        return key;
+    }
+
+    public void setKey(CompositeKey key) {
+        this.key = key;
     }
 }

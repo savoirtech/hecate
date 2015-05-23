@@ -23,8 +23,10 @@ import com.savoirtech.hecate.annotation.*;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
+import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
+import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMappingFactory;
 import com.savoirtech.hecate.pojo.mapping.PojoMappingVerifier;
@@ -54,16 +56,24 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
     private final Map<Class<?>, Function<GenericType, ColumnType>> columnTypeOverrides = new HashMap<>();
 
     private final LoadingCache<Pair<Class<?>, String>, PojoMapping<?>> mappingCache = CacheBuilder.newBuilder().build(new MappingCacheLoader());
-    private PojoMappingVerifier verifier;
+    private final PojoMappingVerifier verifier;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoMappingFactory(FacetProvider facetProvider, ConverterRegistry converterRegistry) {
+    public DefaultPojoMappingFactory() {
+        this(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry(), null);
+    }
+
+    public DefaultPojoMappingFactory(PojoMappingVerifier verifier) {
+        this(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry(), verifier);
+    }
+
+    public DefaultPojoMappingFactory(FacetProvider facetProvider, ConverterRegistry converterRegistry, PojoMappingVerifier verifier) {
         this.facetProvider = facetProvider;
         this.converterRegistry = converterRegistry;
-
+        this.verifier = verifier;
         columnTypeOverrides.put(Set.class, facetType -> new SetColumnType());
         columnTypeOverrides.put(List.class, facetType -> new ListColumnType());
         columnTypeOverrides.put(Map.class, facetType -> new MapColumnType(converterRegistry.getRequiredConverter(facetType.getMapKeyType())));
@@ -85,14 +95,6 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    public void setVerifier(PojoMappingVerifier verifier) {
-        this.verifier = verifier;
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -109,11 +111,11 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
         }
     }
 
-    private void addEmbeddedMappings(Facet parentFacet, boolean allowNullParent, List<ScalarFacetMapping> target, Consumer<Facet> verifier) {
+    private void addEmbeddedMappings(Facet parentFacet, boolean allowNullParent, List<? super ScalarFacetMapping> target, Consumer<Facet> verifier) {
         if (allowNullParent) {
             target.add(new ScalarFacetMapping(parentFacet, EmbeddedColumnType.INSTANCE, Converter.NULL_CONVERTER));
         }
-        List<Facet> subFacets = parentFacet.subFacets(allowNullParent);
+        List<Facet> subFacets = parentFacet.subFacets(!allowNullParent);
         for (Facet subFacet : subFacets) {
             verifier.accept(subFacet);
             target.add(new ScalarFacetMapping(subFacet, SimpleColumnType.INSTANCE, converterRegistry.getRequiredConverter(subFacet.getType())));
@@ -126,7 +128,7 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
         final Converter converter = converterRegistry.getConverter(facet.getType().getElementType());
         if (facet.hasAnnotation(Embedded.class)) {
             LOGGER.debug("Creating scalar mapping for {}...", facet.getName());
-            mappings.add(new ScalarFacetMapping(facet, columnType, Converter.NULL_CONVERTER));
+            addEmbeddedMappings(facet, true, mappings, Facet::getName);
         } else if (converter != null) {
             LOGGER.debug("Creating scalar mapping for {}...", facet.getName());
             mappings.add(new ScalarFacetMapping(facet, columnType, converter));

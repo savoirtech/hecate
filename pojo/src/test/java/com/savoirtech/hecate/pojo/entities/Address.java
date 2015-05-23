@@ -14,42 +14,60 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.verify;
+package com.savoirtech.hecate.pojo.entities;
 
-import com.datastax.driver.core.Session;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.PojoMappingVerifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class CreateSchemaVerifier implements PojoMappingVerifier {
+public class Address {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Logger LOGGER = LoggerFactory.getLogger(CreateSchemaVerifier.class);
-
-    private final Session session;
+    private String street1;
+    private String street2;
+    private String city;
+    private String state;
+    private String zip;
 
 //----------------------------------------------------------------------------------------------------------------------
-// Constructors
+// Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public CreateSchemaVerifier(Session session) {
-        this.session = session;
+    public String getCity() {
+        return city;
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// PojoMappingVerifier Implementation
-//----------------------------------------------------------------------------------------------------------------------
+    public void setCity(String city) {
+        this.city = city;
+    }
 
-    @Override
-    public void verify(PojoMapping<?> mapping) {
-        LOGGER.info("Creating schema for {}...", mapping);
-        mapping.createCreateStatements().forEach(stmt -> {
-            LOGGER.info("\n{}\n", stmt.getQueryString());
-            session.execute(stmt);
-        });
+    public String getState() {
+        return state;
+    }
 
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getStreet1() {
+        return street1;
+    }
+
+    public void setStreet1(String street1) {
+        this.street1 = street1;
+    }
+
+    public String getStreet2() {
+        return street2;
+    }
+
+    public void setStreet2(String street2) {
+        this.street2 = street2;
+    }
+
+    public String getZip() {
+        return zip;
+    }
+
+    public void setZip(String zip) {
+        this.zip = zip;
     }
 }

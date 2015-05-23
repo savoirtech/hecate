@@ -16,10 +16,7 @@
 
 package com.savoirtech.hecate.pojo.util;
 
-import com.savoirtech.hecate.annotation.Cascade;
-import com.savoirtech.hecate.annotation.Column;
-import com.savoirtech.hecate.annotation.Table;
-import com.savoirtech.hecate.annotation.Ttl;
+import com.savoirtech.hecate.annotation.*;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.SubFacet;
@@ -46,9 +43,12 @@ public class PojoUtils {
         return table != null ? table.value() : underscoreSeparated(pojoClass.getSimpleName());
     }
 
-    public static String getTableName(Facet facet) {
-        Table table = Validate.notNull(facet).getAnnotation(Table.class);
-        return table != null ? table.value() : getTableName(facet.getType().getRawType());
+    public static String indexName(Facet facet) {
+        Index annot = facet.getAnnotation(Index.class);
+        if (annot != null && StringUtils.isNotEmpty(annot.value())) {
+            return annot.value();
+        }
+        return facet.getName() + "_ndx";
     }
 
     public static int getTtl(Class<?> pojoClass) {

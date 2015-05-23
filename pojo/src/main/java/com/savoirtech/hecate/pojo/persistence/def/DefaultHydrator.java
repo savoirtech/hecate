@@ -16,6 +16,7 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
+import com.datastax.driver.core.Statement;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
@@ -36,13 +37,14 @@ public class DefaultHydrator implements Hydrator {
     private final List<Pair<PojoMapping<?>, Consumer<Hydrator>>> callbacks = new LinkedList<>();
     private final Multimap<PojoMapping<?>, Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
     private final Map<PojoMapping, Map<Object, Object>> resolved = new HashMap<>();
-
+    private final List<Consumer<Statement>> modifiers;
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultHydrator(PersistenceContext persistenceContext) {
+    public DefaultHydrator(PersistenceContext persistenceContext, List<Consumer<Statement>> modifiers) {
         this.persistenceContext = persistenceContext;
+        this.modifiers = modifiers;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -58,7 +60,7 @@ public class DefaultHydrator implements Hydrator {
                 List<Object> ids = new ArrayList<>(agenda.removeAll(mapping));
                 ids.removeAll(idToPojo.keySet());
                 if (!ids.isEmpty()) {
-                    List<?> pojos = persistenceContext.findByIds(mapping).execute(ids).list();
+                    List<?> pojos = persistenceContext.findByIds(mapping).execute(modifiers, ids).list();
                     for (Object pojo : pojos) {
                         idToPojo.put(mapping.getForeignKeyMapping().getColumnValue(pojo), pojo);
                     }

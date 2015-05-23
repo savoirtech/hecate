@@ -48,12 +48,7 @@ public class DefaultPojoInsert<P> extends PojoStatement<P> implements PojoInsert
 //----------------------------------------------------------------------------------------------------------------------
 // PojoInsert Implementation
 //----------------------------------------------------------------------------------------------------------------------
-
-    @Override
-    public void insert(P pojo, Dehydrator dehydrator, List<Consumer<Statement>> modifiers) {
-        insert(pojo, dehydrator, getPojoMapping().getTtl(), modifiers);
-    }
-
+    
     @Override
     public void insert(P pojo, Dehydrator dehydrator, int ttl, List<Consumer<Statement>> modifiers) {
         List<Object> parameters = new LinkedList<>();

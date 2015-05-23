@@ -31,13 +31,13 @@ public interface PersistenceContext {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Dehydrator createDehydrator();
+    Dehydrator createDehydrator(int ttl, List<Consumer<Statement>> statementModifiers);
 
-    Hydrator createHydrator();
+    Hydrator createHydrator(List<Consumer<Statement>> modifiers);
 
-    Evaporator createEvaporator();
+    Evaporator createEvaporator(List<Consumer<Statement>> modifiers);
 
-    ResultSet executeStatement(Statement statement, List<Consumer<Statement>> statementModifiers);
+    ResultSet executeStatement(Statement statement, List<Consumer<Statement>> modifiers);
     
     <P> PojoInsert<P> insert(PojoMapping<P> mapping);
 

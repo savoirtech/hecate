@@ -25,13 +25,43 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
 
 public abstract class ReflectionFacet implements Facet {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+//----------------------------------------------------------------------------------------------------------------------
+// Abstract Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     protected abstract AccessibleObject getAnnotationSource();
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    protected abstract Object getValueReflectively(Object pojo) throws ReflectiveOperationException;
+    protected abstract void setValueReflectively(Object pojo, Object value) throws ReflectiveOperationException;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Facet Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
+
+    @Override
+    public Facet flatten() {
+        return this;
+    }
 
     @Override
     public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
         return getAnnotationSource().getAnnotation(annotationType);
+    }
+
+    @Override
+    public Object getValue(Object pojo) {
+        try {
+            return getValueReflectively(pojo);
+        } catch (ReflectiveOperationException e) {
+            throw new HecateException(e, "Unable to get value for facet %s.",getName());
+        }
     }
 
     @Override
@@ -49,20 +79,11 @@ public abstract class ReflectionFacet implements Facet {
         }
     }
 
-    @Override
-    public Object getValue(Object pojo) {
-        try {
-
-            return getValueReflectively(pojo);
-        } catch (ReflectiveOperationException e) {
-            throw new HecateException(e, "Unable to get value for facet %s.",getName());
-        }
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Canonical Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     public String toString() {
         return getName();
     }
-
-    protected abstract Object getValueReflectively(Object pojo) throws ReflectiveOperationException;
-    protected abstract void setValueReflectively(Object pojo, Object value) throws ReflectiveOperationException;
 }

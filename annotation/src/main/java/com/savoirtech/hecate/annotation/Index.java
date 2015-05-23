@@ -14,31 +14,19 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.convert;
+package com.savoirtech.hecate.annotation;
 
-import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.util.GenericType;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface ConverterRegistry {
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.FIELD, ElementType.METHOD})
+public @interface Index {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Converter getConverter(Class<?> valueType);
-
-    default Converter getConverter(GenericType genericType) {
-        return genericType == null ? null : getConverter(genericType.getRawType());
-    }
-
-    default Converter getRequiredConverter(Class<?> valueType) {
-        Converter converter = getConverter(valueType);
-        if(converter == null) {
-            throw new HecateException("No converter found for type %s.", valueType.getCanonicalName());
-        }
-        return converter;
-    }
-
-    default Converter getRequiredConverter(GenericType genericType) {
-        return genericType == null ? null : getRequiredConverter(genericType.getRawType());
-    }
+    String value() default "";
 }

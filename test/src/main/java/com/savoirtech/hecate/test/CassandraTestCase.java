@@ -19,6 +19,7 @@ package com.savoirtech.hecate.test;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+import org.junit.After;
 import org.junit.Before;
 
 import java.util.function.Consumer;
@@ -31,21 +32,27 @@ public class CassandraTestCase extends AbstractTestCase {
     protected static final String KEYSPACE_NAME = "hecate";
 
     private Cluster cluster;
+    private Session session;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected Cluster getCluster() {
+    public Cluster getCluster() {
         return cluster;
+    }
+
+    protected Session getSession() {
+        return session;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected Session connect() {
-        return getCluster().connect(KEYSPACE_NAME);
+    @After
+    public void closeSession() {
+        session.close();
     }
 
     @Before
@@ -53,15 +60,20 @@ public class CassandraTestCase extends AbstractTestCase {
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
         EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
         cluster = Cluster.builder().addContactPoint("localhost").withPort(9142).build();
-        Session session = getCluster().newSession();
+        Session session = cluster.newSession();
         logger.debug("Creating keyspace {}...", KEYSPACE_NAME);
         session.execute(String.format("CREATE KEYSPACE IF NOT EXISTS %s WITH replication = {'class':'SimpleStrategy', 'replication_factor':1};", KEYSPACE_NAME));
         logger.debug("Keyspace {} created successfully.", KEYSPACE_NAME);
         session.close();
+        this.session = connect();
+    }
+
+    private Session connect() {
+        return cluster.connect(KEYSPACE_NAME);
     }
 
     protected void withSession(Consumer<Session> consumer) {
-        try(Session session = connect()) {
+        try (Session session = connect()) {
             consumer.accept(session);
         }
     }

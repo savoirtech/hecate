@@ -14,31 +14,13 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.convert;
+package com.savoirtech.hecate.pojo.dao;
 
-import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.util.GenericType;
-
-public interface ConverterRegistry {
+public interface PojoDaoFactory {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Converter getConverter(Class<?> valueType);
-
-    default Converter getConverter(GenericType genericType) {
-        return genericType == null ? null : getConverter(genericType.getRawType());
-    }
-
-    default Converter getRequiredConverter(Class<?> valueType) {
-        Converter converter = getConverter(valueType);
-        if(converter == null) {
-            throw new HecateException("No converter found for type %s.", valueType.getCanonicalName());
-        }
-        return converter;
-    }
-
-    default Converter getRequiredConverter(GenericType genericType) {
-        return genericType == null ? null : getRequiredConverter(genericType.getRawType());
-    }
+    <I,P> PojoDao<I,P> createPojoDao(Class<P> pojoClass);
+    <I,P> PojoDao<I,P> createPojoDao(Class<P> pojoClass, String tableName);
 }

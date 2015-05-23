@@ -21,9 +21,9 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.PojoMappingFactory;
 import com.savoirtech.hecate.pojo.persistence.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -34,7 +34,6 @@ public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Session session;
-    private final PojoMappingFactory pojoMappingFactory;
     private final List<Consumer<Statement>> defaultStatementModifiers;
 
     private final LoadingCache<PojoMapping<?>, PojoInsert<?>> insertCache = CacheBuilder.newBuilder().build(new InsertCacheLoader());
@@ -47,9 +46,12 @@ public class DefaultPersistenceContext implements PersistenceContext {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPersistenceContext(Session session, PojoMappingFactory pojoMappingFactory, List<Consumer<Statement>> defaultStatementModifiers) {
+    public DefaultPersistenceContext(Session session) {
+        this(session, Collections.emptyList());
+    }
+
+    public DefaultPersistenceContext(Session session, List<Consumer<Statement>> defaultStatementModifiers) {
         this.session = session;
-        this.pojoMappingFactory = pojoMappingFactory;
         this.defaultStatementModifiers = defaultStatementModifiers;
     }
 
@@ -58,18 +60,18 @@ public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public Dehydrator createDehydrator() {
-        return new DefaultDehydrator(this);
+    public Dehydrator createDehydrator(int ttl, List<Consumer<Statement>> modifiers) {
+        return new DefaultDehydrator(this, ttl, modifiers);
     }
 
     @Override
-    public Evaporator createEvaporator() {
-        return new DefaultEvaporator(this);
+    public Evaporator createEvaporator(List<Consumer<Statement>> modifiers) {
+        return new DefaultEvaporator(this, modifiers);
     }
 
     @Override
-    public Hydrator createHydrator() {
-        return new DefaultHydrator(this);
+    public Hydrator createHydrator(List<Consumer<Statement>> modifiers) {
+        return new DefaultHydrator(this,modifiers);
     }
 
     @Override

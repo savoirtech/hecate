@@ -14,42 +14,66 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.verify;
+package com.savoirtech.hecate.pojo.entities;
 
-import com.datastax.driver.core.Session;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.PojoMappingVerifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.savoirtech.hecate.annotation.Id;
 
-public class CreateSchemaVerifier implements PojoMappingVerifier {
+import java.util.UUID;
+
+public class NestedPojo {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Logger LOGGER = LoggerFactory.getLogger(CreateSchemaVerifier.class);
+    @Id
+    private String id = UUID.randomUUID().toString();
 
-    private final Session session;
+    private String data;
 
 //----------------------------------------------------------------------------------------------------------------------
-// Constructors
+// Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public CreateSchemaVerifier(Session session) {
-        this.session = session;
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// PojoMappingVerifier Implementation
+// Canonical Methods
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void verify(PojoMapping<?> mapping) {
-        LOGGER.info("Creating schema for {}...", mapping);
-        mapping.createCreateStatements().forEach(stmt -> {
-            LOGGER.info("\n{}\n", stmt.getQueryString());
-            session.execute(stmt);
-        });
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
+        NestedPojo that = (NestedPojo) o;
+
+        if (!id.equals(that.id)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }

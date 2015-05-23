@@ -17,7 +17,6 @@
 package com.savoirtech.hecate.pojo.facet;
 
 import com.savoirtech.hecate.annotation.Column;
-import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,24 +41,26 @@ public class SubFacetTest extends Assert {
         lenientFacet = new SubFacet(parentFacet, childFacet, true);
     }
 
-    @Test(expected = HecateException.class)
+    @Test
     public void testStrictSetValue() {
         Parent parent = new Parent();
         strictFacet.setValue(parent, "test_value");
+        assertNull(parent.child);
     }
 
-    @Test(expected = HecateException.class)
+    @Test
     public void testStrictGetValue() {
         Parent parent = new Parent();
-        strictFacet.getValue(parent);
+        assertNull(strictFacet.getValue(parent));
+        parent.child = new Child();
+        assertNull(strictFacet.getValue(parent));
     }
 
     @Test
     public void testLenientSetValue() {
         Parent parent = new Parent();
         lenientFacet.setValue(parent, "test_value");
-        assertNull(parent.child);
-        parent.child = new Child();
+        assertNotNull(parent.child);
         lenientFacet.setValue(parent, "test_value");
         assertEquals("test_value", parent.child.property);
     }

@@ -39,6 +39,8 @@ public interface Facet {
 
     Object getValue(Object pojo);
 
+    Facet flatten();
+
     <A extends Annotation> boolean hasAnnotation(Class<A> annotationType);
 
     default boolean isCascadeDelete() {

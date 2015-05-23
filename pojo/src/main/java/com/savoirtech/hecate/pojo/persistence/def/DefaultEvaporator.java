@@ -38,13 +38,15 @@ public class DefaultEvaporator implements Evaporator {
     private final Multimap<PojoMapping<?>, Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
     private final Multimap<PojoMapping<?>, Object> visited = MultimapBuilder.hashKeys().hashSetValues().build();
     private final PersistenceContext persistenceContext;
+    private final List<Consumer<Statement>> modifiers;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultEvaporator(PersistenceContext persistenceContext) {
+    public DefaultEvaporator(PersistenceContext persistenceContext, List<Consumer<Statement>> modifiers) {
         this.persistenceContext = persistenceContext;
+        this.modifiers = modifiers;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -63,7 +65,7 @@ public class DefaultEvaporator implements Evaporator {
     }
 
     @Override
-    public void execute(List<Consumer<Statement>> modifiers) {
+    public void execute() {
         while (!agenda.isEmpty()) {
             final Set<PojoMapping<?>> pojoMappings = new HashSet<>(agenda.keySet());
             pojoMappings.forEach(mapping -> {

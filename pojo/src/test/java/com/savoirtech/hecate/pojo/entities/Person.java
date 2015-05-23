@@ -14,42 +14,60 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.verify;
+package com.savoirtech.hecate.pojo.entities;
 
-import com.datastax.driver.core.Session;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.PojoMappingVerifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.savoirtech.hecate.annotation.Embedded;
+import com.savoirtech.hecate.annotation.Id;
 
-public class CreateSchemaVerifier implements PojoMappingVerifier {
+import java.util.UUID;
+
+public class Person {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Logger LOGGER = LoggerFactory.getLogger(CreateSchemaVerifier.class);
-
-    private final Session session;
+    @Id
+    private String ssn = UUID.randomUUID().toString();
+    
+    private String lastName;
+    private String firstName;
+    
+    @Embedded
+    private Address homeAddress;
 
 //----------------------------------------------------------------------------------------------------------------------
-// Constructors
+// Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public CreateSchemaVerifier(Session session) {
-        this.session = session;
+    public String getFirstName() {
+        return firstName;
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// PojoMappingVerifier Implementation
-//----------------------------------------------------------------------------------------------------------------------
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
-    @Override
-    public void verify(PojoMapping<?> mapping) {
-        LOGGER.info("Creating schema for {}...", mapping);
-        mapping.createCreateStatements().forEach(stmt -> {
-            LOGGER.info("\n{}\n", stmt.getQueryString());
-            session.execute(stmt);
-        });
+    public Address getHomeAddress() {
+        return homeAddress;
+    }
 
+    public void setHomeAddress(Address homeAddress) {
+        this.homeAddress = homeAddress;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getSsn() {
+        return ssn;
+    }
+
+    public void setSsn(String ssn) {
+        this.ssn = ssn;
     }
 }

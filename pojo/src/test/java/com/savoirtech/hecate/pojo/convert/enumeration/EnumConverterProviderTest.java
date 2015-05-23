@@ -14,31 +14,25 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.convert;
+package com.savoirtech.hecate.pojo.convert.enumeration;
 
-import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.util.GenericType;
+import com.savoirtech.hecate.pojo.convert.Converter;
+import com.savoirtech.hecate.pojo.util.Gender;
+import com.savoirtech.hecate.test.AbstractTestCase;
+import org.junit.Test;
 
-public interface ConverterRegistry {
+public class EnumConverterProviderTest extends AbstractTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Converter getConverter(Class<?> valueType);
-
-    default Converter getConverter(GenericType genericType) {
-        return genericType == null ? null : getConverter(genericType.getRawType());
-    }
-
-    default Converter getRequiredConverter(Class<?> valueType) {
-        Converter converter = getConverter(valueType);
-        if(converter == null) {
-            throw new HecateException("No converter found for type %s.", valueType.getCanonicalName());
-        }
-        return converter;
-    }
-
-    default Converter getRequiredConverter(GenericType genericType) {
-        return genericType == null ? null : getRequiredConverter(genericType.getRawType());
+    @Test
+    public void testCreateConverter() {
+        EnumConverterProvider provider = new EnumConverterProvider();
+        assertEquals(EnumConverter.class, provider.converterType());
+        Converter converter = provider.createConverter(Gender.class);
+        assertTrue(converter instanceof EnumConverter);
+        EnumConverter enumConverter = (EnumConverter)converter;
+        assertEquals(Gender.class, enumConverter.getEnumType());
     }
 }

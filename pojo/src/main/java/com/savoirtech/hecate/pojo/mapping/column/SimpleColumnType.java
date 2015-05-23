@@ -30,7 +30,7 @@ public class SimpleColumnType implements ColumnType<Object,Object> {
 
     @Override
     public Iterable<Object> columnElements(Object columnValue) {
-        return Collections.singleton(columnValue);
+        return columnValue == null ? Collections.emptyList() : Collections.singleton(columnValue);
     }
 
     @Override
@@ -50,6 +50,6 @@ public class SimpleColumnType implements ColumnType<Object,Object> {
 
     @Override
     public Iterable<Object> facetElements(Object facetValue) {
-        return Collections.singleton(facetValue);
+        return facetValue == null ? Collections.emptyList() : Collections.singleton(facetValue);
     }
 }

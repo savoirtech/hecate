@@ -18,10 +18,8 @@ package com.savoirtech.hecate.pojo.mapping;
 
 import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
-import com.savoirtech.hecate.annotation.Cascade;
-import com.savoirtech.hecate.annotation.ClusteringColumn;
-import com.savoirtech.hecate.annotation.Id;
-import com.savoirtech.hecate.annotation.PartitionKey;
+import com.datastax.driver.core.schemabuilder.SchemaStatement;
+import com.savoirtech.hecate.annotation.*;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
@@ -32,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -127,7 +126,8 @@ public class PojoMapping<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public Create createCreateStatement() {
+    public List<SchemaStatement> createCreateStatements() {
+        List<SchemaStatement> schemaStatements = new LinkedList<>();
         Create create = SchemaBuilder.createTable(tableName);
         idMappings.forEach(mapping -> {
             String columnName = mapping.getFacet().getColumnName();
@@ -145,7 +145,14 @@ public class PojoMapping<P> {
             create.addColumn(mapping.getFacet().getColumnName(), mapping.getDataType());
         });
         create.ifNotExists();
-        return create;
+        schemaStatements.add(create);
+
+        simpleMappings.forEach(mapping -> {
+            if(mapping.getFacet().hasAnnotation(Index.class)) {
+                schemaStatements.add(SchemaBuilder.createIndex(PojoUtils.indexName(mapping.getFacet())).onTable(tableName).andColumn(mapping.getFacet().getColumnName()));
+            }
+        });
+        return schemaStatements;
     }
 
     public ScalarFacetMapping getForeignKeyMapping() {

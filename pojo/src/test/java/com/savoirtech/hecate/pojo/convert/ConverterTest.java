@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.persistence;
+package com.savoirtech.hecate.pojo.convert;
 
-import com.datastax.driver.core.Statement;
+import com.savoirtech.hecate.test.AbstractTestCase;
+import org.junit.Test;
 
-import java.util.List;
-import java.util.function.Consumer;
+public class ConverterTest extends AbstractTestCase {
+    @Test
+    public void testNullConverter() {
+        assertNull(Converter.NULL_CONVERTER.getDataType());
+        assertNull(Converter.NULL_CONVERTER.toColumnValue(null));
+        assertNull(Converter.NULL_CONVERTER.toFacetValue(null));
+    }
 
-public interface PojoInsert<P> {
-    void insert(P pojo, Dehydrator dehydrator, int ttl, List<Consumer<Statement>> modifiers);
 }

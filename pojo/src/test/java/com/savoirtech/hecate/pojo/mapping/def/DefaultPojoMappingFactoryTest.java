@@ -21,8 +21,6 @@ import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.Column;
 import com.savoirtech.hecate.annotation.Id;
 import com.savoirtech.hecate.annotation.PartitionKey;
-import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
-import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
 import com.savoirtech.hecate.test.AbstractTestCase;
@@ -38,7 +36,7 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry());
+    private final DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
@@ -52,7 +50,6 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
 
     private <P> PojoMapping<P> createMapping(Class<P> pojoClass) {
         PojoMapping<P> mapping = factory.createPojoMapping(pojoClass);
-        logger.info("{} schema:\n{}\n", pojoClass.getSimpleName(), mapping.createCreateStatement());
         return mapping;
     }
 

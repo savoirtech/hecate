@@ -54,6 +54,7 @@ public class ArrayColumnType implements ColumnType<List<Object>,Object>{
         int index = 0;
         for (Object element : columnValue) {
             Array.set(array,index,function.apply(element));
+            index++;
         }
         return array;
     }

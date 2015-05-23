@@ -14,57 +14,36 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.convert.enumeration;
+package com.savoirtech.hecate.pojo.test;
 
-import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.convert.Converter;
+import com.datastax.driver.core.Session;
+import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactory;
+import com.savoirtech.hecate.pojo.mapping.verify.CreateSchemaVerifier;
+import com.savoirtech.hecate.test.CassandraTestCase;
+import org.junit.Before;
 
-public class EnumConverter implements Converter {
+public abstract class AbstractDaoTestCase extends CassandraTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Class<? extends Enum> enumType;
-
-//----------------------------------------------------------------------------------------------------------------------
-// Constructors
-//----------------------------------------------------------------------------------------------------------------------
-
-    public EnumConverter(Class<? extends Enum> enumType) {
-        this.enumType = enumType;
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Converter Implementation
-//----------------------------------------------------------------------------------------------------------------------
-
-
-    @Override
-    public DataType getDataType() {
-        return DataType.varchar();
-    }
-
-    @Override
-    public Object toColumnValue(Object value) {
-        if (value == null) {
-            return null;
-        }
-        return value.toString();
-    }
-
-    @Override
-    public Object toFacetValue(Object value) {
-        if (value == null) {
-            return null;
-        }
-        return Enum.valueOf(enumType, value.toString());
-    }
+    private DefaultPojoDaoFactory factory;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public Class<? extends Enum> getEnumType() {
-        return enumType;
+    public DefaultPojoDaoFactory getFactory() {
+        return factory;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Before
+    public void createDaoFactory() {
+        Session session = getSession();
+        this.factory = new DefaultPojoDaoFactory(session, new CreateSchemaVerifier(session));
     }
 }

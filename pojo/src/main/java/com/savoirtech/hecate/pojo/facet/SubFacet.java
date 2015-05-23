@@ -16,8 +16,8 @@
 
 package com.savoirtech.hecate.pojo.facet;
 
-import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.util.GenericType;
+import com.savoirtech.hecate.pojo.util.PojoUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -30,21 +30,26 @@ public class SubFacet implements Facet {
     public static final String SEPARATOR = ".";
     private final Facet parent;
     private final Facet child;
-    private final boolean allowNullParent;
+    private final boolean autoCreateParent;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public SubFacet(Facet parent, Facet child, boolean allowNullParent) {
+    public SubFacet(Facet parent, Facet child, boolean autoCreateParent) {
         this.parent = parent;
         this.child = child;
-        this.allowNullParent = allowNullParent;
+        this.autoCreateParent = autoCreateParent;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Facet Implementation
 //----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public Facet flatten() {
+        return child;
+    }
 
     @Override
     public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
@@ -91,8 +96,10 @@ public class SubFacet implements Facet {
 
     private Object parentValue(Object pojo) {
         Object parentValue = parent.getValue(pojo);
-        if(parentValue == null && !allowNullParent) {
-            throw new HecateException("Null not allowed for %s", getName());
+        if(parentValue == null && autoCreateParent) {
+            Object newParent = PojoUtils.newPojo(parent.getType().getRawType());
+            parent.setValue(pojo, newParent);
+            return newParent;
         }
         return parentValue;
     }

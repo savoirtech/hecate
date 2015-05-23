@@ -14,42 +14,48 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.verify;
+package com.savoirtech.hecate.pojo.entities;
 
-import com.datastax.driver.core.Session;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.PojoMappingVerifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.savoirtech.hecate.annotation.ClusteringColumn;
+import com.savoirtech.hecate.annotation.PartitionKey;
 
-public class CreateSchemaVerifier implements PojoMappingVerifier {
+public class CompositeKey {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Logger LOGGER = LoggerFactory.getLogger(CreateSchemaVerifier.class);
-
-    private final Session session;
+    @PartitionKey(order=0)
+    private String part1;
+    @PartitionKey(order=1)
+    private String part2;
+    @ClusteringColumn
+    private String cluster1;
 
 //----------------------------------------------------------------------------------------------------------------------
-// Constructors
+// Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public CreateSchemaVerifier(Session session) {
-        this.session = session;
+    public String getCluster1() {
+        return cluster1;
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// PojoMappingVerifier Implementation
-//----------------------------------------------------------------------------------------------------------------------
+    public void setCluster1(String cluster1) {
+        this.cluster1 = cluster1;
+    }
 
-    @Override
-    public void verify(PojoMapping<?> mapping) {
-        LOGGER.info("Creating schema for {}...", mapping);
-        mapping.createCreateStatements().forEach(stmt -> {
-            LOGGER.info("\n{}\n", stmt.getQueryString());
-            session.execute(stmt);
-        });
+    public String getPart1() {
+        return part1;
+    }
 
+    public void setPart1(String part1) {
+        this.part1 = part1;
+    }
+
+    public String getPart2() {
+        return part2;
+    }
+
+    public void setPart2(String part2) {
+        this.part2 = part2;
     }
 }
