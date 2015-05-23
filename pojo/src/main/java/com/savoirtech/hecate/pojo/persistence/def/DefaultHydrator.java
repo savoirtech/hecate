@@ -16,8 +16,7 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Iterables;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.Hydrator;
@@ -35,7 +34,7 @@ public class DefaultHydrator implements Hydrator {
 
     private final PersistenceContext persistenceContext;
     private final List<Pair<PojoMapping<?>, Consumer<Hydrator>>> callbacks = new LinkedList<>();
-    private final Multimap<PojoMapping<?>, Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
+    private final Map<PojoMapping<Object>,List<Object>> agenda = new HashMap<>();
     private final Map<PojoMapping, Map<Object, Object>> resolved = new HashMap<>();
     private final StatementOptions options;
 
@@ -55,10 +54,10 @@ public class DefaultHydrator implements Hydrator {
     @Override
     public void execute() {
         while (!agenda.isEmpty()) {
-            final Set<PojoMapping<?>> pojoMappings = new HashSet<>(agenda.keySet());
+            final Set<PojoMapping<Object>> pojoMappings = new HashSet<>(agenda.keySet());
             pojoMappings.forEach(mapping -> {
                 Map<Object, Object> idToPojo = getOrCreateIdToPojo(mapping);
-                List<Object> ids = new ArrayList<>(agenda.removeAll(mapping));
+                List<Object> ids = agenda.remove(mapping);
                 ids.removeAll(idToPojo.keySet());
                 if (!ids.isEmpty()) {
                     List<?> pojos = persistenceContext.findByIds(mapping).execute(options, ids).list();
@@ -83,8 +82,14 @@ public class DefaultHydrator implements Hydrator {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void resolveElements(PojoMapping<?> pojoMapping, Iterable<Object> cassandraValues, Consumer<Hydrator> callback) {
-        agenda.putAll(pojoMapping, cassandraValues);
+        List<Object> list = agenda.get(pojoMapping);
+        if(list == null) {
+            list = new LinkedList<>();
+            agenda.put((PojoMapping<Object>)pojoMapping,list);
+        }
+        Iterables.addAll(list, cassandraValues);
         callbacks.add(new ImmutablePair<>(pojoMapping, callback));
     }
 

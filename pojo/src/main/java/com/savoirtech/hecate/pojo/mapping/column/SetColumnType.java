@@ -39,8 +39,7 @@ public class SetColumnType implements ColumnType<Set<Object>, Set<Object>> {
 
     @Override
     public Set<Object> getColumnValue(Set<Object> facetValue, Function<Object, Object> function) {
-        Set<Object> columnValue = facetValue.stream().map(function).collect(Collectors.toSet());
-        return columnValue;
+        return facetValue.stream().map(function).collect(Collectors.toSet());
     }
 
     @Override

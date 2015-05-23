@@ -189,7 +189,7 @@ public class SimplePojo {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    public static enum Nums {
+    public enum Nums {
         One, Two, Three
     }
 }

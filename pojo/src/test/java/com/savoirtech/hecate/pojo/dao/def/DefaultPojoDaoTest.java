@@ -70,7 +70,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         final NestedPojo nestedPojo = new NestedPojo();
         pojo.setNestedPojo(nestedPojo);
         pojo.setPojoArray(new NestedPojo[]{nestedPojo});
-        pojo.setPojoList(Arrays.asList(nestedPojo));
+        pojo.setPojoList(Collections.singletonList(nestedPojo));
         Map<String, NestedPojo> pojoMap = new HashMap<>();
         pojoMap.put("one", nestedPojo);
         pojo.setPojoMap(pojoMap);

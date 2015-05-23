@@ -51,7 +51,6 @@ public class PropertyFacetProviderTest extends Assert {
     public void testGetType() {
         FacetProvider provider = new PropertyFacetProvider();
         List<Facet> facets = provider.getFacets(PropertiesPojo.class);
-        PropertiesPojo pojo = new PropertiesPojo();
         Facet facet = facets.get(0);
         assertEquals(String.class, facet.getType().getRawType());
     }

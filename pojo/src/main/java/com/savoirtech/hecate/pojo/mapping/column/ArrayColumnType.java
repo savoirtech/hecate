@@ -63,7 +63,7 @@ public class ArrayColumnType implements ColumnType<List<Object>, Object> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected List<Object> arrayToList(Object array, Function<Object, Object> elementConverter) {
+    private List<Object> arrayToList(Object array, Function<Object, Object> elementConverter) {
         final int length = Array.getLength(array);
         final List<Object> list = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {

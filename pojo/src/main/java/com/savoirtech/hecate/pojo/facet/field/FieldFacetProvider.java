@@ -21,9 +21,9 @@ import com.savoirtech.hecate.pojo.facet.FacetProvider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FieldFacetProvider implements FacetProvider {
 //----------------------------------------------------------------------------------------------------------------------
@@ -44,13 +44,7 @@ public class FieldFacetProvider implements FacetProvider {
 
     static List<Facet> facetsOf(Class<?> pojoType) {
         final List<Field> fields = getFields(pojoType);
-        final List<Facet> facets = new ArrayList<>();
-        for (Field field : fields) {
-            if (isPersistable(field)) {
-                facets.add(new FieldFacet(pojoType, field));
-            }
-        }
-        return facets;
+        return fields.stream().filter(FieldFacetProvider::isPersistable).map(field -> new FieldFacet(pojoType, field)).collect(Collectors.toList());
     }
 
     private static List<Field> getFields(Class<?> pojoType) {
