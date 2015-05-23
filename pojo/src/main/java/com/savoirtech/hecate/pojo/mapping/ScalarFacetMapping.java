@@ -14,64 +14,67 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.column;
+package com.savoirtech.hecate.pojo.mapping;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.convert.Converter;
+import com.savoirtech.hecate.pojo.facet.Facet;
+import com.savoirtech.hecate.pojo.mapping.column.ColumnType;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
-public class MapColumnType implements ColumnType<Map<Object, Object>, Map<Object, Object>> {
+public class ScalarFacetMapping extends AbstractFacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Converter keyConverter;
+    private final Converter elementConverter;
+    private final DataType dataType;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public MapColumnType(Converter keyConverter) {
-        this.keyConverter = keyConverter;
+    @SuppressWarnings("unchecked")
+    public ScalarFacetMapping(Facet facet, ColumnType<?, ?> columnType, Converter elementConverter) {
+        super(facet, (ColumnType<Object, Object>) columnType);
+        this.elementConverter = elementConverter;
+        this.dataType = columnType.getDataType(elementConverter.getDataType());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// ColumnType Implementation
+// FacetMapping Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public Iterable<Object> columnElements(Map<Object, Object> columnValue) {
-        return columnValue.values();
+    public void accept(FacetMappingVisitor visitor) {
+        visitor.visitScalar(this);
     }
 
     @Override
-    public Iterable<Object> facetElements(Map<Object, Object> facetValue) {
-        return facetValue.values();
+    public DataType getDataType() {
+        return dataType;
     }
 
     @Override
-    public Map<Object, Object> getColumnValue(Map<Object, Object> facetValue, Function<Object, Object> elementConverter) {
-        Map<Object, Object> columnValue = new HashMap<>();
-        for (Map.Entry<Object, Object> entry : facetValue.entrySet()) {
-            columnValue.put(keyConverter.toColumnValue(entry.getKey()), elementConverter.apply(entry.getValue()));
+    public boolean isReference() {
+        return false;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    protected Function<Object, Object> elementColumnValue() {
+        return elementConverter::toColumnValue;
+    }
+
+    public void setFacetValue(Object pojo, Object columnValue) {
+        if (columnValue == null) {
+            getFacet().setValue(pojo, null);
+        } else {
+            getFacet().setValue(pojo, getColumnType().getFacetValue(columnValue, elementConverter::toFacetValue, getFacet().getType().getElementType().getRawType()));
         }
-        return columnValue;
-    }
-
-    @Override
-    public DataType getDataType(DataType elementDataType) {
-        return DataType.map(keyConverter.getDataType(), elementDataType);
-    }
-
-    @Override
-    public Map<Object, Object> getFacetValue(Map<Object, Object> columnValue, Function<Object, Object> function, Class<?> elementType) {
-        Map<Object, Object> facetValue = new HashMap<>();
-        for (Map.Entry<Object, Object> entry : columnValue.entrySet()) {
-            facetValue.put(keyConverter.toFacetValue(entry.getKey()), function.apply(entry.getValue()));
-        }
-        return facetValue;
     }
 }

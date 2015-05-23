@@ -20,12 +20,9 @@ import com.datastax.driver.core.*;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.*;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Consumer;
 
 
 public class DefaultPersistenceContext implements PersistenceContext {
@@ -34,25 +31,25 @@ public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Session session;
-    private final List<Consumer<Statement>> defaultStatementModifiers;
+    private final StatementOptions defaultOptions;
 
     private final LoadingCache<PojoMapping<?>, PojoInsert<?>> insertCache = CacheBuilder.newBuilder().build(new InsertCacheLoader());
-    private final LoadingCache<PojoMapping<?>,PojoQuery<?>> findByIdCache = CacheBuilder.newBuilder().build(new FindByIdCacheLoader());
-    private final LoadingCache<PojoMapping<?>,PojoQuery<?>> findByIdsCache = CacheBuilder.newBuilder().build(new FindByIdsCacheLoader());
-    private final LoadingCache<PojoMapping<?>,PojoFindForDelete> findForDeleteCache = CacheBuilder.newBuilder().build(new FindForDeleteCacheLoader());
-    private final LoadingCache<PojoMapping<?>,PojoDelete<?>> deleteCache = CacheBuilder.newBuilder().build(new DeleteCacheLoader());
+    private final LoadingCache<PojoMapping<?>, PojoQuery<?>> findByIdCache = CacheBuilder.newBuilder().build(new FindByIdCacheLoader());
+    private final LoadingCache<PojoMapping<?>, PojoQuery<?>> findByIdsCache = CacheBuilder.newBuilder().build(new FindByIdsCacheLoader());
+    private final LoadingCache<PojoMapping<?>, PojoFindForDelete> findForDeleteCache = CacheBuilder.newBuilder().build(new FindForDeleteCacheLoader());
+    private final LoadingCache<PojoMapping<?>, PojoDelete<?>> deleteCache = CacheBuilder.newBuilder().build(new DeleteCacheLoader());
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPersistenceContext(Session session) {
-        this(session, Collections.emptyList());
+        this(session, StatementOptions.EMPTY);
     }
 
-    public DefaultPersistenceContext(Session session, List<Consumer<Statement>> defaultStatementModifiers) {
+    public DefaultPersistenceContext(Session session, StatementOptions defaultOptions) {
         this.session = session;
-        this.defaultStatementModifiers = defaultStatementModifiers;
+        this.defaultOptions = defaultOptions;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -60,18 +57,18 @@ public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public Dehydrator createDehydrator(int ttl, List<Consumer<Statement>> modifiers) {
-        return new DefaultDehydrator(this, ttl, modifiers);
+    public Dehydrator createDehydrator(int ttl, StatementOptions options) {
+        return new DefaultDehydrator(this, ttl, options);
     }
 
     @Override
-    public Evaporator createEvaporator(List<Consumer<Statement>> modifiers) {
-        return new DefaultEvaporator(this, modifiers);
+    public Evaporator createEvaporator(StatementOptions options) {
+        return new DefaultEvaporator(this, options);
     }
 
     @Override
-    public Hydrator createHydrator(List<Consumer<Statement>> modifiers) {
-        return new DefaultHydrator(this,modifiers);
+    public Hydrator createHydrator(StatementOptions options) {
+        return new DefaultHydrator(this, options);
     }
 
     @Override
@@ -80,9 +77,9 @@ public class DefaultPersistenceContext implements PersistenceContext {
     }
 
     @Override
-    public ResultSet executeStatement(Statement statement, List<Consumer<Statement>> statementModifiers) {
-        defaultStatementModifiers.stream().forEach(mod -> mod.accept(statement));
-        statementModifiers.stream().forEach(mod -> mod.accept(statement));
+    public ResultSet executeStatement(Statement statement, StatementOptions options) {
+        defaultOptions.applyTo(statement);
+        options.applyTo(statement);
         return session.execute(statement);
     }
 
@@ -94,13 +91,13 @@ public class DefaultPersistenceContext implements PersistenceContext {
     @Override
     @SuppressWarnings("unchecked")
     public <P> PojoQuery<P> findById(PojoMapping<P> mapping) {
-        return (PojoQuery<P>)findByIdCache.getUnchecked(mapping);
+        return (PojoQuery<P>) findByIdCache.getUnchecked(mapping);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <P> PojoQuery<P> findByIds(PojoMapping<P> mapping) {
-        return (PojoQuery<P>)findByIdsCache.getUnchecked(mapping);
+        return (PojoQuery<P>) findByIdsCache.getUnchecked(mapping);
     }
 
     @Override
@@ -111,7 +108,7 @@ public class DefaultPersistenceContext implements PersistenceContext {
     @Override
     @SuppressWarnings("unchecked")
     public <P> PojoInsert<P> insert(PojoMapping<P> mapping) {
-        return (PojoInsert<P>)insertCache.getUnchecked(mapping);
+        return (PojoInsert<P>) insertCache.getUnchecked(mapping);
     }
 
     @Override

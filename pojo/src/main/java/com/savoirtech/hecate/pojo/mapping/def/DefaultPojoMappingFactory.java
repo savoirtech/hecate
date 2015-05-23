@@ -31,9 +31,9 @@ import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMappingFactory;
 import com.savoirtech.hecate.pojo.mapping.PojoMappingVerifier;
 import com.savoirtech.hecate.pojo.mapping.column.*;
-import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
-import com.savoirtech.hecate.pojo.mapping.facet.ReferenceFacetMapping;
-import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
+import com.savoirtech.hecate.pojo.mapping.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.ReferenceFacetMapping;
+import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.util.GenericType;
 import com.savoirtech.hecate.pojo.util.PojoUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -107,17 +107,20 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
                 }
             });
         } else {
+            LOGGER.debug("Creating scalar @Id mapping for {}...", idFacet.getName());
             mappings.add(new ScalarFacetMapping(idFacet, SimpleColumnType.INSTANCE, converter));
         }
     }
 
     private void addEmbeddedMappings(Facet parentFacet, boolean allowNullParent, List<? super ScalarFacetMapping> target, Consumer<Facet> verifier) {
+        LOGGER.debug("Creating embedded mappings for {}...", parentFacet.getName());
         if (allowNullParent) {
             target.add(new ScalarFacetMapping(parentFacet, EmbeddedColumnType.INSTANCE, Converter.NULL_CONVERTER));
         }
         List<Facet> subFacets = parentFacet.subFacets(!allowNullParent);
         for (Facet subFacet : subFacets) {
             verifier.accept(subFacet);
+            LOGGER.debug("Creating embedded mapping for sub-facet {}...", subFacet.getName());
             target.add(new ScalarFacetMapping(subFacet, SimpleColumnType.INSTANCE, converterRegistry.getRequiredConverter(subFacet.getType())));
         }
     }
@@ -127,7 +130,6 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
         final ColumnType<?, ?> columnType = createColumnType(facet);
         final Converter converter = converterRegistry.getConverter(facet.getType().getElementType());
         if (facet.hasAnnotation(Embedded.class)) {
-            LOGGER.debug("Creating scalar mapping for {}...", facet.getName());
             addEmbeddedMappings(facet, true, mappings, Facet::getName);
         } else if (converter != null) {
             LOGGER.debug("Creating scalar mapping for {}...", facet.getName());

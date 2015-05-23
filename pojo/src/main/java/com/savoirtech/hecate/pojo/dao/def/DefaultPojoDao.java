@@ -16,8 +16,8 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
-import com.datastax.driver.core.Statement;
 import com.savoirtech.hecate.core.query.QueryResult;
+import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
@@ -25,11 +25,9 @@ import com.savoirtech.hecate.pojo.persistence.Evaporator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoQueryBuilder;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.function.Consumer;
 
-public class DefaultPojoDao<I,P> implements PojoDao<I,P> {
+public class DefaultPojoDao<I, P> implements PojoDao<I, P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -50,10 +48,9 @@ public class DefaultPojoDao<I,P> implements PojoDao<I,P> {
 // PojoDao Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    
     @Override
-    public void delete(I id, Consumer<Statement>... modifiers) {
-        Evaporator evaporator = persistenceContext.createEvaporator(Arrays.asList(modifiers));
+    public void delete(I id, StatementOptions options) {
+        Evaporator evaporator = persistenceContext.createEvaporator(options);
         evaporator.evaporate(pojoMapping, Collections.singleton(id));
         evaporator.execute();
     }
@@ -74,14 +71,13 @@ public class DefaultPojoDao<I,P> implements PojoDao<I,P> {
     }
 
     @Override
-    @SafeVarargs
-    public final void save(P pojo, Consumer<Statement>... modifiers) {
-        save(pojo, pojoMapping.getTtl(), modifiers);
+    public final void save(P pojo, StatementOptions options) {
+        save(pojo, pojoMapping.getTtl(), options);
     }
 
     @Override
-    public void save(P pojo, int ttl, Consumer<Statement>... modifiers) {
-        Dehydrator dehydrator = persistenceContext.createDehydrator(ttl, Arrays.asList(modifiers));
+    public void save(P pojo, int ttl, StatementOptions options) {
+        Dehydrator dehydrator = persistenceContext.createDehydrator(ttl, options);
         dehydrator.dehydrate(pojoMapping, Collections.singleton(pojo));
         dehydrator.execute();
     }

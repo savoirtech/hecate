@@ -38,7 +38,7 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoDaoFactory(Session session) {
-        this(session,null);
+        this(session, null);
     }
 
     public DefaultPojoDaoFactory(Session session, PojoMappingVerifier verifier) {

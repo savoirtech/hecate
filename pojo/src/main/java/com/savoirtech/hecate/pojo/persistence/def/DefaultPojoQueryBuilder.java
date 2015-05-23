@@ -20,15 +20,18 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
-import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
+import com.savoirtech.hecate.pojo.mapping.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoQueryBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 
@@ -109,7 +112,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         FacetMapping mapping = lookupMapping(facetName);
         String columnName = mapping.getFacet().getColumnName();
         where.and(QueryBuilder.eq(columnName, QueryBuilder.bindMarker()));
-        injectParameter(mapping,value);
+        injectParameter(mapping, value);
         return this;
     }
 
@@ -126,7 +129,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         FacetMapping mapping = lookupMapping(facetName);
         String columnName = mapping.getFacet().getColumnName();
         where.and(QueryBuilder.gt(columnName, QueryBuilder.bindMarker()));
-        injectParameter(mapping,value);
+        injectParameter(mapping, value);
         return this;
     }
 
@@ -143,7 +146,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         FacetMapping mapping = lookupMapping(facetName);
         String columnName = mapping.getFacet().getColumnName();
         where.and(QueryBuilder.gte(columnName, QueryBuilder.bindMarker()));
-        injectParameter(mapping,value);
+        injectParameter(mapping, value);
         return this;
     }
 
@@ -170,7 +173,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         FacetMapping mapping = lookupMapping(facetName);
         String columnName = mapping.getFacet().getColumnName();
         where.and(QueryBuilder.in(columnName, QueryBuilder.bindMarker()));
-        injectParameter(mapping,value);
+        injectParameter(mapping, value);
         return this;
     }
 
@@ -187,7 +190,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         FacetMapping mapping = lookupMapping(facetName);
         String columnName = mapping.getFacet().getColumnName();
         where.and(QueryBuilder.lt(columnName, QueryBuilder.bindMarker()));
-        injectParameter(mapping,value);
+        injectParameter(mapping, value);
         return this;
     }
 
@@ -204,7 +207,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         FacetMapping mapping = lookupMapping(facetName);
         String columnName = mapping.getFacet().getColumnName();
         where.and(QueryBuilder.lte(columnName, QueryBuilder.bindMarker()));
-        injectParameter(mapping,value);
+        injectParameter(mapping, value);
         return this;
     }
 
@@ -225,15 +228,15 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         injectedParameters.add(new InjectedParameter(parameterMappings.size(), columnValue));
     }
 
+    private String lookupColumn(String facetName) {
+        return lookupMapping(facetName).getFacet().getColumnName();
+    }
+
     private FacetMapping lookupMapping(String facetName) {
         FacetMapping mapping = facetMappings.get(facetName);
         if (mapping == null) {
             throw new HecateException("No facet named %s found in class %s.", facetName, pojoMapping.getPojoClass().getSimpleName());
         }
         return mapping;
-    }
-
-    private String lookupColumn(String facetName) {
-        return lookupMapping(facetName).getFacet().getColumnName();
     }
 }

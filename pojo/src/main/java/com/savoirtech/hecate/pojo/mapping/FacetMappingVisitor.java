@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.persistence;
+package com.savoirtech.hecate.pojo.mapping;
 
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-
-import java.util.function.Consumer;
-
-public interface Hydrator {
+public interface FacetMappingVisitor {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void execute();
+    void visitReference(ReferenceFacetMapping referenceMapping);
 
-    Object getPojo(PojoMapping<?> mapping, Object id);
-
-    void resolveElements(PojoMapping<?> pojoMapping, Iterable<Object> cassandraValues, Consumer<Hydrator> callback);
+    void visitScalar(ScalarFacetMapping scalarMapping);
 }

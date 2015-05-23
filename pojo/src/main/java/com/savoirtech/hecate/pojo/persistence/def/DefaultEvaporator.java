@@ -16,19 +16,17 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
-import com.datastax.driver.core.Statement;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Sets;
+import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.Evaporator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public class DefaultEvaporator implements Evaporator {
 //----------------------------------------------------------------------------------------------------------------------
@@ -38,15 +36,15 @@ public class DefaultEvaporator implements Evaporator {
     private final Multimap<PojoMapping<?>, Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
     private final Multimap<PojoMapping<?>, Object> visited = MultimapBuilder.hashKeys().hashSetValues().build();
     private final PersistenceContext persistenceContext;
-    private final List<Consumer<Statement>> modifiers;
+    private final StatementOptions options;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultEvaporator(PersistenceContext persistenceContext, List<Consumer<Statement>> modifiers) {
+    public DefaultEvaporator(PersistenceContext persistenceContext, StatementOptions options) {
         this.persistenceContext = persistenceContext;
-        this.modifiers = modifiers;
+        this.options = options;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -71,12 +69,12 @@ public class DefaultEvaporator implements Evaporator {
             pojoMappings.forEach(mapping -> {
                 Collection<Object> ids = agenda.removeAll(mapping);
                 if (mapping.isCascadeDelete()) {
-                    persistenceContext.findForDelete(mapping).execute(ids, DefaultEvaporator.this, modifiers);
+                    persistenceContext.findForDelete(mapping).execute(ids, DefaultEvaporator.this, options);
                 }
             });
         }
         for (PojoMapping<?> pojoMapping : visited.keySet()) {
-            persistenceContext.delete(pojoMapping).delete(visited.get(pojoMapping), modifiers);
+            persistenceContext.delete(pojoMapping).delete(visited.get(pojoMapping), options);
         }
     }
 }

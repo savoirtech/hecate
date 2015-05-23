@@ -46,10 +46,9 @@ public class CreateSchemaVerifier implements PojoMappingVerifier {
     @Override
     public void verify(PojoMapping<?> mapping) {
         LOGGER.info("Creating schema for {}...", mapping);
-        mapping.createCreateStatements().forEach(stmt -> {
+        mapping.createSchemaStatements().forEach(stmt -> {
             LOGGER.info("\n{}\n", stmt.getQueryString());
             session.execute(stmt);
         });
-
     }
 }

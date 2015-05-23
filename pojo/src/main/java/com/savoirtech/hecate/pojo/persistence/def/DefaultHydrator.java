@@ -16,9 +16,9 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
-import com.datastax.driver.core.Statement;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.Hydrator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
@@ -37,14 +37,15 @@ public class DefaultHydrator implements Hydrator {
     private final List<Pair<PojoMapping<?>, Consumer<Hydrator>>> callbacks = new LinkedList<>();
     private final Multimap<PojoMapping<?>, Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
     private final Map<PojoMapping, Map<Object, Object>> resolved = new HashMap<>();
-    private final List<Consumer<Statement>> modifiers;
+    private final StatementOptions options;
+
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultHydrator(PersistenceContext persistenceContext, List<Consumer<Statement>> modifiers) {
+    public DefaultHydrator(PersistenceContext persistenceContext, StatementOptions options) {
         this.persistenceContext = persistenceContext;
-        this.modifiers = modifiers;
+        this.options = options;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -60,7 +61,7 @@ public class DefaultHydrator implements Hydrator {
                 List<Object> ids = new ArrayList<>(agenda.removeAll(mapping));
                 ids.removeAll(idToPojo.keySet());
                 if (!ids.isEmpty()) {
-                    List<?> pojos = persistenceContext.findByIds(mapping).execute(modifiers, ids).list();
+                    List<?> pojos = persistenceContext.findByIds(mapping).execute(options, ids).list();
                     for (Object pojo : pojos) {
                         idToPojo.put(mapping.getForeignKeyMapping().getColumnValue(pojo), pojo);
                     }

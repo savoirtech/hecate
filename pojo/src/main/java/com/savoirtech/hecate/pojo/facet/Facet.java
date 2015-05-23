@@ -27,6 +27,8 @@ public interface Facet {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    Facet flatten();
+    
     <A extends Annotation> A getAnnotation(Class<A> annotationType);
 
     default String getColumnName() {
@@ -38,8 +40,6 @@ public interface Facet {
     GenericType getType();
 
     Object getValue(Object pojo);
-
-    Facet flatten();
 
     <A extends Annotation> boolean hasAnnotation(Class<A> annotationType);
 

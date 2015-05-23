@@ -21,8 +21,6 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.annotation.*;
 import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
-import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.util.PojoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,7 +124,7 @@ public class PojoMapping<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public List<SchemaStatement> createCreateStatements() {
+    public List<SchemaStatement> createSchemaStatements() {
         List<SchemaStatement> schemaStatements = new LinkedList<>();
         Create create = SchemaBuilder.createTable(tableName);
         idMappings.forEach(mapping -> {
@@ -148,7 +146,7 @@ public class PojoMapping<P> {
         schemaStatements.add(create);
 
         simpleMappings.forEach(mapping -> {
-            if(mapping.getFacet().hasAnnotation(Index.class)) {
+            if (mapping.getFacet().hasAnnotation(Index.class)) {
                 schemaStatements.add(SchemaBuilder.createIndex(PojoUtils.indexName(mapping.getFacet())).onTable(tableName).andColumn(mapping.getFacet().getColumnName()));
             }
         });

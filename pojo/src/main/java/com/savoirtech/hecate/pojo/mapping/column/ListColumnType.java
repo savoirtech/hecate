@@ -22,11 +22,10 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ListColumnType implements ColumnType<List<Object>,List<Object>> {
+public class ListColumnType implements ColumnType<List<Object>, List<Object>> {
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
-
 
     @Override
     public Iterable<Object> columnElements(List<Object> columnValue) {

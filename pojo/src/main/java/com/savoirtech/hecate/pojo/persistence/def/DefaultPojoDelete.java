@@ -17,18 +17,17 @@
 package com.savoirtech.hecate.pojo.persistence.def;
 
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.collect.Lists;
+import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
+import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoDelete;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
@@ -48,20 +47,19 @@ public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void delete(Iterable<Object> ids, List<Consumer<Statement>> modifiers) {
+    public void delete(Iterable<Object> ids, StatementOptions options) {
         List<ScalarFacetMapping> idMappings = getPojoMapping().getIdMappings();
-        if(idMappings.size() > 1) {
+        if (idMappings.size() > 1) {
             for (Object compositeKey : ids) {
                 final List<Object> parameters = idMappings.stream().map(mapping -> {
                     final Object facetValue = mapping.getFacet().flatten().getValue(compositeKey);
                     return mapping.getColumnValueForFacetValue(facetValue);
                 }).collect(Collectors.toList());
-                executeStatement(parameters, modifiers);
+                executeStatement(parameters, options);
             }
-        }
-        else {
+        } else {
             final ScalarFacetMapping mapping = idMappings.get(0);
-            executeStatement(Collections.singletonList(Lists.newLinkedList(ids).stream().map(mapping::getColumnValueForFacetValue).collect(Collectors.toList())), modifiers);
+            executeStatement(Collections.singletonList(Lists.newLinkedList(ids).stream().map(mapping::getColumnValueForFacetValue).collect(Collectors.toList())), options);
         }
     }
 
@@ -72,11 +70,10 @@ public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete
     @Override
     protected RegularStatement createStatement() {
         Delete.Where delete = QueryBuilder.delete().from(getPojoMapping().getTableName()).where();
-        if(getPojoMapping().getIdMappings().size() > 1) {
+        if (getPojoMapping().getIdMappings().size() > 1) {
             getPojoMapping().getIdMappings().forEach(mapping -> delete.and(QueryBuilder.eq(mapping.getFacet().getColumnName(), bindMarker())));
-        }
-        else {
-            getPojoMapping().getIdMappings().forEach(mapping -> delete.and(in(mapping.getFacet().getColumnName(),bindMarker())));
+        } else {
+            getPojoMapping().getIdMappings().forEach(mapping -> delete.and(in(mapping.getFacet().getColumnName(), bindMarker())));
         }
         return delete;
     }

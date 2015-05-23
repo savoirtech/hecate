@@ -41,7 +41,7 @@ public class PropertyFacetProvider implements FacetProvider {
 //----------------------------------------------------------------------------------------------------------------------
 
     private static Method accessible(Method method) {
-        if(method != null) {
+        if (method != null) {
             method.setAccessible(true);
         }
         return method;
@@ -63,8 +63,7 @@ public class PropertyFacetProvider implements FacetProvider {
     private static Method findDeclaredMethod(Class<?> c, String name, Class<?>... parameterTypes) {
         try {
             return c.getDeclaredMethod(name, parameterTypes);
-        }
-        catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException e) {
             if (c.getSuperclass() != null) {
                 return findDeclaredMethod(c.getSuperclass(), name, parameterTypes);
             }
@@ -111,9 +110,8 @@ public class PropertyFacetProvider implements FacetProvider {
 // FacetProvider Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    
     @Override
     public List<Facet> getFacets(Class<?> pojoClass) {
-        return facetsOf(pojoClass);    
+        return facetsOf(pojoClass);
     }
 }

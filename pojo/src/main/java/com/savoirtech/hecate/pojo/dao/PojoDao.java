@@ -16,18 +16,20 @@
 
 package com.savoirtech.hecate.pojo.dao;
 
-import com.datastax.driver.core.Statement;
 import com.savoirtech.hecate.core.query.QueryResult;
+import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.persistence.PojoQueryBuilder;
-
-import java.util.function.Consumer;
 
 public interface PojoDao<I, P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void delete(I id, Consumer<Statement>... modifiers);
+    default void delete(I id) {
+        delete(id, StatementOptions.EMPTY);
+    }
+
+    void delete(I id, StatementOptions options);
 
     PojoQueryBuilder<P> find();
 
@@ -35,7 +37,15 @@ public interface PojoDao<I, P> {
 
     QueryResult<P> findByIds(Iterable<I> ids);
 
-    void save(P pojo, Consumer<Statement>... modifiers);
+    default void save(P pojo) {
+        save(pojo, StatementOptions.EMPTY);
+    }
 
-    void save(P pojo, int ttl, Consumer<Statement>... modifiers);
+    void save(P pojo, StatementOptions options);
+
+    default void save(P pojo, int ttl) {
+        save(pojo, ttl, StatementOptions.EMPTY);
+    }
+
+    void save(P pojo, int ttl, StatementOptions options);
 }

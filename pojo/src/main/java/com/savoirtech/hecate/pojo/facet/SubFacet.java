@@ -96,7 +96,7 @@ public class SubFacet implements Facet {
 
     private Object parentValue(Object pojo) {
         Object parentValue = parent.getValue(pojo);
-        if(parentValue == null && autoCreateParent) {
+        if (parentValue == null && autoCreateParent) {
             Object newParent = PojoUtils.newPojo(parent.getType().getRawType());
             parent.setValue(pojo, newParent);
             return newParent;

@@ -19,25 +19,24 @@ package com.savoirtech.hecate.pojo.persistence.def;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.collect.Lists;
+import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
-import com.savoirtech.hecate.pojo.mapping.facet.FacetMappingVisitor;
-import com.savoirtech.hecate.pojo.mapping.facet.ReferenceFacetMapping;
-import com.savoirtech.hecate.pojo.mapping.facet.ScalarFacetMapping;
+import com.savoirtech.hecate.pojo.mapping.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.FacetMappingVisitor;
+import com.savoirtech.hecate.pojo.mapping.ReferenceFacetMapping;
+import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.Evaporator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoFindForDelete;
 import com.savoirtech.hecate.pojo.util.CqlUtils;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements PojoFindForDelete {
 //----------------------------------------------------------------------------------------------------------------------
@@ -57,7 +56,7 @@ public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements Poj
             mapping.accept(new FacetMappingVisitor() {
                 @Override
                 public void visitReference(ReferenceFacetMapping referenceMapping) {
-                    if(referenceMapping.getFacet().isCascadeDelete()) {
+                    if (referenceMapping.getFacet().isCascadeDelete()) {
                         facetMappings.add(referenceMapping);
                     }
                 }
@@ -75,9 +74,9 @@ public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements Poj
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void execute(Iterable<Object> ids, Evaporator evaporator, List<Consumer<Statement>> modifiers) {
-        List<Object> parameters = Arrays.asList(Lists.newArrayList(ids));
-        ResultSet rows = executeStatement(parameters, modifiers);
+    public void execute(Iterable<Object> ids, Evaporator evaporator, StatementOptions options) {
+        List<Object> parameters = Collections.singletonList(Lists.newArrayList(ids));
+        ResultSet rows = executeStatement(parameters, options);
         for (Row row : rows) {
             Iterator<Object> columnValues = CqlUtils.toList(row).iterator();
             for (ReferenceFacetMapping mapping : facetMappings) {

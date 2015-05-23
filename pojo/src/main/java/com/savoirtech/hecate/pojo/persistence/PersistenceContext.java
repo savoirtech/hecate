@@ -20,10 +20,8 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
+import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-
-import java.util.List;
-import java.util.function.Consumer;
 
 
 public interface PersistenceContext {
@@ -31,19 +29,15 @@ public interface PersistenceContext {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Dehydrator createDehydrator(int ttl, List<Consumer<Statement>> statementModifiers);
+    Dehydrator createDehydrator(int ttl, StatementOptions statementModifiers);
 
-    Hydrator createHydrator(List<Consumer<Statement>> modifiers);
+    Evaporator createEvaporator(StatementOptions options);
 
-    Evaporator createEvaporator(List<Consumer<Statement>> modifiers);
-
-    ResultSet executeStatement(Statement statement, List<Consumer<Statement>> modifiers);
-    
-    <P> PojoInsert<P> insert(PojoMapping<P> mapping);
+    Hydrator createHydrator(StatementOptions options);
 
     <P> PojoDelete delete(PojoMapping<P> mapping);
 
-    PreparedStatement prepare(RegularStatement statement);
+    ResultSet executeStatement(Statement statement, StatementOptions options);
 
     <P> PojoQueryBuilder<P> find(PojoMapping<P> mapping);
 
@@ -52,4 +46,8 @@ public interface PersistenceContext {
     <P> PojoQuery<P> findByIds(PojoMapping<P> mapping);
 
     <P> PojoFindForDelete findForDelete(PojoMapping<P> mapping);
+
+    <P> PojoInsert<P> insert(PojoMapping<P> mapping);
+
+    PreparedStatement prepare(RegularStatement statement);
 }

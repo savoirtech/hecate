@@ -43,17 +43,17 @@ public class PojoUtils {
         return table != null ? table.value() : underscoreSeparated(pojoClass.getSimpleName());
     }
 
+    public static int getTtl(Class<?> pojoClass) {
+        Ttl ttl = Validate.notNull(pojoClass).getAnnotation(Ttl.class);
+        return ttl != null ? ttl.value() : 0;
+    }
+
     public static String indexName(Facet facet) {
         Index annot = facet.getAnnotation(Index.class);
         if (annot != null && StringUtils.isNotEmpty(annot.value())) {
             return annot.value();
         }
         return facet.getName() + "_ndx";
-    }
-
-    public static int getTtl(Class<?> pojoClass) {
-        Ttl ttl = Validate.notNull(pojoClass).getAnnotation(Ttl.class);
-        return ttl != null ? ttl.value() : 0;
     }
 
     public static boolean isCascadeDelete(Facet facet) {

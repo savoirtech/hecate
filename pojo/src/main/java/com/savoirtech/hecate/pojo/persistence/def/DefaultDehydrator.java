@@ -16,9 +16,9 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
-import com.datastax.driver.core.Statement;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
@@ -26,9 +26,7 @@ import com.savoirtech.hecate.pojo.persistence.PojoInsert;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public class DefaultDehydrator implements Dehydrator {
 //----------------------------------------------------------------------------------------------------------------------
@@ -38,16 +36,16 @@ public class DefaultDehydrator implements Dehydrator {
     private final PersistenceContext persistenceContext;
     private final Multimap<PojoMapping<Object>, Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
     private final int ttl;
-    private final List<Consumer<Statement>> modifiers;
+    private final StatementOptions options;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultDehydrator(PersistenceContext persistenceContext, int ttl, List<Consumer<Statement>> modifiers) {
+    public DefaultDehydrator(PersistenceContext persistenceContext, int ttl, StatementOptions options) {
         this.persistenceContext = persistenceContext;
         this.ttl = ttl;
-        this.modifiers = modifiers;
+        this.options = options;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -57,7 +55,7 @@ public class DefaultDehydrator implements Dehydrator {
     @Override
     @SuppressWarnings("unchecked")
     public void dehydrate(PojoMapping<?> pojoMapping, Iterable<?> pojos) {
-        agenda.putAll((PojoMapping<Object>)pojoMapping, pojos);
+        agenda.putAll((PojoMapping<Object>) pojoMapping, pojos);
     }
 
     public void execute() {
@@ -66,7 +64,7 @@ public class DefaultDehydrator implements Dehydrator {
             pojoMappings.forEach(mapping -> {
                 Collection<Object> pojos = agenda.removeAll(mapping);
                 PojoInsert<Object> insert = persistenceContext.insert(mapping);
-                pojos.forEach(pojo -> insert.insert(pojo, this, ttl, modifiers));
+                pojos.forEach(pojo -> insert.insert(pojo, this, ttl, options));
             });
         }
     }

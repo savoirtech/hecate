@@ -22,7 +22,7 @@ public interface PojoQueryBuilder<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     PojoQueryBuilder<P> asc(String facetName);
-    
+
     PojoQuery<P> build();
 
     PojoQueryBuilder<P> desc(String facetName);

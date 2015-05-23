@@ -22,7 +22,7 @@ import com.savoirtech.hecate.pojo.util.PojoUtils;
 
 import java.util.function.Function;
 
-public class EmbeddedColumnType implements ColumnType<Boolean,Object> {
+public class EmbeddedColumnType implements ColumnType<Boolean, Object> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -33,6 +33,16 @@ public class EmbeddedColumnType implements ColumnType<Boolean,Object> {
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+
+    @Override
+    public Iterable<Object> columnElements(Boolean columnValue) {
+        throw new HecateException("Embedded object columns are not reference-capable.");
+    }
+
+    @Override
+    public Iterable<Object> facetElements(Object facetValue) {
+        throw new HecateException("Embedded object columns are not reference-capable.");
+    }
 
     @Override
     public Boolean getColumnValue(Object facetValue, Function<Object, Object> function) {
@@ -47,15 +57,5 @@ public class EmbeddedColumnType implements ColumnType<Boolean,Object> {
     @Override
     public Object getFacetValue(Boolean columnValue, Function<Object, Object> function, Class<?> elementType) {
         return PojoUtils.newPojo(elementType);
-    }
-
-    @Override
-    public Iterable<Object> facetElements(Object facetValue) {
-        throw new HecateException("Embedded object columns are not reference-capable.");
-    }
-
-    @Override
-    public Iterable<Object> columnElements(Boolean columnValue) {
-        throw new HecateException("Embedded object columns are not reference-capable.");
     }
 }

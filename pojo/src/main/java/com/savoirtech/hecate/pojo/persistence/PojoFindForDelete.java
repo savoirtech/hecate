@@ -16,11 +16,12 @@
 
 package com.savoirtech.hecate.pojo.persistence;
 
-import com.datastax.driver.core.Statement;
-
-import java.util.List;
-import java.util.function.Consumer;
+import com.savoirtech.hecate.core.statement.StatementOptions;
 
 public interface PojoFindForDelete {
-    void execute(Iterable<Object> ids, Evaporator evaporator, List<Consumer<Statement>> modifiers);
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    void execute(Iterable<Object> ids, Evaporator evaporator, StatementOptions options);
 }

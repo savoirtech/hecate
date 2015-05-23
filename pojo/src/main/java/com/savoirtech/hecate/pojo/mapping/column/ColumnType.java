@@ -20,18 +20,17 @@ import com.datastax.driver.core.DataType;
 
 import java.util.function.Function;
 
-public interface ColumnType<C,F> {
+public interface ColumnType<C, F> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    Iterable<Object> columnElements(C columnValue);
+
+    Iterable<Object> facetElements(F facetValue);
     C getColumnValue(F facetValue, Function<Object, Object> function);
 
     DataType getDataType(DataType elementDataType);
-    
-    F getFacetValue(C columnValue, Function<Object,Object> function, Class<?> elementType);
-    
-    Iterable<Object> facetElements(F facetValue);
 
-    Iterable<Object> columnElements(C columnValue);
+    F getFacetValue(C columnValue, Function<Object, Object> function, Class<?> elementType);
 }

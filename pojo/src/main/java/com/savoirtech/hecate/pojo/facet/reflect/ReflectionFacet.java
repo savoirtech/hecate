@@ -38,12 +38,12 @@ public abstract class ReflectionFacet implements Facet {
     protected abstract AccessibleObject getAnnotationSource();
 
     protected abstract Object getValueReflectively(Object pojo) throws ReflectiveOperationException;
+
     protected abstract void setValueReflectively(Object pojo, Object value) throws ReflectiveOperationException;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Facet Implementation
 //----------------------------------------------------------------------------------------------------------------------
-
 
     @Override
     public Facet flatten() {
@@ -60,7 +60,7 @@ public abstract class ReflectionFacet implements Facet {
         try {
             return getValueReflectively(pojo);
         } catch (ReflectiveOperationException e) {
-            throw new HecateException(e, "Unable to get value for facet %s.",getName());
+            throw new HecateException(e, "Unable to get value for facet %s.", getName());
         }
     }
 

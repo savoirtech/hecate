@@ -21,16 +21,26 @@ import com.datastax.driver.core.DataType;
 import java.util.Collections;
 import java.util.function.Function;
 
-public class SimpleColumnType implements ColumnType<Object,Object> {
+public class SimpleColumnType implements ColumnType<Object, Object> {
 //----------------------------------------------------------------------------------------------------------------------
-// ColumnType Implementation
+// Fields
 //----------------------------------------------------------------------------------------------------------------------
 
     public static final SimpleColumnType INSTANCE = new SimpleColumnType();
 
+//----------------------------------------------------------------------------------------------------------------------
+// ColumnType Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
+
     @Override
     public Iterable<Object> columnElements(Object columnValue) {
         return columnValue == null ? Collections.emptyList() : Collections.singleton(columnValue);
+    }
+
+    @Override
+    public Iterable<Object> facetElements(Object facetValue) {
+        return facetValue == null ? Collections.emptyList() : Collections.singleton(facetValue);
     }
 
     @Override
@@ -46,10 +56,5 @@ public class SimpleColumnType implements ColumnType<Object,Object> {
     @Override
     public Object getFacetValue(Object columnValue, Function<Object, Object> function, Class<?> elementType) {
         return function.apply(columnValue);
-    }
-
-    @Override
-    public Iterable<Object> facetElements(Object facetValue) {
-        return facetValue == null ? Collections.emptyList() : Collections.singleton(facetValue);
     }
 }

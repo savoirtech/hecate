@@ -14,82 +14,77 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.persistence.def;
+package com.savoirtech.hecate.pojo.mapping;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.savoirtech.hecate.core.statement.StatementOptions;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.savoirtech.hecate.pojo.facet.Facet;
+import com.savoirtech.hecate.pojo.mapping.column.ColumnType;
 
-import java.util.List;
+import java.util.function.Function;
 
-
-public abstract class PojoStatement<P> implements Supplier<PreparedStatement> {
+public abstract class AbstractFacetMapping implements FacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final PersistenceContext persistenceContext;
-    private final PojoMapping<P> pojoMapping;
-    private final Supplier<PreparedStatement> statementSupplier = Suppliers.memoize(this);
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Facet facet;
+    private final ColumnType<Object, Object> columnType;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoStatement(PersistenceContext persistenceContext, PojoMapping<P> pojoMapping) {
-        this.persistenceContext = persistenceContext;
-        this.pojoMapping = pojoMapping;
+    protected AbstractFacetMapping(Facet facet, ColumnType<Object, Object> columnType) {
+        this.facet = facet;
+        this.columnType = columnType;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Abstract Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected abstract RegularStatement createStatement();
+    protected abstract Function<Object, Object> elementColumnValue();
 
 //----------------------------------------------------------------------------------------------------------------------
-// Supplier Implementation
+// FacetMapping Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public PreparedStatement get() {
-        RegularStatement statement = createStatement();
-        getLogger().info("{}: {}", getPojoMapping().getPojoClass().getSimpleName(), statement.getQueryString());
-        return persistenceContext.prepare(statement);
+    public Object getColumnValue(Object pojo) {
+        final Object facetValue = facetValue(pojo);
+        return getColumnValueForFacetValue(facetValue);
+    }
+
+    @Override
+    public Object getColumnValueForFacetValue(Object facetValue) {
+        return facetValue == null ? null : columnType.getColumnValue(facetValue, elementColumnValue());
+    }
+
+    @Override
+    public Facet getFacet() {
+        return facet;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected Logger getLogger() {
-        return logger;
+    public ColumnType<Object, Object> getColumnType() {
+        return columnType;
     }
 
-    protected PersistenceContext getPersistenceContext() {
-        return persistenceContext;
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Canonical Methods
+//----------------------------------------------------------------------------------------------------------------------
 
-    protected PojoMapping<P> getPojoMapping() {
-        return pojoMapping;
+    public String toString() {
+        return getFacet().getName() + " @ " + getFacet().getColumnName();
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected ResultSet executeStatement(List<Object> parameters, StatementOptions options) {
-        getLogger().debug("CQL: {} with parameters {}", statementSupplier.get().getQueryString(), parameters);
-        BoundStatement boundStatement = statementSupplier.get().bind(parameters.toArray(new Object[parameters.size()]));
-        return persistenceContext.executeStatement(boundStatement, options);
+    protected Object facetValue(Object pojo) {
+        return facet.getValue(pojo);
     }
 }

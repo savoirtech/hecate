@@ -16,17 +16,14 @@
 
 package com.savoirtech.hecate.pojo.persistence;
 
-import com.datastax.driver.core.Statement;
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
-
-import java.util.List;
-import java.util.function.Consumer;
+import com.savoirtech.hecate.core.statement.StatementOptions;
 
 public interface PojoQuery<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    MappedQueryResult<P> execute(List<Consumer<Statement>> modifiers, Object... parameters);
     MappedQueryResult<P> execute(Object... parameters);
+    MappedQueryResult<P> execute(StatementOptions options, Object... parameters);
 }

@@ -21,6 +21,7 @@ public interface PojoDaoFactory {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    <I,P> PojoDao<I,P> createPojoDao(Class<P> pojoClass);
-    <I,P> PojoDao<I,P> createPojoDao(Class<P> pojoClass, String tableName);
+    <I, P> PojoDao<I, P> createPojoDao(Class<P> pojoClass);
+
+    <I, P> PojoDao<I, P> createPojoDao(Class<P> pojoClass, String tableName);
 }

@@ -67,6 +67,14 @@ public class DefaultConverterRegistry implements ConverterRegistry {
         return registry;
     }
 
+    @SuppressWarnings("unchecked")
+    public static List<Class<?>> getSupertypes(Class<?> type) {
+        List<Class<?>> supertypes = new LinkedList<>();
+        supertypes.add(type.getSuperclass());
+        Collections.addAll(supertypes, type.getInterfaces());
+        return supertypes;
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
@@ -119,15 +127,6 @@ public class DefaultConverterRegistry implements ConverterRegistry {
         unsupportedTypes.add(valueType);
         return null;
     }
-
-    @SuppressWarnings("unchecked")
-    public static List<Class<?>> getSupertypes(Class<?> type) {
-        List<Class<?>> supertypes = new LinkedList<>();
-        supertypes.add(type.getSuperclass());
-        Collections.addAll(supertypes, type.getInterfaces());
-        return supertypes;
-    }
-
 
     public void registerConverter(Class<?> valueType, Converter converter) {
         registerConverter(valueType, new ConstantProvider(converter));

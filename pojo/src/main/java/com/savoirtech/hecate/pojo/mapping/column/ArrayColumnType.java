@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class ArrayColumnType implements ColumnType<List<Object>,Object>{
+public class ArrayColumnType implements ColumnType<List<Object>, Object> {
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
@@ -32,7 +32,7 @@ public class ArrayColumnType implements ColumnType<List<Object>,Object>{
     public Iterable<Object> columnElements(List<Object> columnValue) {
         return columnValue;
     }
-    
+
     @Override
     public Iterable<Object> facetElements(Object array) {
         return arrayToList(array, element -> element);
@@ -50,10 +50,10 @@ public class ArrayColumnType implements ColumnType<List<Object>,Object>{
 
     @Override
     public Object getFacetValue(List<Object> columnValue, Function<Object, Object> function, Class<?> elementType) {
-        Object array = Array.newInstance(elementType,columnValue.size());
+        Object array = Array.newInstance(elementType, columnValue.size());
         int index = 0;
         for (Object element : columnValue) {
-            Array.set(array,index,function.apply(element));
+            Array.set(array, index, function.apply(element));
             index++;
         }
         return array;
