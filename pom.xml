@@ -90,7 +90,15 @@
         <slf4j.version>1.7.7</slf4j.version>
 
         <!-- Plugin Versions -->
+        <maven.jacoco.plugin.version>0.7.2.201409121644</maven.jacoco.plugin.version>
         <maven.bundle.plugin.version>2.5.4</maven.bundle.plugin.version>
+
+        <!--
+        Sonar/JaCoCo Integration Test Coverage Fix
+        -->
+        <jacoco.out.path>${session.executionRootDirectory}/target</jacoco.out.path>
+        <jacoco.out.file>jacoco-it.exec</jacoco.out.file>
+        <sonar.jacoco.itReportPath>${env.WORKSPACE}/target/${jacoco.out.file}</sonar.jacoco.itReportPath>
 
     </properties>
 
@@ -141,6 +149,31 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${maven.jacoco.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent-integration</id>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${jacoco.out.path}/${jacoco.out.file}</destFile>
+                            <propertyName>jacoco.agent.arg</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
     <dependencyManagement>
