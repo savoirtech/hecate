@@ -14,22 +14,44 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.facet;
+package com.savoirtech.hecate.pojo.facet;
 
-import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.facet.Facet;
+import com.savoirtech.hecate.pojo.util.GenericType;
+import com.savoirtech.hecate.pojo.util.PojoUtils;
 
-public interface FacetMapping {
+import java.lang.annotation.Annotation;
+import java.util.List;
+
+public interface Facet {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void accept(FacetMappingVisitor visitor);
-    DataType getDataType();
-    Facet getFacet();
-    boolean isReference();
+    Facet flatten();
+    
+    <A extends Annotation> A getAnnotation(Class<A> annotationType);
 
-    Object getColumnValueForFacetValue(Object facetValue);
+    default String getColumnName() {
+        return PojoUtils.getColumnName(this);
+    }
 
-    Object getColumnValue(Object pojo);
+    String getName();
+
+    GenericType getType();
+
+    Object getValue(Object pojo);
+
+    <A extends Annotation> boolean hasAnnotation(Class<A> annotationType);
+
+    default boolean isCascadeDelete() {
+        return PojoUtils.isCascadeDelete(this);
+    }
+
+    default boolean isCascadeSave() {
+        return PojoUtils.isCascadeSave(this);
+    }
+
+    void setValue(Object pojo, Object value);
+
+    List<Facet> subFacets(boolean allowNullParent);
 }

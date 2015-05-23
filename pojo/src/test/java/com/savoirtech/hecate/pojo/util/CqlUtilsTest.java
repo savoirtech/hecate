@@ -73,7 +73,7 @@ public class CqlUtilsTest extends CassandraTestCase {
                 example(DataType.uuid(), UUID.randomUUID()),
                 example(DataType.varchar(), "varchar_value"),
                 example(DataType.varint(), new BigInteger("1234567890")),
-                example(tupleType,tupleType.newValue("Hello", 1)),
+                example(tupleType, tupleType.newValue("Hello", 1)),
                 example(DataType.blob(), ByteBuffer.wrap("Hello, World!".getBytes())),
                 example(DataType.list(DataType.text()), Lists.newArrayList("hello", "world")),
                 example(DataType.set(DataType.text()), Sets.newHashSet("hello", "world")),
@@ -103,15 +103,14 @@ public class CqlUtilsTest extends CassandraTestCase {
     public void testGetValueVarchar() throws Exception {
         withSession(session -> {
             Select.Selection selection = select().column("id");
-            columns.stream().map(col -> "test_"+ col.getLeft().getName()).forEach(selection::column);
+            columns.stream().map(col -> "test_" + col.getLeft().getName()).forEach(selection::column);
             Select.Where select = selection.from("test_table").where(eq("id", 123));
             ResultSet result = session.execute(select);
             List<Object> objects = CqlUtils.toList(result.one());
-            for(int i = 0; i < columns.size(); ++i) {
+            for (int i = 0; i < columns.size(); ++i) {
                 ImmutablePair<DataType, Object> column = columns.get(i);
-                assertEquals("Column test_" + column.getLeft().getName() + " did not match.", column.getRight(),objects.get(i + 1));
+                assertEquals("Column test_" + column.getLeft().getName() + " did not match.", column.getRight(), objects.get(i + 1));
             }
         });
     }
-
 }

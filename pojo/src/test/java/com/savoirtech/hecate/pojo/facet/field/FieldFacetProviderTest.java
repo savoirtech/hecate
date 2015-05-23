@@ -27,6 +27,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class FieldFacetProviderTest extends Assert {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Test
+    public void testGetAnnotation() {
+        FacetProvider facetProvider = new FieldFacetProvider();
+        Map<String, Facet> map = facetProvider.getFacetsAsMap(FieldPojoSub.class);
+        Facet facet = map.get("baz");
+        assertNotNull(facet.getAnnotation(Deprecated.class));
+    }
 
     @Test
     public void testGetFacets() throws Exception {
@@ -40,6 +51,14 @@ public class FieldFacetProviderTest extends Assert {
     }
 
     @Test
+    public void testGetType() {
+        FacetProvider facetProvider = new FieldFacetProvider();
+        Map<String, Facet> map = facetProvider.getFacetsAsMap(FieldPojoSub.class);
+        Facet facet = map.get("bar");
+        assertEquals(String.class, facet.getType().getRawType());
+    }
+
+    @Test
     public void testGetValue() {
         FacetProvider facetProvider = new FieldFacetProvider();
         Map<String, Facet> map = facetProvider.getFacetsAsMap(FieldPojoSub.class);
@@ -50,33 +69,19 @@ public class FieldFacetProviderTest extends Assert {
         assertEquals("testValue", facet.getValue(pojo));
     }
 
-    @Test
-    public void testGetType() {
-        FacetProvider facetProvider = new FieldFacetProvider();
-        Map<String, Facet> map = facetProvider.getFacetsAsMap(FieldPojoSub.class);
-        Facet facet = map.get("bar");
-        assertEquals(String.class, facet.getType().getRawType());
-    }
-
-    @Test
-    public void testGetAnnotation() {
-        FacetProvider facetProvider = new FieldFacetProvider();
-        Map<String, Facet> map = facetProvider.getFacetsAsMap(FieldPojoSub.class);
-        Facet facet = map.get("baz");
-        assertNotNull(facet.getAnnotation(Deprecated.class));
-
-    }
-
-    public static class FieldPojoSuper {
-        private final String foo = "foo";
-        private String bar;
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
 
     public static class FieldPojoSub extends FieldPojoSuper {
         private static String STATIC_TEXT = "static_text";
         @Deprecated
         private String baz;
         private transient String ignored;
+    }
 
+    public static class FieldPojoSuper {
+        private final String foo = "foo";
+        private String bar;
     }
 }

@@ -22,7 +22,7 @@ import com.savoirtech.hecate.annotation.Column;
 import com.savoirtech.hecate.annotation.Id;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.facet.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.FacetMapping;
 import com.savoirtech.hecate.test.AbstractTestCase;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Test;
@@ -97,10 +97,10 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
 
     public static class NoConverterKey {
         @PartitionKey
-        private Pair<String,String> pair1;
+        private Pair<String, String> pair1;
 
         @ClusteringColumn
-        private Pair<String,String> pair2;
+        private Pair<String, String> pair2;
     }
 
     private static class NoId {
@@ -125,7 +125,7 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
         @PartitionKey(order = 0)
         private String countryCode;
 
-        @ClusteringColumn(order = 1,descending = true)
+        @ClusteringColumn(order = 1, descending = true)
         private String zip;
 
         @PartitionKey(order = 1)

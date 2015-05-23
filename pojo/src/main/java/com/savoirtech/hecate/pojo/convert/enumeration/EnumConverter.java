@@ -38,7 +38,6 @@ public class EnumConverter implements Converter {
 // Converter Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public DataType getDataType() {
         return DataType.varchar();

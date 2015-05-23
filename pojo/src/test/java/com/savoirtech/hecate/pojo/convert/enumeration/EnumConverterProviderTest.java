@@ -32,7 +32,7 @@ public class EnumConverterProviderTest extends AbstractTestCase {
         assertEquals(EnumConverter.class, provider.converterType());
         Converter converter = provider.createConverter(Gender.class);
         assertTrue(converter instanceof EnumConverter);
-        EnumConverter enumConverter = (EnumConverter)converter;
+        EnumConverter enumConverter = (EnumConverter) converter;
         assertEquals(Gender.class, enumConverter.getEnumType());
     }
 }

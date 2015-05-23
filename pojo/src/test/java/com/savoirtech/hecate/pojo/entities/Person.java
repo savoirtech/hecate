@@ -28,10 +28,10 @@ public class Person {
 
     @Id
     private String ssn = UUID.randomUUID().toString();
-    
+
     private String lastName;
     private String firstName;
-    
+
     @Embedded
     private Address homeAddress;
 

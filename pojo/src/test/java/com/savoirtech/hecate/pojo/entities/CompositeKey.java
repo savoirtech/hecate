@@ -24,9 +24,9 @@ public class CompositeKey {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    @PartitionKey(order=0)
+    @PartitionKey(order = 0)
     private String part1;
-    @PartitionKey(order=1)
+    @PartitionKey(order = 1)
     private String part2;
     @ClusteringColumn
     private String cluster1;

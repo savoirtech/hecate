@@ -26,25 +26,25 @@ import java.util.List;
 import java.util.Map;
 
 public class PropertyFacetProviderTest extends Assert {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Test
+    public void testGetAnnotation() {
+        FacetProvider provider = new PropertyFacetProvider();
+        Map<String, Facet> map = provider.getFacetsAsMap(PropertiesPojo.class);
+        Facet facet = map.get("baz");
+        assertNotNull(facet.getAnnotation(Deprecated.class));
+    }
 
     @Test
     public void testGetFacets() throws Exception {
         FacetProvider provider = new PropertyFacetProvider();
-        Map<String,Facet> facets = provider.getFacetsAsMap(PropertiesPojo.class);
+        Map<String, Facet> facets = provider.getFacetsAsMap(PropertiesPojo.class);
         assertNotNull(facets);
         assertEquals(1, facets.size());
         assertTrue(facets.containsKey("baz"));
-    }
-
-    @Test
-    public void testValueHandling() {
-        FacetProvider provider = new PropertyFacetProvider();
-        List<Facet> facets = provider.getFacets(PropertiesPojo.class);
-        PropertiesPojo pojo = new PropertiesPojo();
-        Facet facet= facets.get(0);
-        assertNull(facet.getValue(pojo));
-        facet.setValue(pojo, "testValue");
-        assertEquals("testValue", facet.getValue(pojo));
     }
 
     @Test
@@ -52,18 +52,24 @@ public class PropertyFacetProviderTest extends Assert {
         FacetProvider provider = new PropertyFacetProvider();
         List<Facet> facets = provider.getFacets(PropertiesPojo.class);
         PropertiesPojo pojo = new PropertiesPojo();
-        Facet facet= facets.get(0);
+        Facet facet = facets.get(0);
         assertEquals(String.class, facet.getType().getRawType());
     }
 
     @Test
-    public void testGetAnnotation() {
+    public void testValueHandling() {
         FacetProvider provider = new PropertyFacetProvider();
-        Map<String,Facet> map = provider.getFacetsAsMap(PropertiesPojo.class);
-        Facet facet = map.get("baz");
-        assertNotNull(facet.getAnnotation(Deprecated.class));
-
+        List<Facet> facets = provider.getFacets(PropertiesPojo.class);
+        PropertiesPojo pojo = new PropertiesPojo();
+        Facet facet = facets.get(0);
+        assertNull(facet.getValue(pojo));
+        facet.setValue(pojo, "testValue");
+        assertEquals("testValue", facet.getValue(pojo));
     }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
 
     public static class PropertiesPojo {
         private String foo;

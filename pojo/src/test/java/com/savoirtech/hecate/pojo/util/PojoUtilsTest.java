@@ -25,15 +25,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class PojoUtilsTest extends Assert {
-    @Test
-    public void testGetTableName() {
-        assertEquals("pojo_type", PojoUtils.getTableName(PojoType.class));
-        assertEquals("Foo", PojoUtils.getTableName(AnnotatedPojoType.class));
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
-    private Facet fieldOf(Class<?> type, String name) throws ReflectiveOperationException {
-        return new FieldFacet(type, type.getDeclaredField(name));
-    }
     @Test
     public void testGetColumnName() throws ReflectiveOperationException {
         assertEquals("field_name", PojoUtils.getColumnName(fieldOf(PojoType.class, "fieldName")));
@@ -42,22 +37,35 @@ public class PojoUtilsTest extends Assert {
         assertEquals("child_string_property", PojoUtils.getColumnName(new SubFacet(fieldOf(Parent.class, "child"), fieldOf(Child.class, "stringProperty"), true)));
     }
 
-    private static class PojoType {
-        public String fieldName;
+    private Facet fieldOf(Class<?> type, String name) throws ReflectiveOperationException {
+        return new FieldFacet(type, type.getDeclaredField(name));
     }
+
+    @Test
+    public void testGetTableName() {
+        assertEquals("pojo_type", PojoUtils.getTableName(PojoType.class));
+        assertEquals("Foo", PojoUtils.getTableName(AnnotatedPojoType.class));
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
 
     @Table("Foo")
     private static class AnnotatedPojoType {
-
         @Column("Bar")
         public String fieldName;
+    }
+
+    private static class Child {
+        private String stringProperty;
     }
 
     private static class Parent {
         private Child child;
     }
 
-    private static class Child {
-        private String stringProperty;
+    private static class PojoType {
+        public String fieldName;
     }
 }

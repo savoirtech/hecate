@@ -20,11 +20,14 @@ import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 
 public class ConverterTest extends AbstractTestCase {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
     @Test
     public void testNullConverter() {
         assertNull(Converter.NULL_CONVERTER.getDataType());
         assertNull(Converter.NULL_CONVERTER.toColumnValue(null));
         assertNull(Converter.NULL_CONVERTER.toFacetValue(null));
     }
-
 }

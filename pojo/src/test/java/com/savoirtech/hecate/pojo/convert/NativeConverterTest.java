@@ -21,11 +21,9 @@ import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 
 public class NativeConverterTest extends AbstractTestCase {
-
-    @Test
-    public void testToFacetValue() throws Exception {
-        assertEquals("Hello", NativeConverter.STRING.toFacetValue("Hello"));
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testGetDataType() throws Exception {
@@ -35,5 +33,10 @@ public class NativeConverterTest extends AbstractTestCase {
     @Test
     public void testToColumnValue() throws Exception {
         assertEquals("Hello", NativeConverter.STRING.toColumnValue("Hello"));
+    }
+
+    @Test
+    public void testToFacetValue() throws Exception {
+        assertEquals("Hello", NativeConverter.STRING.toFacetValue("Hello"));
     }
 }

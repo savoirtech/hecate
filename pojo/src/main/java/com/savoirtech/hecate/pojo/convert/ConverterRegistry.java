@@ -32,7 +32,7 @@ public interface ConverterRegistry {
 
     default Converter getRequiredConverter(Class<?> valueType) {
         Converter converter = getConverter(valueType);
-        if(converter == null) {
+        if (converter == null) {
             throw new HecateException("No converter found for type %s.", valueType.getCanonicalName());
         }
         return converter;

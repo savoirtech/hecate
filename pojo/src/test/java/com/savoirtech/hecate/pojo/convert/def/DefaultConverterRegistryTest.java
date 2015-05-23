@@ -32,8 +32,15 @@ import java.util.Date;
 import java.util.UUID;
 
 public class DefaultConverterRegistryTest extends AbstractTestCase {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     private final ConverterRegistry registry = DefaultConverterRegistry.defaultRegistry();
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testDefaultRegistry() throws Exception {
@@ -60,8 +67,23 @@ public class DefaultConverterRegistryTest extends AbstractTestCase {
     }
 
     @Test
+    public void testGetConverterByGenericType() throws Exception {
+        GenericType genericType1 = new GenericType(Fields.class, Fields.class.getField("field").getGenericType());
+        GenericType genericType2 = new GenericType(Fields.class, Fields.class.getField("connection").getGenericType());
+        assertNull(registry.getConverter((GenericType) null));
+        assertNotNull(registry.getConverter(genericType1));
+        assertNull(registry.getConverter(genericType2));
+    }
+
+    @Test
     public void testGetConverterForSubclass() {
         assertNotNull(registry.getConverter(Gender.class));
+    }
+
+    @Test(expected = HecateException.class)
+    public void testGetRequiredConverterByGenericTypeWhenNotFound() throws Exception {
+        GenericType genericType2 = new GenericType(Fields.class, Fields.class.getField("connection").getGenericType());
+        registry.getRequiredConverter(genericType2);
     }
 
     @Test
@@ -74,20 +96,9 @@ public class DefaultConverterRegistryTest extends AbstractTestCase {
         registry.getRequiredConverter(Connection.class);
     }
 
-    @Test
-    public void testGetConverterByGenericType() throws Exception {
-        GenericType genericType1 = new GenericType(Fields.class, Fields.class.getField("field").getGenericType());
-        GenericType genericType2 = new GenericType(Fields.class, Fields.class.getField("connection").getGenericType());
-        assertNull(registry.getConverter((GenericType)null));
-        assertNotNull(registry.getConverter(genericType1));
-        assertNull(registry.getConverter(genericType2));
-    }
-
-    @Test(expected = HecateException.class)
-    public void testGetRequiredConverterByGenericTypeWhenNotFound() throws Exception {
-        GenericType genericType2 = new GenericType(Fields.class, Fields.class.getField("connection").getGenericType());
-        registry.getRequiredConverter(genericType2);
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
 
     public static class Fields {
         public String field;

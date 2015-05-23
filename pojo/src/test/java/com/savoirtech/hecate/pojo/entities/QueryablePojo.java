@@ -34,15 +34,15 @@ public class QueryablePojo {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public QueryablePojo(UUID partition, int value) {
-        this.key = new Key(partition, value);
-    }
-
     public QueryablePojo() {
     }
 
     public QueryablePojo(int value) {
         this.key = new Key(value);
+    }
+
+    public QueryablePojo(UUID partition, int value) {
+        this.key = new Key(partition, value);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ public class QueryablePojo {
     public static class Key {
         @PartitionKey
         private UUID partition = UUID.randomUUID();
-        
+
         @ClusteringColumn
         private int value;
 
@@ -72,6 +72,7 @@ public class QueryablePojo {
             this.partition = partition;
             this.value = value;
         }
+
         public Key(int value) {
             this.value = value;
         }
@@ -82,7 +83,7 @@ public class QueryablePojo {
         public UUID getPartition() {
             return partition;
         }
-        
+
         public int getValue() {
             return value;
         }

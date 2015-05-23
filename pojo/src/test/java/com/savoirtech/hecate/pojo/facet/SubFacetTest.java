@@ -25,10 +25,17 @@ import org.junit.Test;
 import java.util.Map;
 
 public class SubFacetTest extends Assert {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     private SubFacet strictFacet;
     private SubFacet lenientFacet;
     private Facet childFacet;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Before
     public void setUpFacet() {
@@ -39,40 +46,6 @@ public class SubFacetTest extends Assert {
         Facet parentFacet = parentFacets.get("child");
         strictFacet = new SubFacet(parentFacet, childFacet, false);
         lenientFacet = new SubFacet(parentFacet, childFacet, true);
-    }
-
-    @Test
-    public void testStrictSetValue() {
-        Parent parent = new Parent();
-        strictFacet.setValue(parent, "test_value");
-        assertNull(parent.child);
-    }
-
-    @Test
-    public void testStrictGetValue() {
-        Parent parent = new Parent();
-        assertNull(strictFacet.getValue(parent));
-        parent.child = new Child();
-        assertNull(strictFacet.getValue(parent));
-    }
-
-    @Test
-    public void testLenientSetValue() {
-        Parent parent = new Parent();
-        lenientFacet.setValue(parent, "test_value");
-        assertNotNull(parent.child);
-        lenientFacet.setValue(parent, "test_value");
-        assertEquals("test_value", parent.child.property);
-    }
-
-    @Test
-    public void testLenientGetValue() {
-        Parent parent = new Parent();
-        assertNull(lenientFacet.getValue(parent));
-        parent.child = new Child();
-        assertNull(lenientFacet.getValue(parent));
-        parent.child.property = "test_value";
-        assertEquals("test_value", lenientFacet.getValue(parent));
     }
 
     @Test
@@ -92,15 +65,50 @@ public class SubFacetTest extends Assert {
         assertSame(childFacet.getType(), strictFacet.getType());
     }
 
-    public static class Parent {
-        private Child child;
+    @Test
+    public void testLenientGetValue() {
+        Parent parent = new Parent();
+        assertNull(lenientFacet.getValue(parent));
+        parent.child = new Child();
+        assertNull(lenientFacet.getValue(parent));
+        parent.child.property = "test_value";
+        assertEquals("test_value", lenientFacet.getValue(parent));
     }
 
-    public static class Child {
+    @Test
+    public void testLenientSetValue() {
+        Parent parent = new Parent();
+        lenientFacet.setValue(parent, "test_value");
+        assertNotNull(parent.child);
+        lenientFacet.setValue(parent, "test_value");
+        assertEquals("test_value", parent.child.property);
+    }
 
+    @Test
+    public void testStrictGetValue() {
+        Parent parent = new Parent();
+        assertNull(strictFacet.getValue(parent));
+        parent.child = new Child();
+        assertNull(strictFacet.getValue(parent));
+    }
+
+    @Test
+    public void testStrictSetValue() {
+        Parent parent = new Parent();
+        strictFacet.setValue(parent, "test_value");
+        assertNull(parent.child);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    public static class Child {
         @Column("foo")
         private String property;
     }
 
-
+    public static class Parent {
+        private Child child;
+    }
 }

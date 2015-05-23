@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.facet;
+package com.savoirtech.hecate.pojo.mapping;
 
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.mapping.column.ColumnType;
@@ -27,7 +27,7 @@ public abstract class AbstractFacetMapping implements FacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Facet facet;
-    private final ColumnType<Object,Object> columnType;
+    private final ColumnType<Object, Object> columnType;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -42,7 +42,7 @@ public abstract class AbstractFacetMapping implements FacetMapping {
 // Abstract Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected abstract Function<Object,Object> elementColumnValue();
+    protected abstract Function<Object, Object> elementColumnValue();
 
 //----------------------------------------------------------------------------------------------------------------------
 // FacetMapping Implementation
@@ -73,12 +73,16 @@ public abstract class AbstractFacetMapping implements FacetMapping {
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Other Methods
+// Canonical Methods
 //----------------------------------------------------------------------------------------------------------------------
 
     public String toString() {
         return getFacet().getName() + " @ " + getFacet().getColumnName();
     }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     protected Object facetValue(Object pojo) {
         return facet.getValue(pojo);

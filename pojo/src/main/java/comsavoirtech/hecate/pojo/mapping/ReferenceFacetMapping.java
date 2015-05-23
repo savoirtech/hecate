@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.facet;
+package com.savoirtech.hecate.pojo.mapping;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.column.ColumnType;
 
 import java.util.Collections;

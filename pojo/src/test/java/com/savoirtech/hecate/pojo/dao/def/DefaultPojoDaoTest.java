@@ -49,7 +49,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     @Test
     public void testDeleteWithCompositeKey() {
         DefaultPojoDaoFactory factory = getFactory();
-        PojoDao<CompositeKey,CompositeKeyPojo> dao = factory.createPojoDao(CompositeKeyPojo.class);
+        PojoDao<CompositeKey, CompositeKeyPojo> dao = factory.createPojoDao(CompositeKeyPojo.class);
         final CompositeKeyPojo pojo = new CompositeKeyPojo();
         CompositeKey key = new CompositeKey();
         key.setPart1("a");
@@ -122,7 +122,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     @Test
     public void testInsertWithCompositeKey() {
         DefaultPojoDaoFactory factory = getFactory();
-        PojoDao<CompositeKey,CompositeKeyPojo> dao = factory.createPojoDao(CompositeKeyPojo.class);
+        PojoDao<CompositeKey, CompositeKeyPojo> dao = factory.createPojoDao(CompositeKeyPojo.class);
         final CompositeKeyPojo pojo = new CompositeKeyPojo();
         CompositeKey key = new CompositeKey();
         key.setPart1("a");
@@ -216,11 +216,11 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
 
     @Test(expected = InvalidQueryException.class)
     public void testWhenNotLoggedIntoKeyspace() {
-            DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(getCluster().connect());
-            final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
-            final SimplePojo pojo = new SimplePojo();
-            pojo.setName("Nope");
-            dao.save(pojo);
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactory(getCluster().connect());
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("Nope");
+        dao.save(pojo);
     }
 
     @Test
@@ -232,6 +232,26 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         dao.save(pojo);
         final SimplePojo found = dao.findById(pojo.getId());
         assertArrayEquals(pojo.getInts(), found.getInts());
+    }
+
+    @Test
+    public void testWithEmbeddedObjects() {
+        PojoDao<String, Person> dao = getFactory().createPojoDao(Person.class);
+
+        Address address = new Address();
+        address.setStreet1("123 Main St.");
+        address.setStreet2("Apt. B");
+        address.setCity("Winchestertonfieldville");
+        address.setState("IA");
+        address.setZip("12345");
+        Person person = new Person();
+        person.setHomeAddress(address);
+        person.setFirstName("Doctor");
+        person.setLastName("Pepper");
+        dao.save(person);
+
+        Person found = dao.findById(person.getSsn());
+        assertEquals(address.getStreet1(), found.getHomeAddress().getStreet1());
     }
 
     @Test
@@ -430,25 +450,5 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertTrue(found.getSetOfStrings().contains("one"));
         assertTrue(found.getSetOfStrings().contains("two"));
         assertTrue(found.getSetOfStrings().contains("three"));
-    }
-
-    @Test
-    public void testWithEmbeddedObjects() {
-        PojoDao<String,Person> dao = getFactory().createPojoDao(Person.class);
-
-        Address address = new Address();
-        address.setStreet1("123 Main St.");
-        address.setStreet2("Apt. B");
-        address.setCity("Winchestertonfieldville");
-        address.setState("IA");
-        address.setZip("12345");
-        Person person = new Person();
-        person.setHomeAddress(address);
-        person.setFirstName("Doctor");
-        person.setLastName("Pepper");
-        dao.save(person);
-
-        Person found = dao.findById(person.getSsn());
-        assertEquals(address.getStreet1(), found.getHomeAddress().getStreet1());
     }
 }

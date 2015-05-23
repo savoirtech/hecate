@@ -28,17 +28,6 @@ public class ByteArrayConverter implements Converter {
 
 
     @Override
-    public Object toFacetValue(Object value) {
-        if(value == null) {
-            return null;
-        }
-        ByteBuffer buff = (ByteBuffer)value;
-        byte[] bytes = new byte[buff.remaining()];
-        buff.get(bytes);
-        return bytes;
-    }
-
-    @Override
     public DataType getDataType() {
         return DataType.blob();
     }
@@ -46,5 +35,16 @@ public class ByteArrayConverter implements Converter {
     @Override
     public Object toColumnValue(Object value) {
         return value == null ? null : ByteBuffer.wrap((byte[]) value);
+    }
+
+    @Override
+    public Object toFacetValue(Object value) {
+        if (value == null) {
+            return null;
+        }
+        ByteBuffer buff = (ByteBuffer) value;
+        byte[] bytes = new byte[buff.remaining()];
+        buff.get(bytes);
+        return bytes;
     }
 }

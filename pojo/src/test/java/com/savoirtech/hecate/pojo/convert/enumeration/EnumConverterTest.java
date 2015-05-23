@@ -22,6 +22,9 @@ import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 
 public class EnumConverterTest extends AbstractTestCase {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testDataType() {
@@ -42,5 +45,4 @@ public class EnumConverterTest extends AbstractTestCase {
         assertNull(converter.toFacetValue(null));
         assertEquals(Gender.FEMALE, converter.toFacetValue("FEMALE"));
     }
-
 }

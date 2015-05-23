@@ -23,20 +23,14 @@ import org.junit.Test;
 import java.nio.ByteBuffer;
 
 public class ByteArrayConverterTest extends AbstractTestCase {
-
-    @Test
-    public void testToFacetValue() throws Exception {
-        ByteArrayConverter converter = new ByteArrayConverter();
-        assertNull(converter.toFacetValue(null));
-        byte[] bytes = "Hello".getBytes();
-        ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        assertArrayEquals(bytes, (byte[]) converter.toFacetValue(buffer));
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testGetDataType() throws Exception {
         ByteArrayConverter converter = new ByteArrayConverter();
-        assertEquals(DataType.blob(),converter.getDataType());
+        assertEquals(DataType.blob(), converter.getDataType());
     }
 
     @Test
@@ -46,5 +40,14 @@ public class ByteArrayConverterTest extends AbstractTestCase {
         byte[] bytes = "Hello".getBytes();
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
         assertEquals(buffer, converter.toColumnValue(bytes));
+    }
+
+    @Test
+    public void testToFacetValue() throws Exception {
+        ByteArrayConverter converter = new ByteArrayConverter();
+        assertNull(converter.toFacetValue(null));
+        byte[] bytes = "Hello".getBytes();
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        assertArrayEquals(bytes, (byte[]) converter.toFacetValue(buffer));
     }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping.facet;
+package com.savoirtech.hecate.pojo.mapping;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.convert.Converter;
@@ -36,8 +36,8 @@ public class ScalarFacetMapping extends AbstractFacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 
     @SuppressWarnings("unchecked")
-    public ScalarFacetMapping(Facet facet, ColumnType<?,?> columnType, Converter elementConverter) {
-        super(facet, (ColumnType<Object,Object>)columnType);
+    public ScalarFacetMapping(Facet facet, ColumnType<?, ?> columnType, Converter elementConverter) {
+        super(facet, (ColumnType<Object, Object>) columnType);
         this.elementConverter = elementConverter;
         this.dataType = columnType.getDataType(elementConverter.getDataType());
     }
@@ -71,10 +71,9 @@ public class ScalarFacetMapping extends AbstractFacetMapping {
     }
 
     public void setFacetValue(Object pojo, Object columnValue) {
-        if(columnValue == null) {
+        if (columnValue == null) {
             getFacet().setValue(pojo, null);
-        }
-        else {
+        } else {
             getFacet().setValue(pojo, getColumnType().getFacetValue(columnValue, elementConverter::toFacetValue, getFacet().getType().getElementType().getRawType()));
         }
     }

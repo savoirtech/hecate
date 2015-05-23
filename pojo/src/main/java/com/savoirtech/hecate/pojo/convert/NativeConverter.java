@@ -50,11 +50,6 @@ public final class NativeConverter implements Converter {
 // Converter Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public Object toFacetValue(Object value) {
-        return value;
-    }
 
     @Override
     public DataType getDataType() {
@@ -63,6 +58,12 @@ public final class NativeConverter implements Converter {
 
     @Override
     public Object toColumnValue(Object value) {
+        return value;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Object toFacetValue(Object value) {
         return value;
     }
 }

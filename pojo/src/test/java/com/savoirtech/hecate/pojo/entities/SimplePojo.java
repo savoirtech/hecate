@@ -41,7 +41,7 @@ public class SimplePojo {
 
     @Index("nums_ndx")
     private Nums nums;
-    
+
     private List<String> listOfStrings;
 
     private Set<String> setOfStrings;
