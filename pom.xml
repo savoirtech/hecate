@@ -51,7 +51,6 @@
         <module>annotation</module>
         <module>core</module>
         <module>pojo</module>
-        <!--<module>hecate-cql3</module>-->
     </modules>
 
     <scm>
