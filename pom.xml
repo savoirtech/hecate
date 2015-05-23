@@ -90,7 +90,7 @@
         <slf4j.version>1.7.7</slf4j.version>
 
         <!-- Plugin Versions -->
-        <maven.jacoco.plugin.version>0.7.2.201409121644</maven.jacoco.plugin.version>
+        <maven.jacoco.plugin.version>0.7.4.201502262128</maven.jacoco.plugin.version>
         <maven.bundle.plugin.version>2.5.4</maven.bundle.plugin.version>
 
         <!--
