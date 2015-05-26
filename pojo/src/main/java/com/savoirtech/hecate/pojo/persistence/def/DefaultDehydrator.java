@@ -16,14 +16,15 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
-import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoInsert;
 
-import java.util.*;
+import java.util.Collection;
 
 public class DefaultDehydrator implements Dehydrator {
 //----------------------------------------------------------------------------------------------------------------------
@@ -31,7 +32,7 @@ public class DefaultDehydrator implements Dehydrator {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final PersistenceContext persistenceContext;
-    private final Map<PojoMapping<Object>,List<Object>> agenda = new HashMap<>();
+    private final Multimap<PojoMapping<? extends Object>,Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
     private final int ttl;
     private final StatementOptions options;
 
@@ -52,22 +53,17 @@ public class DefaultDehydrator implements Dehydrator {
     @Override
     @SuppressWarnings("unchecked")
     public void dehydrate(PojoMapping<?> pojoMapping, Iterable<?> pojos) {
-        List<Object> list = agenda.get(pojoMapping);
-        if(list == null) {
-            list = new LinkedList<>();
-            agenda.put((PojoMapping<Object>)pojoMapping, list);
-        }
-        Iterables.addAll(list, pojos);
+        agenda.putAll(pojoMapping, pojos);
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
     public void execute() {
         while (!agenda.isEmpty()) {
-            final Set<PojoMapping<Object>> pojoMappings = new HashSet<>(agenda.keySet());
-            pojoMappings.forEach(mapping -> {
-                List<Object> pojos = agenda.remove(mapping);
-                PojoInsert<Object> insert = persistenceContext.insert(mapping);
-                pojos.forEach(pojo -> insert.insert(pojo, this, ttl, options));
-            });
+            PojoMapping<? extends Object> mapping = agenda.keySet().iterator().next();
+            Collection<Object> pojos = agenda.removeAll(mapping);
+            PojoInsert<Object> insert = persistenceContext.insert((PojoMapping<Object>)mapping);
+            pojos.forEach(pojo -> insert.insert(pojo, this, ttl, options));
         }
     }
 }
