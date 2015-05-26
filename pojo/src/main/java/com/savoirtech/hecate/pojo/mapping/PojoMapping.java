@@ -146,8 +146,8 @@ public class PojoMapping<P> {
         schemaStatements.add(create);
 
         simpleMappings.forEach(mapping -> {
-            if (mapping.getFacet().hasAnnotation(Index.class)) {
-                schemaStatements.add(SchemaBuilder.createIndex(PojoUtils.indexName(mapping.getFacet())).onTable(tableName).andColumn(mapping.getFacet().getColumnName()));
+            if (mapping.getFacet().isIndexed()) {
+                schemaStatements.add(SchemaBuilder.createIndex(mapping.getFacet().getIndexName()).onTable(tableName).andColumn(mapping.getFacet().getColumnName()));
             }
         });
         return schemaStatements;

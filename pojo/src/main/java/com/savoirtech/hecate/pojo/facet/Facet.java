@@ -16,8 +16,13 @@
 
 package com.savoirtech.hecate.pojo.facet;
 
+import com.savoirtech.hecate.annotation.Cascade;
+import com.savoirtech.hecate.annotation.Column;
+import com.savoirtech.hecate.annotation.Index;
 import com.savoirtech.hecate.pojo.util.GenericType;
 import com.savoirtech.hecate.pojo.util.PojoUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -32,7 +37,16 @@ public interface Facet {
     <A extends Annotation> A getAnnotation(Class<A> annotationType);
 
     default String getColumnName() {
-        return PojoUtils.getColumnName(this);
+        Column column = Validate.notNull(this).getAnnotation(Column.class);
+        return column != null ? column.value() : PojoUtils.underscoreSeparated(getName());
+    }
+    
+    default String getIndexName() {
+        Index annot = getAnnotation(Index.class);
+        if (annot != null && StringUtils.isNotEmpty(annot.value())) {
+            return annot.value();
+        }
+        return getName() + "_ndx";
     }
 
     String getName();
@@ -44,11 +58,17 @@ public interface Facet {
     <A extends Annotation> boolean hasAnnotation(Class<A> annotationType);
 
     default boolean isCascadeDelete() {
-        return PojoUtils.isCascadeDelete(this);
+        Cascade cascade = getAnnotation(Cascade.class);
+        return cascade == null || cascade.delete();
     }
 
     default boolean isCascadeSave() {
-        return PojoUtils.isCascadeSave(this);
+        Cascade cascade = getAnnotation(Cascade.class);
+        return cascade == null || cascade.save();
+    }
+
+    default boolean isIndexed() {
+        return hasAnnotation(Index.class);
     }
 
     void setValue(Object pojo, Object value);

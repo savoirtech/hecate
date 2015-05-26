@@ -16,9 +16,9 @@
 
 package com.savoirtech.hecate.pojo.util;
 
-import com.savoirtech.hecate.annotation.*;
+import com.savoirtech.hecate.annotation.Table;
+import com.savoirtech.hecate.annotation.Ttl;
 import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.SubFacet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -33,11 +33,6 @@ public class PojoUtils {
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public static String getColumnName(Facet facet) {
-        Column column = Validate.notNull(facet).getAnnotation(Column.class);
-        return column != null ? column.value() : underscoreSeparated(facet.getName());
-    }
-
     public static String getTableName(Class<?> pojoClass) {
         Table table = Validate.notNull(pojoClass).getAnnotation(Table.class);
         return table != null ? table.value() : underscoreSeparated(pojoClass.getSimpleName());
@@ -47,25 +42,7 @@ public class PojoUtils {
         Ttl ttl = Validate.notNull(pojoClass).getAnnotation(Ttl.class);
         return ttl != null ? ttl.value() : 0;
     }
-
-    public static String indexName(Facet facet) {
-        Index annot = facet.getAnnotation(Index.class);
-        if (annot != null && StringUtils.isNotEmpty(annot.value())) {
-            return annot.value();
-        }
-        return facet.getName() + "_ndx";
-    }
-
-    public static boolean isCascadeDelete(Facet facet) {
-        Cascade cascade = facet.getAnnotation(Cascade.class);
-        return cascade == null || cascade.delete();
-    }
-
-    public static boolean isCascadeSave(Facet facet) {
-        Cascade cascade = facet.getAnnotation(Cascade.class);
-        return cascade == null || cascade.save();
-    }
-
+    
     public static <T> T newPojo(Class<T> pojoClass) {
         try {
             Constructor<T> constructor = pojoClass.getConstructor();
@@ -76,7 +53,7 @@ public class PojoUtils {
         }
     }
 
-    private static String underscoreSeparated(String camelCaseName) {
+    public static String underscoreSeparated(String camelCaseName) {
         String[] words = StringUtils.splitByCharacterTypeCamelCase(camelCaseName);
         List<String> wordsList = new ArrayList<>(Arrays.asList(words));
         wordsList.remove(SubFacet.SEPARATOR);

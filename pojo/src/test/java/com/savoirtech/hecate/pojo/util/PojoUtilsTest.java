@@ -29,16 +29,15 @@ public class PojoUtilsTest extends Assert {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Test
-    public void testGetColumnName() throws ReflectiveOperationException {
-        assertEquals("field_name", PojoUtils.getColumnName(fieldOf(PojoType.class, "fieldName")));
-        assertEquals("Bar", PojoUtils.getColumnName(fieldOf(AnnotatedPojoType.class, "fieldName")));
-
-        assertEquals("child_string_property", PojoUtils.getColumnName(new SubFacet(fieldOf(Parent.class, "child"), fieldOf(Child.class, "stringProperty"), true)));
-    }
-
     private Facet fieldOf(Class<?> type, String name) throws ReflectiveOperationException {
         return new FieldFacet(type, type.getDeclaredField(name));
+    }
+
+    @Test
+    public void testGetColumnName() throws ReflectiveOperationException {
+        assertEquals("field_name", fieldOf(PojoType.class, "fieldName").getColumnName());
+        assertEquals("Bar", fieldOf(AnnotatedPojoType.class, "fieldName").getColumnName());
+        assertEquals("child_string_property", new SubFacet(fieldOf(Parent.class, "child"), fieldOf(Child.class, "stringProperty"), true).getColumnName());
     }
 
     @Test
