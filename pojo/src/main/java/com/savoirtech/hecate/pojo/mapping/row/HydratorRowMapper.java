@@ -24,7 +24,7 @@ import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.ReferenceFacetMapping;
 import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.Hydrator;
-import com.savoirtech.hecate.pojo.util.PojoUtils;
+import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
 
 import java.util.Iterator;
 import java.util.List;
@@ -52,7 +52,7 @@ public class HydratorRowMapper<P> implements RowMapper<P> {
 
     @Override
     public P map(Row row) {
-        P pojo = PojoUtils.newPojo(mapping.getPojoClass());
+        P pojo = ReflectionUtils.newInstance(mapping.getPojoClass());
         FacetMappingVisitor visitor = createVisitor(row, pojo);
         mapping.getIdMappings().forEach(mapping -> mapping.accept(visitor));
         mapping.getSimpleMappings().forEach(mapping -> mapping.accept(visitor));

@@ -26,7 +26,7 @@ import com.savoirtech.hecate.pojo.mapping.def.DefaultPojoMappingFactory;
 import com.savoirtech.hecate.pojo.mapping.verify.CreateSchemaVerifier;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.def.DefaultPersistenceContext;
-import com.savoirtech.hecate.pojo.util.PojoMetricsUtils;
+import com.savoirtech.hecate.pojo.metrics.PojoMetricsUtils;
 import com.savoirtech.hecate.test.CassandraTestCase;
 import org.junit.Before;
 import org.junit.Test;

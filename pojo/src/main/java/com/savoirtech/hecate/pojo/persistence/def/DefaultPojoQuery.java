@@ -28,7 +28,7 @@ import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.row.HydratorRowMapper;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoQuery;
-import com.savoirtech.hecate.pojo.util.PojoMetricsUtils;
+import com.savoirtech.hecate.pojo.metrics.PojoMetricsUtils;
 
 import java.util.ArrayList;
 import java.util.List;

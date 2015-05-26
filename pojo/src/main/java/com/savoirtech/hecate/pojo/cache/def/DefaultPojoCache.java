@@ -22,7 +22,7 @@ import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.pojo.cache.PojoCache;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
-import com.savoirtech.hecate.pojo.util.PojoMetricsUtils;
+import com.savoirtech.hecate.pojo.metrics.PojoMetricsUtils;
 
 import java.util.Collections;
 import java.util.HashMap;

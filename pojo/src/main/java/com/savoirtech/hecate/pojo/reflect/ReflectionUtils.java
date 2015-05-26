@@ -14,32 +14,33 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.util;
+package com.savoirtech.hecate.pojo.reflect;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import com.savoirtech.hecate.core.metrics.HecateMetrics;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+import com.savoirtech.hecate.core.exception.HecateException;
+import org.apache.commons.lang3.Validate;
 
-public class PojoMetricsUtils {
+import java.lang.reflect.Constructor;
+
+public class ReflectionUtils {
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public static Counter createCounter(PojoMapping<?> mapping, String operation) {
-        return HecateMetrics.REGISTRY.counter(MetricRegistry.name(mapping.getPojoClass().getSimpleName(), mapping.getTableName(), operation));
-    }
-
-    public static Timer createTimer(PojoMapping<?> mapping, String operation) {
-        return HecateMetrics.REGISTRY.timer(MetricRegistry.name(mapping.getPojoClass().getSimpleName(), mapping.getTableName(), operation));
+    public static <T> T newInstance(Class<T> pojoClass) {
+        try {
+            Constructor<T> constructor = pojoClass.getConstructor();
+            constructor.setAccessible(true);
+            return Validate.notNull(pojoClass).newInstance();
+        } catch (ReflectiveOperationException e) {
+            throw new HecateException(e, "Unable to instantiate object of type %s.", pojoClass.getCanonicalName());
+        }
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoMetricsUtils() {
-        
+    private ReflectionUtils() {
+
     }
 }

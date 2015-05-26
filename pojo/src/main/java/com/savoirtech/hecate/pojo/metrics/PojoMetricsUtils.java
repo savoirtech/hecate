@@ -14,40 +14,32 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.util;
+package com.savoirtech.hecate.pojo.metrics;
 
-import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.facet.field.FieldFacet;
-import org.junit.Assert;
-import org.junit.Test;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.savoirtech.hecate.core.metrics.HecateMetrics;
+import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 
-public class PojoUtilsTest extends Assert {
+public class PojoMetricsUtils {
 //----------------------------------------------------------------------------------------------------------------------
-// Other Methods
+// Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private Facet fieldOf(Class<?> type, String name) throws ReflectiveOperationException {
-        return new FieldFacet(type, type.getDeclaredField(name));
+    public static Counter createCounter(PojoMapping<?> mapping, String operation) {
+        return HecateMetrics.REGISTRY.counter(MetricRegistry.name(mapping.getPojoClass().getSimpleName(), mapping.getTableName(), operation));
     }
 
-    @Test
-    public void testNewPojo() {
-        assertNotNull(PojoUtils.newPojo(MyPojo.class));
-    }
-
-    @Test(expected = HecateException.class)
-    public void testNewPojoWithNonConcrete() {
-        PojoUtils.newPojo(AbstractPojo.class);
+    public static Timer createTimer(PojoMapping<?> mapping, String operation) {
+        return HecateMetrics.REGISTRY.timer(MetricRegistry.name(mapping.getPojoClass().getSimpleName(), mapping.getTableName(), operation));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Inner Classes
+// Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public abstract class AbstractPojo {
-    }
-
-    public static class MyPojo {
+    public PojoMetricsUtils() {
+        
     }
 }

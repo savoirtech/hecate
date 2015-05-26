@@ -16,8 +16,8 @@
 
 package com.savoirtech.hecate.pojo.facet;
 
+import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
 import com.savoirtech.hecate.pojo.type.GenericType;
-import com.savoirtech.hecate.pojo.util.PojoUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -97,7 +97,7 @@ public class SubFacet implements Facet {
     private Object parentValue(Object pojo) {
         Object parentValue = parent.getValue(pojo);
         if (parentValue == null && autoCreateParent) {
-            Object newParent = PojoUtils.newPojo(parent.getType().getRawType());
+            Object newParent = ReflectionUtils.newInstance(parent.getType().getRawType());
             parent.setValue(pojo, newParent);
             return newParent;
         }

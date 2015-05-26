@@ -22,7 +22,7 @@ import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.*;
-import com.savoirtech.hecate.pojo.util.PojoMetricsUtils;
+import com.savoirtech.hecate.pojo.metrics.PojoMetricsUtils;
 
 import java.util.Collections;
 

@@ -18,7 +18,7 @@ package com.savoirtech.hecate.pojo.mapping.column;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.util.PojoUtils;
+import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
 
 import java.util.function.Function;
 
@@ -56,6 +56,6 @@ public class EmbeddedColumnType implements ColumnType<Boolean, Object> {
 
     @Override
     public Object getFacetValue(Boolean columnValue, Function<Object, Object> function, Class<?> elementType) {
-        return PojoUtils.newPojo(elementType);
+        return ReflectionUtils.newInstance(elementType);
     }
 }

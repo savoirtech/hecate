@@ -14,33 +14,34 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.util;
+package com.savoirtech.hecate.pojo.reflect;
 
 import com.savoirtech.hecate.core.exception.HecateException;
-import org.apache.commons.lang3.Validate;
+import org.junit.Assert;
+import org.junit.Test;
 
-import java.lang.reflect.Constructor;
-
-public class PojoUtils {
+public class ReflectionUtilsTest extends Assert {
 //----------------------------------------------------------------------------------------------------------------------
-// Static Methods
+// Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public static <T> T newPojo(Class<T> pojoClass) {
-        try {
-            Constructor<T> constructor = pojoClass.getConstructor();
-            constructor.setAccessible(true);
-            return Validate.notNull(pojoClass).newInstance();
-        } catch (ReflectiveOperationException e) {
-            throw new HecateException(e, "Unable to instantiate object of type %s.", pojoClass.getCanonicalName());
-        }
+    @Test
+    public void testNewInstance() {
+        assertNotNull(ReflectionUtils.newInstance(MyPojo.class));
+    }
+
+    @Test(expected = HecateException.class)
+    public void testNewInstanceWithAbstractType() {
+        ReflectionUtils.newInstance(AbstractPojo.class);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Constructors
+// Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private PojoUtils() {
-        // Prevent instantiation!
+    public abstract class AbstractPojo {
+    }
+
+    public static class MyPojo {
     }
 }
