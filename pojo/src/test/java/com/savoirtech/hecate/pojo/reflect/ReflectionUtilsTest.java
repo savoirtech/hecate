@@ -35,6 +35,11 @@ public class ReflectionUtilsTest extends Assert {
         ReflectionUtils.newInstance(AbstractPojo.class);
     }
 
+    @Test
+    public void testNewInstanceWithHiddenConstructor() {
+        assertNotNull(ReflectionUtils.newInstance(PrivatePojo.class));
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
@@ -43,5 +48,11 @@ public class ReflectionUtilsTest extends Assert {
     }
 
     public static class MyPojo {
+    }
+
+    public static class PrivatePojo {
+        private PrivatePojo() {
+
+        }
     }
 }

@@ -18,6 +18,7 @@ package com.savoirtech.hecate.pojo.persistence.def;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.google.common.collect.Lists;
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
@@ -43,8 +44,8 @@ public class DefaultPojoFindByIds<P> extends PojoStatement<P> implements PojoFin
 
     @Override
     public MappedQueryResult<P> execute(Hydrator hydrator, StatementOptions options, Iterable<? extends Object> ids) {
-        HydratorRowMapper<P> mapper = new HydratorRowMapper<>(getPojoMapping(),hydrator);
-        return new MappedQueryResult<>(executeStatement(Collections.singletonList(ids), options),mapper);
+        HydratorRowMapper<P> mapper = new HydratorRowMapper<>(getPojoMapping(), hydrator);
+        return new MappedQueryResult<>(executeStatement(Collections.singletonList(Lists.newArrayList(ids)), options), mapper);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -53,6 +54,6 @@ public class DefaultPojoFindByIds<P> extends PojoStatement<P> implements PojoFin
 
     @Override
     protected RegularStatement createStatement() {
-        return DefaultPojoQueryBuilder.createSelect(getPojoMapping()).and(QueryBuilder.in(getPojoMapping().getForeignKeyMapping().getColumnName(),QueryBuilder.bindMarker()));
+        return DefaultPojoQueryBuilder.createSelect(getPojoMapping()).and(QueryBuilder.in(getPojoMapping().getForeignKeyMapping().getColumnName(), QueryBuilder.bindMarker()));
     }
 }

@@ -17,7 +17,6 @@
 package com.savoirtech.hecate.pojo.reflect;
 
 import com.savoirtech.hecate.core.exception.HecateException;
-import org.apache.commons.lang3.Validate;
 
 import java.lang.reflect.Constructor;
 
@@ -28,9 +27,9 @@ public class ReflectionUtils {
 
     public static <T> T newInstance(Class<T> pojoClass) {
         try {
-            Constructor<T> constructor = pojoClass.getConstructor();
+            Constructor<T> constructor = pojoClass.getDeclaredConstructor();
             constructor.setAccessible(true);
-            return Validate.notNull(pojoClass).newInstance();
+            return constructor.newInstance();
         } catch (ReflectiveOperationException e) {
             throw new HecateException(e, "Unable to instantiate object of type %s.", pojoClass.getCanonicalName());
         }

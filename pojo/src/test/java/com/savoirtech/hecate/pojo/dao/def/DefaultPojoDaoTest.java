@@ -47,6 +47,15 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     }
 
     @Test
+    public void testFindByIdsWithSet()  throws Exception {
+        DefaultPojoDaoFactory factory = getFactory();
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        dao.save(pojo);
+        assertEquals(1, dao.findByIds(Sets.newHashSet(pojo.getId())).list().size());
+    }
+    @Test
     public void testDeleteWithCompositeKey() {
         DefaultPojoDaoFactory factory = getFactory();
         PojoDao<CompositeKey, CompositeKeyPojo> dao = factory.createPojoDao(CompositeKeyPojo.class);
