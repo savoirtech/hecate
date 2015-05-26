@@ -55,9 +55,7 @@ public class FieldFacetProvider implements FacetProvider {
 
     private static boolean isPersistable(Field field) {
         final int mods = field.getModifiers();
-        return !(Modifier.isFinal(mods) ||
-                Modifier.isTransient(mods) ||
-                Modifier.isStatic(mods));
+        return !Modifier.isTransient(mods) && !Modifier.isStatic(mods);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

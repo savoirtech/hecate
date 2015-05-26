@@ -40,11 +40,21 @@ public class FieldFacetProviderTest extends Assert {
     }
 
     @Test
+    public void testSettingFinalField() {
+        FacetProvider facetProvider = new FieldFacetProvider();
+        Map<String, Facet> map = facetProvider.getFacetsAsMap(FieldPojoSub.class);
+        Facet foo = map.get("foo");
+        FieldPojoSub pojo = new FieldPojoSub();
+        foo.setValue(pojo, "bar");
+        assertEquals("bar", foo.getValue(pojo));
+
+    }
+    @Test
     public void testGetFacets() throws Exception {
         FacetProvider facetProvider = new FieldFacetProvider();
         List<Facet> facets = facetProvider.getFacets(FieldPojoSub.class);
         Set<String> names = facets.stream().map(Facet::getName).collect(Collectors.toSet());
-        assertFalse(names.contains("foo"));
+        assertTrue(names.contains("foo"));
         assertTrue(names.contains("bar"));
         assertTrue(names.contains("baz"));
         assertFalse(names.contains("ignored"));
