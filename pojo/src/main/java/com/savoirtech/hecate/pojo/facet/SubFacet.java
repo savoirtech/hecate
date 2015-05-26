@@ -16,7 +16,7 @@
 
 package com.savoirtech.hecate.pojo.facet;
 
-import com.savoirtech.hecate.pojo.util.GenericType;
+import com.savoirtech.hecate.pojo.type.GenericType;
 import com.savoirtech.hecate.pojo.util.PojoUtils;
 
 import java.lang.annotation.Annotation;

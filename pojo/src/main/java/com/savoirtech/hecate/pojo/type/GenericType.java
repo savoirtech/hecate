@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.util;
+package com.savoirtech.hecate.pojo.type;
 
 import com.savoirtech.hecate.core.exception.HecateException;
 import org.apache.commons.lang3.reflect.TypeUtils;

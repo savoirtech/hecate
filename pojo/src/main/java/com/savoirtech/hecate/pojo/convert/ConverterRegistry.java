@@ -17,7 +17,7 @@
 package com.savoirtech.hecate.pojo.convert;
 
 import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.util.GenericType;
+import com.savoirtech.hecate.pojo.type.GenericType;
 
 public interface ConverterRegistry {
 //----------------------------------------------------------------------------------------------------------------------

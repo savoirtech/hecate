@@ -18,7 +18,7 @@ package com.savoirtech.hecate.pojo.facet;
 
 import com.savoirtech.hecate.annotation.Cascade;
 import com.savoirtech.hecate.annotation.Index;
-import com.savoirtech.hecate.pojo.util.GenericType;
+import com.savoirtech.hecate.pojo.type.GenericType;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
