@@ -24,8 +24,6 @@ import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoQueryBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -39,13 +37,13 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPojoQueryBuilder.class);
     private final PersistenceContext persistenceContext;
     private final PojoMapping<P> pojoMapping;
     private final Map<String, FacetMapping> facetMappings;
     private final Select.Where where;
     private final List<FacetMapping> parameterMappings = new LinkedList<>();
     private final List<InjectedParameter> injectedParameters = new LinkedList<>();
+    private String name;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -58,7 +56,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         this.facetMappings = toFacetMappingsMap(pojoMapping);
     }
 
-    private static Select.Where createSelect(PojoMapping<?> pojoMapping) {
+    static Select.Where createSelect(PojoMapping<?> pojoMapping) {
         Select.Selection select = select();
         pojoMapping.getIdMappings().forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
         pojoMapping.getSimpleMappings().forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
@@ -81,14 +79,13 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         where.orderBy(QueryBuilder.asc(lookupColumn(facetName)));
         return this;
     }
-
-    //----------------------------------------------------------------------------------------------------------------------
-    // PojoQueryBuilder Implementation
-    //----------------------------------------------------------------------------------------------------------------------
-
+    
     @Override
     public DefaultPojoQuery<P> build() {
-        return new DefaultPojoQuery<>(persistenceContext, pojoMapping, where, parameterMappings, injectedParameters);
+        if(name == null) {
+            return new DefaultPojoQuery<>(where.getQueryString(), persistenceContext, pojoMapping, where, parameterMappings, injectedParameters);
+        }
+        return new DefaultPojoQuery<>(name, persistenceContext, pojoMapping, where, parameterMappings, injectedParameters);
     }
 
     @Override
@@ -206,6 +203,12 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         String columnName = mapping.getFacet().getColumnName();
         where.and(QueryBuilder.lte(columnName, QueryBuilder.bindMarker()));
         injectParameter(mapping, value);
+        return this;
+    }
+
+    @Override
+    public PojoQueryBuilder<P> withName(String name) {
+        this.name = name;
         return this;
     }
 

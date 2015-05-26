@@ -53,22 +53,7 @@ public class HydratorRowMapper<P> implements RowMapper<P> {
     @Override
     public P map(Row row) {
         P pojo = PojoUtils.newPojo(mapping.getPojoClass());
-        List<Object> columns = CqlUtils.toList(row);
-        Iterator<Object> columnValues = columns.iterator();
-        FacetMappingVisitor visitor = new FacetMappingVisitor() {
-            @Override
-            public void visitReference(final ReferenceFacetMapping referenceMapping) {
-                final Object columnValue = columnValues.next();
-                hydrator.resolveElements(referenceMapping.getElementMapping(),
-                        referenceMapping.getColumnType().columnElements(columnValue),
-                        hydrator -> referenceMapping.setFacetValue(pojo, columnValue, id -> hydrator.getPojo(referenceMapping.getElementMapping(), id)));
-            }
-
-            @Override
-            public void visitScalar(ScalarFacetMapping scalarMapping) {
-                scalarMapping.setFacetValue(pojo, columnValues.next());
-            }
-        };
+        FacetMappingVisitor visitor = createVisitor(row, pojo);
         mapping.getIdMappings().forEach(mapping -> mapping.accept(visitor));
         mapping.getSimpleMappings().forEach(mapping -> mapping.accept(visitor));
         return pojo;
@@ -77,5 +62,42 @@ public class HydratorRowMapper<P> implements RowMapper<P> {
     @Override
     public void mappingComplete() {
         hydrator.execute();
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    protected FacetMappingVisitor createVisitor(Row row, final P pojo) {
+        List<Object> columns = CqlUtils.toList(row);
+        Iterator<Object> columnValues = columns.iterator();
+        return new RowVisitor(columnValues, pojo);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    private class RowVisitor implements FacetMappingVisitor {
+        private final Iterator<Object> columnValues;
+        private final P pojo;
+
+        public RowVisitor(Iterator<Object> columnValues, P pojo) {
+            this.columnValues = columnValues;
+            this.pojo = pojo;
+        }
+
+        @Override
+        public void visitReference(final ReferenceFacetMapping referenceMapping) {
+            final Object columnValue = columnValues.next();
+            hydrator.resolveElements(referenceMapping.getElementMapping(),
+                    referenceMapping.getColumnType().columnElements(columnValue),
+                    hydrator -> referenceMapping.setFacetValue(pojo, columnValue, id -> hydrator.getPojo(referenceMapping.getElementMapping(), id)));
+        }
+
+        @Override
+        public void visitScalar(ScalarFacetMapping scalarMapping) {
+            scalarMapping.setFacetValue(pojo, columnValues.next());
+        }
     }
 }

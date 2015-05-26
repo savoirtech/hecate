@@ -16,15 +16,18 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
-import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.pojo.cache.PojoCache;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.Hydrator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class DefaultHydrator implements Hydrator {
@@ -34,17 +37,18 @@ public class DefaultHydrator implements Hydrator {
 
     private final PersistenceContext persistenceContext;
     private final List<Pair<PojoMapping<?>, Consumer<Hydrator>>> callbacks = new LinkedList<>();
-    private final Map<PojoMapping<Object>,List<Object>> agenda = new HashMap<>();
-    private final Map<PojoMapping, Map<Object, Object>> resolved = new HashMap<>();
+    private final Multimap<PojoMapping<? extends Object>, Object> agenda = MultimapBuilder.hashKeys().hashSetValues().build();
+    private final PojoCache pojoCache;
     private final StatementOptions options;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultHydrator(PersistenceContext persistenceContext, StatementOptions options) {
+    public DefaultHydrator(PersistenceContext persistenceContext, StatementOptions options, PojoCache pojoCache) {
         this.persistenceContext = persistenceContext;
         this.options = options;
+        this.pojoCache = pojoCache;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -52,24 +56,19 @@ public class DefaultHydrator implements Hydrator {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
+    @SuppressWarnings("unchecked")
     public void execute() {
         while (!agenda.isEmpty()) {
-            final Set<PojoMapping<Object>> pojoMappings = new HashSet<>(agenda.keySet());
-            pojoMappings.forEach(mapping -> {
-                Map<Object, Object> idToPojo = getOrCreateIdToPojo(mapping);
-                List<Object> ids = agenda.remove(mapping);
-                ids.removeAll(idToPojo.keySet());
-                if (!ids.isEmpty()) {
-                    List<?> pojos = persistenceContext.findByIds(mapping).execute(options, ids).list();
-                    for (Object pojo : pojos) {
-                        idToPojo.put(mapping.getForeignKeyMapping().getColumnValue(pojo), pojo);
-                    }
-                }
-            });
+            PojoMapping<Object> mapping = (PojoMapping<Object>)agenda.keySet().iterator().next();
+            List<Object> ids = new LinkedList<>(agenda.removeAll(mapping));
+            ids.removeAll(pojoCache.idSet(mapping));
+            if (!ids.isEmpty()) {
+                List<Object> pojos = persistenceContext.findByIds(mapping).execute(this, options, ids).list();
+                pojoCache.putAll(mapping, pojos);
+            }
         }
         for (Pair<PojoMapping<?>, Consumer<Hydrator>> injector : callbacks) {
-            final Map<Object, Object> idToPojo = resolved.get(injector.getLeft());
-            if (idToPojo != null) {
+            if (pojoCache.contains(injector.getLeft())) {
                 injector.getRight().accept(this);
             }
         }
@@ -77,32 +76,13 @@ public class DefaultHydrator implements Hydrator {
 
     @Override
     public Object getPojo(PojoMapping<?> mapping, Object id) {
-        final Map<Object, Object> idToPojo = resolved.get(mapping);
-        return idToPojo == null ? null : idToPojo.get(id);
+        return pojoCache.lookup(mapping, id);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void resolveElements(PojoMapping<?> pojoMapping, Iterable<Object> cassandraValues, Consumer<Hydrator> callback) {
-        List<Object> list = agenda.get(pojoMapping);
-        if(list == null) {
-            list = new LinkedList<>();
-            agenda.put((PojoMapping<Object>)pojoMapping,list);
-        }
-        Iterables.addAll(list, cassandraValues);
+        agenda.putAll(pojoMapping, cassandraValues);
         callbacks.add(new ImmutablePair<>(pojoMapping, callback));
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    private Map<Object, Object> getOrCreateIdToPojo(PojoMapping<?> mapping) {
-        Map<Object, Object> idToPojo = resolved.get(mapping);
-        if (idToPojo == null) {
-            idToPojo = new HashMap<>();
-            resolved.put(mapping, idToPojo);
-        }
-        return idToPojo;
     }
 }

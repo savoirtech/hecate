@@ -43,7 +43,7 @@ public interface PersistenceContext {
 
     <P> PojoQuery<P> findById(PojoMapping<P> mapping);
 
-    <P> PojoQuery<P> findByIds(PojoMapping<P> mapping);
+    <P> PojoFindByIds<P> findByIds(PojoMapping<P> mapping);
 
     <P> PojoFindForDelete findForDelete(PojoMapping<P> mapping);
 

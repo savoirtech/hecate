@@ -16,16 +16,19 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
+import com.codahale.metrics.Timer;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
+import com.savoirtech.hecate.core.metrics.MetricsUtils;
 import com.savoirtech.hecate.core.statement.StatementOptions;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.row.HydratorRowMapper;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoQuery;
+import com.savoirtech.hecate.pojo.util.PojoMetricsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,41 +41,40 @@ public class DefaultPojoQuery<P> extends PojoStatement<P> implements PojoQuery<P
     private final Select.Where selectWhere;
     private final List<FacetMapping> parameterMappings;
     private final List<InjectedParameter> injectedParameters;
+    private final Timer timer;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoQuery(PersistenceContext persistenceContext, PojoMapping<P> pojoMapping, Select.Where selectWhere, List<FacetMapping> parameterMappings, List<InjectedParameter> injectedParameters) {
+    public DefaultPojoQuery(String name, PersistenceContext persistenceContext, PojoMapping<P> pojoMapping, Select.Where selectWhere, List<FacetMapping> parameterMappings, List<InjectedParameter> injectedParameters) {
         super(persistenceContext, pojoMapping);
         this.selectWhere = selectWhere;
         this.parameterMappings = parameterMappings;
         this.injectedParameters = injectedParameters;
+        this.timer= PojoMetricsUtils.createTimer(pojoMapping, name);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // PojoQuery Implementation
 //----------------------------------------------------------------------------------------------------------------------
-
-    @Override
-    public final MappedQueryResult<P> execute(Object... parameters) {
-        return execute(StatementOptions.EMPTY, parameters);
-    }
-
+    
     @Override
     public final MappedQueryResult<P> execute(StatementOptions options, Object... parameters) {
-        if (parameters.length != parameterMappings.size()) {
-            throw new HecateException("Expected %d parameters, but only received %d.", parameterMappings.size(), parameters.length);
-        }
+        return MetricsUtils.returnWithTimer(timer, () -> {
+            if (parameters.length != parameterMappings.size()) {
+                throw new HecateException("Expected %d parameters, but only received %d.", parameterMappings.size(), parameters.length);
+            }
 
-        List<Object> columnValues = new ArrayList<>(parameterMappings.size() + injectedParameters.size());
-        int index = 0;
-        for (FacetMapping mapping : parameterMappings) {
-            columnValues.add(mapping.getColumnValueForFacetValue(parameters[index]));
-            index++;
-        }
-        columnValues = injected(columnValues);
-        return new MappedQueryResult<>(executeStatement(columnValues, options), new HydratorRowMapper<>(getPojoMapping(), getPersistenceContext().createHydrator(options)));
+            List<Object> columnValues = new ArrayList<>(parameterMappings.size() + injectedParameters.size());
+            int index = 0;
+            for (FacetMapping mapping : parameterMappings) {
+                columnValues.add(mapping.getColumnValueForFacetValue(parameters[index]));
+                index++;
+            }
+            columnValues = injected(columnValues);
+            return new MappedQueryResult<>(executeStatement(columnValues, options), new HydratorRowMapper<>(getPojoMapping(), getPersistenceContext().createHydrator(options)));    
+        });
     }
 
 //----------------------------------------------------------------------------------------------------------------------

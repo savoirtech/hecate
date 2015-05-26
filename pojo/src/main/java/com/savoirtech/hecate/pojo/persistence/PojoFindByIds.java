@@ -19,14 +19,10 @@ package com.savoirtech.hecate.pojo.persistence;
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 
-public interface PojoQuery<P> {
+public interface PojoFindByIds<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    default MappedQueryResult<P> execute(Object... parameters) {
-        return execute(StatementOptions.EMPTY, parameters);
-    }
-
-    MappedQueryResult<P> execute(StatementOptions options, Object... parameters);
+    MappedQueryResult<P> execute(Hydrator hydrator, StatementOptions options, Iterable<? extends Object> ids);
 }

@@ -16,22 +16,17 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
-import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.savoirtech.hecate.core.metrics.HecateMetrics;
 import com.savoirtech.hecate.core.query.QueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.persistence.Dehydrator;
-import com.savoirtech.hecate.pojo.persistence.Evaporator;
-import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
-import com.savoirtech.hecate.pojo.persistence.PojoQueryBuilder;
+import com.savoirtech.hecate.pojo.persistence.*;
+import com.savoirtech.hecate.pojo.util.PojoMetricsUtils;
 
 import java.util.Collections;
 
 import static com.savoirtech.hecate.core.metrics.MetricsUtils.doWithTimer;
-import static com.savoirtech.hecate.core.metrics.MetricsUtils.returnWithTimer;
 
 public class DefaultPojoDao<I, P> implements PojoDao<I, P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -42,8 +37,6 @@ public class DefaultPojoDao<I, P> implements PojoDao<I, P> {
     private final PersistenceContext persistenceContext;
     private final Timer deleteTimer;
     private final Timer saveTimer;
-    private final Timer findById;
-    private final Timer findByIds;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -52,14 +45,8 @@ public class DefaultPojoDao<I, P> implements PojoDao<I, P> {
     public DefaultPojoDao(PojoMapping<P> pojoMapping, PersistenceContext persistenceContext) {
         this.pojoMapping = pojoMapping;
         this.persistenceContext = persistenceContext;
-        deleteTimer = createTimer(pojoMapping,"delete");
-        saveTimer = createTimer(pojoMapping,"save");
-        findById = createTimer(pojoMapping,"findById");
-        findByIds = createTimer(pojoMapping,"findByIds");
-    }
-
-    private static Timer createTimer(PojoMapping<?> mapping, String operation) {
-        return HecateMetrics.REGISTRY.timer(MetricRegistry.name(mapping.getPojoClass().getSimpleName(), mapping.getTableName(), operation));
+        deleteTimer = PojoMetricsUtils.createTimer(pojoMapping, "delete");
+        saveTimer = PojoMetricsUtils.createTimer(pojoMapping, "save");
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -82,12 +69,13 @@ public class DefaultPojoDao<I, P> implements PojoDao<I, P> {
 
     @Override
     public P findById(I id) {
-        return returnWithTimer(findById, () -> persistenceContext.findById(pojoMapping).execute(id).one());
+        return persistenceContext.findById(pojoMapping).execute(id).one();
     }
 
     @Override
-    public QueryResult<P> findByIds(Iterable<I> ids) {
-        return returnWithTimer(findByIds, () -> persistenceContext.findByIds(pojoMapping).execute(ids));
+    public QueryResult<P> findByIds(Iterable<I> ids, StatementOptions options) {
+        Hydrator hydrator = persistenceContext.createHydrator(options);
+        return persistenceContext.findByIds(pojoMapping).execute(hydrator, options, ids);
     }
 
     @Override

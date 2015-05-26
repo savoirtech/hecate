@@ -54,4 +54,6 @@ public interface PojoQueryBuilder<P> {
     PojoQueryBuilder<P> lte(String facetName);
 
     PojoQueryBuilder<P> lte(String facetName, Object value);
+
+    PojoQueryBuilder<P> withName(String name);
 }

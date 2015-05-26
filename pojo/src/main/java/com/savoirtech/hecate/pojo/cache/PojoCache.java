@@ -14,19 +14,25 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.persistence;
+package com.savoirtech.hecate.pojo.cache;
 
-import com.savoirtech.hecate.core.mapping.MappedQueryResult;
-import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 
-public interface PojoQuery<P> {
+import java.util.Set;
+
+public interface PojoCache {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    default MappedQueryResult<P> execute(Object... parameters) {
-        return execute(StatementOptions.EMPTY, parameters);
-    }
+    boolean contains(PojoMapping<? extends Object> mapping);
 
-    MappedQueryResult<P> execute(StatementOptions options, Object... parameters);
+    Set<Object> idSet(PojoMapping<? extends Object> mapping);
+
+    <P> P lookup(PojoMapping<P> mapping, Object id);
+    <P> void put(PojoMapping<P> mapping, Object id, P pojo);
+
+    <P> void putAll(PojoMapping<P> mapping, Iterable<P> pojos);
+    
+    long size(PojoMapping<? extends Object> mapping);
 }

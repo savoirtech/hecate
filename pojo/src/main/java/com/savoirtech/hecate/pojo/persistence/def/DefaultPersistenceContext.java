@@ -21,6 +21,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.pojo.cache.def.DefaultPojoCache;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.*;
 
@@ -35,7 +36,7 @@ public class DefaultPersistenceContext implements PersistenceContext {
 
     private final LoadingCache<PojoMapping<?>, PojoInsert<?>> insertCache = CacheBuilder.newBuilder().build(new InsertCacheLoader());
     private final LoadingCache<PojoMapping<?>, PojoQuery<?>> findByIdCache = CacheBuilder.newBuilder().build(new FindByIdCacheLoader());
-    private final LoadingCache<PojoMapping<?>, PojoQuery<?>> findByIdsCache = CacheBuilder.newBuilder().build(new FindByIdsCacheLoader());
+    private final LoadingCache<PojoMapping<?>, PojoFindByIds<?>> findByIdsCache = CacheBuilder.newBuilder().build(new FindByIdsCacheLoader());
     private final LoadingCache<PojoMapping<?>, PojoFindForDelete> findForDeleteCache = CacheBuilder.newBuilder().build(new FindForDeleteCacheLoader());
     private final LoadingCache<PojoMapping<?>, PojoDelete<?>> deleteCache = CacheBuilder.newBuilder().build(new DeleteCacheLoader());
 
@@ -68,7 +69,8 @@ public class DefaultPersistenceContext implements PersistenceContext {
 
     @Override
     public Hydrator createHydrator(StatementOptions options) {
-        return new DefaultHydrator(this, options);
+        // TODO: support pojo cache options!
+        return new DefaultHydrator(this, options, new DefaultPojoCache(this));
     }
 
     @Override
@@ -96,8 +98,8 @@ public class DefaultPersistenceContext implements PersistenceContext {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <P> PojoQuery<P> findByIds(PojoMapping<P> mapping) {
-        return (PojoQuery<P>) findByIdsCache.getUnchecked(mapping);
+    public <P> PojoFindByIds<P> findByIds(PojoMapping<P> mapping) {
+        return (PojoFindByIds<P>) findByIdsCache.getUnchecked(mapping);
     }
 
     @Override
@@ -130,14 +132,14 @@ public class DefaultPersistenceContext implements PersistenceContext {
     private class FindByIdCacheLoader extends CacheLoader<PojoMapping<?>, PojoQuery<?>> {
         @Override
         public PojoQuery<?> load(PojoMapping<?> key) throws Exception {
-            return find(key).identifierEquals().build();
+            return find(key).withName("findById").identifierEquals().build();
         }
     }
 
-    private class FindByIdsCacheLoader extends CacheLoader<PojoMapping<?>, PojoQuery<?>> {
+    private class FindByIdsCacheLoader extends CacheLoader<PojoMapping<?>, PojoFindByIds<?>> {
         @Override
-        public PojoQuery<?> load(PojoMapping<?> key) throws Exception {
-            return find(key).identifierIn().build();
+        public PojoFindByIds<?> load(PojoMapping<?> key) throws Exception {
+            return new DefaultPojoFindByIds<>(DefaultPersistenceContext.this, key);
         }
     }
 
