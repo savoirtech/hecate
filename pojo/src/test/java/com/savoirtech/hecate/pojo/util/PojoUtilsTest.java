@@ -16,10 +16,8 @@
 
 package com.savoirtech.hecate.pojo.util;
 
-import com.savoirtech.hecate.annotation.Column;
-import com.savoirtech.hecate.annotation.Table;
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.facet.SubFacet;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacet;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,37 +32,22 @@ public class PojoUtilsTest extends Assert {
     }
 
     @Test
-    public void testGetColumnName() throws ReflectiveOperationException {
-        assertEquals("field_name", fieldOf(PojoType.class, "fieldName").getColumnName());
-        assertEquals("Bar", fieldOf(AnnotatedPojoType.class, "fieldName").getColumnName());
-        assertEquals("child_string_property", new SubFacet(fieldOf(Parent.class, "child"), fieldOf(Child.class, "stringProperty"), true).getColumnName());
+    public void testNewPojo() {
+        assertNotNull(PojoUtils.newPojo(MyPojo.class));
     }
 
-    @Test
-    public void testGetTableName() {
-        assertEquals("pojo_type", PojoUtils.getTableName(PojoType.class));
-        assertEquals("Foo", PojoUtils.getTableName(AnnotatedPojoType.class));
+    @Test(expected = HecateException.class)
+    public void testNewPojoWithNonConcrete() {
+        PojoUtils.newPojo(AbstractPojo.class);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Table("Foo")
-    private static class AnnotatedPojoType {
-        @Column("Bar")
-        public String fieldName;
+    public abstract class AbstractPojo {
     }
 
-    private static class Child {
-        private String stringProperty;
-    }
-
-    private static class Parent {
-        private Child child;
-    }
-
-    private static class PojoType {
-        public String fieldName;
+    public static class MyPojo {
     }
 }

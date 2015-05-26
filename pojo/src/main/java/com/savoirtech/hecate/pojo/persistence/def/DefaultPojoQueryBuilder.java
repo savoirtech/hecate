@@ -58,8 +58,8 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     static Select.Where createSelect(PojoMapping<?> pojoMapping) {
         Select.Selection select = select();
-        pojoMapping.getIdMappings().forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
-        pojoMapping.getSimpleMappings().forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
+        pojoMapping.getIdMappings().forEach(mapping -> select.column(mapping.getColumnName()));
+        pojoMapping.getSimpleMappings().forEach(mapping -> select.column(mapping.getColumnName()));
         return select.from(pojoMapping.getTableName()).where();
     }
 
@@ -97,7 +97,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     @Override
     public DefaultPojoQueryBuilder<P> eq(String facetName) {
         FacetMapping mapping = lookupMapping(facetName);
-        where.and(QueryBuilder.eq(mapping.getFacet().getColumnName(), QueryBuilder.bindMarker()));
+        where.and(QueryBuilder.eq(mapping.getColumnName(), QueryBuilder.bindMarker()));
         parameterMappings.add(mapping);
         return this;
     }
@@ -105,7 +105,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     @Override
     public PojoQueryBuilder<P> eq(String facetName, Object value) {
         FacetMapping mapping = lookupMapping(facetName);
-        String columnName = mapping.getFacet().getColumnName();
+        String columnName = mapping.getColumnName();
         where.and(QueryBuilder.eq(columnName, QueryBuilder.bindMarker()));
         injectParameter(mapping, value);
         return this;
@@ -114,7 +114,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     @Override
     public DefaultPojoQueryBuilder<P> gt(String facetName) {
         FacetMapping mapping = lookupMapping(facetName);
-        where.and(QueryBuilder.gt(mapping.getFacet().getColumnName(), QueryBuilder.bindMarker()));
+        where.and(QueryBuilder.gt(mapping.getColumnName(), QueryBuilder.bindMarker()));
         parameterMappings.add(mapping);
         return this;
     }
@@ -122,7 +122,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     @Override
     public PojoQueryBuilder<P> gt(String facetName, Object value) {
         FacetMapping mapping = lookupMapping(facetName);
-        String columnName = mapping.getFacet().getColumnName();
+        String columnName = mapping.getColumnName();
         where.and(QueryBuilder.gt(columnName, QueryBuilder.bindMarker()));
         injectParameter(mapping, value);
         return this;
@@ -131,7 +131,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     @Override
     public DefaultPojoQueryBuilder<P> gte(String facetName) {
         FacetMapping mapping = lookupMapping(facetName);
-        where.and(QueryBuilder.gte(mapping.getFacet().getColumnName(), QueryBuilder.bindMarker()));
+        where.and(QueryBuilder.gte(mapping.getColumnName(), QueryBuilder.bindMarker()));
         parameterMappings.add(mapping);
         return this;
     }
@@ -139,7 +139,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     @Override
     public PojoQueryBuilder<P> gte(String facetName, Object value) {
         FacetMapping mapping = lookupMapping(facetName);
-        String columnName = mapping.getFacet().getColumnName();
+        String columnName = mapping.getColumnName();
         where.and(QueryBuilder.gte(columnName, QueryBuilder.bindMarker()));
         injectParameter(mapping, value);
         return this;
@@ -158,7 +158,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     @Override
     public DefaultPojoQueryBuilder<P> in(String facetName) {
         FacetMapping mapping = lookupMapping(facetName);
-        where.and(QueryBuilder.in(mapping.getFacet().getColumnName(), QueryBuilder.bindMarker()));
+        where.and(QueryBuilder.in(mapping.getColumnName(), QueryBuilder.bindMarker()));
         parameterMappings.add(mapping);
         return this;
     }
@@ -166,7 +166,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     @Override
     public PojoQueryBuilder<P> in(String facetName, Object value) {
         FacetMapping mapping = lookupMapping(facetName);
-        String columnName = mapping.getFacet().getColumnName();
+        String columnName = mapping.getColumnName();
         where.and(QueryBuilder.in(columnName, QueryBuilder.bindMarker()));
         injectParameter(mapping, value);
         return this;
@@ -175,7 +175,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     @Override
     public DefaultPojoQueryBuilder<P> lt(String facetName) {
         FacetMapping mapping = lookupMapping(facetName);
-        where.and(QueryBuilder.lt(mapping.getFacet().getColumnName(), QueryBuilder.bindMarker()));
+        where.and(QueryBuilder.lt(mapping.getColumnName(), QueryBuilder.bindMarker()));
         parameterMappings.add(mapping);
         return this;
     }
@@ -183,7 +183,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     @Override
     public PojoQueryBuilder<P> lt(String facetName, Object value) {
         FacetMapping mapping = lookupMapping(facetName);
-        String columnName = mapping.getFacet().getColumnName();
+        String columnName = mapping.getColumnName();
         where.and(QueryBuilder.lt(columnName, QueryBuilder.bindMarker()));
         injectParameter(mapping, value);
         return this;
@@ -192,7 +192,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     @Override
     public DefaultPojoQueryBuilder<P> lte(String facetName) {
         FacetMapping mapping = lookupMapping(facetName);
-        where.and(QueryBuilder.lte(mapping.getFacet().getColumnName(), QueryBuilder.bindMarker()));
+        where.and(QueryBuilder.lte(mapping.getColumnName(), QueryBuilder.bindMarker()));
         parameterMappings.add(mapping);
         return this;
     }
@@ -200,7 +200,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     @Override
     public PojoQueryBuilder<P> lte(String facetName, Object value) {
         FacetMapping mapping = lookupMapping(facetName);
-        String columnName = mapping.getFacet().getColumnName();
+        String columnName = mapping.getColumnName();
         where.and(QueryBuilder.lte(columnName, QueryBuilder.bindMarker()));
         injectParameter(mapping, value);
         return this;
@@ -221,7 +221,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         if (idMappings.size() > 1) {
             throw new HecateException("Composite primary keys not supported.");
         }
-        return idMappings.get(0).getFacet().getColumnName();
+        return idMappings.get(0).getColumnName();
     }
 
     private void injectParameter(FacetMapping facetMapping, Object value) {
@@ -230,7 +230,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     }
 
     private String lookupColumn(String facetName) {
-        return lookupMapping(facetName).getFacet().getColumnName();
+        return lookupMapping(facetName).getColumnName();
     }
 
     private FacetMapping lookupMapping(String facetName) {

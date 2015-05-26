@@ -71,9 +71,9 @@ public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete
     protected RegularStatement createStatement() {
         Delete.Where delete = QueryBuilder.delete().from(getPojoMapping().getTableName()).where();
         if (getPojoMapping().getIdMappings().size() > 1) {
-            getPojoMapping().getIdMappings().forEach(mapping -> delete.and(QueryBuilder.eq(mapping.getFacet().getColumnName(), bindMarker())));
+            getPojoMapping().getIdMappings().forEach(mapping -> delete.and(QueryBuilder.eq(mapping.getColumnName(), bindMarker())));
         } else {
-            getPojoMapping().getIdMappings().forEach(mapping -> delete.and(in(mapping.getFacet().getColumnName(), bindMarker())));
+            getPojoMapping().getIdMappings().forEach(mapping -> delete.and(in(mapping.getColumnName(), bindMarker())));
         }
         return delete;
     }

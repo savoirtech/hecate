@@ -36,8 +36,8 @@ public class ReferenceFacetMapping extends AbstractFacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 
     @SuppressWarnings("unchecked")
-    public ReferenceFacetMapping(Facet facet, ColumnType<?, ?> columnType, PojoMapping<?> elementMapping) {
-        super(facet, (ColumnType<Object, Object>) columnType);
+    public ReferenceFacetMapping(Facet facet, String columnName, ColumnType<?, ?> columnType, PojoMapping<?> elementMapping) {
+        super(facet, columnName, (ColumnType<Object, Object>) columnType);
         this.elementMapping = elementMapping;
         this.dataType = columnType.getDataType(elementMapping.getForeignKeyMapping().getDataType());
     }

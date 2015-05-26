@@ -27,14 +27,16 @@ public abstract class AbstractFacetMapping implements FacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final Facet facet;
+    private final String columnName;
     private final ColumnType<Object, Object> columnType;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected AbstractFacetMapping(Facet facet, ColumnType<Object, Object> columnType) {
+    protected AbstractFacetMapping(Facet facet, String columnName, ColumnType<Object, Object> columnType) {
         this.facet = facet;
+        this.columnName = columnName;
         this.columnType = columnType;
     }
 
@@ -68,6 +70,10 @@ public abstract class AbstractFacetMapping implements FacetMapping {
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    public String getColumnName() {
+        return columnName;
+    }
+
     public ColumnType<Object, Object> getColumnType() {
         return columnType;
     }
@@ -77,7 +83,7 @@ public abstract class AbstractFacetMapping implements FacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 
     public String toString() {
-        return getFacet().getName() + " @ " + getFacet().getColumnName();
+        return getFacet().getName() + " @ " + columnName;
     }
 
 //----------------------------------------------------------------------------------------------------------------------

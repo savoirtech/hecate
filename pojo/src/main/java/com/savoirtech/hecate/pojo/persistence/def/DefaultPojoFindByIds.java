@@ -53,6 +53,6 @@ public class DefaultPojoFindByIds<P> extends PojoStatement<P> implements PojoFin
 
     @Override
     protected RegularStatement createStatement() {
-        return DefaultPojoQueryBuilder.createSelect(getPojoMapping()).and(QueryBuilder.in(getPojoMapping().getForeignKeyMapping().getFacet().getColumnName(),QueryBuilder.bindMarker()));
+        return DefaultPojoQueryBuilder.createSelect(getPojoMapping()).and(QueryBuilder.in(getPojoMapping().getForeignKeyMapping().getColumnName(),QueryBuilder.bindMarker()));
     }
 }

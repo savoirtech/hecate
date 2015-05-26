@@ -92,9 +92,9 @@ public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements Poj
     @Override
     protected RegularStatement createStatement() {
         Select.Selection select = QueryBuilder.select();
-        facetMappings.forEach(mapping -> select.column(mapping.getFacet().getColumnName()));
+        facetMappings.forEach(mapping -> select.column(mapping.getColumnName()));
         return select
                 .from(getPojoMapping().getTableName())
-                .where(QueryBuilder.in(getPojoMapping().getForeignKeyMapping().getFacet().getColumnName(), QueryBuilder.bindMarker()));
+                .where(QueryBuilder.in(getPojoMapping().getForeignKeyMapping().getColumnName(), QueryBuilder.bindMarker()));
     }
 }

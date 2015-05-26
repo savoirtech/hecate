@@ -14,27 +14,20 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.mapping;
+package com.savoirtech.hecate.pojo.mapping.name;
 
-import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.facet.Facet;
 
-public interface FacetMapping {
+public interface NamingStrategy {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    String getColumnName();
+    String getTableName(Class<?> pojoClass);
 
-    void accept(FacetMappingVisitor visitor);
+    String getColumnName(Facet facet);
 
-    Object getColumnValue(Object pojo);
+    String getReferenceTableName(Facet facet);
 
-    Object getColumnValueForFacetValue(Object facetValue);
-
-    DataType getDataType();
-
-    Facet getFacet();
-
-    boolean isReference();
+    String getIndexName(Facet facet);
 }

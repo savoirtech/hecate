@@ -17,12 +17,8 @@
 package com.savoirtech.hecate.pojo.facet;
 
 import com.savoirtech.hecate.annotation.Cascade;
-import com.savoirtech.hecate.annotation.Column;
 import com.savoirtech.hecate.annotation.Index;
 import com.savoirtech.hecate.pojo.util.GenericType;
-import com.savoirtech.hecate.pojo.util.PojoUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -35,19 +31,6 @@ public interface Facet {
     Facet flatten();
     
     <A extends Annotation> A getAnnotation(Class<A> annotationType);
-
-    default String getColumnName() {
-        Column column = Validate.notNull(this).getAnnotation(Column.class);
-        return column != null ? column.value() : PojoUtils.underscoreSeparated(getName());
-    }
-    
-    default String getIndexName() {
-        Index annot = getAnnotation(Index.class);
-        if (annot != null && StringUtils.isNotEmpty(annot.value())) {
-            return annot.value();
-        }
-        return getName() + "_ndx";
-    }
 
     String getName();
 

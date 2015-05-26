@@ -27,15 +27,11 @@ import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.PojoMappingFactory;
-import com.savoirtech.hecate.pojo.mapping.PojoMappingVerifier;
+import com.savoirtech.hecate.pojo.mapping.*;
 import com.savoirtech.hecate.pojo.mapping.column.*;
-import com.savoirtech.hecate.pojo.mapping.FacetMapping;
-import com.savoirtech.hecate.pojo.mapping.ReferenceFacetMapping;
-import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
+import com.savoirtech.hecate.pojo.mapping.name.NamingStrategy;
+import com.savoirtech.hecate.pojo.mapping.name.def.DefaultNamingStrategy;
 import com.savoirtech.hecate.pojo.util.GenericType;
-import com.savoirtech.hecate.pojo.util.PojoUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -57,23 +53,25 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
 
     private final LoadingCache<Pair<Class<?>, String>, PojoMapping<?>> mappingCache = CacheBuilder.newBuilder().build(new MappingCacheLoader());
     private final PojoMappingVerifier verifier;
+    private final NamingStrategy namingStrategy;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoMappingFactory() {
-        this(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry(), null);
+        this(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry(), null, new DefaultNamingStrategy());
     }
 
     public DefaultPojoMappingFactory(PojoMappingVerifier verifier) {
-        this(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry(), verifier);
+        this(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry(), verifier, new DefaultNamingStrategy());
     }
 
-    public DefaultPojoMappingFactory(FacetProvider facetProvider, ConverterRegistry converterRegistry, PojoMappingVerifier verifier) {
+    public DefaultPojoMappingFactory(FacetProvider facetProvider, ConverterRegistry converterRegistry, PojoMappingVerifier verifier, NamingStrategy namingStrategy) {
         this.facetProvider = facetProvider;
         this.converterRegistry = converterRegistry;
         this.verifier = verifier;
+        this.namingStrategy = namingStrategy;
         columnTypeOverrides.put(Set.class, facetType -> new SetColumnType());
         columnTypeOverrides.put(List.class, facetType -> new ListColumnType());
         columnTypeOverrides.put(Map.class, facetType -> new MapColumnType(converterRegistry.getRequiredConverter(facetType.getMapKeyType())));
@@ -85,7 +83,7 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
 
     @Override
     public <P> PojoMapping<P> createPojoMapping(Class<P> pojoClass) {
-        return createPojoMapping(pojoClass, PojoUtils.getTableName(pojoClass));
+        return createPojoMapping(pojoClass, namingStrategy.getTableName(pojoClass));
     }
 
     @Override
@@ -108,20 +106,20 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
             });
         } else {
             LOGGER.debug("Creating scalar @Id mapping for {}...", idFacet.getName());
-            mappings.add(new ScalarFacetMapping(idFacet, SimpleColumnType.INSTANCE, converter));
+            mappings.add(new ScalarFacetMapping(idFacet, namingStrategy.getColumnName(idFacet), SimpleColumnType.INSTANCE, converter));
         }
     }
 
     private void addEmbeddedMappings(Facet parentFacet, boolean allowNullParent, List<? super ScalarFacetMapping> target, Consumer<Facet> verifier) {
         LOGGER.debug("Creating embedded mappings for {}...", parentFacet.getName());
         if (allowNullParent) {
-            target.add(new ScalarFacetMapping(parentFacet, EmbeddedColumnType.INSTANCE, Converter.NULL_CONVERTER));
+            target.add(new ScalarFacetMapping(parentFacet, namingStrategy.getColumnName(parentFacet), EmbeddedColumnType.INSTANCE, Converter.NULL_CONVERTER));
         }
         List<Facet> subFacets = parentFacet.subFacets(!allowNullParent);
         for (Facet subFacet : subFacets) {
             verifier.accept(subFacet);
             LOGGER.debug("Creating embedded mapping for sub-facet {}...", subFacet.getName());
-            target.add(new ScalarFacetMapping(subFacet, SimpleColumnType.INSTANCE, converterRegistry.getRequiredConverter(subFacet.getType())));
+            target.add(new ScalarFacetMapping(subFacet, namingStrategy.getColumnName(subFacet), SimpleColumnType.INSTANCE, converterRegistry.getRequiredConverter(subFacet.getType())));
         }
     }
 
@@ -133,12 +131,11 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
             addEmbeddedMappings(facet, true, mappings, Facet::getName);
         } else if (converter != null) {
             LOGGER.debug("Creating scalar mapping for {}...", facet.getName());
-            mappings.add(new ScalarFacetMapping(facet, columnType, converter));
+            mappings.add(new ScalarFacetMapping(facet, namingStrategy.getColumnName(facet), columnType, converter));
         } else {
             LOGGER.debug("Creating reference mapping for {}...", facet.getName());
-            Table table = facet.getAnnotation(Table.class);
-            final String tableName = table == null ? PojoUtils.getTableName(facetType.getElementType().getRawType()) : table.value();
-            mappings.add(new ReferenceFacetMapping(facet, columnType, createPojoMapping(facetType.getElementType().getRawType(), tableName)));
+            final String tableName = namingStrategy.getReferenceTableName(facet);
+            mappings.add(new ReferenceFacetMapping(facet, namingStrategy.getColumnName(facet), columnType, createPojoMapping(facetType.getElementType().getRawType(), tableName)));
         }
     }
 

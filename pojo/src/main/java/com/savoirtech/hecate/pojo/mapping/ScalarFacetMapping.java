@@ -36,8 +36,8 @@ public class ScalarFacetMapping extends AbstractFacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 
     @SuppressWarnings("unchecked")
-    public ScalarFacetMapping(Facet facet, ColumnType<?, ?> columnType, Converter elementConverter) {
-        super(facet, (ColumnType<Object, Object>) columnType);
+    public ScalarFacetMapping(Facet facet, String columnName, ColumnType<?, ?> columnType, Converter elementConverter) {
+        super(facet, columnName, (ColumnType<Object, Object>) columnType);
         this.elementConverter = elementConverter;
         this.dataType = columnType.getDataType(elementConverter.getDataType());
     }

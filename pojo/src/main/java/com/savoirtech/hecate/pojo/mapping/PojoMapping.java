@@ -16,19 +16,16 @@
 
 package com.savoirtech.hecate.pojo.mapping;
 
-import com.datastax.driver.core.schemabuilder.Create;
-import com.datastax.driver.core.schemabuilder.SchemaBuilder;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
-import com.savoirtech.hecate.annotation.*;
+import com.savoirtech.hecate.annotation.Cascade;
+import com.savoirtech.hecate.annotation.ClusteringColumn;
+import com.savoirtech.hecate.annotation.PartitionKey;
+import com.savoirtech.hecate.annotation.Ttl;
 import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.util.PojoUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.Validate;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,15 +35,12 @@ public class PojoMapping<P> {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PojoMapping.class);
-
     private final Class<P> pojoClass;
     private final String tableName;
     private final List<ScalarFacetMapping> idMappings;
     private final List<FacetMapping> simpleMappings;
     private final int ttl;
     private final boolean cascadeDelete;
-    private final boolean cascadeSave;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
@@ -58,6 +52,11 @@ public class PojoMapping<P> {
 
     private static ClusteringColumn clusteringColumn(FacetMapping mapping) {
         return mapping.getFacet().getAnnotation(ClusteringColumn.class);
+    }
+
+    public static int getTtl(Class<?> pojoClass) {
+        Ttl ttl = Validate.notNull(pojoClass).getAnnotation(Ttl.class);
+        return ttl != null ? ttl.value() : 0;
     }
 
     private static PartitionKey partitionKey(FacetMapping mapping) {
@@ -72,9 +71,8 @@ public class PojoMapping<P> {
         this.pojoClass = pojoClass;
         this.tableName = tableName;
         this.idMappings = sorted(idMappings);
-        this.simpleMappings = simpleMappings.stream().sorted((left, right) -> left.getFacet().getColumnName().compareTo(right.getFacet().getColumnName())).collect(Collectors.toList());
-        this.ttl = PojoUtils.getTtl(pojoClass);
-        this.cascadeSave = simpleMappings.stream().filter(FacetMapping::isReference).filter(mapping -> !mapping.getFacet().hasAnnotation(Cascade.class) || mapping.getFacet().getAnnotation(Cascade.class).save()).findFirst().isPresent();
+        this.simpleMappings = simpleMappings.stream().sorted((left, right) -> left.getColumnName().compareTo(right.getColumnName())).collect(Collectors.toList());
+        this.ttl = getTtl(pojoClass);
         this.cascadeDelete = simpleMappings.stream().filter(FacetMapping::isReference).filter(mapping -> !mapping.getFacet().hasAnnotation(Cascade.class) || mapping.getFacet().getAnnotation(Cascade.class).delete()).findFirst().isPresent();
     }
 
@@ -108,10 +106,6 @@ public class PojoMapping<P> {
         return cascadeDelete;
     }
 
-    public boolean isCascadeSave() {
-        return cascadeSave;
-    }
-
 //----------------------------------------------------------------------------------------------------------------------
 // Canonical Methods
 //----------------------------------------------------------------------------------------------------------------------
@@ -123,35 +117,6 @@ public class PojoMapping<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
-
-    public List<SchemaStatement> createSchemaStatements() {
-        List<SchemaStatement> schemaStatements = new LinkedList<>();
-        Create create = SchemaBuilder.createTable(tableName);
-        idMappings.forEach(mapping -> {
-            String columnName = mapping.getFacet().getColumnName();
-            if (mapping.getFacet().hasAnnotation(PartitionKey.class) || mapping.getFacet().hasAnnotation(Id.class)) {
-                LOGGER.debug("Adding partition key column {}...", columnName);
-                create.addPartitionKey(columnName, mapping.getDataType());
-            } else if (mapping.getFacet().hasAnnotation(ClusteringColumn.class)) {
-                LOGGER.debug("Adding clustering column {}...", columnName);
-                create.addClusteringColumn(columnName, mapping.getDataType());
-            }
-        });
-
-        simpleMappings.forEach(mapping -> {
-            LOGGER.debug("Adding simple column {}...", mapping.getFacet().getColumnName());
-            create.addColumn(mapping.getFacet().getColumnName(), mapping.getDataType());
-        });
-        create.ifNotExists();
-        schemaStatements.add(create);
-
-        simpleMappings.forEach(mapping -> {
-            if (mapping.getFacet().isIndexed()) {
-                schemaStatements.add(SchemaBuilder.createIndex(mapping.getFacet().getIndexName()).onTable(tableName).andColumn(mapping.getFacet().getColumnName()));
-            }
-        });
-        return schemaStatements;
-    }
 
     public ScalarFacetMapping getForeignKeyMapping() {
         if (idMappings.size() == 1) {

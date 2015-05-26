@@ -54,7 +54,7 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
     }
 
     private void assertColumnNames(List<? extends FacetMapping> mappings, String... names) {
-        assertEquals(Arrays.asList(names), mappings.stream().map(mapping -> mapping.getFacet().getColumnName()).collect(Collectors.toList()));
+        assertEquals(Arrays.asList(names), mappings.stream().map(mapping -> mapping.getColumnName()).collect(Collectors.toList()));
     }
 
     @Test

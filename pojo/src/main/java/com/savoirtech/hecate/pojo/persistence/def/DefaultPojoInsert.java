@@ -69,8 +69,8 @@ public class DefaultPojoInsert<P> extends PojoStatement<P> implements PojoInsert
     @Override
     protected RegularStatement createStatement() {
         Insert insert = insertInto(getPojoMapping().getTableName());
-        getPojoMapping().getIdMappings().forEach(mapping -> insert.value(mapping.getFacet().getColumnName(), bindMarker()));
-        getPojoMapping().getSimpleMappings().forEach(mapping -> insert.value(mapping.getFacet().getColumnName(), bindMarker()));
+        getPojoMapping().getIdMappings().forEach(mapping -> insert.value(mapping.getColumnName(), bindMarker()));
+        getPojoMapping().getSimpleMappings().forEach(mapping -> insert.value(mapping.getColumnName(), bindMarker()));
         insert.using(QueryBuilder.ttl(QueryBuilder.bindMarker()));
         return insert;
     }
