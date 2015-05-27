@@ -51,6 +51,8 @@
         <module>annotation</module>
         <module>core</module>
         <module>pojo</module>
+        <module>gson</module>
+        <module>joda-time</module>
     </modules>
 
     <scm>
@@ -94,6 +96,8 @@
         <maven.jacoco.plugin.version>0.7.4.201502262128</maven.jacoco.plugin.version>
         <maven.bundle.plugin.version>2.5.4</maven.bundle.plugin.version>
 
+        <gson.version>2.3.1</gson.version>
+        <joda-time.version>2.7</joda-time.version>
     </properties>
 
     <build>
@@ -225,6 +229,18 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>${joda-time.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
             </dependency>
 
             <dependency>

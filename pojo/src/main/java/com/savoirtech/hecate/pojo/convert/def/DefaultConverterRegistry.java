@@ -21,14 +21,14 @@ import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.convert.ConverterProvider;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
 import com.savoirtech.hecate.pojo.convert.NativeConverter;
-import com.savoirtech.hecate.pojo.convert.binary.ByteArrayConverter;
-import com.savoirtech.hecate.pojo.convert.enumeration.EnumConverterProvider;
 import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class DefaultConverterRegistry implements ConverterRegistry {
 //----------------------------------------------------------------------------------------------------------------------
@@ -69,8 +69,8 @@ public class DefaultConverterRegistry implements ConverterRegistry {
         registerConverter(NativeConverter.STRING);
         registerConverter(NativeConverter.UUID);
         registerConverter(NativeConverter.BLOB);
-        registerConverter(new EnumConverterProvider());
-        registerConverter(new ByteArrayConverter());
+        serviceStream(Converter.class).forEach(this::registerConverter);
+        serviceStream(ConverterProvider.class).forEach(this::registerConverter);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -132,6 +132,10 @@ public class DefaultConverterRegistry implements ConverterRegistry {
             providers.put(primitiveType, provider);
         }
         providers.put(valueType, provider);
+    }
+
+    protected <T> Stream<T> serviceStream(Class<T> serviceClass) {
+        return StreamSupport.stream(ServiceLoader.load(serviceClass).spliterator(), false);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
