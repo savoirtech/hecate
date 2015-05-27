@@ -23,7 +23,11 @@ import com.savoirtech.hecate.core.query.QueryResult;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class MappedQueryResult<T> implements QueryResult<T> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -57,6 +61,10 @@ public class MappedQueryResult<T> implements QueryResult<T> {
         return transformed;
     }
 
+    public Stream<T> stream() {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(), Spliterator.IMMUTABLE), false);
+    }
+
     @Override
     public List<T> list() {
         List<T> result = resultSet.all().stream().map(mapper::map).collect(Collectors.toList());
@@ -67,7 +75,7 @@ public class MappedQueryResult<T> implements QueryResult<T> {
     @Override
     public T one() {
         Row row = resultSet.one();
-        if(row == null) {
+        if (row == null) {
             return null;
         }
         T result = mapper.map(row);

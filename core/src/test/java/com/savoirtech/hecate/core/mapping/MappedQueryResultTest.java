@@ -22,6 +22,8 @@ import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MappedQueryResultTest extends CassandraTestCase {
 
@@ -63,6 +65,18 @@ public class MappedQueryResultTest extends CassandraTestCase {
             assertEquals("two", iterator.next());
             assertEquals("three", iterator.next());
             assertFalse(iterator.hasNext());
+        });
+    }
+
+    @Test
+    public void testStream() {
+        withSession(session -> {
+            MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test"), row -> row.getString(1));
+            Set<String> strings = resultSet.stream().map(String::toUpperCase).collect(Collectors.toSet());
+            assertEquals(3, strings.size());
+            assertTrue(strings.contains("ONE"));
+            assertTrue(strings.contains("TWO"));
+            assertTrue(strings.contains("THREE"));
         });
     }
 
