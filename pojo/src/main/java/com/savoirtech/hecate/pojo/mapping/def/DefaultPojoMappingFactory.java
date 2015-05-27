@@ -63,11 +63,11 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoMappingFactory() {
-        this(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry(), null, new DefaultNamingStrategy());
+        this(new FieldFacetProvider(), new DefaultConverterRegistry(), null, new DefaultNamingStrategy());
     }
 
     public DefaultPojoMappingFactory(PojoMappingVerifier verifier) {
-        this(new FieldFacetProvider(), DefaultConverterRegistry.defaultRegistry(), verifier, new DefaultNamingStrategy());
+        this(new FieldFacetProvider(), new DefaultConverterRegistry(), verifier, new DefaultNamingStrategy());
     }
 
     public DefaultPojoMappingFactory(FacetProvider facetProvider, ConverterRegistry converterRegistry, PojoMappingVerifier verifier, NamingStrategy namingStrategy) {

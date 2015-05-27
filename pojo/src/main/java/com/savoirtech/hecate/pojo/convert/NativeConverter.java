@@ -18,31 +18,39 @@ package com.savoirtech.hecate.pojo.convert;
 
 import com.datastax.driver.core.DataType;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.util.Date;
+
 public final class NativeConverter implements Converter {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    public static final Converter BOOLEAN = new NativeConverter(DataType.cboolean());
-    public static final Converter DATE = new NativeConverter(DataType.timestamp());
-    public static final Converter DOUBLE = new NativeConverter(DataType.cdouble());
-    public static final Converter FLOAT = new NativeConverter(DataType.cfloat());
-    public static final Converter INTEGER = new NativeConverter(DataType.cint());
-    public static final Converter LONG = new NativeConverter(DataType.bigint());
-    public static final Converter UUID = new NativeConverter(DataType.uuid());
-    public static final Converter STRING = new NativeConverter(DataType.varchar());
-    public static final Converter INET = new NativeConverter(DataType.inet());
-    public static final Converter BIG_DECIMAL = new NativeConverter(DataType.decimal());
-    public static final Converter BIG_INTEGER = new NativeConverter(DataType.varint());
-    public static final Converter BLOB = new NativeConverter(DataType.blob());
+    public static final Converter BOOLEAN = new NativeConverter(Boolean.class, DataType.cboolean());
+    public static final Converter DATE = new NativeConverter(Date.class, DataType.timestamp());
+    public static final Converter DOUBLE = new NativeConverter(Double.class, DataType.cdouble());
+    public static final Converter FLOAT = new NativeConverter(Float.class, DataType.cfloat());
+    public static final Converter INTEGER = new NativeConverter(Integer.class, DataType.cint());
+    public static final Converter LONG = new NativeConverter(Long.class, DataType.bigint());
+    public static final Converter UUID = new NativeConverter(java.util.UUID.class, DataType.uuid());
+    public static final Converter STRING = new NativeConverter(String.class, DataType.varchar());
+    public static final Converter INET = new NativeConverter(InetAddress.class, DataType.inet());
+    public static final Converter BIG_DECIMAL = new NativeConverter(BigDecimal.class, DataType.decimal());
+    public static final Converter BIG_INTEGER = new NativeConverter(BigInteger.class, DataType.varint());
+    public static final Converter BLOB = new NativeConverter(ByteBuffer.class, DataType.blob());
 
+    private final Class<?> valueType;
     private final DataType dataType;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    private NativeConverter(DataType dataType) {
+    private NativeConverter(Class<?> valueType, DataType dataType) {
+        this.valueType = valueType;
         this.dataType = dataType;
     }
 
@@ -50,10 +58,14 @@ public final class NativeConverter implements Converter {
 // Converter Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public DataType getDataType() {
         return dataType;
+    }
+
+    @Override
+    public Class<?> getValueType() {
+        return valueType;
     }
 
     @Override

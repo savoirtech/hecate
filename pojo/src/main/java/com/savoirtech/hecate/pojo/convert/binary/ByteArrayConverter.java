@@ -26,10 +26,14 @@ public class ByteArrayConverter implements Converter {
 // Converter Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public DataType getDataType() {
         return DataType.blob();
+    }
+
+    @Override
+    public Class<?> getValueType() {
+        return byte[].class;
     }
 
     @Override

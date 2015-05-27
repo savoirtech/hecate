@@ -36,7 +36,7 @@ public class DefaultConverterRegistryTest extends AbstractTestCase {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final ConverterRegistry registry = DefaultConverterRegistry.defaultRegistry();
+    private final ConverterRegistry registry = new DefaultConverterRegistry();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods

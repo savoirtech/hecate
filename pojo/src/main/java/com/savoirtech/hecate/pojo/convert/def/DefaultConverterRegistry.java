@@ -27,10 +27,6 @@ import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -41,31 +37,12 @@ public class DefaultConverterRegistry implements ConverterRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultConverterRegistry.class);
 
-    private final Map<Class<?>, ConverterProvider> providers;
+    private final Map<Class<?>, ConverterProvider> providers = new MapMaker().makeMap();
     private final Set<Class<?>> unsupportedTypes = new CopyOnWriteArraySet<>();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
-
-    public static ConverterRegistry defaultRegistry() {
-        final DefaultConverterRegistry registry = new DefaultConverterRegistry();
-        registry.registerConverter(Boolean.class, NativeConverter.BOOLEAN);
-        registry.registerConverter(BigDecimal.class, NativeConverter.BIG_DECIMAL);
-        registry.registerConverter(BigInteger.class, NativeConverter.BIG_INTEGER);
-        registry.registerConverter(Date.class, NativeConverter.DATE);
-        registry.registerConverter(Double.class, NativeConverter.DOUBLE);
-        registry.registerConverter(Float.class, NativeConverter.FLOAT);
-        registry.registerConverter(InetAddress.class, NativeConverter.INET);
-        registry.registerConverter(Integer.class, NativeConverter.INTEGER);
-        registry.registerConverter(Long.class, NativeConverter.LONG);
-        registry.registerConverter(String.class, NativeConverter.STRING);
-        registry.registerConverter(UUID.class, NativeConverter.UUID);
-        registry.registerConverter(Enum.class, new EnumConverterProvider());
-        registry.registerConverter(ByteBuffer.class, NativeConverter.BLOB);
-        registry.registerConverter(byte[].class, new ByteArrayConverter());
-        return registry;
-    }
 
     @SuppressWarnings("unchecked")
     public static List<Class<?>> getSupertypes(Class<?> type) {
@@ -80,7 +57,20 @@ public class DefaultConverterRegistry implements ConverterRegistry {
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultConverterRegistry() {
-        providers = new MapMaker().makeMap();
+        registerConverter(NativeConverter.BOOLEAN);
+        registerConverter(NativeConverter.BIG_DECIMAL);
+        registerConverter(NativeConverter.BIG_INTEGER);
+        registerConverter(NativeConverter.DATE);
+        registerConverter(NativeConverter.DOUBLE);
+        registerConverter(NativeConverter.FLOAT);
+        registerConverter(NativeConverter.INET);
+        registerConverter(NativeConverter.INTEGER);
+        registerConverter(NativeConverter.LONG);
+        registerConverter(NativeConverter.STRING);
+        registerConverter(NativeConverter.UUID);
+        registerConverter(NativeConverter.BLOB);
+        registerConverter(new EnumConverterProvider());
+        registerConverter(new ByteArrayConverter());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -128,17 +118,20 @@ public class DefaultConverterRegistry implements ConverterRegistry {
         return null;
     }
 
-    public void registerConverter(Class<?> valueType, Converter converter) {
-        registerConverter(valueType, new ConstantProvider(converter));
+    public void registerConverter(Converter converter) {
+        registerConverter(new ConstantProvider(converter));
     }
 
-    public void registerConverter(Class<?> valueType, ConverterProvider factory) {
-        LOGGER.debug("Adding factory {} -> {}...", valueType.getCanonicalName(), factory.converterType().getCanonicalName());
-        providers.put(valueType, factory);
+    public void registerConverter(ConverterProvider provider) {
+        Class<?> valueType = provider.getValueType();
+        LOGGER.debug("Adding provider {} -> {}...", valueType.getCanonicalName(), provider.converterType().getCanonicalName());
+        providers.put(valueType, provider);
         if (ClassUtils.isPrimitiveWrapper(valueType)) {
-            registerConverter(ClassUtils.wrapperToPrimitive(valueType), factory);
+            Class<?> primitiveType = ClassUtils.wrapperToPrimitive(valueType);
+            LOGGER.debug("Adding provider {} -> {}...", primitiveType.getCanonicalName(), provider.converterType().getCanonicalName());
+            providers.put(primitiveType, provider);
         }
-        providers.put(valueType, factory);
+        providers.put(valueType, provider);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -161,6 +154,11 @@ public class DefaultConverterRegistry implements ConverterRegistry {
         @Override
         public Class<? extends Converter> converterType() {
             return converter.getClass();
+        }
+
+        @Override
+        public Class<?> getValueType() {
+            return converter.getValueType();
         }
     }
 }

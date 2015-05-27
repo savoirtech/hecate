@@ -35,4 +35,9 @@ public class EnumConverterProvider implements ConverterProvider {
     public Converter createConverter(Class<?> valueType) {
         return new EnumConverter((Class<? extends Enum>) valueType);
     }
+
+    @Override
+    public Class<?> getValueType() {
+        return Enum.class;
+    }
 }

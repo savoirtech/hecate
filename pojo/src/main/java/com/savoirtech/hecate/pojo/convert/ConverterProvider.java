@@ -24,4 +24,6 @@ public interface ConverterProvider {
     Class<? extends Converter> converterType();
 
     Converter createConverter(Class<?> valueType);
+
+    Class<?> getValueType();
 }

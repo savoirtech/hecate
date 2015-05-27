@@ -44,6 +44,11 @@ public class EnumConverter implements Converter {
     }
 
     @Override
+    public Class<?> getValueType() {
+        return enumType;
+    }
+
+    @Override
     public Object toColumnValue(Object value) {
         if (value == null) {
             return null;

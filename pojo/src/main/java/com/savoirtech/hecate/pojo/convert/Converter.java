@@ -34,6 +34,8 @@ public interface Converter {
     Object toColumnValue(Object value);
     Object toFacetValue(Object value);
 
+    Class<?> getValueType();
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
@@ -51,6 +53,11 @@ public interface Converter {
 
         @Override
         public Object toColumnValue(Object value) {
+            return null;
+        }
+
+        @Override
+        public Class<?> getValueType() {
             return null;
         }
     }
