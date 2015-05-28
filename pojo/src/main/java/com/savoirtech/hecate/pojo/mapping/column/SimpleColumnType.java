@@ -39,7 +39,7 @@ public class SimpleColumnType implements ColumnType<Object, Object> {
 
     @Override
     public Iterable<Object> facetElements(Object facetValue) {
-        return facetValue == null ? Collections.emptyList() : Collections.singleton(facetValue);
+        return Collections.singleton(facetValue);
     }
 
     @Override
