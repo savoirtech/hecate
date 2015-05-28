@@ -99,6 +99,14 @@ public class FieldFacetProviderTest extends Assert {
         assertEquals("bar", foo.getValue(pojo));
     }
 
+    @Test
+    public void testToString() {
+        FacetProvider facetProvider = new FieldFacetProvider();
+        Map<String, Facet> map = facetProvider.getFacetsAsMap(FieldPojoSub.class);
+        Facet foo = map.get("foo");
+        assertEquals("foo", foo.toString());
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
