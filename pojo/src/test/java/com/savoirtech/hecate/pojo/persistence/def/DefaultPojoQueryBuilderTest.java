@@ -27,6 +27,7 @@ import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -123,6 +124,17 @@ public class DefaultPojoQueryBuilderTest extends AbstractDaoTestCase {
         SimplePojo found = dao.find().identifierEquals().build().execute("123").one();
         assertNotNull(found);
     }
+
+    @Test
+    public void testIdentifierIn() {
+        final PojoDao<String, SimplePojo> dao = getFactory().createPojoDao(SimplePojo.class);
+        SimplePojo pojo = new SimplePojo();
+        pojo.setId("123");
+        dao.save(pojo);
+        SimplePojo found = dao.find().identifierIn().build().execute(Collections.singletonList("123")).one();
+        assertNotNull(found);
+    }
+
 
     @Test(expected = HecateException.class)
     public void testIdInWhenComposite() {
