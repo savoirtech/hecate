@@ -46,7 +46,7 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
     @Test
     public void testCompositeKey() {
         PojoMapping<CensusData> mapping = createMapping(CensusData.class);
-        assertColumnNames(mapping.getIdMappings(), "id_country_code", "id_state", "id_zip");
+        assertColumnNames(mapping.getIdMappings(), "id_country_code", "id_state", "id_zip", "id_cluster");
     }
 
     private <P> PojoMapping<P> createMapping(Class<P> pojoClass) {
@@ -132,6 +132,7 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
         private String zip;
     }
 
+    @Ttl(500)
     private static class CensusData {
         @Id
         private PostalCode id;
@@ -185,6 +186,9 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
 
         @ClusteringColumn(order = 1, descending = true)
         private String zip;
+
+        @ClusteringColumn(order=2,descending = false)
+        private String cluster;
 
         @PartitionKey(order = 1)
         private String state;
