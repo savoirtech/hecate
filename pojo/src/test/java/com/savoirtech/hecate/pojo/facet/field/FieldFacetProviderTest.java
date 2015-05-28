@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.pojo.facet.field;
 
+import com.savoirtech.hecate.annotation.Cascade;
+import com.savoirtech.hecate.pojo.entities.NestedPojo;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
 import org.junit.Assert;
@@ -79,6 +81,24 @@ public class FieldFacetProviderTest extends Assert {
         assertEquals("testValue", facet.getValue(pojo));
     }
 
+    @Test
+    public void testCascadingRules() {
+        FacetProvider facetProvider = new FieldFacetProvider();
+        Map<String, Facet> map = facetProvider.getFacetsAsMap(CascadeMe.class);
+
+        assertTrue(map.get("nestedAllCascade").isCascadeDelete());
+        assertTrue(map.get("nestedAllCascade").isCascadeSave());
+
+        assertFalse(map.get("nestedNoCascade").isCascadeDelete());
+        assertFalse(map.get("nestedNoCascade").isCascadeSave());
+
+        assertTrue(map.get("nestedDeleteOnly").isCascadeDelete());
+        assertFalse(map.get("nestedDeleteOnly").isCascadeSave());
+
+        assertFalse(map.get("nestedSaveOnly").isCascadeDelete());
+        assertTrue(map.get("nestedSaveOnly").isCascadeSave());
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
@@ -93,5 +113,18 @@ public class FieldFacetProviderTest extends Assert {
     public static class FieldPojoSuper {
         private final String foo = "foo";
         private String bar;
+    }
+
+    public static class CascadeMe {
+        @Cascade(save = false)
+        private NestedPojo nestedDeleteOnly;
+
+        @Cascade(delete=false)
+        private NestedPojo nestedSaveOnly;
+
+        @Cascade(delete=false,save=false)
+        private NestedPojo nestedNoCascade;
+
+        private NestedPojo nestedAllCascade;
     }
 }
