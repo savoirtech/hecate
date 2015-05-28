@@ -87,6 +87,12 @@ public class DefaultConverterRegistryTest extends AbstractTestCase {
     }
 
     @Test
+    public void testGetRequiredConverterByGenericType() throws Exception {
+        GenericType genericType2 = new GenericType(Fields.class, Fields.class.getField("field").getGenericType());
+        registry.getRequiredConverter(genericType2);
+    }
+
+    @Test
     public void testGetRequiredConverterWhenFound() {
         assertNotNull(registry.getRequiredConverter(String.class));
     }
