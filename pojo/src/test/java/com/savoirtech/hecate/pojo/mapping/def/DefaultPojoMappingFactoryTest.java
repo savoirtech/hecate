@@ -76,8 +76,13 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
         DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory(ref::set);
         PojoMapping<Person> mapping = factory.createPojoMapping(Person.class);
         assertEquals(mapping,ref.get());
-
     }
+
+    @Test
+    public void testToString() {
+        assertEquals("Person@person", factory.createPojoMapping(Person.class).toString());
+    }
+
     @Test
     public void testWithReferences() {
         PojoMapping<PersonWithNested> mapping = createMapping(PersonWithNested.class);
