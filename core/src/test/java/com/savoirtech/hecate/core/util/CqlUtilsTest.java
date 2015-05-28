@@ -27,6 +27,7 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.test.CassandraTestCase;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Before;
@@ -80,6 +81,7 @@ public class CqlUtilsTest extends CassandraTestCase {
                 example(DataType.map(DataType.text(), DataType.cint()), Maps.asMap(Sets.newHashSet("one", "two", "three"), String::length))
         );
 
+        getSession().execute(SchemaBuilder.createTable("counter_table").addPartitionKey("id", DataType.varchar()).addColumn("counter_value", DataType.counter()));
         final Create create = SchemaBuilder.createTable("test_table").addPartitionKey("id", DataType.cint());
         Insert insert = QueryBuilder.insertInto("test_table").value("id", 123);
         for (ImmutablePair<DataType, Object> column : columns) {
@@ -92,6 +94,15 @@ public class CqlUtilsTest extends CassandraTestCase {
         withSession(session -> {
             session.execute(create);
             session.execute(insert);
+        });
+    }
+
+    @Test(expected = HecateException.class)
+    public void testGetValueInvalidType() {
+        withSession(session -> {
+            session.execute("update counter_table set counter_value = counter_value + 1 where id = '1'");
+            ResultSet rs = session.execute("select * from counter_table");
+            CqlUtils.toList(rs.one());
         });
     }
 
