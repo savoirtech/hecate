@@ -22,6 +22,7 @@ import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.entities.NestedPojo;
 import com.savoirtech.hecate.pojo.mapping.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.test.AbstractTestCase;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Test;
@@ -110,6 +111,13 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
         DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory(ref::set);
         PojoMapping<Person> mapping = factory.createPojoMapping(Person.class);
         assertEquals(mapping, ref.get());
+    }
+
+    @Test
+    public void testFacetMappingToString() {
+        PojoMapping<Person> mapping = factory.createPojoMapping(Person.class);
+        ScalarFacetMapping facetMapping = mapping.getForeignKeyMapping();
+        assertEquals("id @ id", facetMapping.toString());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
