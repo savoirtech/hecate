@@ -24,4 +24,8 @@ public class HecateMetrics {
 //----------------------------------------------------------------------------------------------------------------------
 
     public static final MetricRegistry REGISTRY = new MetricRegistry();
+
+    private HecateMetrics() {
+
+    }
 }

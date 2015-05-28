@@ -17,10 +17,10 @@
 package com.savoirtech.hecate.pojo.reflect;
 
 import com.savoirtech.hecate.core.exception.HecateException;
-import org.junit.Assert;
+import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 
-public class ReflectionUtilsTest extends Assert {
+public class ReflectionUtilsTest extends AbstractTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
@@ -38,6 +38,11 @@ public class ReflectionUtilsTest extends Assert {
     @Test
     public void testNewInstanceWithHiddenConstructor() {
         assertNotNull(ReflectionUtils.newInstance(PrivatePojo.class));
+    }
+
+    @Test
+    public void testConstructor() {
+        assertUtilsClass(ReflectionUtils.class);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

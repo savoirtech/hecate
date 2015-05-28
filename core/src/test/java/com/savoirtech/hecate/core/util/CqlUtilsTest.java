@@ -124,4 +124,9 @@ public class CqlUtilsTest extends CassandraTestCase {
             }
         });
     }
+
+    @Test
+    public void testConstructor() {
+        assertUtilsClass(CqlUtils.class);
+    }
 }

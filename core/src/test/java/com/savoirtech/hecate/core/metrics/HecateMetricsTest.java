@@ -16,32 +16,16 @@
 
 package com.savoirtech.hecate.core.metrics;
 
-import com.codahale.metrics.Timer;
 import com.savoirtech.hecate.test.AbstractTestCase;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
-public class MetricsUtilsTest extends AbstractTestCase {
-
-    @Test
-    public void testDoWithTimer() throws Exception {
-        Timer timer = HecateMetrics.REGISTRY.timer(RandomStringUtils.randomAlphabetic(10));
-        MetricsUtils.doWithTimer(timer, () -> {
-
-        });
-        assertEquals(1, timer.getCount());
-    }
-
-    @Test
-    public void testReturnWithTimer() throws Exception {
-        Timer timer = HecateMetrics.REGISTRY.timer(RandomStringUtils.randomAlphabetic(10));
-        final String answer = MetricsUtils.returnWithTimer(timer, () -> "foo");
-        assertEquals(1, timer.getCount());
-        assertEquals("foo", answer);
-    }
+public class HecateMetricsTest extends AbstractTestCase {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testConstructor() {
-        assertUtilsClass(MetricsUtils.class);
+        assertUtilsClass(HecateMetrics.class);
     }
 }

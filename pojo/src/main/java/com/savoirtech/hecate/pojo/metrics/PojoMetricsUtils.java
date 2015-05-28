@@ -39,7 +39,7 @@ public class PojoMetricsUtils {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoMetricsUtils() {
+    private PojoMetricsUtils() {
         
     }
 }

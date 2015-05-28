@@ -20,6 +20,33 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+
 public class AbstractTestCase extends Assert {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    protected void assertUtilsClass(Class<?> c) {
+        Constructor ctor = null;
+        try {
+            ctor = c.getDeclaredConstructor();
+        } catch (NoSuchMethodException e) {
+            fail("No default constructor defined for class " + c.getCanonicalName());
+        }
+        assertTrue(Modifier.isPrivate(ctor.getModifiers()));
+        ctor.setAccessible(true);
+        try {
+            Object o = ctor.newInstance();
+        } catch (ReflectiveOperationException e) {
+            fail("Unable to instantiate!");
+        }
+    }
 }
