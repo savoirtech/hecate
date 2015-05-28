@@ -44,10 +44,13 @@ public class PropertyFacetProviderTest extends Assert {
         FacetProvider provider = new PropertyFacetProvider();
         Map<String, Facet> facets = provider.getFacetsAsMap(PropertiesPojo.class);
         assertNotNull(facets);
-        assertEquals(3, facets.size());
+        assertEquals(5, facets.size());
         assertTrue(facets.containsKey("baz"));
         assertTrue(facets.containsKey("writeOnly"));
         assertTrue(facets.containsKey("readOnly"));
+        assertTrue(facets.containsKey("writeOnlyBoolean"));
+        assertTrue(facets.containsKey("readOnlyBoolean"));
+
     }
 
     @Test
@@ -89,7 +92,44 @@ public class PropertyFacetProviderTest extends Assert {
         private String baz;
         private String writeOnly;
         private String readOnly;
+        private boolean writeOnlyBoolean;
+        private boolean readOnlyBoolean;
         private String ignored;
+        private String invalidSetter;
+        private String invalidGetter;
+
+        private boolean isWriteOnlyBoolean() {
+            return writeOnlyBoolean;
+        }
+
+        public void setWriteOnlyBoolean(boolean writeOnlyBoolean) {
+            this.writeOnlyBoolean = writeOnlyBoolean;
+        }
+
+        public boolean isReadOnlyBoolean() {
+            return readOnlyBoolean;
+        }
+
+        private void setReadOnlyBoolean(boolean readOnlyBoolean) {
+            this.readOnlyBoolean = readOnlyBoolean;
+        }
+
+        public void getInvalidGetter() {
+            // Do nothing!;
+        }
+
+        public void setInvalidGetter(String invalidGetter) {
+            this.invalidGetter = invalidGetter;
+        }
+
+        public String getInvalidSetter() {
+            return invalidSetter;
+        }
+
+        public String setInvalidSetter(String invalidSetter) {
+            this.invalidSetter = invalidSetter;
+            return invalidSetter;
+        }
 
         public String getReadOnly() {
             return readOnly;
