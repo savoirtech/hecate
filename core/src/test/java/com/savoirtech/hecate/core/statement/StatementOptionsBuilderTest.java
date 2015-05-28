@@ -95,4 +95,22 @@ public class StatementOptionsBuilderTest extends CassandraTestCase {
         StatementOptionsBuilder.serialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL).build().applyTo(statement);
         assertEquals(ConsistencyLevel.LOCAL_SERIAL, statement.getSerialConsistencyLevel());
     }
+
+    @Test
+    public void testEmpty() {
+        statement.setConsistencyLevel(ConsistencyLevel.ALL);
+        statement.setDefaultTimestamp(999L);
+        statement.enableTracing();
+        statement.setFetchSize(123);
+        statement.setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        statement.setSerialConsistencyLevel(ConsistencyLevel.SERIAL);
+
+        StatementOptionsBuilder.empty().applyTo(statement);
+        assertEquals(ConsistencyLevel.ALL, statement.getConsistencyLevel());
+        assertEquals(999L, statement.getDefaultTimestamp());
+        assertTrue(statement.isTracing());
+        assertEquals(123, statement.getFetchSize());
+        assertEquals(FallthroughRetryPolicy.INSTANCE, statement.getRetryPolicy());
+        assertEquals(ConsistencyLevel.SERIAL, statement.getSerialConsistencyLevel());
+    }
 }
