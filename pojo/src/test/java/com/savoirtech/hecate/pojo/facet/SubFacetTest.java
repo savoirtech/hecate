@@ -17,11 +17,13 @@
 package com.savoirtech.hecate.pojo.facet;
 
 import com.savoirtech.hecate.annotation.Column;
+import com.savoirtech.hecate.pojo.entities.NestedPojo;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 
 public class SubFacetTest extends Assert {
@@ -32,6 +34,7 @@ public class SubFacetTest extends Assert {
     private SubFacet strictFacet;
     private SubFacet lenientFacet;
     private Facet childFacet;
+    private Facet nestedFacet;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
@@ -44,6 +47,7 @@ public class SubFacetTest extends Assert {
         final Map<String, Facet> childFacets = facetProvider.getFacetsAsMap(Child.class);
         childFacet = childFacets.get("property");
         Facet parentFacet = parentFacets.get("child");
+        nestedFacet = new SubFacet(parentFacet, childFacets.get("nested"), true);
         strictFacet = new SubFacet(parentFacet, childFacet, false);
         lenientFacet = new SubFacet(parentFacet, childFacet, true);
     }
@@ -99,6 +103,22 @@ public class SubFacetTest extends Assert {
         assertNull(parent.child);
     }
 
+    @Test
+    public void testSubFacets() {
+        List<Facet> subFacets = nestedFacet.subFacets(true);
+        assertEquals(2, subFacets.size());
+    }
+
+    @Test
+    public void testFlatten() {
+        assertEquals(childFacet, strictFacet.flatten());
+    }
+
+    @Test
+    public void testHasAnnotation() {
+        assertTrue(strictFacet.hasAnnotation(Column.class));
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
@@ -106,6 +126,8 @@ public class SubFacetTest extends Assert {
     public static class Child {
         @Column("foo")
         private String property;
+
+        private NestedPojo nested;
     }
 
     public static class Parent {
