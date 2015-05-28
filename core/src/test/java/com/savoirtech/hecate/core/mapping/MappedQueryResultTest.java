@@ -26,6 +26,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MappedQueryResultTest extends CassandraTestCase {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Before
     public void createTables() {
@@ -34,6 +37,18 @@ public class MappedQueryResultTest extends CassandraTestCase {
             session.execute("insert into test (id,value) values (1, 'one')");
             session.execute("insert into test (id,value) values (2, 'two')");
             session.execute("insert into test (id,value) values (3, 'three')");
+        });
+    }
+
+    @Test
+    public void testIterator() {
+        withSession(session -> {
+            MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test"), row -> row.getString(1));
+            Iterator<String> iterator = resultSet.iterator();
+            assertEquals("one", iterator.next());
+            assertEquals("two", iterator.next());
+            assertEquals("three", iterator.next());
+            assertFalse(iterator.hasNext());
         });
     }
 
@@ -65,18 +80,6 @@ public class MappedQueryResultTest extends CassandraTestCase {
     }
 
     @Test
-    public void testIterator() {
-        withSession(session -> {
-            MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test"), row -> row.getString(1));
-            Iterator<String> iterator = resultSet.iterator();
-            assertEquals("one", iterator.next());
-            assertEquals("two", iterator.next());
-            assertEquals("three", iterator.next());
-            assertFalse(iterator.hasNext());
-        });
-    }
-
-    @Test
     public void testStream() {
         withSession(session -> {
             MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test"), row -> row.getString(1));
@@ -87,5 +90,4 @@ public class MappedQueryResultTest extends CassandraTestCase {
             assertTrue(strings.contains("THREE"));
         });
     }
-
 }

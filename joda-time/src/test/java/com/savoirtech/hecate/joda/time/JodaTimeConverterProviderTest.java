@@ -57,12 +57,11 @@ public abstract class JodaTimeConverterProviderTest extends Assert {
         try {
             converter.toFacetValue(GARBAGE);
             fail("Unsupported string should throw HecateException!");
-        }
-        catch(HecateException e) {
-            assertEquals(String.format("Unable to parse '%s' value into %s.", GARBAGE, jodaType.getCanonicalName()),e.getMessage());
+        } catch (HecateException e) {
+            assertEquals(String.format("Unable to parse '%s' value into %s.", GARBAGE, jodaType.getCanonicalName()), e.getMessage());
         }
     }
-    
+
     @Test
     public void testExpectedBaseType() {
         assertEquals(expectedBaseType, provider.getValueType());

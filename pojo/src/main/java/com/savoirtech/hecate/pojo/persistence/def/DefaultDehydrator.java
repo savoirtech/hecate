@@ -32,7 +32,7 @@ public class DefaultDehydrator implements Dehydrator {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final PersistenceContext persistenceContext;
-    private final Multimap<PojoMapping<? extends Object>,Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
+    private final Multimap<PojoMapping<? extends Object>, Object> agenda = MultimapBuilder.hashKeys().linkedListValues().build();
     private final int ttl;
     private final StatementOptions options;
 
@@ -62,7 +62,7 @@ public class DefaultDehydrator implements Dehydrator {
         while (!agenda.isEmpty()) {
             PojoMapping<? extends Object> mapping = agenda.keySet().iterator().next();
             Collection<Object> pojos = agenda.removeAll(mapping);
-            PojoInsert<Object> insert = persistenceContext.insert((PojoMapping<Object>)mapping);
+            PojoInsert<Object> insert = persistenceContext.insert((PojoMapping<Object>) mapping);
             pojos.forEach(pojo -> insert.insert(pojo, this, ttl, options));
         }
     }

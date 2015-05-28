@@ -125,6 +125,12 @@ public class DefaultPojoQueryBuilderTest extends AbstractDaoTestCase {
         assertNotNull(found);
     }
 
+    @Test(expected = HecateException.class)
+    public void testIdInWhenComposite() {
+        PojoDao<CompositeKey, CompositeKeyPojo> dao = getFactory().createPojoDao(CompositeKeyPojo.class);
+        dao.find().identifierIn().build();
+    }
+
     @Test
     public void testIdentifierIn() {
         final PojoDao<String, SimplePojo> dao = getFactory().createPojoDao(SimplePojo.class);
@@ -133,13 +139,6 @@ public class DefaultPojoQueryBuilderTest extends AbstractDaoTestCase {
         dao.save(pojo);
         SimplePojo found = dao.find().identifierIn().build().execute(Collections.singletonList("123")).one();
         assertNotNull(found);
-    }
-
-
-    @Test(expected = HecateException.class)
-    public void testIdInWhenComposite() {
-        PojoDao<CompositeKey, CompositeKeyPojo> dao = getFactory().createPojoDao(CompositeKeyPojo.class);
-        dao.find().identifierIn().build();
     }
 
     @Test

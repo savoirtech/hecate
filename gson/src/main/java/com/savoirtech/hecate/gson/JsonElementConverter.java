@@ -30,7 +30,7 @@ public class JsonElementConverter implements Converter {
     public DataType getDataType() {
         return DataType.varchar();
     }
-    
+
     @Override
     public Class<?> getValueType() {
         return JsonElement.class;
@@ -43,7 +43,7 @@ public class JsonElementConverter implements Converter {
 
     @Override
     public Object toFacetValue(Object o) {
-        if(o == null) {
+        if (o == null) {
             return null;
         }
         return new JsonParser().parse(o.toString());

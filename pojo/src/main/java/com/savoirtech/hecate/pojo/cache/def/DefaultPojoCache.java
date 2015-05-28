@@ -86,9 +86,8 @@ public class DefaultPojoCache implements PojoCache {
     @SuppressWarnings("unchecked")
     public <P> P lookup(PojoMapping<P> mapping, Object id) {
         Optional<Object> optional = caches.getUnchecked(mapping).getUnchecked(id);
-        if(optional.isPresent())
-        {
-            return (P)optional.get();
+        if (optional.isPresent()) {
+            return (P) optional.get();
         }
         throw new PojoNotFoundException(mapping, id);
     }

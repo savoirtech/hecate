@@ -27,6 +27,14 @@ import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 
 public class PojoMetricsUtilsTest extends AbstractTestCase {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Test
+    public void testConstructor() {
+        assertUtilsClass(PojoMetricsUtils.class);
+    }
 
     @Test
     public void testCreateCounter() throws Exception {
@@ -44,10 +52,5 @@ public class PojoMetricsUtilsTest extends AbstractTestCase {
         Timer actual = PojoMetricsUtils.createTimer(mapping, "bar");
         Timer expected = HecateMetrics.REGISTRY.timer("SimplePojo.simpletons.bar");
         assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testConstructor() {
-        assertUtilsClass(PojoMetricsUtils.class);
     }
 }

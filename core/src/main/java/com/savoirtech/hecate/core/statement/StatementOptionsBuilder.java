@@ -29,7 +29,8 @@ public class StatementOptionsBuilder {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final List<Consumer<Statement>> options  = new LinkedList<>();
+    private static final StatementOptions EMPTY = new StatementOptionsBuilder().build();
+    private final List<Consumer<Statement>> options = new LinkedList<>();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
@@ -42,23 +43,27 @@ public class StatementOptionsBuilder {
     public static StatementOptionsBuilder defaultTimestamp(long timestamp) {
         return new StatementOptionsBuilder().withDefaultTimestamp(timestamp);
     }
-    
+
     public static StatementOptionsBuilder disableTracing() {
         return new StatementOptionsBuilder().withDisableTracing();
+    }
+
+    public static StatementOptions empty() {
+        return EMPTY;
     }
 
     public static StatementOptionsBuilder enableTracing() {
         return new StatementOptionsBuilder().withEnableTracing();
     }
-    
+
     public static StatementOptionsBuilder fetchSize(int size) {
         return new StatementOptionsBuilder().withFetchSize(size);
     }
-    
+
     public static StatementOptionsBuilder retryPolicy(RetryPolicy policy) {
         return new StatementOptionsBuilder().withRetryPolicy(policy);
     }
-    
+
     public static StatementOptionsBuilder serialConsistencyLevel(ConsistencyLevel level) {
         return new StatementOptionsBuilder().withSerialConsistencyLevel(level);
     }

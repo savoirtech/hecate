@@ -33,7 +33,6 @@ public class EmbeddedColumnType implements ColumnType<Boolean, Object> {
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public Iterable<Object> columnElements(Boolean columnValue) {
         throw new HecateException("Embedded object columns are not reference-capable.");

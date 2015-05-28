@@ -22,12 +22,19 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
 public class MetricsUtilsTest extends AbstractTestCase {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Test
+    public void testConstructor() {
+        assertUtilsClass(MetricsUtils.class);
+    }
 
     @Test
     public void testDoWithTimer() throws Exception {
         Timer timer = HecateMetrics.REGISTRY.timer(RandomStringUtils.randomAlphabetic(10));
         MetricsUtils.doWithTimer(timer, () -> {
-
         });
         assertEquals(1, timer.getCount());
     }
@@ -38,10 +45,5 @@ public class MetricsUtilsTest extends AbstractTestCase {
         final String answer = MetricsUtils.returnWithTimer(timer, () -> "foo");
         assertEquals(1, timer.getCount());
         assertEquals("foo", answer);
-    }
-
-    @Test
-    public void testConstructor() {
-        assertUtilsClass(MetricsUtils.class);
     }
 }

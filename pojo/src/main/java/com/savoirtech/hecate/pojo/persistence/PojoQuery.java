@@ -18,6 +18,7 @@ package com.savoirtech.hecate.pojo.persistence;
 
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
 
 public interface PojoQuery<P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -25,7 +26,7 @@ public interface PojoQuery<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     default MappedQueryResult<P> execute(Object... parameters) {
-        return execute(StatementOptions.EMPTY, parameters);
+        return execute(StatementOptionsBuilder.empty(), parameters);
     }
 
     MappedQueryResult<P> execute(StatementOptions options, Object... parameters);

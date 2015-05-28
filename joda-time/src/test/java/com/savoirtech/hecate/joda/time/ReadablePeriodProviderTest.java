@@ -21,13 +21,16 @@ import org.junit.Test;
 
 public class ReadablePeriodProviderTest extends JodaTimeConverterProviderTest {
 //----------------------------------------------------------------------------------------------------------------------
-// Other Methods
+// Constructors
 //----------------------------------------------------------------------------------------------------------------------
-
 
     public ReadablePeriodProviderTest() {
         super(new ReadablePeriodProvider(), ReadablePeriod.class);
     }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testSupportsPeriodTypes() {

@@ -39,7 +39,7 @@ public interface ConverterRegistry {
     }
 
     default Converter getRequiredConverter(GenericType genericType) {
-        if(genericType == null) {
+        if (genericType == null) {
             throw new HecateException("GenericType parameter cannot be null.");
         }
         return getRequiredConverter(genericType.getRawType());

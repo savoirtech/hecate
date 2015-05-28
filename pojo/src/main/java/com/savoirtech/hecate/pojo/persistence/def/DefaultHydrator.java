@@ -59,7 +59,7 @@ public class DefaultHydrator implements Hydrator {
     @SuppressWarnings("unchecked")
     public void execute() {
         while (!agenda.isEmpty()) {
-            PojoMapping<Object> mapping = (PojoMapping<Object>)agenda.keySet().iterator().next();
+            PojoMapping<Object> mapping = (PojoMapping<Object>) agenda.keySet().iterator().next();
             List<Object> ids = new LinkedList<>(agenda.removeAll(mapping));
             ids.removeAll(pojoCache.idSet(mapping));
             if (!ids.isEmpty()) {

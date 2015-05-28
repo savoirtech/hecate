@@ -38,7 +38,7 @@ public class JodaTimeConverter implements Converter {
 
     public JodaTimeConverter(Class<?> valueType) {
         this.valueType = valueType;
-        if(Modifier.isAbstract(valueType.getModifiers())) {
+        if (Modifier.isAbstract(valueType.getModifiers())) {
             throw new HecateException("Cannot create converter for non-concrete type %s.", valueType.getCanonicalName());
         }
         this.parseMethod = findParseMethod(valueType);
@@ -46,10 +46,10 @@ public class JodaTimeConverter implements Converter {
 
     private static Method findParseMethod(Class<?> jodaType) {
         Method m = MethodUtils.getMatchingAccessibleMethod(jodaType, "parse", String.class);
-        if(m == null) {
+        if (m == null) {
             m = MethodUtils.getMatchingAccessibleMethod(jodaType, "parse" + jodaType.getSimpleName(), String.class);
         }
-        if(m == null) {
+        if (m == null) {
             throw new HecateException("No parse() or parse%s() method found on class %s.", jodaType.getSimpleName(), jodaType.getCanonicalName());
         }
         return m;

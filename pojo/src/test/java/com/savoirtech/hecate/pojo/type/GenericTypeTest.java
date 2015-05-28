@@ -101,9 +101,7 @@ public class GenericTypeTest {
     public void testToString() throws Exception {
         GenericType type = new GenericType(Sub.class, Sub.class.getField("set").getGenericType());
         assertEquals("java.util.Set<T>", type.toString());
-
     }
-
 
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes

@@ -34,6 +34,24 @@ public class FieldFacetProviderTest extends Assert {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
+    public void testCascadingRules() {
+        FacetProvider facetProvider = new FieldFacetProvider();
+        Map<String, Facet> map = facetProvider.getFacetsAsMap(CascadeMe.class);
+
+        assertTrue(map.get("nestedAllCascade").isCascadeDelete());
+        assertTrue(map.get("nestedAllCascade").isCascadeSave());
+
+        assertFalse(map.get("nestedNoCascade").isCascadeDelete());
+        assertFalse(map.get("nestedNoCascade").isCascadeSave());
+
+        assertTrue(map.get("nestedDeleteOnly").isCascadeDelete());
+        assertFalse(map.get("nestedDeleteOnly").isCascadeSave());
+
+        assertFalse(map.get("nestedSaveOnly").isCascadeDelete());
+        assertTrue(map.get("nestedSaveOnly").isCascadeSave());
+    }
+
+    @Test
     public void testGetAnnotation() {
         FacetProvider facetProvider = new FieldFacetProvider();
         Map<String, Facet> map = facetProvider.getFacetsAsMap(FieldPojoSub.class);
@@ -41,16 +59,6 @@ public class FieldFacetProviderTest extends Assert {
         assertNotNull(facet.getAnnotation(Deprecated.class));
     }
 
-    @Test
-    public void testSettingFinalField() {
-        FacetProvider facetProvider = new FieldFacetProvider();
-        Map<String, Facet> map = facetProvider.getFacetsAsMap(FieldPojoSub.class);
-        Facet foo = map.get("foo");
-        FieldPojoSub pojo = new FieldPojoSub();
-        foo.setValue(pojo, "bar");
-        assertEquals("bar", foo.getValue(pojo));
-
-    }
     @Test
     public void testGetFacets() throws Exception {
         FacetProvider facetProvider = new FieldFacetProvider();
@@ -82,26 +90,31 @@ public class FieldFacetProviderTest extends Assert {
     }
 
     @Test
-    public void testCascadingRules() {
+    public void testSettingFinalField() {
         FacetProvider facetProvider = new FieldFacetProvider();
-        Map<String, Facet> map = facetProvider.getFacetsAsMap(CascadeMe.class);
-
-        assertTrue(map.get("nestedAllCascade").isCascadeDelete());
-        assertTrue(map.get("nestedAllCascade").isCascadeSave());
-
-        assertFalse(map.get("nestedNoCascade").isCascadeDelete());
-        assertFalse(map.get("nestedNoCascade").isCascadeSave());
-
-        assertTrue(map.get("nestedDeleteOnly").isCascadeDelete());
-        assertFalse(map.get("nestedDeleteOnly").isCascadeSave());
-
-        assertFalse(map.get("nestedSaveOnly").isCascadeDelete());
-        assertTrue(map.get("nestedSaveOnly").isCascadeSave());
+        Map<String, Facet> map = facetProvider.getFacetsAsMap(FieldPojoSub.class);
+        Facet foo = map.get("foo");
+        FieldPojoSub pojo = new FieldPojoSub();
+        foo.setValue(pojo, "bar");
+        assertEquals("bar", foo.getValue(pojo));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
+
+    public static class CascadeMe {
+        @Cascade(save = false)
+        private NestedPojo nestedDeleteOnly;
+
+        @Cascade(delete = false)
+        private NestedPojo nestedSaveOnly;
+
+        @Cascade(delete = false, save = false)
+        private NestedPojo nestedNoCascade;
+
+        private NestedPojo nestedAllCascade;
+    }
 
     public static class FieldPojoSub extends FieldPojoSuper {
         private static String STATIC_TEXT = "static_text";
@@ -113,18 +126,5 @@ public class FieldFacetProviderTest extends Assert {
     public static class FieldPojoSuper {
         private final String foo = "foo";
         private String bar;
-    }
-
-    public static class CascadeMe {
-        @Cascade(save = false)
-        private NestedPojo nestedDeleteOnly;
-
-        @Cascade(delete=false)
-        private NestedPojo nestedSaveOnly;
-
-        @Cascade(delete=false,save=false)
-        private NestedPojo nestedNoCascade;
-
-        private NestedPojo nestedAllCascade;
     }
 }

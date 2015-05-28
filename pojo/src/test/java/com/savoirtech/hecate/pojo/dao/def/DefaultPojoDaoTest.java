@@ -35,6 +35,30 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
+    public void testCascade() {
+        final PojoDao<String, CascadedPojo> dao = getFactory().createPojoDao(CascadedPojo.class);
+        final PojoDao<String, NestedPojo> nestedDao = getFactory().createPojoDao(NestedPojo.class);
+        CascadedPojo pojo = new CascadedPojo();
+        pojo.setDeleteOnly(new NestedPojo());
+        pojo.setSaveOnly(new NestedPojo());
+        pojo.setNoCascade(new NestedPojo());
+        dao.save(pojo);
+
+        assertNotNull(nestedDao.findById(pojo.getSaveOnly().getId()));
+        assertNull(nestedDao.findById(pojo.getDeleteOnly().getId()));
+        assertNull(nestedDao.findById(pojo.getNoCascade().getId()));
+
+        pojo.setDeleteOnly(pojo.getSaveOnly());
+        dao.save(pojo);
+
+        dao.delete(pojo.getId());
+
+        assertNull(nestedDao.findById(pojo.getSaveOnly().getId()));
+        assertNull(nestedDao.findById(pojo.getDeleteOnly().getId()));
+        assertNull(nestedDao.findById(pojo.getNoCascade().getId()));
+    }
+
+    @Test
     public void testDelete() throws Exception {
         DefaultPojoDaoFactory factory = getFactory();
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
@@ -46,15 +70,6 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertNull(dao.findById(pojo.getId()));
     }
 
-    @Test
-    public void testFindByIdsWithSet()  throws Exception {
-        DefaultPojoDaoFactory factory = getFactory();
-        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
-        final SimplePojo pojo = new SimplePojo();
-        pojo.setName("name");
-        dao.save(pojo);
-        assertEquals(1, dao.findByIds(Sets.newHashSet(pojo.getId())).list().size());
-    }
     @Test
     public void testDeleteWithCompositeKey() {
         DefaultPojoDaoFactory factory = getFactory();
@@ -93,6 +108,16 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         dao.delete(pojo.getId());
         assertNull(dao.findById(pojo.getId()));
         assertNull(nestedPojoDao.findById(nestedPojo.getId()));
+    }
+
+    @Test
+    public void testFindByIdsWithSet() throws Exception {
+        DefaultPojoDaoFactory factory = getFactory();
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        dao.save(pojo);
+        assertEquals(1, dao.findByIds(Sets.newHashSet(pojo.getId())).list().size());
     }
 
     @Test
@@ -460,29 +485,4 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertTrue(found.getSetOfStrings().contains("two"));
         assertTrue(found.getSetOfStrings().contains("three"));
     }
-
-    @Test
-    public void testCascade() {
-        final PojoDao<String,CascadedPojo> dao = getFactory().createPojoDao(CascadedPojo.class);
-        final PojoDao<String,NestedPojo> nestedDao = getFactory().createPojoDao(NestedPojo.class);
-        CascadedPojo pojo = new CascadedPojo();
-        pojo.setDeleteOnly(new NestedPojo());
-        pojo.setSaveOnly(new NestedPojo());
-        pojo.setNoCascade(new NestedPojo());
-        dao.save(pojo);
-
-        assertNotNull(nestedDao.findById(pojo.getSaveOnly().getId()));
-        assertNull(nestedDao.findById(pojo.getDeleteOnly().getId()));
-        assertNull(nestedDao.findById(pojo.getNoCascade().getId()));
-
-        pojo.setDeleteOnly(pojo.getSaveOnly());
-        dao.save(pojo);
-
-        dao.delete(pojo.getId());
-
-        assertNull(nestedDao.findById(pojo.getSaveOnly().getId()));
-        assertNull(nestedDao.findById(pojo.getDeleteOnly().getId()));
-        assertNull(nestedDao.findById(pojo.getNoCascade().getId()));
-    }
-
 }

@@ -24,9 +24,8 @@ public interface FacetMapping {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    String getColumnName();
-
     void accept(FacetMappingVisitor visitor);
+    String getColumnName();
 
     Object getColumnValue(Object pojo);
 

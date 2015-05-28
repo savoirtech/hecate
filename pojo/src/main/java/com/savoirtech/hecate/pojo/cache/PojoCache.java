@@ -30,9 +30,10 @@ public interface PojoCache {
     Set<Object> idSet(PojoMapping<? extends Object> mapping);
 
     <P> P lookup(PojoMapping<P> mapping, Object id);
+
     <P> void put(PojoMapping<P> mapping, Object id, P pojo);
 
     <P> void putAll(PojoMapping<P> mapping, Iterable<P> pojos);
-    
+
     long size(PojoMapping<? extends Object> mapping);
 }

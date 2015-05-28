@@ -37,7 +37,7 @@ public abstract class JodaTimeConverterProvider implements ConverterProvider {
 //----------------------------------------------------------------------------------------------------------------------
 // ConverterProvider Implementation
 //----------------------------------------------------------------------------------------------------------------------
-    
+
     @Override
     public Class<? extends Converter> converterType() {
         return JodaTimeConverter.class;

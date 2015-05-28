@@ -20,21 +20,27 @@ import java.util.Iterator;
 import java.util.List;
 
 public interface QueryResult<T> {
-
-    /**
-     * Returns the results as a list
-     * @return the results as a list
-     */
-    List<T> list();
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     /**
      * Returns an iterator for the results
+     *
      * @return an iterator for the results
      */
     Iterator<T> iterator();
 
     /**
+     * Returns the results as a list
+     *
+     * @return the results as a list
+     */
+    List<T> list();
+
+    /**
      * Returns a single result
+     *
      * @return a single result
      */
     T one();

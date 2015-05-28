@@ -97,17 +97,13 @@ public class CqlUtilsTest extends CassandraTestCase {
         });
     }
 
-    @Test(expected = HecateException.class)
-    public void testGetValueInvalidType() {
-        withSession(session -> {
-            session.execute("update counter_table set counter_value = counter_value + 1 where id = '1'");
-            ResultSet rs = session.execute("select * from counter_table");
-            CqlUtils.toList(rs.one());
-        });
-    }
-
     private ImmutablePair<DataType, Object> example(DataType dataType, Object value) {
         return new ImmutablePair<>(dataType, value);
+    }
+
+    @Test
+    public void testConstructor() {
+        assertUtilsClass(CqlUtils.class);
     }
 
     @Test
@@ -125,8 +121,12 @@ public class CqlUtilsTest extends CassandraTestCase {
         });
     }
 
-    @Test
-    public void testConstructor() {
-        assertUtilsClass(CqlUtils.class);
+    @Test(expected = HecateException.class)
+    public void testGetValueInvalidType() {
+        withSession(session -> {
+            session.execute("update counter_table set counter_value = counter_value + 1 where id = '1'");
+            ResultSet rs = session.execute("select * from counter_table");
+            CqlUtils.toList(rs.one());
+        });
     }
 }

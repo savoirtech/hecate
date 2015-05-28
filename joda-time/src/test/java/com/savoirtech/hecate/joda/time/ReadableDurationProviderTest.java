@@ -16,7 +16,8 @@
 
 package com.savoirtech.hecate.joda.time;
 
-import org.joda.time.*;
+import org.joda.time.Duration;
+import org.joda.time.ReadableDuration;
 import org.junit.Test;
 
 public class ReadableDurationProviderTest extends JodaTimeConverterProviderTest {

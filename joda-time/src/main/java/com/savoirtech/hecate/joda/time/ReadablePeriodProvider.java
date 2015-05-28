@@ -26,5 +26,4 @@ public class ReadablePeriodProvider extends JodaTimeConverterProvider {
     public ReadablePeriodProvider() {
         super(ReadablePeriod.class);
     }
-
 }

@@ -40,12 +40,6 @@ public class DefaultNamingStrategyTest extends AbstractTestCase {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private Facet getFacet(Class<?> pojoClass, String fieldName) {
-        FieldFacetProvider provider = new FieldFacetProvider();
-        Map<String, Facet> map = provider.getFacetsAsMap(pojoClass);
-        return map.get(fieldName);
-    }
-
     @Before
     public void init() throws Exception {
         strategy = new DefaultNamingStrategy();
@@ -56,6 +50,17 @@ public class DefaultNamingStrategyTest extends AbstractTestCase {
         Facet facet = getFacet(AnnotatedPojoType.class, "fieldName");
         DefaultNamingStrategy strategy = new DefaultNamingStrategy();
         assertEquals("Bar", strategy.getColumnName(facet));
+    }
+
+    private Facet getFacet(Class<?> pojoClass, String fieldName) {
+        FieldFacetProvider provider = new FieldFacetProvider();
+        Map<String, Facet> map = provider.getFacetsAsMap(pojoClass);
+        return map.get(fieldName);
+    }
+
+    @Test
+    public void testGetAnnotatedReferenceTableName() throws Exception {
+        assertEquals("children", strategy.getReferenceTableName(getFacet(Referer.class, "withAnnotation")));
     }
 
     @Test
@@ -72,11 +77,6 @@ public class DefaultNamingStrategyTest extends AbstractTestCase {
     @Test
     public void testGetDefaultReferenceTableName() throws Exception {
         assertEquals("child", strategy.getReferenceTableName(getFacet(Referer.class, "noAnnotation")));
-    }
-
-    @Test
-    public void testGetAnnotatedReferenceTableName() throws Exception {
-        assertEquals("children", strategy.getReferenceTableName(getFacet(Referer.class, "withAnnotation")));
     }
 
     @Test
@@ -109,6 +109,14 @@ public class DefaultNamingStrategyTest extends AbstractTestCase {
         private String stringProperty;
     }
 
+    private static class Indexed {
+        @Index
+        private String defaultName;
+
+        @Index("foo")
+        private String customName;
+    }
+
     private static class Parent {
         private Child child;
     }
@@ -121,13 +129,5 @@ public class DefaultNamingStrategyTest extends AbstractTestCase {
         private Child noAnnotation;
         @Table("children")
         private Child withAnnotation;
-    }
-
-    private static class Indexed {
-        @Index
-        private String defaultName;
-
-        @Index("foo")
-        private String customName;
     }
 }

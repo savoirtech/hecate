@@ -31,10 +31,11 @@ public interface Converter {
 
     DataType getDataType();
 
-    Object toColumnValue(Object value);
-    Object toFacetValue(Object value);
-
     Class<?> getValueType();
+
+    Object toColumnValue(Object value);
+
+    Object toFacetValue(Object value);
 
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes

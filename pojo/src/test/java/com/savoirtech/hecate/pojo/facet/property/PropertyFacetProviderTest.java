@@ -50,7 +50,6 @@ public class PropertyFacetProviderTest extends Assert {
         assertTrue(facets.containsKey("readOnly"));
         assertTrue(facets.containsKey("writeOnlyBoolean"));
         assertTrue(facets.containsKey("readOnlyBoolean"));
-
     }
 
     @Test
@@ -62,6 +61,16 @@ public class PropertyFacetProviderTest extends Assert {
     }
 
     @Test
+    public void testSubFacets() {
+        FacetProvider provider = new PropertyFacetProvider();
+        Map<String, Facet> facets = provider.getFacetsAsMap(SimplePojo.class);
+        Facet facet = facets.get("nestedPojo");
+        assertNotNull(facet);
+        List<Facet> childFacets = facet.subFacets(false);
+        assertEquals(2, childFacets.size());
+    }
+
+    @Test
     public void testValueHandling() {
         FacetProvider provider = new PropertyFacetProvider();
         List<Facet> facets = provider.getFacets(PropertiesPojo.class);
@@ -70,16 +79,6 @@ public class PropertyFacetProviderTest extends Assert {
         assertNull(facet.getValue(pojo));
         facet.setValue(pojo, "testValue");
         assertEquals("testValue", facet.getValue(pojo));
-    }
-
-    @Test
-    public void testSubFacets() {
-        FacetProvider provider = new PropertyFacetProvider();
-        Map<String,Facet> facets = provider.getFacetsAsMap(SimplePojo.class);
-        Facet facet = facets.get("nestedPojo");
-        assertNotNull(facet);
-        List<Facet> childFacets = facet.subFacets(false);
-        assertEquals(2, childFacets.size());
     }
 
 //----------------------------------------------------------------------------------------------------------------------

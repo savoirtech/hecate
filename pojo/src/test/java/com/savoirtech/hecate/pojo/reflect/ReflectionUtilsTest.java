@@ -26,6 +26,11 @@ public class ReflectionUtilsTest extends AbstractTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
+    public void testConstructor() {
+        assertUtilsClass(ReflectionUtils.class);
+    }
+
+    @Test
     public void testNewInstance() {
         assertNotNull(ReflectionUtils.newInstance(MyPojo.class));
     }
@@ -38,11 +43,6 @@ public class ReflectionUtilsTest extends AbstractTestCase {
     @Test
     public void testNewInstanceWithHiddenConstructor() {
         assertNotNull(ReflectionUtils.newInstance(PrivatePojo.class));
-    }
-
-    @Test
-    public void testConstructor() {
-        assertUtilsClass(ReflectionUtils.class);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

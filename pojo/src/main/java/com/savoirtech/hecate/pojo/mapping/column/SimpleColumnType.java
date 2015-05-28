@@ -32,7 +32,6 @@ public class SimpleColumnType implements ColumnType<Object, Object> {
 // ColumnType Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public Iterable<Object> columnElements(Object columnValue) {
         return columnValue == null ? Collections.emptyList() : Collections.singleton(columnValue);

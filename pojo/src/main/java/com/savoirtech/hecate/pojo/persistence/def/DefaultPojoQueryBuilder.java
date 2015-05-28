@@ -46,6 +46,17 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     private String name;
 
 //----------------------------------------------------------------------------------------------------------------------
+// Static Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    static Select.Where createSelect(PojoMapping<?> pojoMapping) {
+        Select.Selection select = select();
+        pojoMapping.getIdMappings().forEach(mapping -> select.column(mapping.getColumnName()));
+        pojoMapping.getSimpleMappings().forEach(mapping -> select.column(mapping.getColumnName()));
+        return select.from(pojoMapping.getTableName()).where();
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -54,13 +65,6 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         this.persistenceContext = persistenceContext;
         this.where = createSelect(pojoMapping);
         this.facetMappings = toFacetMappingsMap(pojoMapping);
-    }
-
-    static Select.Where createSelect(PojoMapping<?> pojoMapping) {
-        Select.Selection select = select();
-        pojoMapping.getIdMappings().forEach(mapping -> select.column(mapping.getColumnName()));
-        pojoMapping.getSimpleMappings().forEach(mapping -> select.column(mapping.getColumnName()));
-        return select.from(pojoMapping.getTableName()).where();
     }
 
     private static Map<String, FacetMapping> toFacetMappingsMap(PojoMapping<?> pojoMapping) {
@@ -79,10 +83,10 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         where.orderBy(QueryBuilder.asc(lookupColumn(facetName)));
         return this;
     }
-    
+
     @Override
     public DefaultPojoQuery<P> build() {
-        if(name == null) {
+        if (name == null) {
             return new DefaultPojoQuery<>(where.getQueryString(), persistenceContext, pojoMapping, where, parameterMappings, injectedParameters);
         }
         return new DefaultPojoQuery<>(name, persistenceContext, pojoMapping, where, parameterMappings, injectedParameters);

@@ -32,10 +32,10 @@ public class CascadedPojo {
     @Cascade(delete = false)
     private NestedPojo saveOnly;
 
-    @Cascade(save=false)
+    @Cascade(save = false)
     private NestedPojo deleteOnly;
 
-    @Cascade(save=false,delete=false)
+    @Cascade(save = false, delete = false)
     private NestedPojo noCascade;
 
 //----------------------------------------------------------------------------------------------------------------------

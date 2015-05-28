@@ -18,6 +18,7 @@ package com.savoirtech.hecate.pojo.dao;
 
 import com.savoirtech.hecate.core.query.QueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
 import com.savoirtech.hecate.pojo.persistence.PojoQueryBuilder;
 
 public interface PojoDao<I, P> {
@@ -26,7 +27,7 @@ public interface PojoDao<I, P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     default void delete(I id) {
-        delete(id, StatementOptions.EMPTY);
+        delete(id, StatementOptionsBuilder.empty());
     }
 
     void delete(I id, StatementOptions options);
@@ -34,21 +35,21 @@ public interface PojoDao<I, P> {
     PojoQueryBuilder<P> find();
 
     P findById(I id);
-    
+
     default QueryResult<P> findByIds(Iterable<I> ids) {
-        return findByIds(ids, StatementOptions.EMPTY);   
+        return findByIds(ids, StatementOptionsBuilder.empty());
     }
 
     QueryResult<P> findByIds(Iterable<I> ids, StatementOptions options);
 
     default void save(P pojo) {
-        save(pojo, StatementOptions.EMPTY);
+        save(pojo, StatementOptionsBuilder.empty());
     }
 
     void save(P pojo, StatementOptions options);
 
     default void save(P pojo, int ttl) {
-        save(pojo, ttl, StatementOptions.EMPTY);
+        save(pojo, ttl, StatementOptionsBuilder.empty());
     }
 
     void save(P pojo, int ttl, StatementOptions options);

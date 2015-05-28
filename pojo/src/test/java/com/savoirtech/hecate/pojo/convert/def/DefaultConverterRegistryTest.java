@@ -18,8 +18,8 @@ package com.savoirtech.hecate.pojo.convert.def;
 
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
-import com.savoirtech.hecate.pojo.util.Gender;
 import com.savoirtech.hecate.pojo.type.GenericType;
+import com.savoirtech.hecate.pojo.util.Gender;
 import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 
@@ -80,12 +80,6 @@ public class DefaultConverterRegistryTest extends AbstractTestCase {
         assertNotNull(registry.getConverter(Gender.class));
     }
 
-    @Test(expected = HecateException.class)
-    public void testGetRequiredConverterByGenericTypeWhenNotFound() throws Exception {
-        GenericType genericType2 = new GenericType(Fields.class, Fields.class.getField("connection").getGenericType());
-        registry.getRequiredConverter(genericType2);
-    }
-
     @Test
     public void testGetRequiredConverterByGenericType() throws Exception {
         GenericType genericType2 = new GenericType(Fields.class, Fields.class.getField("field").getGenericType());
@@ -93,13 +87,9 @@ public class DefaultConverterRegistryTest extends AbstractTestCase {
     }
 
     @Test(expected = HecateException.class)
-    public void testGetRequiredConverterWithNullClass() {
-        registry.getRequiredConverter((Class<?>)null);
-    }
-
-    @Test(expected = HecateException.class)
-    public void testGetRequiredConverterWithNullGenericType() {
-        registry.getRequiredConverter((GenericType)null);
+    public void testGetRequiredConverterByGenericTypeWhenNotFound() throws Exception {
+        GenericType genericType2 = new GenericType(Fields.class, Fields.class.getField("connection").getGenericType());
+        registry.getRequiredConverter(genericType2);
     }
 
     @Test
@@ -110,6 +100,16 @@ public class DefaultConverterRegistryTest extends AbstractTestCase {
     @Test(expected = HecateException.class)
     public void testGetRequiredConverterWhenNotFound() {
         registry.getRequiredConverter(Connection.class);
+    }
+
+    @Test(expected = HecateException.class)
+    public void testGetRequiredConverterWithNullClass() {
+        registry.getRequiredConverter((Class<?>) null);
+    }
+
+    @Test(expected = HecateException.class)
+    public void testGetRequiredConverterWithNullGenericType() {
+        registry.getRequiredConverter((GenericType) null);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

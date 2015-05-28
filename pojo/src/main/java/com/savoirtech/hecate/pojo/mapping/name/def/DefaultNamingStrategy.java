@@ -45,7 +45,6 @@ public class DefaultNamingStrategy implements NamingStrategy {
 // NamingStrategy Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public String getColumnName(Facet facet) {
         Column column = facet.getAnnotation(Column.class);
@@ -55,7 +54,7 @@ public class DefaultNamingStrategy implements NamingStrategy {
     @Override
     public String getIndexName(Facet facet) {
         final Index annot = Verify.verifyNotNull(facet.getAnnotation(Index.class));
-        if(StringUtils.isNotEmpty(annot.value())) {
+        if (StringUtils.isNotEmpty(annot.value())) {
             return annot.value();
         }
         return getColumnName(facet) + "_ndx";

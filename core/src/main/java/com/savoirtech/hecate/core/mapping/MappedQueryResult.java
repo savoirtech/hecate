@@ -61,10 +61,6 @@ public class MappedQueryResult<T> implements QueryResult<T> {
         return transformed;
     }
 
-    public Stream<T> stream() {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(), Spliterator.IMMUTABLE), false);
-    }
-
     @Override
     public List<T> list() {
         List<T> result = resultSet.all().stream().map(mapper::map).collect(Collectors.toList());
@@ -81,5 +77,13 @@ public class MappedQueryResult<T> implements QueryResult<T> {
         T result = mapper.map(row);
         mapper.mappingComplete();
         return result;
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public Stream<T> stream() {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(), Spliterator.IMMUTABLE), false);
     }
 }

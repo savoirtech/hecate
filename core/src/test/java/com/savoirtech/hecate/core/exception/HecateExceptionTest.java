@@ -20,6 +20,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class HecateExceptionTest extends Assert {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testMessageInterpolation() {

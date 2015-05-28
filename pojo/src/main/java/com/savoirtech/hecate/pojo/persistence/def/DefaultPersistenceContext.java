@@ -21,6 +21,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
 import com.savoirtech.hecate.pojo.cache.def.DefaultPojoCache;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.*;
@@ -45,7 +46,7 @@ public class DefaultPersistenceContext implements PersistenceContext {
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPersistenceContext(Session session) {
-        this(session, StatementOptions.EMPTY);
+        this(session, StatementOptionsBuilder.empty());
     }
 
     public DefaultPersistenceContext(Session session, StatementOptions defaultOptions) {

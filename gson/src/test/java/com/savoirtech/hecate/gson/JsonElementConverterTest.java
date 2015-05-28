@@ -24,9 +24,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class JsonElementConverterTest extends Assert {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     private JsonArray array;
     private JsonObject object;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Before
     public void setUpData() {
@@ -40,6 +47,17 @@ public class JsonElementConverterTest extends Assert {
         object.addProperty("b", 1);
         object.addProperty("c", false);
     }
+
+    @Test
+    public void testGetDataType() {
+        assertEquals(DataType.varchar(), new JsonElementConverter().getDataType());
+    }
+
+    @Test
+    public void testGetValueType() {
+        assertEquals(JsonElement.class, new JsonElementConverter().getValueType());
+    }
+
     @Test
     public void testRegistration() {
         DefaultConverterRegistry reg = new DefaultConverterRegistry();
@@ -58,16 +76,6 @@ public class JsonElementConverterTest extends Assert {
         assertEquals("[1,2,3]", converter.toColumnValue(array));
 
         assertEquals(object.toString(), converter.toColumnValue(object));
-    }
-
-    @Test
-    public void testGetDataType() {
-        assertEquals(DataType.varchar(), new JsonElementConverter().getDataType());
-    }
-
-    @Test
-    public void testGetValueType() {
-        assertEquals(JsonElement.class, new JsonElementConverter().getValueType());
     }
 
     @Test

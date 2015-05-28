@@ -28,7 +28,6 @@ public @interface ClusteringColumn {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    int order() default 0;
-
     boolean descending() default false;
+    int order() default 0;
 }

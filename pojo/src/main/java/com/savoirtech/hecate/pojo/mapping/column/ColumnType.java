@@ -28,6 +28,7 @@ public interface ColumnType<C, F> {
     Iterable<Object> columnElements(C columnValue);
 
     Iterable<Object> facetElements(F facetValue);
+
     C getColumnValue(F facetValue, Function<Object, Object> function);
 
     DataType getDataType(DataType elementDataType);

@@ -29,7 +29,7 @@ public interface Facet {
 //----------------------------------------------------------------------------------------------------------------------
 
     Facet flatten();
-    
+
     <A extends Annotation> A getAnnotation(Class<A> annotationType);
 
     String getName();

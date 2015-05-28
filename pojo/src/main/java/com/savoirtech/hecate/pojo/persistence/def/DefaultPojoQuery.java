@@ -26,9 +26,9 @@ import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.mapping.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.row.HydratorRowMapper;
+import com.savoirtech.hecate.pojo.metrics.PojoMetricsUtils;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoQuery;
-import com.savoirtech.hecate.pojo.metrics.PojoMetricsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,13 +52,13 @@ public class DefaultPojoQuery<P> extends PojoStatement<P> implements PojoQuery<P
         this.selectWhere = selectWhere;
         this.parameterMappings = parameterMappings;
         this.injectedParameters = injectedParameters;
-        this.timer= PojoMetricsUtils.createTimer(pojoMapping, name);
+        this.timer = PojoMetricsUtils.createTimer(pojoMapping, name);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // PojoQuery Implementation
 //----------------------------------------------------------------------------------------------------------------------
-    
+
     @Override
     public final MappedQueryResult<P> execute(StatementOptions options, Object... parameters) {
         return MetricsUtils.returnWithTimer(timer, () -> {
@@ -73,7 +73,7 @@ public class DefaultPojoQuery<P> extends PojoStatement<P> implements PojoQuery<P
                 index++;
             }
             columnValues = injected(columnValues);
-            return new MappedQueryResult<>(executeStatement(columnValues, options), new HydratorRowMapper<>(getPojoMapping(), getPersistenceContext().createHydrator(options)));    
+            return new MappedQueryResult<>(executeStatement(columnValues, options), new HydratorRowMapper<>(getPojoMapping(), getPersistenceContext().createHydrator(options)));
         });
     }
 

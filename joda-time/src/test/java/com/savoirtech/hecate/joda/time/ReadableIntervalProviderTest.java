@@ -23,9 +23,17 @@ import org.joda.time.ReadableInterval;
 import org.junit.Test;
 
 public class ReadableIntervalProviderTest extends JodaTimeConverterProviderTest {
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
     public ReadableIntervalProviderTest() {
         super(new ReadableIntervalProvider(), ReadableInterval.class);
     }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testSupportedTypes() {

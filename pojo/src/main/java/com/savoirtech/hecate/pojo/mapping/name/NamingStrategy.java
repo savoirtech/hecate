@@ -23,11 +23,10 @@ public interface NamingStrategy {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    String getTableName(Class<?> pojoClass);
-
     String getColumnName(Facet facet);
 
-    String getReferenceTableName(Facet facet);
-
     String getIndexName(Facet facet);
+
+    String getReferenceTableName(Facet facet);
+    String getTableName(Class<?> pojoClass);
 }

@@ -70,31 +70,15 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
     }
 
     @Test
-    public void testWithVerifier() {
-        AtomicReference<PojoMapping<?>> ref = new AtomicReference<>();
-
-        DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory(ref::set);
-        PojoMapping<Person> mapping = factory.createPojoMapping(Person.class);
-        assertEquals(mapping,ref.get());
-    }
-
-    @Test
     public void testToString() {
         assertEquals("Person@person", factory.createPojoMapping(Person.class).toString());
-    }
-
-    @Test
-    public void testWithReferences() {
-        PojoMapping<PersonWithNested> mapping = createMapping(PersonWithNested.class);
-        assertColumnNames(mapping.getIdMappings(), "id");
-        assertColumnNames(mapping.getSimpleMappings(), "first_name", "last_name", "nested", "ssn");
     }
 
     @Test
     public void testWithEmbeddedObject() {
         PojoMapping<PersonWithAddress> mapping = createMapping(PersonWithAddress.class);
         assertColumnNames(mapping.getIdMappings(), "id");
-        assertColumnNames(mapping.getSimpleMappings(), "address", "address_address_1", "address_address_2", "address_city", "address_state", "address_zip", "first_name", "last_name", "ssn" );
+        assertColumnNames(mapping.getSimpleMappings(), "address", "address_address_1", "address_address_2", "address_city", "address_state", "address_zip", "first_name", "last_name", "ssn");
     }
 
     @Test(expected = UncheckedExecutionException.class)
@@ -112,6 +96,22 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
         createMapping(WithNonKey.class);
     }
 
+    @Test
+    public void testWithReferences() {
+        PojoMapping<PersonWithNested> mapping = createMapping(PersonWithNested.class);
+        assertColumnNames(mapping.getIdMappings(), "id");
+        assertColumnNames(mapping.getSimpleMappings(), "first_name", "last_name", "nested", "ssn");
+    }
+
+    @Test
+    public void testWithVerifier() {
+        AtomicReference<PojoMapping<?>> ref = new AtomicReference<>();
+
+        DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory(ref::set);
+        PojoMapping<Person> mapping = factory.createPojoMapping(Person.class);
+        assertEquals(mapping, ref.get());
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
@@ -124,10 +124,6 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
         private String zip;
     }
 
-    public static class PersonWithNested extends Person {
-        private NestedPojo nested;
-
-    }
     private static class CensusData {
         @Id
         private PostalCode id;
@@ -157,11 +153,6 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
         private String key;
     }
 
-    public static class PersonWithAddress extends Person {
-        @Embedded
-        private Address address;
-    }
-
     public static class Person {
         @Id
         private String id;
@@ -169,6 +160,15 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
         private String socialSecurityNumber;
         private String firstName;
         private String lastName;
+    }
+
+    public static class PersonWithAddress extends Person {
+        @Embedded
+        private Address address;
+    }
+
+    public static class PersonWithNested extends Person {
+        private NestedPojo nested;
     }
 
     private static class PostalCode {

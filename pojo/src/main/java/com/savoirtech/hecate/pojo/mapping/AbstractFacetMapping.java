@@ -50,6 +50,10 @@ public abstract class AbstractFacetMapping implements FacetMapping {
 // FacetMapping Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+    public String getColumnName() {
+        return columnName;
+    }
+
     @Override
     public Object getColumnValue(Object pojo) {
         final Object facetValue = facetValue(pojo);
@@ -69,10 +73,6 @@ public abstract class AbstractFacetMapping implements FacetMapping {
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
-
-    public String getColumnName() {
-        return columnName;
-    }
 
     public ColumnType<Object, Object> getColumnType() {
         return columnType;

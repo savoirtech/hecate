@@ -21,9 +21,17 @@ import org.junit.Test;
 
 
 public class ReadablePartialProviderTest extends JodaTimeConverterProviderTest {
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
     public ReadablePartialProviderTest() {
         super(new ReadablePartialProvider(), ReadablePartial.class);
     }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testSupportedTypes() {
