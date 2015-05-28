@@ -461,4 +461,28 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertTrue(found.getSetOfStrings().contains("three"));
     }
 
+    @Test
+    public void testCascade() {
+        final PojoDao<String,CascadedPojo> dao = getFactory().createPojoDao(CascadedPojo.class);
+        final PojoDao<String,NestedPojo> nestedDao = getFactory().createPojoDao(NestedPojo.class);
+        CascadedPojo pojo = new CascadedPojo();
+        pojo.setDeleteOnly(new NestedPojo());
+        pojo.setSaveOnly(new NestedPojo());
+        pojo.setNoCascade(new NestedPojo());
+        dao.save(pojo);
+
+        assertNotNull(nestedDao.findById(pojo.getSaveOnly().getId()));
+        assertNull(nestedDao.findById(pojo.getDeleteOnly().getId()));
+        assertNull(nestedDao.findById(pojo.getNoCascade().getId()));
+
+        pojo.setDeleteOnly(pojo.getSaveOnly());
+        dao.save(pojo);
+
+        dao.delete(pojo.getId());
+
+        assertNull(nestedDao.findById(pojo.getSaveOnly().getId()));
+        assertNull(nestedDao.findById(pojo.getDeleteOnly().getId()));
+        assertNull(nestedDao.findById(pojo.getNoCascade().getId()));
+    }
+
 }
