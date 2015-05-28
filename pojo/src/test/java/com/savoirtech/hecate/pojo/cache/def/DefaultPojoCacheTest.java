@@ -20,6 +20,7 @@ import com.codahale.metrics.Counter;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactory;
 import com.savoirtech.hecate.pojo.entities.Person;
+import com.savoirtech.hecate.pojo.exception.PojoNotFoundException;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMappingFactory;
 import com.savoirtech.hecate.pojo.mapping.def.DefaultPojoMappingFactory;
@@ -42,6 +43,7 @@ public class DefaultPojoCacheTest extends CassandraTestCase {
     private PojoMappingFactory factory;
     private PojoMapping<Person> mapping;
     private Person person1;
+    private PojoDao<String, Person> dao;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
@@ -52,7 +54,7 @@ public class DefaultPojoCacheTest extends CassandraTestCase {
         context = new DefaultPersistenceContext(getSession());
         factory = new DefaultPojoMappingFactory(new CreateSchemaVerifier(getSession()));
         mapping = factory.createPojoMapping(Person.class);
-        PojoDao<String,Person> dao = new DefaultPojoDaoFactory(factory,context).createPojoDao(Person.class);
+        dao = new DefaultPojoDaoFactory(factory,context).createPojoDao(Person.class);
         person1 = new Person();
         person1.setFirstName("Slappy");
         person1.setLastName("White");
@@ -104,5 +106,11 @@ public class DefaultPojoCacheTest extends CassandraTestCase {
         assertEquals(1,counter.getCount());
         cache.lookup(mapping, SSN_2);
         assertEquals(2,counter.getCount());
+    }
+
+    @Test(expected = PojoNotFoundException.class)
+    public void testLookupReturnsNull() {
+        DefaultPojoCache cache = new DefaultPojoCache(context);
+        cache.lookup(mapping, "foo-bar");
     }
 }

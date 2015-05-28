@@ -16,13 +16,15 @@
 
 package com.savoirtech.hecate.pojo.cache.def;
 
+import com.google.common.base.Optional;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.pojo.cache.PojoCache;
+import com.savoirtech.hecate.pojo.exception.PojoNotFoundException;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.metrics.PojoMetricsUtils;
+import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,10 +40,10 @@ public class DefaultPojoCache implements PojoCache {
 
     private final PersistenceContext persistenceContext;
 
-    private final LoadingCache<PojoMapping<? extends Object>,LoadingCache<Object,Object>> caches = CacheBuilder.newBuilder().build(new OuterCacheLoader());
+    private final LoadingCache<PojoMapping<? extends Object>, LoadingCache<Object, Optional<Object>>> caches = CacheBuilder.newBuilder().build(new OuterCacheLoader());
 
     private final int defaultMaxCacheSize;
-    private final Map<PojoMapping<? extends Object>,Integer> maxCacheSizes;
+    private final Map<PojoMapping<? extends Object>, Integer> maxCacheSizes;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -51,7 +53,7 @@ public class DefaultPojoCache implements PojoCache {
         this(persistenceContext, Collections.emptyMap(), DEFAULT_MAX_SIZE);
     }
 
-    public DefaultPojoCache(PersistenceContext persistenceContext, Map<PojoMapping<? extends Object>,Integer> maxCacheSizes) {
+    public DefaultPojoCache(PersistenceContext persistenceContext, Map<PojoMapping<? extends Object>, Integer> maxCacheSizes) {
         this(persistenceContext, maxCacheSizes, DEFAULT_MAX_SIZE);
     }
 
@@ -59,10 +61,10 @@ public class DefaultPojoCache implements PojoCache {
         this(persistenceContext, new HashMap<>(), defaultMaxCacheSize);
     }
 
-    public DefaultPojoCache(PersistenceContext persistenceContext,Map<PojoMapping<? extends Object>,Integer> maxCacheSizes, int defaultMaxCacheSize) {
+    public DefaultPojoCache(PersistenceContext persistenceContext, Map<PojoMapping<? extends Object>, Integer> maxCacheSizes, int defaultMaxCacheSize) {
         this.persistenceContext = persistenceContext;
         this.maxCacheSizes = maxCacheSizes;
-        this.defaultMaxCacheSize= defaultMaxCacheSize;
+        this.defaultMaxCacheSize = defaultMaxCacheSize;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -76,32 +78,41 @@ public class DefaultPojoCache implements PojoCache {
 
     @Override
     public Set<Object> idSet(PojoMapping<? extends Object> mapping) {
-        LoadingCache<Object, Object> cache = cacheForMapping(mapping);
+        LoadingCache<Object, Optional<Object>> cache = cacheForMapping(mapping);
         return cache == null ? Collections.emptySet() : cache.asMap().keySet();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <P> P lookup(PojoMapping<P> mapping, Object id) {
-        return (P)caches.getUnchecked(mapping).getUnchecked(id);
+        Optional<Object> optional = caches.getUnchecked(mapping).getUnchecked(id);
+        if(optional.isPresent())
+        {
+            return (P)optional.get();
+        }
+        throw new PojoNotFoundException(mapping, id);
     }
 
     @Override
     public <P> void put(PojoMapping<P> mapping, Object id, P pojo) {
-        caches.getUnchecked(mapping).put(id,pojo);
+        if (pojo != null) {
+            caches.getUnchecked(mapping).put(id, Optional.of(pojo));
+        }
     }
 
     @Override
     public <P> void putAll(PojoMapping<P> mapping, Iterable<P> pojos) {
-        LoadingCache<Object, Object> cache = caches.getUnchecked(mapping);
+        LoadingCache<Object, Optional<Object>> cache = caches.getUnchecked(mapping);
         for (P pojo : pojos) {
-            cache.put(mapping.getForeignKeyMapping().getColumnValue(pojo), pojo);
+            if (pojo != null) {
+                cache.put(mapping.getForeignKeyMapping().getColumnValue(pojo), Optional.of(pojo));
+            }
         }
     }
 
     @Override
     public long size(PojoMapping<? extends Object> mapping) {
-        LoadingCache<Object, Object> cache = cacheForMapping(mapping);
+        LoadingCache<Object, Optional<Object>> cache = cacheForMapping(mapping);
         return cache == null ? 0 : cache.size();
     }
 
@@ -109,15 +120,15 @@ public class DefaultPojoCache implements PojoCache {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected <P> LoadingCache<Object, Object> cacheForMapping(PojoMapping<P> mapping) {
-        return caches.asMap().get(mapping);
+    protected <P> LoadingCache<Object, Optional<Object>> cacheForMapping(PojoMapping<P> mapping) {
+        return caches.getIfPresent(mapping);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private class InnerCacheLoader extends CacheLoader<Object, Object> {
+    private class InnerCacheLoader extends CacheLoader<Object, Optional<Object>> {
         private final PojoMapping<? extends Object> mapping;
 
         public InnerCacheLoader(PojoMapping<? extends Object> mapping) {
@@ -125,16 +136,17 @@ public class DefaultPojoCache implements PojoCache {
         }
 
         @Override
-        public Object load(Object id) throws Exception {
+        public Optional<Object> load(Object id) throws Exception {
             PojoMetricsUtils.createCounter(mapping, "cacheMiss").inc();
-            return persistenceContext.findById(mapping).execute(id).one();
+            Object pojo = persistenceContext.findById(mapping).execute(id).one();
+            return Optional.fromNullable(pojo);
         }
     }
 
-    private class OuterCacheLoader extends CacheLoader<PojoMapping<? extends Object>, LoadingCache<Object, Object>> {
+    private class OuterCacheLoader extends CacheLoader<PojoMapping<? extends Object>, LoadingCache<Object, Optional<Object>>> {
         @Override
-        public LoadingCache<Object, Object> load(final PojoMapping<? extends Object> mapping) throws Exception {
-            return CacheBuilder.newBuilder().maximumSize(maxCacheSizes.getOrDefault(mapping,defaultMaxCacheSize)).build(new InnerCacheLoader(mapping));
+        public LoadingCache<Object, Optional<Object>> load(final PojoMapping<? extends Object> mapping) throws Exception {
+            return CacheBuilder.newBuilder().maximumSize(maxCacheSizes.getOrDefault(mapping, defaultMaxCacheSize)).build(new InnerCacheLoader(mapping));
         }
     }
 }
