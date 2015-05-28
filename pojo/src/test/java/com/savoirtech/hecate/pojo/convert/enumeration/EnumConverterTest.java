@@ -45,4 +45,10 @@ public class EnumConverterTest extends AbstractTestCase {
         assertNull(converter.toFacetValue(null));
         assertEquals(Gender.FEMALE, converter.toFacetValue("FEMALE"));
     }
+
+    @Test
+    public void testGetValueType() {
+        EnumConverter converter = new EnumConverter(Gender.class);
+        assertEquals(Gender.class, converter.getValueType());
+    }
 }
