@@ -16,6 +16,7 @@
 
 package com.savoirtech.hecate.pojo.mapping.name.def;
 
+import com.google.common.base.Verify;
 import com.savoirtech.hecate.annotation.Column;
 import com.savoirtech.hecate.annotation.Index;
 import com.savoirtech.hecate.annotation.Table;
@@ -53,8 +54,8 @@ public class DefaultNamingStrategy implements NamingStrategy {
 
     @Override
     public String getIndexName(Facet facet) {
-        Index annot = facet.getAnnotation(Index.class);
-        if (annot != null && StringUtils.isNotEmpty(annot.value())) {
+        final Index annot = Verify.verifyNotNull(facet.getAnnotation(Index.class));
+        if(StringUtils.isNotEmpty(annot.value())) {
             return annot.value();
         }
         return getColumnName(facet) + "_ndx";
