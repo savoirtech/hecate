@@ -53,6 +53,7 @@
         <module>pojo</module>
         <module>gson</module>
         <module>joda-time</module>
+        <module>karaf</module>
     </modules>
 
     <scm>

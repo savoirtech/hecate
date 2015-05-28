@@ -1,0 +1,50 @@
+<!--
+  ~ Copyright (c) 2012-2015 Savoir Technologies, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.2.0" name="com.savoirtech.hecate-${project.version}">
+
+    <feature name="hecate" version="${project.version}">
+        <feature version="${metrics.version}">dropwizard-metrics</feature>
+        <feature version="${cassandra.driver.version}">cassandra-driver</feature>
+        <feature version="${guava.version}">guava</feature>
+        <feature version="${commons.beanutils.version}">commons-beanutils</feature>
+        <feature version="${commons.lang3.version}">commons-lang3</feature>
+
+        <bundle>mvn:com.savoirtech.hecate/hecate-annotation/${project.version}</bundle>
+        <bundle>mvn:com.savoirtech.hecate/hecate-core/${project.version}</bundle>
+        <bundle>mvn:com.savoirtech.hecate/hecate-pojo/${project.version}</bundle>
+    </feature>
+
+    <feature name="commons-lang3" version="${commons.lang3.version}">
+        <bundle>mvn:org.apache.commons/commons-lang3/${commons.lang3.version}</bundle>
+    </feature>
+
+    <feature name="commons-beanutils" version="${commons.beanutils.version}">
+        <bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-beanutils/${commons.beanutils.version}_2</bundle>
+    </feature>
+
+    <feature name="guava" version="${guava.version}">
+        <bundle>mvn:com.google.guava/guava/${guava.version}</bundle>
+    </feature>
+
+    <feature name="cassandra-driver" version="${cassandra.driver.version}">
+        <bundle>mvn:com.datastax.cassandra/cassandra-driver-core/${cassandra.driver.version}</bundle>
+        <bundle>mvn:io.netty/netty/3.9.0.Final</bundle>
+    </feature>
+
+    <feature name="dropwizard-metrics" version="${metrics.version}">
+        <bundle>mvn:io.dropwizard.metrics/metrics-core/${metrics.version}</bundle>
+    </feature>
+</features>
