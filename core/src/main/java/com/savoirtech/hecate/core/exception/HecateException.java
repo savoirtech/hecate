@@ -18,18 +18,22 @@ package com.savoirtech.hecate.core.exception;
 
 public class HecateException extends RuntimeException {
 //----------------------------------------------------------------------------------------------------------------------
+// Static Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    protected static String interpolate(String message, Object[] args) {
+        return String.format(message, args);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public HecateException(Exception e) {
-        super(e);
-    }
-
     public HecateException(String message, Object... args) {
-        super(String.format(message, args));
+        super(interpolate(message, args));
     }
 
     public HecateException(Exception cause, String message, Object... args) {
-        super(String.format(message, args), cause);
+        super(interpolate(message, args), cause);
     }
 }
