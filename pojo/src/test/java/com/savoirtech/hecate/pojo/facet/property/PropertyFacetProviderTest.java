@@ -16,6 +16,7 @@
 
 package com.savoirtech.hecate.pojo.facet.property;
 
+import com.savoirtech.hecate.pojo.entities.SimplePojo;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
 import org.junit.Assert;
@@ -43,8 +44,10 @@ public class PropertyFacetProviderTest extends Assert {
         FacetProvider provider = new PropertyFacetProvider();
         Map<String, Facet> facets = provider.getFacetsAsMap(PropertiesPojo.class);
         assertNotNull(facets);
-        assertEquals(1, facets.size());
+        assertEquals(3, facets.size());
         assertTrue(facets.containsKey("baz"));
+        assertTrue(facets.containsKey("writeOnly"));
+        assertTrue(facets.containsKey("readOnly"));
     }
 
     @Test
@@ -66,6 +69,16 @@ public class PropertyFacetProviderTest extends Assert {
         assertEquals("testValue", facet.getValue(pojo));
     }
 
+    @Test
+    public void testSubFacets() {
+        FacetProvider provider = new PropertyFacetProvider();
+        Map<String,Facet> facets = provider.getFacetsAsMap(SimplePojo.class);
+        Facet facet = facets.get("nestedPojo");
+        assertNotNull(facet);
+        List<Facet> childFacets = facet.subFacets(false);
+        assertEquals(2, childFacets.size());
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
@@ -74,8 +87,25 @@ public class PropertyFacetProviderTest extends Assert {
         private String foo;
         private String bar;
         private String baz;
-
+        private String writeOnly;
+        private String readOnly;
         private String ignored;
+
+        public String getReadOnly() {
+            return readOnly;
+        }
+
+        private void setReadOnly(String readOnly) {
+            this.readOnly = readOnly;
+        }
+
+        private String getWriteOnly() {
+            return writeOnly;
+        }
+
+        public void setWriteOnly(String writeOnly) {
+            this.writeOnly = writeOnly;
+        }
 
         @Transient
         public String getIgnored() {
@@ -101,6 +131,14 @@ public class PropertyFacetProviderTest extends Assert {
 
         public void setBaz(String baz) {
             this.baz = baz;
+        }
+
+        public void setMapped(String mapped) {
+            // Do nothing!
+        }
+
+        public String getMapped(String key) {
+            return null;
         }
     }
 }
