@@ -17,18 +17,18 @@
 package com.savoirtech.hecate.pojo.mapping.def;
 
 import com.google.common.util.concurrent.UncheckedExecutionException;
-import com.savoirtech.hecate.annotation.ClusteringColumn;
-import com.savoirtech.hecate.annotation.Column;
-import com.savoirtech.hecate.annotation.Id;
-import com.savoirtech.hecate.annotation.PartitionKey;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+import com.savoirtech.hecate.annotation.*;
+import com.savoirtech.hecate.core.exception.HecateException;
+import com.savoirtech.hecate.pojo.entities.NestedPojo;
 import com.savoirtech.hecate.pojo.mapping.FacetMapping;
+import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.test.AbstractTestCase;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
@@ -49,12 +49,17 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
     }
 
     private <P> PojoMapping<P> createMapping(Class<P> pojoClass) {
-        PojoMapping<P> mapping = factory.createPojoMapping(pojoClass);
-        return mapping;
+        return factory.createPojoMapping(pojoClass);
     }
 
     private void assertColumnNames(List<? extends FacetMapping> mappings, String... names) {
-        assertEquals(Arrays.asList(names), mappings.stream().map(mapping -> mapping.getColumnName()).collect(Collectors.toList()));
+        assertEquals(Arrays.asList(names), mappings.stream().map(FacetMapping::getColumnName).collect(Collectors.toList()));
+    }
+
+    @Test(expected = HecateException.class)
+    public void testGetForeignKeyWithCompositeKey() {
+        PojoMapping<CensusData> mapping = createMapping(CensusData.class);
+        mapping.getForeignKeyMapping();
     }
 
     @Test
@@ -62,6 +67,29 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
         PojoMapping<Person> mapping = createMapping(Person.class);
         assertColumnNames(mapping.getIdMappings(), "id");
         assertColumnNames(mapping.getSimpleMappings(), "first_name", "last_name", "ssn");
+    }
+
+    @Test
+    public void testWithVerifier() {
+        AtomicReference<PojoMapping<?>> ref = new AtomicReference<>();
+
+        DefaultPojoMappingFactory factory = new DefaultPojoMappingFactory(ref::set);
+        PojoMapping<Person> mapping = factory.createPojoMapping(Person.class);
+        assertEquals(mapping,ref.get());
+
+    }
+    @Test
+    public void testWithReferences() {
+        PojoMapping<PersonWithNested> mapping = createMapping(PersonWithNested.class);
+        assertColumnNames(mapping.getIdMappings(), "id");
+        assertColumnNames(mapping.getSimpleMappings(), "first_name", "last_name", "nested", "ssn");
+    }
+
+    @Test
+    public void testWithEmbeddedObject() {
+        PojoMapping<PersonWithAddress> mapping = createMapping(PersonWithAddress.class);
+        assertColumnNames(mapping.getIdMappings(), "id");
+        assertColumnNames(mapping.getSimpleMappings(), "address", "address_address_1", "address_address_2", "address_city", "address_state", "address_zip", "first_name", "last_name", "ssn" );
     }
 
     @Test(expected = UncheckedExecutionException.class)
@@ -83,6 +111,18 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
+    public static class Address {
+        private String address1;
+        private String address2;
+        private String city;
+        private String state;
+        private String zip;
+    }
+
+    public static class PersonWithNested extends Person {
+        private NestedPojo nested;
+
+    }
     private static class CensusData {
         @Id
         private PostalCode id;
@@ -110,6 +150,11 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
 
     public static class NonKeyField {
         private String key;
+    }
+
+    public static class PersonWithAddress extends Person {
+        @Embedded
+        private Address address;
     }
 
     public static class Person {

@@ -460,4 +460,5 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertTrue(found.getSetOfStrings().contains("two"));
         assertTrue(found.getSetOfStrings().contains("three"));
     }
+
 }

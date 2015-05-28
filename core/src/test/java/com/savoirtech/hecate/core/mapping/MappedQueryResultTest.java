@@ -57,6 +57,14 @@ public class MappedQueryResultTest extends CassandraTestCase {
     }
 
     @Test
+    public void testOneWithNoResults() {
+        withSession(session -> {
+            MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test where id = 5"), row -> row.getString(1));
+            assertNull(resultSet.one());
+        });
+    }
+
+    @Test
     public void testIterator() {
         withSession(session -> {
             MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test"), row -> row.getString(1));

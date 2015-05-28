@@ -33,12 +33,15 @@ public interface ConverterRegistry {
     default Converter getRequiredConverter(Class<?> valueType) {
         Converter converter = getConverter(valueType);
         if (converter == null) {
-            throw new HecateException("No converter found for type %s.", valueType.getCanonicalName());
+            throw new HecateException("No converter found for type %s.", valueType == null ? "null" : valueType.getCanonicalName());
         }
         return converter;
     }
 
     default Converter getRequiredConverter(GenericType genericType) {
-        return genericType == null ? null : getRequiredConverter(genericType.getRawType());
+        if(genericType == null) {
+            throw new HecateException("GenericType parameter cannot be null.");
+        }
+        return getRequiredConverter(genericType.getRawType());
     }
 }

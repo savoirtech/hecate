@@ -92,6 +92,16 @@ public class DefaultConverterRegistryTest extends AbstractTestCase {
         registry.getRequiredConverter(genericType2);
     }
 
+    @Test(expected = HecateException.class)
+    public void testGetRequiredConverterWithNullClass() {
+        registry.getRequiredConverter((Class<?>)null);
+    }
+
+    @Test(expected = HecateException.class)
+    public void testGetRequiredConverterWithNullGenericType() {
+        registry.getRequiredConverter((GenericType)null);
+    }
+
     @Test
     public void testGetRequiredConverterWhenFound() {
         assertNotNull(registry.getRequiredConverter(String.class));

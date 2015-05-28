@@ -97,6 +97,14 @@ public class GenericTypeTest {
         assertEquals(String.class, type.getListElementType().getRawType());
     }
 
+    @Test
+    public void testToString() throws Exception {
+        GenericType type = new GenericType(Sub.class, Sub.class.getField("set").getGenericType());
+        assertEquals("java.util.Set<T>", type.toString());
+
+    }
+
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
