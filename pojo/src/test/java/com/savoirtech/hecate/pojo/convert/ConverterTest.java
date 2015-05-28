@@ -29,5 +29,6 @@ public class ConverterTest extends AbstractTestCase {
         assertNull(Converter.NULL_CONVERTER.getDataType());
         assertNull(Converter.NULL_CONVERTER.toColumnValue(null));
         assertNull(Converter.NULL_CONVERTER.toFacetValue(null));
+        assertNull(Converter.NULL_CONVERTER.getValueType());
     }
 }
