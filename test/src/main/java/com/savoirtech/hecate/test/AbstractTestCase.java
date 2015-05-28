@@ -44,7 +44,7 @@ public class AbstractTestCase extends Assert {
         assertTrue(Modifier.isPrivate(ctor.getModifiers()));
         ctor.setAccessible(true);
         try {
-            Object o = ctor.newInstance();
+            ctor.newInstance();
         } catch (ReflectiveOperationException e) {
             fail("Unable to instantiate!");
         }
