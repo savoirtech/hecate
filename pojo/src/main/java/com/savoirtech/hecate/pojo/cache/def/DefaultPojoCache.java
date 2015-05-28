@@ -40,10 +40,10 @@ public class DefaultPojoCache implements PojoCache {
 
     private final PersistenceContext persistenceContext;
 
-    private final LoadingCache<PojoMapping<? extends Object>, LoadingCache<Object, Optional<Object>>> caches = CacheBuilder.newBuilder().build(new OuterCacheLoader());
+    private final LoadingCache<PojoMapping<?>, LoadingCache<Object, Optional<Object>>> caches = CacheBuilder.newBuilder().build(new OuterCacheLoader());
 
     private final int defaultMaxCacheSize;
-    private final Map<PojoMapping<? extends Object>, Integer> maxCacheSizes;
+    private final Map<PojoMapping<?>, Integer> maxCacheSizes;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -53,7 +53,7 @@ public class DefaultPojoCache implements PojoCache {
         this(persistenceContext, Collections.emptyMap(), DEFAULT_MAX_SIZE);
     }
 
-    public DefaultPojoCache(PersistenceContext persistenceContext, Map<PojoMapping<? extends Object>, Integer> maxCacheSizes) {
+    public DefaultPojoCache(PersistenceContext persistenceContext, Map<PojoMapping<?>, Integer> maxCacheSizes) {
         this(persistenceContext, maxCacheSizes, DEFAULT_MAX_SIZE);
     }
 
@@ -61,7 +61,7 @@ public class DefaultPojoCache implements PojoCache {
         this(persistenceContext, new HashMap<>(), defaultMaxCacheSize);
     }
 
-    public DefaultPojoCache(PersistenceContext persistenceContext, Map<PojoMapping<? extends Object>, Integer> maxCacheSizes, int defaultMaxCacheSize) {
+    public DefaultPojoCache(PersistenceContext persistenceContext, Map<PojoMapping<?>, Integer> maxCacheSizes, int defaultMaxCacheSize) {
         this.persistenceContext = persistenceContext;
         this.maxCacheSizes = maxCacheSizes;
         this.defaultMaxCacheSize = defaultMaxCacheSize;
@@ -72,12 +72,12 @@ public class DefaultPojoCache implements PojoCache {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public boolean contains(PojoMapping<? extends Object> mapping) {
+    public boolean contains(PojoMapping<?> mapping) {
         return size(mapping) > 0;
     }
 
     @Override
-    public Set<Object> idSet(PojoMapping<? extends Object> mapping) {
+    public Set<Object> idSet(PojoMapping<?> mapping) {
         LoadingCache<Object, Optional<Object>> cache = cacheForMapping(mapping);
         return cache == null ? Collections.emptySet() : cache.asMap().keySet();
     }
@@ -111,7 +111,7 @@ public class DefaultPojoCache implements PojoCache {
     }
 
     @Override
-    public long size(PojoMapping<? extends Object> mapping) {
+    public long size(PojoMapping<?> mapping) {
         LoadingCache<Object, Optional<Object>> cache = cacheForMapping(mapping);
         return cache == null ? 0 : cache.size();
     }
@@ -129,9 +129,9 @@ public class DefaultPojoCache implements PojoCache {
 //----------------------------------------------------------------------------------------------------------------------
 
     private class InnerCacheLoader extends CacheLoader<Object, Optional<Object>> {
-        private final PojoMapping<? extends Object> mapping;
+        private final PojoMapping<?> mapping;
 
-        public InnerCacheLoader(PojoMapping<? extends Object> mapping) {
+        public InnerCacheLoader(PojoMapping<?> mapping) {
             this.mapping = mapping;
         }
 
@@ -143,9 +143,9 @@ public class DefaultPojoCache implements PojoCache {
         }
     }
 
-    private class OuterCacheLoader extends CacheLoader<PojoMapping<? extends Object>, LoadingCache<Object, Optional<Object>>> {
+    private class OuterCacheLoader extends CacheLoader<PojoMapping<?>, LoadingCache<Object, Optional<Object>>> {
         @Override
-        public LoadingCache<Object, Optional<Object>> load(final PojoMapping<? extends Object> mapping) throws Exception {
+        public LoadingCache<Object, Optional<Object>> load(final PojoMapping<?> mapping) throws Exception {
             return CacheBuilder.newBuilder().maximumSize(maxCacheSizes.getOrDefault(mapping, defaultMaxCacheSize)).build(new InnerCacheLoader(mapping));
         }
     }

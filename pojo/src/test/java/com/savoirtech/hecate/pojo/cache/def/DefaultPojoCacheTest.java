@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.pojo.cache.def;
 
 import com.codahale.metrics.Counter;
+import com.google.common.collect.Sets;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactory;
 import com.savoirtech.hecate.pojo.entities.Person;
@@ -25,12 +26,16 @@ import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMappingFactory;
 import com.savoirtech.hecate.pojo.mapping.def.DefaultPojoMappingFactory;
 import com.savoirtech.hecate.pojo.mapping.verify.CreateSchemaVerifier;
+import com.savoirtech.hecate.pojo.metrics.PojoMetricsUtils;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.def.DefaultPersistenceContext;
-import com.savoirtech.hecate.pojo.metrics.PojoMetricsUtils;
 import com.savoirtech.hecate.test.CassandraTestCase;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DefaultPojoCacheTest extends CassandraTestCase {
 //----------------------------------------------------------------------------------------------------------------------
@@ -96,6 +101,20 @@ public class DefaultPojoCacheTest extends CassandraTestCase {
     }
 
     @Test
+    public void testLookupAfterEvictionWithCustomMaxValues() {
+        Map<PojoMapping<?>,Integer> maximums = new HashMap<>();
+        maximums.put(mapping, 1);
+        DefaultPojoCache cache = new DefaultPojoCache(context,maximums);
+        assertEquals(0, cache.size(mapping));
+        assertNotNull(cache.lookup(mapping,SSN_1));
+        assertEquals(1, cache.size(mapping));
+        assertNotNull(cache.lookup(mapping, SSN_2));
+        assertEquals(1, cache.size(mapping));
+        assertNotNull(cache.lookup(mapping, SSN_1));
+        assertEquals(1, cache.size(mapping));
+    }
+
+    @Test
     public void testMetricsReporting() {
         DefaultPojoCache cache = new DefaultPojoCache(context);
         Counter counter = PojoMetricsUtils.createCounter(mapping, "cacheMiss");
@@ -112,5 +131,34 @@ public class DefaultPojoCacheTest extends CassandraTestCase {
     public void testLookupReturnsNull() {
         DefaultPojoCache cache = new DefaultPojoCache(context);
         cache.lookup(mapping, "foo-bar");
+    }
+
+    @Test
+    public void testPutNull() {
+        DefaultPojoCache cache = new DefaultPojoCache(context);
+        cache.put(mapping,"foo", null);
+        assertEquals(0, cache.size(mapping));
+    }
+
+    @Test
+    public void testContains() {
+        DefaultPojoCache cache = new DefaultPojoCache(context);
+        assertFalse(cache.contains(mapping));
+        cache.put(mapping,SSN_1, person1);
+        assertTrue(cache.contains(mapping));
+    }
+
+    @Test
+    public void testPutAll() {
+        DefaultPojoCache cache = new DefaultPojoCache(context);
+        cache.putAll(mapping, Sets.newHashSet(person1, null));
+        assertEquals(1, cache.size(mapping));
+    }
+    @Test
+    public void testIdSet() {
+        DefaultPojoCache cache = new DefaultPojoCache(context);
+        assertEquals(Collections.emptySet(), cache.idSet(mapping));
+        cache.put(mapping,SSN_1, person1);
+        assertEquals(Sets.newHashSet(SSN_1), cache.idSet(mapping));
     }
 }
