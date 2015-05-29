@@ -1,0 +1,1 @@
+# Hecate POJO Mapping
