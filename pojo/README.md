@@ -1,6 +1,6 @@
 # Hecate POJO Mapping
 
-Hecate allows you to perform CRUD operations in Cassandra using Plain 'Ole Java Objects (POJOs)!  
+Hecate allows you to perform "CRUD" (create, read, update, and delete) operations in Cassandra using Plain 'Ole Java Objects (POJOs)!  
 
 # PojoDao
 
@@ -10,8 +10,8 @@ Hecate allows you to perform CRUD operations in Cassandra using Plain 'Ole Java 
 PojoDao<String,Person> dao = pojoDaoFactory.createPojoDao(Person.class);
 Person person = new Person();
 person.setSsn("123456789");
-person.setFirstName("");
-person.setLastName("");
+person.setFirstName("Super");
+person.setLastName("Man");
 dao.save(person);
 ```
 
@@ -20,6 +20,16 @@ dao.save(person);
 ```Java
 PojoDao<String,Person> dao = pojoDaoFactory.createPojoDao(Person.class);
 dao.delete("123456789");
+```
+
+## Updating Objects
+
+```Java
+PojoDao<String,Person> dao = pojoDaoFactory.createPojoDao(Person.class);
+Person person = ...;
+
+person.setFirstName("Iron");
+dao.save(person);
 ```
 
 ## Retrieving Objects
