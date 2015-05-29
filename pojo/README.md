@@ -70,7 +70,7 @@ List<Person> list = people.list();
 // Iterate through results
 Iterator<Person> iterator = people.iterate();
 
-// Use Java Stream API...
+// Use Java Streams API...
 List<String> lastNames = people.stream().map(Person::getLastName).collect(Collectors.toList());
 
 ```
