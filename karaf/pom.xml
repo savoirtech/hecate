@@ -23,41 +23,15 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <name>SavoirTech ::: Hecate ::: Karaf Feature Repository</name>
+    <name>SavoirTech ::: Hecate ::: Karaf ::: Parent</name>
 
-    <artifactId>hecate-karaf</artifactId>
+    <artifactId>hecate-karaf-parent</artifactId>
 
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.9</version>
-                <executions>
-                    <execution>
-                        <id>attach-artifacts</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attach-artifact</goal>
-                        </goals>
-                        <configuration>
-                            <artifacts>
-                                <artifact>
-                                    <file>target/classes/features.xml</file>
-                                    <type>xml</type>
-                                    <classifier>features</classifier>
-                                </artifact>
-                            </artifacts>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>features</module>
+        <module>itest</module>
+    </modules>
+
 </project>

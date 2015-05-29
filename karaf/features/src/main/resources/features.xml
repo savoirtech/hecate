@@ -13,13 +13,13 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+
 <features xmlns="http://karaf.apache.org/xmlns/features/v1.2.0" name="com.savoirtech.hecate-${project.version}">
 
     <feature name="hecate" version="${project.version}">
         <feature version="${metrics.version}">dropwizard-metrics</feature>
         <feature version="${cassandra.driver.version}">cassandra-driver</feature>
         <feature version="${guava.version}">guava</feature>
-        <feature version="${commons.beanutils.version}">commons-beanutils</feature>
         <feature version="${commons.lang3.version}">commons-lang3</feature>
 
         <bundle>mvn:com.savoirtech.hecate/hecate-annotation/${project.version}</bundle>
@@ -29,10 +29,6 @@
 
     <feature name="commons-lang3" version="${commons.lang3.version}">
         <bundle>mvn:org.apache.commons/commons-lang3/${commons.lang3.version}</bundle>
-    </feature>
-
-    <feature name="commons-beanutils" version="${commons.beanutils.version}">
-        <bundle>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.commons-beanutils/${commons.beanutils.version}_2</bundle>
     </feature>
 
     <feature name="guava" version="${guava.version}">

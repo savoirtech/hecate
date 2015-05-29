@@ -16,13 +16,12 @@
 
 package com.savoirtech.hecate.pojo.facet.property;
 
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.beans.PropertyDescriptor;
-import java.beans.Transient;
+import java.beans.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,16 +47,21 @@ public class PropertyFacetProvider implements FacetProvider {
     }
 
     static List<Facet> facetsOf(Class<?> pojoClass) {
-        final PropertyDescriptor[] descriptors = PropertyUtils.getPropertyDescriptors(pojoClass);
-        final List<Facet> facets = new ArrayList<>(descriptors.length);
-        for (PropertyDescriptor descriptor : descriptors) {
-            final Method readMethod = getReadMethod(pojoClass, descriptor);
-            final Method writeMethod = getWriteMethod(pojoClass, descriptor);
-            if (readMethod != null && writeMethod != null && !readMethod.isAnnotationPresent(Transient.class)) {
-                facets.add(new PropertyFacet(pojoClass, descriptor, readMethod, writeMethod));
+        try {
+            BeanInfo beanInfo = Introspector.getBeanInfo(pojoClass);
+            PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
+            final List<Facet> facets = new ArrayList<>(descriptors.length);
+            for (PropertyDescriptor descriptor : descriptors) {
+                final Method readMethod = getReadMethod(pojoClass, descriptor);
+                final Method writeMethod = getWriteMethod(pojoClass, descriptor);
+                if (readMethod != null && writeMethod != null && !readMethod.isAnnotationPresent(Transient.class)) {
+                    facets.add(new PropertyFacet(pojoClass, descriptor, readMethod, writeMethod));
+                }
             }
+            return facets;
+        } catch (IntrospectionException e) {
+            throw new HecateException(e, "Unable to introspect class %s.", pojoClass.getCanonicalName());
         }
-        return facets;
     }
 
     private static Method findDeclaredMethod(Class<?> c, String name, Class<?>... parameterTypes) {
