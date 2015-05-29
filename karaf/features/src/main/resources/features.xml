@@ -16,31 +16,49 @@
 
 <features xmlns="http://karaf.apache.org/xmlns/features/v1.2.0" name="com.savoirtech.hecate-${project.version}">
 
-    <feature name="hecate" version="${project.version}">
-        <feature version="${metrics.version}">dropwizard-metrics</feature>
-        <feature version="${cassandra.driver.version}">cassandra-driver</feature>
-        <feature version="${guava.version}">guava</feature>
-        <feature version="${commons.lang3.version}">commons-lang3</feature>
+    <feature name="hecate-all" version="${project.version}">
+        <feature version="${project.version}">hecate-core</feature>
+        <feature version="${project.version}">hecate-annotation</feature>
+        <feature version="${project.version}">hecate-pojo</feature>
+        <feature version="${project.version}">hecate-gson</feature>
+        <feature version="${project.version}">hecate-joda-time</feature>
+    </feature>
 
-        <bundle>mvn:com.savoirtech.hecate/hecate-annotation/${project.version}</bundle>
+    <feature name="hecate-core" version="${project.version}">
+        <bundle dependency="true">mvn:com.datastax.cassandra/cassandra-driver-core/${cassandra.driver.version}</bundle>
+        <bundle dependency="true">mvn:io.netty/netty/${netty.version}</bundle>
+        <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-core/${metrics.version}</bundle>
+
         <bundle>mvn:com.savoirtech.hecate/hecate-core/${project.version}</bundle>
+    </feature>
+
+    <feature name="hecate-annotation" version="${project.version}">
+        <bundle>mvn:com.savoirtech.hecate/hecate-annotation/${project.version}</bundle>
+    </feature>
+
+    <feature name="hecate-pojo" version="${project.version}">
+        <feature version="${project.version}">hecate-core</feature>
+        <feature version="${project.version}">hecate-annotation</feature>
+
+        <bundle dependency="true">mvn:com.google.guava/guava/${guava.version}</bundle>
+        <bundle dependency="true">mvn:org.apache.commons/commons-lang3/${commons.lang3.version}</bundle>
+
         <bundle>mvn:com.savoirtech.hecate/hecate-pojo/${project.version}</bundle>
     </feature>
 
-    <feature name="commons-lang3" version="${commons.lang3.version}">
-        <bundle>mvn:org.apache.commons/commons-lang3/${commons.lang3.version}</bundle>
+    <feature name="hecate-gson" version="${project.version}">
+        <feature version="${project.version}">hecate-pojo</feature>
+
+        <bundle dependency="true">mvn:com.google.code.gson/gson/${gson.version}</bundle>
+
+        <bundle>mvn:com.savoirtech.hecate/hecate-gson/${project.version}</bundle>
     </feature>
 
-    <feature name="guava" version="${guava.version}">
-        <bundle>mvn:com.google.guava/guava/${guava.version}</bundle>
-    </feature>
+    <feature name="hecate-joda-time" version="${project.version}">
+        <feature version="${project.version}">hecate-pojo</feature>
 
-    <feature name="cassandra-driver" version="${cassandra.driver.version}">
-        <bundle>mvn:com.datastax.cassandra/cassandra-driver-core/${cassandra.driver.version}</bundle>
-        <bundle>mvn:io.netty/netty/3.9.0.Final</bundle>
-    </feature>
+        <bundle dependency="true">mvn:joda-time/joda-time/${joda.time.version}</bundle>
 
-    <feature name="dropwizard-metrics" version="${metrics.version}">
-        <bundle>mvn:io.dropwizard.metrics/metrics-core/${metrics.version}</bundle>
+        <bundle>mvn:com.savoirtech.hecate/hecate-joda-time/${project.version}</bundle>
     </feature>
 </features>

@@ -95,6 +95,7 @@
         <junit.version>4.11</junit.version>
         <karaf.version>3.0.3</karaf.version>
         <metrics.version>3.1.2</metrics.version>
+        <netty.version>3.9.0.Final</netty.version>
         <osgi.version>6.0.0</osgi.version>
         <pax.exam.version>4.5.0</pax.exam.version>
         <slf4j.version>1.7.7</slf4j.version>
@@ -223,6 +224,12 @@
                 <groupId>io.dropwizard.metrics</groupId>
                 <artifactId>metrics-core</artifactId>
                 <version>${metrics.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty</artifactId>
+                <version>${netty.version}</version>
             </dependency>
 
             <dependency>

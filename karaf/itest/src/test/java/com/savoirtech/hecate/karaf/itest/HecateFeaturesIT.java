@@ -79,12 +79,16 @@ public class HecateFeaturesIT extends Assert {
                 configureConsole()
                         .startRemoteShell()
                         .ignoreLocalConsole(),
-                features(maven("com.savoirtech.hecate", "hecate-karaf", projectVersion).type("xml").classifier("features"), "hecate"),
+                features(maven("com.savoirtech.hecate", "hecate-karaf", projectVersion).type("xml").classifier("features"), "hecate-all"),
                 logLevel(LogLevelOption.LogLevel.WARN));
     }
 
     @Test
     public void testBundleInstalled() {
-        assertFeatureInstalled("hecate");
+        assertFeatureInstalled("hecate-core");
+        assertFeatureInstalled("hecate-annotation");
+        assertFeatureInstalled("hecate-pojo");
+        assertFeatureInstalled("hecate-gson");
+        assertFeatureInstalled("hecate-joda-time");
     }
 }
