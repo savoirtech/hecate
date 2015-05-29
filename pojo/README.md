@@ -74,3 +74,21 @@ Iterator<Person> iterator = people.iterate();
 List<String> lastNames = people.stream().map(Person::getLastName).collect(Collectors.toList());
 
 ```
+
+# Bootstrapping
+
+Creating a PojoDaoFactory can be as simple as:
+
+```Java
+Session session = ...;
+PojoDaoFactory factory = new DefaultPojoDaoFactory(session);
+```
+
+This will create a PojoDaoFactory with reasonable default settings.  If you would like Hecate to automatically 
+create the schema for you, you can use a CreateSchemaVerifier:
+ 
+ ```Java
+ Session session = ...;
+ PojoMappingVerifier verifier = new CreateSchemaVerifier(session);
+ PojoDaoFactory factory = new DefaultPojoDaoFactory(session, verifier);
+ ```
