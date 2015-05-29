@@ -64,13 +64,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.ops4j.pax.url</groupId>
-            <artifactId>pax-url-aether</artifactId>
-            <version>2.1.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
             <version>1</version>
@@ -81,13 +74,6 @@
             <groupId>org.eclipse.osgi</groupId>
             <artifactId>org.eclipse.osgi</artifactId>
             <version>3.7.1</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.gogo.command</artifactId>
-            <version>0.14.0</version>
             <scope>test</scope>
         </dependency>
 
