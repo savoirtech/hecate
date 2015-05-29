@@ -18,6 +18,7 @@ package com.savoirtech.hecate.core.query;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface QueryResult<T> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -44,4 +45,11 @@ public interface QueryResult<T> {
      * @return a single result
      */
     T one();
+
+    /**
+     * Returns a {@link Stream} of the results.
+     *
+     * @return a {@link Stream} of the results
+     */
+    Stream<T> stream();
 }

@@ -47,7 +47,7 @@ public class MappedQueryResult<T> implements QueryResult<T> {
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// QueryResult Implementation
+// Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
@@ -79,10 +79,7 @@ public class MappedQueryResult<T> implements QueryResult<T> {
         return result;
     }
 
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
-
+    @Override
     public Stream<T> stream() {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(), Spliterator.IMMUTABLE), false);
     }

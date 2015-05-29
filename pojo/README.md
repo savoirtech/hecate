@@ -61,9 +61,16 @@ QueryResult<Person> smiths = query.execute("Smith");
 ```Java
 QueryResult<Person> people = ...;
 
+// Get a single result
 Person person = people.one();
 
+// Get results as a list (all in memory)
 List<Person> list = people.list();
 
+// Iterate through results
 Iterator<Person> iterator = people.iterate();
+
+// Use Java Stream API...
+List<String> lastNames = people.stream().map(Person::getLastName).collect(Collectors.toList());
+
 ```
