@@ -21,8 +21,8 @@
 
     <parent>
         <groupId>com.savoirtech</groupId>
-        <artifactId>osgi-parent</artifactId>
-        <version>1.0.2</version>
+        <artifactId>savoir-parent</artifactId>
+        <version>1.0.3</version>
     </parent>
 
     <groupId>com.savoirtech.hecate</groupId>
