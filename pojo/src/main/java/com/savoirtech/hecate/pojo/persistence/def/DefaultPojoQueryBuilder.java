@@ -151,12 +151,12 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public DefaultPojoQueryBuilder<P> identifierEquals() {
-        return eq(identifierColumn());
+        return eq(identifierFacetName());
     }
 
     @Override
     public DefaultPojoQueryBuilder<P> identifierIn() {
-        return in(identifierColumn());
+        return in(identifierFacetName());
     }
 
     @Override
@@ -220,12 +220,12 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private String identifierColumn() {
+    private String identifierFacetName() {
         List<ScalarFacetMapping> idMappings = pojoMapping.getIdMappings();
         if (idMappings.size() > 1) {
             throw new HecateException("Composite primary keys not supported.");
         }
-        return idMappings.get(0).getColumnName();
+        return idMappings.get(0).getFacet().getName();
     }
 
     private void injectParameter(FacetMapping facetMapping, Object value) {

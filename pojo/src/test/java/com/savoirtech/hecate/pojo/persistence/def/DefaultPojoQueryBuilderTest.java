@@ -16,6 +16,7 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
+import com.savoirtech.hecate.annotation.Id;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.CompositeKey;
@@ -207,5 +208,42 @@ public class DefaultPojoQueryBuilderTest extends AbstractDaoTestCase {
     public void testWithInvalidFacetName() {
         final PojoDao<UUID, QueryablePojo> dao = getFactory().createPojoDao(QueryablePojo.class);
         dao.find().eq("foo", 123).build();
+    }
+
+    @Test
+    public void testFindByIdWithMultiwordId() {
+        final PojoDao<String, MultiwordId> dao = getFactory().createPojoDao(MultiwordId.class);
+        MultiwordId expected = new MultiwordId();
+        expected.setMyId("foo");
+        dao.save(expected);
+        MultiwordId actual = dao.findById("foo");
+        assertNotNull(actual);
+        assertEquals("foo", actual.getMyId());
+    }
+
+    @Test
+    public void testIdInWithMultiwordId() {
+        final PojoDao<String, MultiwordId> dao = getFactory().createPojoDao(MultiwordId.class);
+        MultiwordId expected = new MultiwordId();
+        expected.setMyId("foo");
+        dao.save(expected);
+        PojoQuery<MultiwordId> query = dao.find().identifierIn().build();
+        MultiwordId actual = query.execute(Collections.singletonList("foo")).one();
+        assertNotNull(actual);
+        assertEquals("foo", actual.getMyId());
+    }
+
+    public static class MultiwordId {
+
+        @Id
+        private String myId;
+
+        public String getMyId() {
+            return myId;
+        }
+
+        public void setMyId(String myId) {
+            this.myId = myId;
+        }
     }
 }
