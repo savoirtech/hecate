@@ -230,7 +230,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     private void injectParameter(FacetMapping facetMapping, Object value) {
         Object columnValue = facetMapping.getColumnValueForFacetValue(value);
-        injectedParameters.add(new InjectedParameter(parameterMappings.size(), columnValue));
+        injectedParameters.add(new InjectedParameter(injectedParameters.size() + parameterMappings.size(), columnValue));
     }
 
     private String lookupColumn(String facetName) {

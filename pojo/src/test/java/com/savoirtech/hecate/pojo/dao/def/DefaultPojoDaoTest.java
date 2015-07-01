@@ -485,4 +485,38 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertTrue(found.getSetOfStrings().contains("two"));
         assertTrue(found.getSetOfStrings().contains("three"));
     }
+
+    @Test
+    public void testQueryWithOnlyInjectedParameters() {
+        CompositeKeyPojo pojo = new CompositeKeyPojo();
+        CompositeKey key = new CompositeKey();
+        key.setPart1("part1Value");
+        key.setPart2("part2Value");
+        key.setCluster1("cluster1Value");
+        pojo.setKey(key);
+        pojo.setData("FooBarBaz");
+        final PojoDao<CompositeKey,CompositeKeyPojo> dao = getFactory().createPojoDao(CompositeKeyPojo.class);
+        dao.save(pojo);
+
+        PojoQuery<CompositeKeyPojo> query = dao.find().eq("key.part1", "part1Value").eq("key.part2", "part2Value").build();
+        MappedQueryResult<CompositeKeyPojo> result = query.execute();
+        assertEquals(1, result.list().size());
+    }
+
+    @Test
+    public void testQueryWithMixedParameters() {
+        CompositeKeyPojo pojo = new CompositeKeyPojo();
+        CompositeKey key = new CompositeKey();
+        key.setPart1("part1Value");
+        key.setPart2("part2Value");
+        key.setCluster1("cluster1Value");
+        pojo.setKey(key);
+        pojo.setData("FooBarBaz");
+        final PojoDao<CompositeKey,CompositeKeyPojo> dao = getFactory().createPojoDao(CompositeKeyPojo.class);
+        dao.save(pojo);
+
+        PojoQuery<CompositeKeyPojo> query = dao.find().eq("key.part1", "part1Value").eq("key.part2").eq("key.cluster1", "cluster1Value").build();
+        MappedQueryResult<CompositeKeyPojo> result = query.execute("part2Value");
+        assertEquals(1, result.list().size());
+    }
 }
