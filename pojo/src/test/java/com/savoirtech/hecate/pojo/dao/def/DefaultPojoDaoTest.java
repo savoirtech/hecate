@@ -519,4 +519,16 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         MappedQueryResult<CompositeKeyPojo> result = query.execute("part2Value");
         assertEquals(1, result.list().size());
     }
+
+    @Test
+    public void testPersistenceWithNoConstructor() {
+        final PojoDao<String,NoConstructorPerson> dao = getFactory().createPojoDao(NoConstructorPerson.class);
+        final NoConstructorPerson expected = new NoConstructorPerson("1", "Foo", "Bar");
+        dao.save(expected);
+        final NoConstructorPerson actual = dao.findById("1");
+        assertEquals(expected.getFirstName(), actual.getFirstName());
+        assertEquals(expected.getLastName(), actual.getLastName());
+        assertEquals(expected.getSsn(), actual.getSsn());
+
+    }
 }

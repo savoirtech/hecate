@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.pojo.reflect;
 
 import com.savoirtech.hecate.core.exception.HecateException;
+import com.savoirtech.hecate.pojo.entities.NoConstructorPerson;
 import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 
@@ -43,6 +44,11 @@ public class ReflectionUtilsTest extends AbstractTestCase {
     @Test
     public void testNewInstanceWithHiddenConstructor() {
         assertNotNull(ReflectionUtils.newInstance(PrivatePojo.class));
+    }
+
+    @Test
+    public void testInstantiateWithNoConstructor() {
+        assertNotNull(ReflectionUtils.newInstance(NoConstructorPerson.class));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
