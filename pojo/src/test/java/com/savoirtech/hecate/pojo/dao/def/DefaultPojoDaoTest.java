@@ -487,6 +487,26 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     }
 
     @Test
+    public void testQueryWithMultipleClusteringColumns() {
+        ClusteredKeyPojo pojo = new ClusteredKeyPojo();
+        ClusteredKey key = new ClusteredKey();
+        key.setPartitionKey("partitionKeyValue");
+        key.setCluster1("cluster1Value");
+        key.setCluster2("cluster2Value");
+
+        pojo.setKey(key);
+        pojo.setData("FooBarBaz");
+        final PojoDao<ClusteredKey,ClusteredKeyPojo> dao = getFactory().createPojoDao(ClusteredKeyPojo.class);
+        dao.save(pojo);
+
+        PojoQuery<ClusteredKeyPojo> query = dao.find().eq("key.partitionKey").eq("key.cluster1").build();
+        ClusteredKeyPojo found = query.execute("partitionKeyValue", "cluster1Value").one();
+        assertNotNull(found);
+
+        found = dao.find().eq("key.partitionKey").build().execute("partitionKeyValue").one();
+        assertNotNull(found);
+    }
+    @Test
     public void testQueryWithOnlyInjectedParameters() {
         CompositeKeyPojo pojo = new CompositeKeyPojo();
         CompositeKey key = new CompositeKey();
