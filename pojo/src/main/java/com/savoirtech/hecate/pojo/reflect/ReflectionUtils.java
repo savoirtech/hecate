@@ -19,21 +19,31 @@ package com.savoirtech.hecate.pojo.reflect;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.savoirtech.hecate.core.exception.HecateException;
-import sun.misc.Unsafe;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.function.Function;
 
 public class ReflectionUtils {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static final Supplier<Unsafe> unsafeSupplier = Suppliers.memoize(() -> {
+    private static Supplier<Function<Class<?>, Object>> unsafeInstantiator = Suppliers.memoize(() -> {
         try {
-            Field field = Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            return (Unsafe) field.get(null);
+            Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            Field f = unsafeClass.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            final Object unsafe = f.get(null);
+            final Method allocateInstance = unsafeClass.getMethod("allocateInstance", Class.class);
+            return (type) -> {
+                try {
+                    return allocateInstance.invoke(unsafe, type);
+                } catch (ReflectiveOperationException e) {
+                    throw new HecateException(e, "Unable to allocate %s instance.", type.getCanonicalName());
+                }
+            };
         } catch (ReflectiveOperationException e) {
             return null;
         }
@@ -51,14 +61,13 @@ public class ReflectionUtils {
                 constructor.setAccessible(true);
                 return constructor.newInstance();
             } catch (NoSuchMethodException e) {
-                Unsafe unsafe = unsafeSupplier.get();
-                if (unsafe == null) {
+                Function<Class<?>,Object> fn = unsafeInstantiator.get();
+                if (fn == null) {
                     throw new HecateException("Unable to instantiate object of type %s (no-arg constructor missing).", pojoClass.getCanonicalName());
                 }
-                return (T)unsafe.allocateInstance(pojoClass);
+                return (T) fn.apply(pojoClass);
             }
-        }
-        catch(ReflectiveOperationException e) {
+        } catch (ReflectiveOperationException e) {
             throw new HecateException(e, "Unable to instantiate object of type %s.", pojoClass.getCanonicalName());
         }
     }
