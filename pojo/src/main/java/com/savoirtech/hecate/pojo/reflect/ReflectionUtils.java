@@ -19,6 +19,8 @@ package com.savoirtech.hecate.pojo.reflect;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.savoirtech.hecate.core.exception.HecateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -29,6 +31,8 @@ public class ReflectionUtils {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionUtils.class);
 
     private static Supplier<Function<Class<?>, Object>> unsafeInstantiator = Suppliers.memoize(() -> {
         try {
@@ -45,6 +49,7 @@ public class ReflectionUtils {
                 }
             };
         } catch (ReflectiveOperationException e) {
+            LOGGER.warn("Unable to use sun.misc.Unsafe class to instantiate objects!", e);
             return null;
         }
     });
