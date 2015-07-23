@@ -36,6 +36,8 @@ public interface PojoDao<I, P> {
 
     P findById(I id);
 
+    P findById(I id, StatementOptions options);
+
     default QueryResult<P> findByIds(Iterable<I> ids) {
         return findByIds(ids, StatementOptionsBuilder.empty());
     }

@@ -73,6 +73,11 @@ public class DefaultPojoDao<I, P> implements PojoDao<I, P> {
     }
 
     @Override
+    public P findById(I id, StatementOptions options) {
+        return persistenceContext.findById(pojoMapping).execute(options, id).one();
+    }
+
+    @Override
     public QueryResult<P> findByIds(Iterable<I> ids, StatementOptions options) {
         Hydrator hydrator = persistenceContext.createHydrator(options);
         return persistenceContext.findByIds(pojoMapping).execute(hydrator, options, ids);

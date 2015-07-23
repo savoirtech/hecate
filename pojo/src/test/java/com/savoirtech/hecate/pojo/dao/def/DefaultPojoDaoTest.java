@@ -16,11 +16,13 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.google.common.collect.Sets;
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
+import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.*;
 import com.savoirtech.hecate.pojo.persistence.PojoQuery;
@@ -506,6 +508,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         found = dao.find().eq("key.partitionKey").build().execute("partitionKeyValue").one();
         assertNotNull(found);
     }
+
     @Test
     public void testQueryWithOnlyInjectedParameters() {
         CompositeKeyPojo pojo = new CompositeKeyPojo();
@@ -549,6 +552,16 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertEquals(expected.getFirstName(), actual.getFirstName());
         assertEquals(expected.getLastName(), actual.getLastName());
         assertEquals(expected.getSsn(), actual.getSsn());
+    }
 
+    @Test
+    public void testFindByIdWithOptions() {
+        DefaultPojoDaoFactory factory = getFactory();
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo expected = new SimplePojo();
+        dao.save(expected);
+
+        SimplePojo actual = dao.findById(expected.getId(), StatementOptionsBuilder.consistencyLevel(ConsistencyLevel.ONE).build());
+        assertEquals(expected, actual);
     }
 }
