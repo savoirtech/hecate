@@ -21,8 +21,8 @@ import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.collect.Lists;
 import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.pojo.mapping.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoDelete;
 
@@ -48,7 +48,7 @@ public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete
 
     @Override
     public void delete(Iterable<Object> ids, StatementOptions options) {
-        List<ScalarFacetMapping> idMappings = getPojoMapping().getIdMappings();
+        List<FacetMapping> idMappings = getPojoMapping().getIdMappings();
         if (idMappings.size() > 1) {
             for (Object compositeKey : ids) {
                 final List<Object> parameters = idMappings.stream().map(mapping -> {
@@ -58,7 +58,7 @@ public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete
                 executeStatement(parameters, options);
             }
         } else {
-            final ScalarFacetMapping mapping = idMappings.get(0);
+            final FacetMapping mapping = idMappings.get(0);
             executeStatement(Collections.singletonList(Lists.newLinkedList(ids).stream().map(mapping::getColumnValueForFacetValue).collect(Collectors.toList())), options);
         }
     }

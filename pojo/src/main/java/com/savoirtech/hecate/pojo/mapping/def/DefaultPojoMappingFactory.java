@@ -99,7 +99,7 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private void addIdMappings(Facet idFacet, List<ScalarFacetMapping> mappings) {
+    private void addIdMappings(Facet idFacet, List<FacetMapping> mappings) {
         final Converter converter = converterRegistry.getConverter(idFacet.getType());
         if (converter == null) {
             addEmbeddedMappings(idFacet, false, mappings, facet -> {
@@ -164,12 +164,16 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
         @Override
         public PojoMapping<?> load(Pair<Class<?>, String> key) throws Exception {
             LOGGER.debug("Creating mapping for class {} in table {}.", key.getKey().getCanonicalName(), key.getValue());
-            final List<ScalarFacetMapping> idMappings = new LinkedList<>();
+            final List<FacetMapping> idMappings = new LinkedList<>();
             final List<FacetMapping> simpleMappings = new LinkedList<>();
             List<Facet> facets = facetProvider.getFacets(key.getLeft());
             for (Facet facet : facets) {
                 if (facet.hasAnnotation(Id.class)) {
                     addIdMappings(facet, idMappings);
+                } else if (facet.hasAnnotation(PartitionKey.class)) {
+                    addMappings(facet, idMappings);
+                } else if (facet.hasAnnotation(ClusteringColumn.class)) {
+                    addMappings(facet, idMappings);
                 } else {
                     addMappings(facet, simpleMappings);
                 }

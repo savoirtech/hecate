@@ -18,6 +18,8 @@ package com.savoirtech.hecate.pojo.entities;
 
 import com.savoirtech.hecate.annotation.Embedded;
 import com.savoirtech.hecate.annotation.Id;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.UUID;
 
@@ -69,5 +71,25 @@ public class Person {
 
     public void setSsn(String ssn) {
         this.ssn = ssn;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (!(o instanceof Person)) return false;
+
+        Person person = (Person) o;
+
+        return new EqualsBuilder()
+                .append(ssn, person.ssn)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(ssn)
+                .toHashCode();
     }
 }

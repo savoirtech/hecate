@@ -37,7 +37,7 @@ public class PojoMapping<P> {
 
     private final Class<P> pojoClass;
     private final String tableName;
-    private final List<ScalarFacetMapping> idMappings;
+    private final List<FacetMapping> idMappings;
     private final List<FacetMapping> simpleMappings;
     private final int ttl;
     private final boolean cascadeDelete;
@@ -67,7 +67,7 @@ public class PojoMapping<P> {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoMapping(Class<P> pojoClass, String tableName, List<ScalarFacetMapping> idMappings, List<FacetMapping> simpleMappings) {
+    public PojoMapping(Class<P> pojoClass, String tableName, List<FacetMapping> idMappings, List<FacetMapping> simpleMappings) {
         this.pojoClass = pojoClass;
         this.tableName = tableName;
         this.idMappings = sorted(idMappings);
@@ -76,9 +76,9 @@ public class PojoMapping<P> {
         this.cascadeDelete = simpleMappings.stream().filter(FacetMapping::isReference).filter(mapping -> !mapping.getFacet().hasAnnotation(Cascade.class) || mapping.getFacet().getAnnotation(Cascade.class).delete()).findFirst().isPresent();
     }
 
-    private static List<ScalarFacetMapping> sorted(List<ScalarFacetMapping> idMappings) {
+    private static List<FacetMapping> sorted(List<FacetMapping> idMappings) {
         if (idMappings.size() > 1) {
-            List<ScalarFacetMapping> sorted = new ArrayList<>(idMappings.size());
+            List<FacetMapping> sorted = new ArrayList<>(idMappings.size());
             sorted.addAll(annotatedWith(idMappings, PartitionKey.class).sorted((left, right) -> partitionKey(left).order() - partitionKey(right).order()).collect(Collectors.toList()));
             sorted.addAll(annotatedWith(idMappings, ClusteringColumn.class).sorted((left, right) -> clusteringColumn(left).order() - clusteringColumn(right).order()).collect(Collectors.toList()));
             return sorted;
@@ -118,7 +118,7 @@ public class PojoMapping<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ScalarFacetMapping getForeignKeyMapping() {
+    public FacetMapping getForeignKeyMapping() {
         if (idMappings.size() == 1) {
             return idMappings.get(0);
         } else {
@@ -126,7 +126,7 @@ public class PojoMapping<P> {
         }
     }
 
-    public List<ScalarFacetMapping> getIdMappings() {
+    public List<FacetMapping> getIdMappings() {
         return Collections.unmodifiableList(idMappings);
     }
 

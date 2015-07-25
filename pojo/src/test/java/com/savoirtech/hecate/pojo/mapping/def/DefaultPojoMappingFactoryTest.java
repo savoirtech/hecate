@@ -19,10 +19,10 @@ package com.savoirtech.hecate.pojo.mapping.def;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.savoirtech.hecate.annotation.*;
 import com.savoirtech.hecate.core.exception.HecateException;
+import com.savoirtech.hecate.pojo.entities.MultiFacetKeyPojo;
 import com.savoirtech.hecate.pojo.entities.NestedPojo;
 import com.savoirtech.hecate.pojo.mapping.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.test.AbstractTestCase;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Test;
@@ -116,8 +116,19 @@ public class DefaultPojoMappingFactoryTest extends AbstractTestCase {
     @Test
     public void testFacetMappingToString() {
         PojoMapping<Person> mapping = factory.createPojoMapping(Person.class);
-        ScalarFacetMapping facetMapping = mapping.getForeignKeyMapping();
+        FacetMapping facetMapping = mapping.getForeignKeyMapping();
         assertEquals("id @ id", facetMapping.toString());
+    }
+
+    @Test
+    public void testMultiFacetKey() {
+        PojoMapping<MultiFacetKeyPojo> mapping = factory.createPojoMapping(MultiFacetKeyPojo.class);
+        List<FacetMapping> idMappings = mapping.getIdMappings();
+        assertNotNull(idMappings);
+        assertEquals(3, idMappings.size());
+        assertEquals("partKey", idMappings.get(0).getFacet().getName());
+        assertEquals("clust1", idMappings.get(1).getFacet().getName());
+        assertEquals("clust2", idMappings.get(2).getFacet().getName());
     }
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -30,6 +30,7 @@ import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DefaultPojoDaoTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
@@ -113,6 +114,17 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     }
 
     @Test
+    public void testFindByIdWithOptions() {
+        DefaultPojoDaoFactory factory = getFactory();
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo expected = new SimplePojo();
+        dao.save(expected);
+
+        SimplePojo actual = dao.findById(expected.getId(), StatementOptionsBuilder.consistencyLevel(ConsistencyLevel.ONE).build());
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testFindByIdsWithSet() throws Exception {
         DefaultPojoDaoFactory factory = getFactory();
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
@@ -167,6 +179,9 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         pojo.setKey(key);
         pojo.setData("Now is the time for all good men...");
         dao.save(pojo);
+
+        CompositeKeyPojo found = dao.find().eq("key.part1").eq("key.part2").eq("key.cluster1").build().execute("a", "b", "c").one();
+        assertNotNull(found);
     }
 
     @Test
@@ -187,6 +202,72 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         final List<SimplePojo> pojos = result.list();
         assertNotSame(pojos.get(0), pojos.get(1));
         assertNotEquals(pojos.get(0), pojos.get(1));
+    }
+
+    @Test
+    public void testPersistenceWithNoConstructor() {
+        final PojoDao<String, NoConstructorPerson> dao = getFactory().createPojoDao(NoConstructorPerson.class);
+        final NoConstructorPerson expected = new NoConstructorPerson("1", "Foo", "Bar");
+        dao.save(expected);
+        final NoConstructorPerson actual = dao.findById("1");
+        assertEquals(expected.getFirstName(), actual.getFirstName());
+        assertEquals(expected.getLastName(), actual.getLastName());
+        assertEquals(expected.getSsn(), actual.getSsn());
+    }
+
+    @Test
+    public void testQueryWithMixedParameters() {
+        CompositeKeyPojo pojo = new CompositeKeyPojo();
+        CompositeKey key = new CompositeKey();
+        key.setPart1("part1Value");
+        key.setPart2("part2Value");
+        key.setCluster1("cluster1Value");
+        pojo.setKey(key);
+        pojo.setData("FooBarBaz");
+        final PojoDao<CompositeKey, CompositeKeyPojo> dao = getFactory().createPojoDao(CompositeKeyPojo.class);
+        dao.save(pojo);
+
+        PojoQuery<CompositeKeyPojo> query = dao.find().eq("key.part1", "part1Value").eq("key.part2").eq("key.cluster1", "cluster1Value").build();
+        MappedQueryResult<CompositeKeyPojo> result = query.execute("part2Value");
+        assertEquals(1, result.list().size());
+    }
+
+    @Test
+    public void testQueryWithMultipleClusteringColumns() {
+        ClusteredKeyPojo pojo = new ClusteredKeyPojo();
+        ClusteredKey key = new ClusteredKey();
+        key.setPartitionKey("partitionKeyValue");
+        key.setCluster1("cluster1Value");
+        key.setCluster2("cluster2Value");
+
+        pojo.setKey(key);
+        pojo.setData("FooBarBaz");
+        final PojoDao<ClusteredKey, ClusteredKeyPojo> dao = getFactory().createPojoDao(ClusteredKeyPojo.class);
+        dao.save(pojo);
+
+        PojoQuery<ClusteredKeyPojo> query = dao.find().eq("key.partitionKey").eq("key.cluster1").build();
+        ClusteredKeyPojo found = query.execute("partitionKeyValue", "cluster1Value").one();
+        assertNotNull(found);
+
+        found = dao.find().eq("key.partitionKey").build().execute("partitionKeyValue").one();
+        assertNotNull(found);
+    }
+
+    @Test
+    public void testQueryWithOnlyInjectedParameters() {
+        CompositeKeyPojo pojo = new CompositeKeyPojo();
+        CompositeKey key = new CompositeKey();
+        key.setPart1("part1Value");
+        key.setPart2("part2Value");
+        key.setCluster1("cluster1Value");
+        pojo.setKey(key);
+        pojo.setData("FooBarBaz");
+        final PojoDao<CompositeKey, CompositeKeyPojo> dao = getFactory().createPojoDao(CompositeKeyPojo.class);
+        dao.save(pojo);
+
+        PojoQuery<CompositeKeyPojo> query = dao.find().eq("key.part1", "part1Value").eq("key.part2", "part2Value").build();
+        MappedQueryResult<CompositeKeyPojo> result = query.execute();
+        assertEquals(1, result.list().size());
     }
 
     @Test
@@ -364,6 +445,22 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     }
 
     @Test
+    public void testWithMultiFacetKeyPojo() {
+        DefaultPojoDaoFactory factory = getFactory();
+        PojoDao<Object, MultiFacetKeyPojo> dao = factory.createPojoDao(MultiFacetKeyPojo.class);
+        final MultiFacetKeyPojo pojo = new MultiFacetKeyPojo();
+        pojo.setPartKey("part1");
+        pojo.setClust1("clust1");
+        pojo.setClust2("clust2");
+        dao.save(pojo);
+        MultiFacetKeyPojo found = dao.find().eq("partKey").eq("clust1").eq("clust2").build().execute("part1", "clust1", "clust2").one();
+        assertNotNull(found);
+        assertEquals("part1", found.getPartKey());
+        assertEquals("clust1", found.getClust1());
+        assertEquals("clust2", found.getClust2());
+    }
+
+    @Test
     public void testWithNestedArrayField() {
         DefaultPojoDaoFactory factory = getFactory();
         final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
@@ -489,79 +586,27 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     }
 
     @Test
-    public void testQueryWithMultipleClusteringColumns() {
-        ClusteredKeyPojo pojo = new ClusteredKeyPojo();
-        ClusteredKey key = new ClusteredKey();
-        key.setPartitionKey("partitionKeyValue");
-        key.setCluster1("cluster1Value");
-        key.setCluster2("cluster2Value");
-
-        pojo.setKey(key);
-        pojo.setData("FooBarBaz");
-        final PojoDao<ClusteredKey,ClusteredKeyPojo> dao = getFactory().createPojoDao(ClusteredKeyPojo.class);
-        dao.save(pojo);
-
-        PojoQuery<ClusteredKeyPojo> query = dao.find().eq("key.partitionKey").eq("key.cluster1").build();
-        ClusteredKeyPojo found = query.execute("partitionKeyValue", "cluster1Value").one();
-        assertNotNull(found);
-
-        found = dao.find().eq("key.partitionKey").build().execute("partitionKeyValue").one();
-        assertNotNull(found);
-    }
-
-    @Test
-    public void testQueryWithOnlyInjectedParameters() {
-        CompositeKeyPojo pojo = new CompositeKeyPojo();
-        CompositeKey key = new CompositeKey();
-        key.setPart1("part1Value");
-        key.setPart2("part2Value");
-        key.setCluster1("cluster1Value");
-        pojo.setKey(key);
-        pojo.setData("FooBarBaz");
-        final PojoDao<CompositeKey,CompositeKeyPojo> dao = getFactory().createPojoDao(CompositeKeyPojo.class);
-        dao.save(pojo);
-
-        PojoQuery<CompositeKeyPojo> query = dao.find().eq("key.part1", "part1Value").eq("key.part2", "part2Value").build();
-        MappedQueryResult<CompositeKeyPojo> result = query.execute();
-        assertEquals(1, result.list().size());
-    }
-
-    @Test
-    public void testQueryWithMixedParameters() {
-        CompositeKeyPojo pojo = new CompositeKeyPojo();
-        CompositeKey key = new CompositeKey();
-        key.setPart1("part1Value");
-        key.setPart2("part2Value");
-        key.setCluster1("cluster1Value");
-        pojo.setKey(key);
-        pojo.setData("FooBarBaz");
-        final PojoDao<CompositeKey,CompositeKeyPojo> dao = getFactory().createPojoDao(CompositeKeyPojo.class);
-        dao.save(pojo);
-
-        PojoQuery<CompositeKeyPojo> query = dao.find().eq("key.part1", "part1Value").eq("key.part2").eq("key.cluster1", "cluster1Value").build();
-        MappedQueryResult<CompositeKeyPojo> result = query.execute("part2Value");
-        assertEquals(1, result.list().size());
-    }
-
-    @Test
-    public void testPersistenceWithNoConstructor() {
-        final PojoDao<String,NoConstructorPerson> dao = getFactory().createPojoDao(NoConstructorPerson.class);
-        final NoConstructorPerson expected = new NoConstructorPerson("1", "Foo", "Bar");
-        dao.save(expected);
-        final NoConstructorPerson actual = dao.findById("1");
-        assertEquals(expected.getFirstName(), actual.getFirstName());
-        assertEquals(expected.getLastName(), actual.getLastName());
-        assertEquals(expected.getSsn(), actual.getSsn());
-    }
-
-    @Test
-    public void testFindByIdWithOptions() {
+    public void testWithIndexObject() {
         DefaultPojoDaoFactory factory = getFactory();
-        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
-        final SimplePojo expected = new SimplePojo();
-        dao.save(expected);
 
-        SimplePojo actual = dao.findById(expected.getId(), StatementOptionsBuilder.consistencyLevel(ConsistencyLevel.ONE).build());
-        assertEquals(expected, actual);
+        PojoDao<Object, PersonByLastFirst> pojoDao = factory.createPojoDao(PersonByLastFirst.class);
+
+        Person person1 = new Person();
+        person1.setLastName("World");
+        person1.setFirstName("Hello");
+
+        Person person2 = new Person();
+        person2.setLastName("World");
+        person2.setFirstName("Hello");
+
+        pojoDao.save(new PersonByLastFirst("World", "Hello", person1));
+        pojoDao.save(new PersonByLastFirst("World", "Hello", person2));
+
+        List<PersonByLastFirst> found = pojoDao.find().eq("lastName").eq("firstName").build().execute("World", "Hello").list();
+        assertNotNull(found);
+        assertEquals(2, found.size());
+        Set<Person> people = found.stream().map(PersonByLastFirst::getPerson).collect(Collectors.toSet());
+        assertTrue(people.contains(person1));
+        assertTrue(people.contains(person2));
     }
 }

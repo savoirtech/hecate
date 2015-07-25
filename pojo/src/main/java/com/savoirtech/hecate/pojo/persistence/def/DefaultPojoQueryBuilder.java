@@ -21,7 +21,6 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.mapping.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
-import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoQueryBuilder;
 
@@ -221,9 +220,9 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     private String identifierFacetName() {
-        List<ScalarFacetMapping> idMappings = pojoMapping.getIdMappings();
+        List<FacetMapping> idMappings = pojoMapping.getIdMappings();
         if (idMappings.size() > 1) {
-            throw new HecateException("Composite primary keys not supported.");
+            throw new HecateException("Composite primary keys not supported, consider using a PojoQuery instead.");
         }
         return idMappings.get(0).getFacet().getName();
     }
