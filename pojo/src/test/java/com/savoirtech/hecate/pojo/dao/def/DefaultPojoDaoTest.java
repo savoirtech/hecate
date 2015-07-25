@@ -25,10 +25,12 @@ import com.savoirtech.hecate.core.mapping.MappedQueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.*;
+import com.savoirtech.hecate.pojo.entities.time.*;
 import com.savoirtech.hecate.pojo.persistence.PojoQuery;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
 import org.junit.Test;
 
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -609,4 +611,98 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertTrue(people.contains(person1));
         assertTrue(people.contains(person2));
     }
+
+    @Test
+    public void testDurationQuery() {
+        DefaultPojoDaoFactory factory = getFactory();
+
+        PojoDao<String, DurationEntity> dao = factory.createPojoDao(DurationEntity.class);
+
+        DurationEntity entity = new DurationEntity("group1", Duration.ofHours(2));
+        dao.save(entity);
+
+
+        List<DurationEntity> found = dao.find().eq("group").gt("duration").build().execute("group1", Duration.ofHours(1)).list();
+        assertNotNull(found);
+        assertEquals(1, found.size());
+    }
+
+    @Test
+    public void testInstantQuery() {
+        DefaultPojoDaoFactory factory = getFactory();
+
+        PojoDao<String, InstantEntity> dao = factory.createPojoDao(InstantEntity.class);
+
+        Instant now = Instant.now();
+        InstantEntity entity = new InstantEntity("group1", now);
+        dao.save(entity);
+
+
+        List<InstantEntity> found = dao.find().eq("group").gt("instant").build().execute("group1", now.minusMillis(10000)).list();
+        assertNotNull(found);
+        assertEquals(1, found.size());
+    }
+
+    @Test
+    public void testLocalDateQuery() {
+        PojoDao<String, LocalDateEntity> dao = getFactory().createPojoDao(LocalDateEntity.class);
+        dao.save(new LocalDateEntity("group1", LocalDate.now()));
+
+        List<LocalDateEntity> found = dao.find().eq("group").lt("date").build().execute("group1", LocalDate.now().plusDays(2)).list();
+        assertNotNull(found);
+        assertEquals(1, found.size());
+    }
+
+    @Test
+    public void testLocalDateTimeQuery() {
+        PojoDao<String, LocalDateTimeEntity> dao = getFactory().createPojoDao(LocalDateTimeEntity.class);
+        dao.save(new LocalDateTimeEntity("group1", LocalDateTime.now()));
+
+        List<LocalDateTimeEntity> found = dao.find().eq("group").lt("date").build().execute("group1", LocalDateTime.now().plusDays(2)).list();
+        assertNotNull(found);
+        assertEquals(1, found.size());
+    }
+
+    @Test
+    public void testLocalTimeQuery() {
+        PojoDao<String, LocalTimeEntity> dao = getFactory().createPojoDao(LocalTimeEntity.class);
+        dao.save(new LocalTimeEntity("group1", LocalTime.now()));
+
+        List<LocalTimeEntity> found = dao.find().eq("group").lt("time").build().execute("group1", LocalTime.now().plusHours(2)).list();
+        assertNotNull(found);
+        assertEquals(1, found.size());
+    }
+
+    @Test
+    public void testOffsetDateTimeQuery() {
+        PojoDao<String, OffsetDateTimeEntity> dao = getFactory().createPojoDao(OffsetDateTimeEntity.class);
+        dao.save(new OffsetDateTimeEntity("group1", OffsetDateTime.now()));
+
+        List<OffsetDateTimeEntity> found = dao.find().eq("group").lt("date").build().execute("group1", OffsetDateTime.now().plusDays(2)).list();
+        assertNotNull(found);
+        assertEquals(1, found.size());
+    }
+
+    @Test
+    public void testOffsetTimeQuery() {
+        PojoDao<String, OffsetTimeEntity> dao = getFactory().createPojoDao(OffsetTimeEntity.class);
+        dao.save(new OffsetTimeEntity("group1", OffsetTime.now()));
+
+        List<OffsetTimeEntity> found = dao.find().eq("group").lt("time").build().execute("group1", OffsetTime.now().plusHours(2)).list();
+        assertNotNull(found);
+        assertEquals(1, found.size());
+    }
+
+    @Test
+    public void testPeriodQuery() {
+        PojoDao<String, PeriodEntity> dao = getFactory().createPojoDao(PeriodEntity.class);
+
+        PeriodEntity entity = new PeriodEntity("group1", Period.ofYears(2));
+        dao.save(entity);
+
+        List<PeriodEntity> found = dao.find().eq("group").gt("period").build().execute("group1", Period.ofYears(1)).list();
+        assertNotNull(found);
+        assertEquals(1, found.size());
+    }
+
 }
