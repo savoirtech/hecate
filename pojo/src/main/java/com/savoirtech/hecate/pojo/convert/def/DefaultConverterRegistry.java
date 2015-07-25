@@ -21,6 +21,9 @@ import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.convert.ConverterProvider;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
 import com.savoirtech.hecate.pojo.convert.NativeConverter;
+import com.savoirtech.hecate.pojo.convert.time.JavaLocalDateConverter;
+import com.savoirtech.hecate.pojo.convert.time.JavaLocalDateTimeConverter;
+import com.savoirtech.hecate.pojo.convert.time.JavaLocalTimeConverter;
 import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +72,9 @@ public class DefaultConverterRegistry implements ConverterRegistry {
         registerConverter(NativeConverter.STRING);
         registerConverter(NativeConverter.UUID);
         registerConverter(NativeConverter.BLOB);
+        registerConverter(new JavaLocalDateTimeConverter());
+        registerConverter(new JavaLocalDateConverter());
+        registerConverter(new JavaLocalTimeConverter());
         serviceStream(Converter.class).forEach(this::registerConverter);
         serviceStream(ConverterProvider.class).forEach(this::registerConverter);
     }

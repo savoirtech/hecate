@@ -28,6 +28,9 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -57,6 +60,9 @@ public class DefaultConverterRegistryTest extends AbstractTestCase {
         assertNotNull(registry.getConverter(Enum.class));
         assertNotNull(registry.getConverter(ByteBuffer.class));
         assertNotNull(registry.getConverter(byte[].class));
+        assertNotNull(registry.getConverter(LocalDate.class));
+        assertNotNull(registry.getConverter(LocalTime.class));
+        assertNotNull(registry.getConverter(LocalDateTime.class));
     }
 
     @Test
