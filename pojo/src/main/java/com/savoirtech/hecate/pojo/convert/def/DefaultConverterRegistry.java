@@ -21,6 +21,8 @@ import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.convert.ConverterProvider;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
 import com.savoirtech.hecate.pojo.convert.NativeConverter;
+import com.savoirtech.hecate.pojo.convert.binary.ByteArrayConverter;
+import com.savoirtech.hecate.pojo.convert.enumeration.EnumConverterProvider;
 import com.savoirtech.hecate.pojo.convert.time.*;
 import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
@@ -70,6 +72,9 @@ public class DefaultConverterRegistry implements ConverterRegistry {
         registerConverter(NativeConverter.STRING);
         registerConverter(NativeConverter.UUID);
         registerConverter(NativeConverter.BLOB);
+
+        registerConverter(new EnumConverterProvider());
+        registerConverter(new ByteArrayConverter());
 
         registerConverter(new JavaDurationConverter());
         registerConverter(new JavaInstantConverter());

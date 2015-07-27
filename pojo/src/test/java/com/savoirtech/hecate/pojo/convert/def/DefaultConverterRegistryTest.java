@@ -66,6 +66,7 @@ public class DefaultConverterRegistryTest extends AbstractTestCase {
         assertNotNull(registry.getConverter(OffsetDateTime.class));
         assertNotNull(registry.getConverter(OffsetTime.class));
         assertNotNull(registry.getConverter(Period.class));
+        assertNotNull(registry.getConverter(Gender.class));
     }
 
     @Test
