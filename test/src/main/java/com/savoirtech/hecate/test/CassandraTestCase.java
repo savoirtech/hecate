@@ -53,6 +53,7 @@ public class CassandraTestCase extends AbstractTestCase {
     @After
     public void closeSession() {
         session.close();
+        cluster.close();
     }
 
     @Before
