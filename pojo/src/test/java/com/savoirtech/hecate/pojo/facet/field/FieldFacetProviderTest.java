@@ -16,17 +16,18 @@
 
 package com.savoirtech.hecate.pojo.facet.field;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.savoirtech.hecate.annotation.Cascade;
+import com.savoirtech.hecate.annotation.Ignored;
 import com.savoirtech.hecate.pojo.entities.NestedPojo;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class FieldFacetProviderTest extends Assert {
 //----------------------------------------------------------------------------------------------------------------------
@@ -67,7 +68,8 @@ public class FieldFacetProviderTest extends Assert {
         assertTrue(names.contains("foo"));
         assertTrue(names.contains("bar"));
         assertTrue(names.contains("baz"));
-        assertFalse(names.contains("ignored"));
+        assertFalse(names.contains("ignoredTransient"));
+        assertFalse(names.contains("ignoredAnnotated"));
     }
 
     @Test
@@ -136,7 +138,10 @@ public class FieldFacetProviderTest extends Assert {
         private static String STATIC_TEXT = "static_text";
         @Deprecated
         private String baz;
-        private transient String ignored;
+        private transient String ignoredTransient;
+
+        @Ignored
+        private String ignoredAnnotated;
     }
 
     public static class FieldPojoSuper {

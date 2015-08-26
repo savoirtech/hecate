@@ -16,15 +16,16 @@
 
 package com.savoirtech.hecate.pojo.facet.property;
 
+import java.beans.Transient;
+import java.util.List;
+import java.util.Map;
+
+import com.savoirtech.hecate.annotation.Ignored;
 import com.savoirtech.hecate.pojo.entities.SimplePojo;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.beans.Transient;
-import java.util.List;
-import java.util.Map;
 
 public class PropertyFacetProviderTest extends Assert {
 //----------------------------------------------------------------------------------------------------------------------
@@ -50,6 +51,7 @@ public class PropertyFacetProviderTest extends Assert {
         assertTrue(facets.containsKey("readOnly"));
         assertTrue(facets.containsKey("writeOnlyBoolean"));
         assertTrue(facets.containsKey("readOnlyBoolean"));
+        assertFalse(facets.containsKey("ignoredProperty"));
     }
 
     @Test
@@ -96,6 +98,8 @@ public class PropertyFacetProviderTest extends Assert {
         private String ignored;
         private String invalidSetter;
         private String invalidGetter;
+
+        private String ignoredProperty;
 
         private boolean isWriteOnlyBoolean() {
             return writeOnlyBoolean;
@@ -178,6 +182,15 @@ public class PropertyFacetProviderTest extends Assert {
 
         public String getMapped(String key) {
             return null;
+        }
+
+        @Ignored
+        public String getIgnoredProperty() {
+            return ignoredProperty;
+        }
+
+        public void setIgnoredProperty(String ignoredProperty) {
+            this.ignoredProperty = ignoredProperty;
         }
     }
 }

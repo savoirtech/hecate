@@ -16,15 +16,16 @@
 
 package com.savoirtech.hecate.pojo.facet.property;
 
-import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.facet.FacetProvider;
-import org.apache.commons.lang3.StringUtils;
-
 import java.beans.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.savoirtech.hecate.annotation.Ignored;
+import com.savoirtech.hecate.core.exception.HecateException;
+import com.savoirtech.hecate.pojo.facet.Facet;
+import com.savoirtech.hecate.pojo.facet.FacetProvider;
+import org.apache.commons.lang3.StringUtils;
 
 public class PropertyFacetProvider implements FacetProvider {
 //----------------------------------------------------------------------------------------------------------------------
@@ -54,7 +55,10 @@ public class PropertyFacetProvider implements FacetProvider {
             for (PropertyDescriptor descriptor : descriptors) {
                 final Method readMethod = getReadMethod(pojoClass, descriptor);
                 final Method writeMethod = getWriteMethod(pojoClass, descriptor);
-                if (readMethod != null && writeMethod != null && !readMethod.isAnnotationPresent(Transient.class)) {
+                if (readMethod != null &&
+                        writeMethod != null &&
+                        !readMethod.isAnnotationPresent(Transient.class) &&
+                        !readMethod.isAnnotationPresent(Ignored.class)) {
                     facets.add(new PropertyFacet(pojoClass, descriptor, readMethod, writeMethod));
                 }
             }

@@ -16,14 +16,15 @@
 
 package com.savoirtech.hecate.pojo.facet.field;
 
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.facet.FacetProvider;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.savoirtech.hecate.annotation.Ignored;
+import com.savoirtech.hecate.pojo.facet.Facet;
+import com.savoirtech.hecate.pojo.facet.FacetProvider;
 
 public class FieldFacetProvider implements FacetProvider {
 //----------------------------------------------------------------------------------------------------------------------
@@ -55,7 +56,9 @@ public class FieldFacetProvider implements FacetProvider {
 
     private static boolean isPersistable(Field field) {
         final int mods = field.getModifiers();
-        return !Modifier.isTransient(mods) && !Modifier.isStatic(mods);
+        return !Modifier.isTransient(mods) &&
+                !Modifier.isStatic(mods) &&
+                !field.isAnnotationPresent(Ignored.class);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
