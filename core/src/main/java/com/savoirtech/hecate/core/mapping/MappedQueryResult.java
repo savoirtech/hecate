@@ -16,33 +16,35 @@
 
 package com.savoirtech.hecate.core.mapping;
 
+import java.util.*;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.google.common.collect.Iterators;
 import com.savoirtech.hecate.core.query.QueryResult;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class MappedQueryResult<T> implements QueryResult<T> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final ResultSet resultSet;
+    private final Iterable<Row> rows;
     private final RowMapper<T> mapper;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
+
+    public MappedQueryResult(Iterable<Row> rows, RowMapper<T> mapper) {
+        this.rows = rows;
+        this.mapper = mapper;
+    }
+
     public MappedQueryResult(ResultSet resultSet, RowMapper<T> mapper) {
-        this.resultSet = resultSet;
+        this.rows = resultSet;
         this.mapper = mapper;
     }
 
@@ -52,7 +54,7 @@ public class MappedQueryResult<T> implements QueryResult<T> {
 
     @Override
     public Iterator<T> iterator() {
-        Iterator<T> transformed = Iterators.transform(resultSet.iterator(), row -> {
+        Iterator<T> transformed = Iterators.transform(rows.iterator(), row -> {
             T value = mapper.map(row);
             mapper.mappingComplete();
             return value;
@@ -63,20 +65,21 @@ public class MappedQueryResult<T> implements QueryResult<T> {
 
     @Override
     public List<T> list() {
-        List<T> result = resultSet.all().stream().map(mapper::map).collect(Collectors.toList());
+        List<T> result = new LinkedList<>();
+        Iterators.addAll(result, Iterators.transform(rows.iterator(), mapper::map));
         mapper.mappingComplete();
         return result;
     }
 
     @Override
     public T one() {
-        Row row = resultSet.one();
-        if (row == null) {
-            return null;
+        Iterator<Row> iterator = rows.iterator();
+        if(iterator.hasNext()) {
+            T result = mapper.map(iterator.next());
+            mapper.mappingComplete();
+            return result;
         }
-        T result = mapper.map(row);
-        mapper.mappingComplete();
-        return result;
+        return null;
     }
 
     @Override

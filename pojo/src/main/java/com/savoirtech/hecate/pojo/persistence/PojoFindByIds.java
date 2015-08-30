@@ -24,5 +24,5 @@ public interface PojoFindByIds<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    MappedQueryResult<P> execute(Hydrator hydrator, StatementOptions options, Iterable<? extends Object> ids);
+    MappedQueryResult<P> execute(Hydrator hydrator, StatementOptions options, Iterable<?> ids);
 }
