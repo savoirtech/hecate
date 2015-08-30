@@ -78,12 +78,17 @@ public class DefaultPersistenceContext implements PersistenceContext {
     public <P> PojoDelete delete(PojoMapping<P> mapping) {
         return deleteCache.getUnchecked(mapping);
     }
-
+    
     @Override
     public ResultSet executeStatement(Statement statement, StatementOptions options) {
+        return executeStatementAsync(statement, options).getUninterruptibly();
+    }
+
+    @Override
+    public ResultSetFuture executeStatementAsync(Statement statement, StatementOptions options) {
         defaultOptions.applyTo(statement);
         options.applyTo(statement);
-        return session.execute(statement);
+        return session.executeAsync(statement);
     }
 
     @Override

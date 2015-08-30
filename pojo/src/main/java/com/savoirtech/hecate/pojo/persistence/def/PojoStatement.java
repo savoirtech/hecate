@@ -16,10 +16,9 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
+import java.util.List;
+
+import com.datastax.driver.core.*;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.savoirtech.hecate.core.statement.StatementOptions;
@@ -27,8 +26,6 @@ import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 
 public abstract class PojoStatement<P> implements Supplier<PreparedStatement> {
@@ -91,5 +88,11 @@ public abstract class PojoStatement<P> implements Supplier<PreparedStatement> {
         getLogger().debug("CQL: {} with parameters {}", statementSupplier.get().getQueryString(), parameters);
         BoundStatement boundStatement = statementSupplier.get().bind(parameters.toArray(new Object[parameters.size()]));
         return persistenceContext.executeStatement(boundStatement, options);
+    }
+
+    protected ResultSetFuture executeStatementAsync(List<Object> parameters, StatementOptions options) {
+        getLogger().debug("CQL: {} with parameters {}", statementSupplier.get().getQueryString(), parameters);
+        BoundStatement boundStatement = statementSupplier.get().bind(parameters.toArray(new Object[parameters.size()]));
+        return persistenceContext.executeStatementAsync(boundStatement, options);
     }
 }

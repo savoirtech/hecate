@@ -16,7 +16,12 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.collect.Lists;
@@ -25,10 +30,6 @@ import com.savoirtech.hecate.pojo.mapping.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoDelete;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.in;
@@ -47,7 +48,7 @@ public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void delete(Iterable<Object> ids, StatementOptions options) {
+    public void delete(List<ResultSetFuture> futures, Iterable<Object> ids, StatementOptions options) {
         List<FacetMapping> idMappings = getPojoMapping().getIdMappings();
         if (idMappings.size() > 1) {
             for (Object compositeKey : ids) {
@@ -55,11 +56,11 @@ public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete
                     final Object facetValue = mapping.getFacet().flatten().getValue(compositeKey);
                     return mapping.getColumnValueForFacetValue(facetValue);
                 }).collect(Collectors.toList());
-                executeStatement(parameters, options);
+                futures.add(executeStatementAsync(parameters, options));
             }
         } else {
             final FacetMapping mapping = idMappings.get(0);
-            executeStatement(Collections.singletonList(Lists.newLinkedList(ids).stream().map(mapping::getColumnValueForFacetValue).collect(Collectors.toList())), options);
+            futures.add(executeStatementAsync(Collections.singletonList(Lists.newLinkedList(ids).stream().map(mapping::getColumnValueForFacetValue).collect(Collectors.toList())), options));
         }
     }
 

@@ -16,6 +16,7 @@
 
 package com.savoirtech.hecate.pojo.persistence;
 
+import com.datastax.driver.core.ResultSetFuture;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 
 public interface PojoInsert<P> {
@@ -23,5 +24,5 @@ public interface PojoInsert<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void insert(P pojo, Dehydrator dehydrator, int ttl, StatementOptions options);
+    ResultSetFuture insert(P pojo, Dehydrator dehydrator, int ttl, StatementOptions options);
 }

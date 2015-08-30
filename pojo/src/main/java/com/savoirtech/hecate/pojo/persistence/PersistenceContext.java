@@ -16,10 +16,7 @@
 
 package com.savoirtech.hecate.pojo.persistence;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 
@@ -36,6 +33,8 @@ public interface PersistenceContext {
     Hydrator createHydrator(StatementOptions options);
 
     <P> PojoDelete delete(PojoMapping<P> mapping);
+
+    ResultSetFuture executeStatementAsync(Statement statement, StatementOptions options);
 
     ResultSet executeStatement(Statement statement, StatementOptions options);
 

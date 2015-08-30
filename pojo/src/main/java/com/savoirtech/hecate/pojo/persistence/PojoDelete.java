@@ -16,6 +16,9 @@
 
 package com.savoirtech.hecate.pojo.persistence;
 
+import java.util.List;
+
+import com.datastax.driver.core.ResultSetFuture;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 
 public interface PojoDelete<P> {
@@ -23,5 +26,5 @@ public interface PojoDelete<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void delete(Iterable<Object> ids, StatementOptions options);
+    void delete(List<ResultSetFuture> futures, Iterable<Object> ids, StatementOptions options);
 }
