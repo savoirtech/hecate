@@ -16,6 +16,10 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
+import java.time.*;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -29,10 +33,6 @@ import com.savoirtech.hecate.pojo.entities.time.*;
 import com.savoirtech.hecate.pojo.persistence.PojoQuery;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
 import org.junit.Test;
-
-import java.time.*;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class DefaultPojoDaoTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
@@ -666,9 +666,10 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     @Test
     public void testLocalTimeQuery() {
         PojoDao<String, LocalTimeEntity> dao = getFactory().createPojoDao(LocalTimeEntity.class);
-        dao.save(new LocalTimeEntity("group1", LocalTime.now()));
+        LocalTime time = LocalTime.of(1, 2, 3);
+        dao.save(new LocalTimeEntity("group1", time));
 
-        List<LocalTimeEntity> found = dao.find().eq("group").lt("time").build().execute("group1", LocalTime.now().plusHours(2)).list();
+        List<LocalTimeEntity> found = dao.find().eq("group").lt("time").build().execute("group1", time.plusHours(2)).list();
         assertNotNull(found);
         assertEquals(1, found.size());
     }
@@ -686,9 +687,10 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     @Test
     public void testOffsetTimeQuery() {
         PojoDao<String, OffsetTimeEntity> dao = getFactory().createPojoDao(OffsetTimeEntity.class);
-        dao.save(new OffsetTimeEntity("group1", OffsetTime.now()));
+        OffsetTime time = OffsetTime.of(1, 2, 3, 4, ZoneOffset.ofHours(5));
+        dao.save(new OffsetTimeEntity("group1", time));
 
-        List<OffsetTimeEntity> found = dao.find().eq("group").lt("time").build().execute("group1", OffsetTime.now().plusHours(2)).list();
+        List<OffsetTimeEntity> found = dao.find().eq("group").lt("time").build().execute("group1", time.plusHours(2)).list();
         assertNotNull(found);
         assertEquals(1, found.size());
     }
