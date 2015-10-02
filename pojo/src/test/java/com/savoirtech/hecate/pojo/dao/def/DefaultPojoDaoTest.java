@@ -30,6 +30,7 @@ import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.*;
 import com.savoirtech.hecate.pojo.entities.time.*;
+import com.savoirtech.hecate.pojo.mapping.verify.CreateSchemaVerifier;
 import com.savoirtech.hecate.pojo.persistence.PojoQuery;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
 import org.junit.Test;
@@ -144,6 +145,22 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         final SimplePojo pojo = new SimplePojo();
         pojo.setName("Duke");
         dao.save(pojo);
+
+        final PojoQuery<SimplePojo> query = dao.find().eq("name").build();
+        SimplePojo found = query.execute("Duke").one();
+        assertNotNull(found);
+    }
+
+    @Test
+    public void testIndexGetCreatedOnlyIfNotExists() {
+        DefaultPojoDaoFactory factory = getFactory();
+        DefaultPojoDaoFactory factory1 = new DefaultPojoDaoFactory(getSession(), new CreateSchemaVerifier(getSession()));
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final PojoDao<String, SimplePojo> dao1 = factory1.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("Duke");
+        dao.save(pojo);
+        dao1.save(pojo);
 
         final PojoQuery<SimplePojo> query = dao.find().eq("name").build();
         SimplePojo found = query.execute("Duke").one();
