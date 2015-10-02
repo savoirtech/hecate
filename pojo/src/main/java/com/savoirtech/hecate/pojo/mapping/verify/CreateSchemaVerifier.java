@@ -71,7 +71,7 @@ public class CreateSchemaVerifier implements PojoMappingVerifier {
     protected void createIndexes(PojoMapping<?> pojoMapping) {
         pojoMapping.getSimpleMappings().forEach(mapping -> {
             if (mapping.getFacet().isIndexed()) {
-                executeStatement(SchemaBuilder.createIndex(namingStrategy.getIndexName(mapping.getFacet())).onTable(pojoMapping.getTableName()).andColumn(mapping.getColumnName()));
+                executeStatement(SchemaBuilder.createIndex(namingStrategy.getIndexName(mapping.getFacet())).ifNotExists().onTable(pojoMapping.getTableName()).andColumn(mapping.getColumnName()));
             }
         });
     }
