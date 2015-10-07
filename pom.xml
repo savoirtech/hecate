@@ -15,14 +15,15 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>9</version>
+        <groupId>com.savoirtech</groupId>
+        <artifactId>osgi-parent</artifactId>
+        <version>1.0.0</version>
     </parent>
 
     <groupId>com.savoirtech.hecate</groupId>
@@ -31,27 +32,11 @@
     <version>1.1.1-SNAPSHOT</version>
     <name>SavoirTech ::: Hecate ::: Parent</name>
 
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
     <inceptionYear>2012</inceptionYear>
-    <organization>
-        <name>Savoir Technologies, Inc.</name>
-        <url>http://www.savoirtech.com</url>
-    </organization>
 
     <modules>
-        <module>hecate-core</module>
-        <module>hecate-testing</module>
-        <module>hecate-hector</module>
-        <module>hecate-farsandra</module>
         <module>hecate-cql3</module>
-
+        <module>hecate-osgi</module>
     </modules>
 
     <scm>
@@ -62,397 +47,18 @@
     </scm>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <!-- maven surefire version added here so it could be overridden -->
-        <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
-        <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
-        <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
-        <maven.surefire.plugin.version>2.13</maven.surefire.plugin.version>
-        <maven.surefire.report.plugin.version>2.13</maven.surefire.report.plugin.version>
-        <maven.eclipse.plugin.version>2.9</maven.eclipse.plugin.version>
-        <maven.pax.plugin.version>1.5</maven.pax.plugin.version>
-        <!-- turn down the default DEBUG logLevel. Override on the command line if you want -->
-        <dist.name>savoirtech-${project.version}</dist.name>
-        <!-- dependency versions -->
-        <cassandra-version>2.0.8</cassandra-version>
-
-        <cassandra-unit-version>2.0.2.1</cassandra-unit-version>
-        <commons-codec-version>1.8</commons-codec-version>
+        <cassandra-driver-version>2.1.7.1</cassandra-driver-version>
+        <cassandra-version>2.1.6</cassandra-version>
+        <netty-version>4.0.27.Final</netty-version>
+        <cassandra-unit-version>2.0.2.2</cassandra-unit-version>
+        <codahale-metrics-version>3.0.2</codahale-metrics-version>
+        <commons-beanutils-version>1.9.2</commons-beanutils-version>
         <commons-collections-version>3.2.1</commons-collections-version>
-        <commons-collections4-version>4.0</commons-collections4-version>
-        <commons-lang-version>2.6</commons-lang-version>
         <commons-lang3-version>3.1</commons-lang3-version>
-
-        <commons-pool-version>1.6</commons-pool-version>
-        <concurrentLinkedHashMap-version>1.4</concurrentLinkedHashMap-version>
-        <compiler-fork-version>1.6</compiler-fork-version>
-        <!-- updating to guava 14 requires updated hector libraries in cassandra-pojo-library AbstractComposite.java -->
-        <!-- https://github.com/hector-client/hector/commit/47617b183c5ae28f0e8ce800ac1d86b6625c69b6 -->
-        <guava-version>13.0.1</guava-version>
-
-        <datastax-driver-version>2.0.1</datastax-driver-version>
-        <hectorcore-version>1.1-4</hectorcore-version>
-        <httpclient-version>4.2.3</httpclient-version>
-        <httpcore-version>4.2.3</httpcore-version>
-        <jamm-version>0.2.5</jamm-version>
-        <javassist-version>3.12.1.ga_1</javassist-version>
-        <!-- eclipse plugin need the jaxb in this pom.xml file -->
-        <jaxb-version>2.1.13</jaxb-version>
-        <jaxb-api-version>2.2.3</jaxb-api-version>
-        <jdk-version>1.7</jdk-version>
-        <junit-version>4.11</junit-version>
-        <libthrift-version>0.9.1</libthrift-version>
-        <log4j-version>1.2.17</log4j-version>
-        <maven-bundle-version>2.3.4</maven-bundle-version>
-        <maven-pmd-version>2.7.1</maven-pmd-version>
-        <plugin.depends.version>1.2</plugin.depends.version>
-        <slf4j-version>1.7.2</slf4j-version>
-        <snappyjava-version>1.0.5-M3</snappyjava-version>
-        <speed4j-version>0.9</speed4j-version>
-        <uuid-version>3.2.0</uuid-version>
-
-        <xerces-version>2.11.0</xerces-version>
-
-        <!-- Pax EXAM Related -->
-
-        <!-- OSGi bundles properties -->
-        <savoirtech.osgi.import.savoirtech.version>
-            version="[$(version;==;${savoirtech.osgi.version.clean}),$(version;=+;${savoirtech.osgi.version.clean}))"
-        </savoirtech.osgi.import.savoirtech.version>
-        <savoirtech.osgi.import.strict.version>
-            version="[$(version;===;${savoirtech.osgi.version.clean}),$(version;==+;${savoirtech.osgi.version.clean}))"
-        </savoirtech.osgi.import.strict.version>
-        <savoirtech.osgi.import.default.version>[$(version;==;$(@)),$(version;+;$(@)))
-        </savoirtech.osgi.import.default.version>
-        <savoirtech.osgi.import.defaults>
-        </savoirtech.osgi.import.defaults>
-        <savoirtech.osgi.import.before.defaults />
-        <savoirtech.osgi.import.additional />
-        <savoirtech.osgi.import.pkg>
-            !${savoirtech.osgi.export.pkg},
-            com.savoirtech.*;${savoirtech.osgi.import.savoirtech.version},
-            ${savoirtech.osgi.import.before.defaults},
-            ${savoirtech.osgi.import.defaults},
-            ${savoirtech.osgi.import.additional},
-            com.google.common*;version="[15,17.0)",
-            *,
-        </savoirtech.osgi.import.pkg>
-        <savoirtech.osgi.activator />
-        <savoirtech.osgi.failok>false</savoirtech.osgi.failok>
-        <savoirtech.osgi.private.pkg>!*</savoirtech.osgi.private.pkg>
-        <savoirtech.osgi.export>${savoirtech.osgi.export.pkg};${savoirtech.osgi.version}</savoirtech.osgi.export>
-        <savoirtech.osgi.version>version=${project.version}</savoirtech.osgi.version>
-        <savoirtech.osgi.split.pkg>-split-package:=first</savoirtech.osgi.split.pkg>
-        <savoirtech.osgi.import>${savoirtech.osgi.import.pkg}</savoirtech.osgi.import>
-        <savoirtech.osgi.dynamic />
-        <savoirtech.osgi.symbolic.name>${project.groupId}.${project.artifactId}</savoirtech.osgi.symbolic.name>
-        <savoirtech.osgi.exclude.dependencies>false</savoirtech.osgi.exclude.dependencies>
-        <savoirtech.osgi.export.pkg>
-            com.savoirtech.*
-        </savoirtech.osgi.export.pkg>
-        <savoirtech.osgi.import>
-            !com.savoirtech.*,
-            *
-        </savoirtech.osgi.import>
-        <savoirtech.osgi.dynamic>
-            <!--
-            org.apache.camel.spring.util;${savoirtech.osgi.import.strict.version},org.apache.camel.processor.interceptor.jpa;${savoirtech.osgi.import.strict.version}
-            -->
-        </savoirtech.osgi.dynamic>
-
-        <savoirtech.osgi.mutator />
-        <!--
-        <savoirtech.osgi.activator>
-
-        </savoirtech.osgi.activator>
-        -->
-
-        <!--<osgi-version>4.3.0</osgi-version>-->
+        <guava-version>18.0</guava-version>
+        <junit-version>4.12</junit-version>
+        <slf4j-version>1.7.7</slf4j-version>
     </properties>
-
-    <build>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.7</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.4</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-eclipse-plugin</artifactId>
-                    <version>${maven.eclipse.plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.ops4j</groupId>
-                    <artifactId>maven-pax-plugin</artifactId>
-                    <version>${maven.pax.plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven.surefire.plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <configuration>
-                        <archiveClasses>true</archiveClasses>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>${maven-bundle-version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>2.2.1</version>
-                    <configuration>
-                        <archive>
-                            <manifestEntries>
-                                <Bundle-SymbolicName>${project.groupId}.${project.artifactId}.source
-                                </Bundle-SymbolicName>
-                                <Bundle-Version>${savoirtech.osgi.version.clean}</Bundle-Version>
-                                <Eclipse-SourceBundle>
-                                    ${project.groupId}.${project.artifactId};version="${savoirtech.osgi.version.clean}"
-                                </Eclipse-SourceBundle>
-                            </manifestEntries>
-                        </archive>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.7</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>properties-maven-plugin</artifactId>
-                    <version>1.0-alpha-2</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
-        <plugins>
-            <!-- Base osgi bundle plugin configuration for savoirtech -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <inherited>true</inherited>
-                <executions>
-                    <execution>
-                        <id>create-prop</id>
-                        <phase>initialize</phase>
-                        <configuration>
-                            <target>
-                                <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="maven.plugin.classpath" />
-                                <property name="ant.regexp.regexpimpl" value="org.apache.tools.ant.util.regexp.Jdk14RegexpRegexp" />
-                                <property name="mv" value="${project.version}" />
-                                <echo message="Maven version: ${mv}" />
-                                <propertyregex property="ov.p1" input="${mv}" regexp="(\d+)(?:\.(\d+)(?:\.(\d+))?)?(?:[^a-zA-Z0-9](.*))?" replace="\1" defaultValue="0" />
-                                <propertyregex property="ov.p2" input="${mv}" regexp="(\d+)(?:\.(\d+)(?:\.(\d+))?)?(?:[^a-zA-Z0-9](.*))?" replace=".\2" defaultValue=".0" />
-                                <propertyregex property="ov.p3" input="${mv}" regexp="(\d+)(?:\.(\d+)(?:\.(\d+))?)?(?:[^a-zA-Z0-9](.*))?" replace=".\3" defaultValue=".0" />
-                                <propertyregex property="ov.p4" input="${mv}" regexp="(\d+)(?:\.(\d+)(?:\.(\d+))?)?(?:[^a-zA-Z0-9](.*))?" replace=".\4" defaultValue="" />
-                                <propertyregex property="ov.p1a" input="${ov.p1}" regexp="(.+)" replace="\1" defaultValue="0" />
-                                <propertyregex property="ov.p2a" input="${ov.p2}" regexp="(\..+)" replace="\1" defaultValue=".0" />
-                                <propertyregex property="ov.p3a" input="${ov.p3}" regexp="(\..+)" replace="\1" defaultValue=".0" />
-                                <propertyregex property="ov.p4a" input="${ov.p4}" regexp="(\..+)" replace="\1" defaultValue="" />
-                                <property name="ov" value="${ov.p1a}${ov.p2a}${ov.p3a}${ov.p4a}" />
-                                <property name="os" value="${ov.p1a}${ov.p2a}" />
-                                <echo message="OSGi version: ${ov}" />
-                                <mkdir dir="target" />
-                                <echo file="target/savoirtech.osgi.version.txt">
-                                    savoirtech.osgi.version.clean = ${ov}
-                                    savoirtech.schema.version = ${os}
-                                </echo>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                        <version>${jaxb-api-version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                        <version>${jaxb-version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-xjc</artifactId>
-                        <version>${jaxb-version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>ant-contrib</groupId>
-                        <artifactId>ant-contrib</artifactId>
-                        <version>1.0b3</version>
-                        <exclusions>
-                            <exclusion>
-                                <artifactId>ant</artifactId>
-                                <groupId>ant</groupId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>ant</groupId>
-                        <artifactId>ant-optional</artifactId>
-                        <version>1.5.3-1</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>properties-maven-plugin</artifactId>
-                <inherited>true</inherited>
-                <executions>
-                    <execution>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>read-project-properties</goal>
-                        </goals>
-                        <configuration>
-                            <files>
-                                <file>target/savoirtech.osgi.version.txt</file>
-                            </files>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.5</version>
-                <configuration>
-                    <useReleaseProfile>false</useReleaseProfile>
-                    <preparationGoals>clean install package source:jar javadoc:jar</preparationGoals>
-                    <goals>deploy</goals>
-                    <!--
-                    <arguments>-Prelease,deploy</arguments>
-                    -->
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <inherited>true</inherited>
-                <configuration>
-                    <excludeDependencies>${savoirtech.osgi.exclude.dependencies}</excludeDependencies>
-                    <instructions>
-                        <Bundle-Name>savoirtech-${project.artifactId}</Bundle-Name>
-                        <Bundle-SymbolicName>${savoirtech.osgi.symbolic.name}</Bundle-SymbolicName>
-                        <Bundle-Activator>${savoirtech.osgi.activator}</Bundle-Activator>
-                        <Export-Package>${savoirtech.osgi.export}</Export-Package>
-                        <Import-Package>${savoirtech.osgi.import}</Import-Package>
-                        <DynamicImport-Package>${savoirtech.osgi.dynamic}</DynamicImport-Package>
-                        <Private-Package>${savoirtech.osgi.private.pkg}</Private-Package>
-                        <Implementation-Title>Hecate</Implementation-Title>
-                        <Implementation-Version>${project.version}</Implementation-Version>
-                        <_versionpolicy>${savoirtech.osgi.import.default.version}</_versionpolicy>
-                        <_failok>${savoirtech.osgi.failok}</_failok>
-                        <Embed-Dependency>${savoirtech.osgi.embed}</Embed-Dependency>
-                        <Mutator-Classpath>${savoirtech.osgi.mutator}</Mutator-Classpath>
-                    </instructions>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>${maven.resources.plugin.version}</version>
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                    <escapeString>\</escapeString>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <inherited>false</inherited>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <descriptors>
-                        <descriptor>src/assembly/dist.xml</descriptor>
-                    </descriptors>
-                    <appendAssemblyId>false</appendAssemblyId>
-                    <tarLongFileMode>gnu</tarLongFileMode>
-                    <outputDirectory>${dist.dir}</outputDirectory>
-                    <finalName>${dist.name}</finalName>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
-                <configuration>
-                    <show>private</show>
-                    <nohelp>true</nohelp>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
-                <configuration>
-                    <useAgent>true</useAgent>
-                </configuration>
-            </plugin>
-
-        </plugins>
-
-    </build>
 
     <dependencyManagement>
         <dependencies>
@@ -462,81 +68,26 @@
             <dependency>
                 <groupId>com.datastax.cassandra</groupId>
                 <artifactId>cassandra-driver-core</artifactId>
-                <version>${datastax-driver-version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>guava</artifactId>
-                    </exclusion>
-                </exclusions>
+                <version>${cassandra-driver-version}</version>
             </dependency>
 
             <!-- Infrastructure -->
-
             <dependency>
-                <groupId>commons-pool</groupId>
-                <artifactId>commons-pool</artifactId>
-                <version>${commons-pool-version}</version>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>${commons-beanutils-version}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.ecyrd.speed4j</groupId>
-                <artifactId>speed4j</artifactId>
-                <version>${speed4j-version}</version>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>${commons-collections-version}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.github.stephenc</groupId>
-                <artifactId>jamm</artifactId>
-                <version>${jamm-version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.github.stephenc.eaio-uuid</groupId>
-                <artifactId>uuid</artifactId>
-                <version>${uuid-version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.cassandra</groupId>
-                <artifactId>cassandra-thrift</artifactId>
-                <version>${cassandra-version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${httpclient-version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpcore</artifactId>
-                <version>${httpcore-version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.thrift</groupId>
-                <artifactId>libthrift</artifactId>
-                <version>${libthrift-version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hectorclient</groupId>
-                <artifactId>hector-core</artifactId>
-                <version>${hectorcore-version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.cassandraunit</groupId>
-                <artifactId>cassandra-unit</artifactId>
-                <version>${cassandra-unit-version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.cassandra</groupId>
-                <artifactId>cassandra-all</artifactId>
-                <version>${cassandra-version}</version>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3-version}</version>
             </dependency>
 
             <dependency>
@@ -546,21 +97,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
-                <artifactId>concurrentlinkedhashmap-lru</artifactId>
-                <version>${concurrentLinkedHashMap-version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>biz.aQute</groupId>
-                <artifactId>bndlib</artifactId>
-                <version>${bndlib-version}</version>
-            </dependency>
-
-            <dependency>
-                <artifactId>junit</artifactId>
-                <groupId>junit</groupId>
-                <version>${junit-version}</version>
+                <groupId>com.codahale.metrics</groupId>
+                <artifactId>metrics-core</artifactId>
+                <version>${codahale-metrics-version}</version>
             </dependency>
 
         </dependencies>
@@ -576,12 +115,6 @@
             <version>${slf4j-version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3-version}</version>
-        </dependency>
-
         <!--
         Global Testing Dependencies
         -->
@@ -593,29 +126,32 @@
         </dependency>
 
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j-version}</version>
+            <groupId>org.cassandraunit</groupId>
+            <artifactId>cassandra-unit</artifactId>
+            <version>${cassandra-unit-version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>${log4j-version}</version>
+            <groupId>org.apache.cassandra</groupId>
+            <artifactId>cassandra-all</artifactId>
+            <version>${cassandra-version}</version>
             <scope>test</scope>
         </dependency>
 
-        <!-- Snappy is added  due to a MacOSX bug that prevents Cassandra from running
-                 due to  native library naming conventions.  This is fixed in Snappy 1.0.5
-                 and this should be able to be removed in later versions of Cassandra that
-                 ship with 1.0.5+.  This may be removed once Snappy of the right version
-                 is included with Cassandra and Cassandra Unit-->
         <dependency>
-            <groupId>org.xerial.snappy</groupId>
-            <artifactId>snappy-java</artifactId>
+            <groupId>org.apache.cassandra</groupId>
+            <artifactId>cassandra-thrift</artifactId>
+            <version>${cassandra-version}</version>
             <scope>test</scope>
-            <version>${snappyjava-version}</version>
         </dependency>
+
     </dependencies>
 
 </project>

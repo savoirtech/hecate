@@ -27,20 +27,6 @@
 
     <packaging>bundle</packaging>
 
-    <properties>
-
-        <savoirtech.osgi.export.pkg>
-            com.savoirtech.hecate.cql3*,
-
-        </savoirtech.osgi.export.pkg>
-
-        <savoirtech.osgi.import>
-            com.google.common*;version="[15,17.0)",
-            *
-        </savoirtech.osgi.import>
-
-    </properties>
-
     <name>SavoirTech ::: Hecate ::: CQL3</name>
 
     <dependencies>
@@ -51,38 +37,30 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.cassandra</groupId>
-            <artifactId>cassandra-all</artifactId>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.apache.cassandra</groupId>
-            <artifactId>cassandra-thrift</artifactId>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>15.0</version>
         </dependency>
 
         <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <version>1.9.2</version>
+            <groupId>com.codahale.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-compress</artifactId>
-            <version>1.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.cassandraunit</groupId>
-            <artifactId>cassandra-unit</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>
