@@ -22,6 +22,7 @@
         <feature version="${project.version}">hecate-pojo</feature>
         <feature version="${project.version}">hecate-gson</feature>
         <feature version="${project.version}">hecate-joda-time</feature>
+        <feature version="${project.version}">hecate-migrator</feature>
     </feature>
 
     <feature name="hecate-core" version="${project.version}">
@@ -52,6 +53,14 @@
         <bundle dependency="true">mvn:com.google.code.gson/gson/${gson.version}</bundle>
 
         <bundle>mvn:com.savoirtech.hecate/hecate-gson/${project.version}</bundle>
+    </feature>
+
+    <feature name="hecate-migrator" version="${project.version}">
+        <feature version="${project.version}">hecate-core</feature>
+
+        <bundle dependency="true">mvn:commons-codec/commons-codec/${commons.codec.version}</bundle>
+
+        <bundle>mvn:com.savoirtech.hecate/hecate-migrator/${project.version}</bundle>
     </feature>
 
     <feature name="hecate-joda-time" version="${project.version}">
