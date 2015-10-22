@@ -16,13 +16,13 @@
 
 package com.savoirtech.hecate.test;
 
+import java.util.function.Consumer;
+
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.After;
 import org.junit.Before;
-
-import java.util.function.Consumer;
 
 public class CassandraTestCase extends AbstractTestCase {
 //----------------------------------------------------------------------------------------------------------------------
@@ -58,7 +58,7 @@ public class CassandraTestCase extends AbstractTestCase {
 
     @Before
     public void initializeCassandra() throws Exception {
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+        EmbeddedCassandraServerHelper.startEmbeddedCassandra(30000);
         EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
         cluster = Cluster.builder().addContactPoint("localhost").withPort(9142).build();
         Session session = cluster.newSession();
