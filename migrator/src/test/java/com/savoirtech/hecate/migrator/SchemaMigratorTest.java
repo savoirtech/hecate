@@ -16,6 +16,7 @@
 
 package com.savoirtech.hecate.migrator;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 import com.savoirtech.hecate.migrator.exception.SchemaMigrationException;
@@ -25,10 +26,14 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import static com.datastax.driver.core.schemabuilder.SchemaBuilder.createTable;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class SchemaMigratorTest extends CassandraTestCase {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
     @Mock
     private SchemaMigration step1;
@@ -36,32 +41,14 @@ public class SchemaMigratorTest extends CassandraTestCase {
     @Mock
     private SchemaMigration step2;
 
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
     @Before
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
         SchemaMigrationMetadataRepositoryImpl.createMigrationTable(getSession());
-    }
-
-    @Test(expected = SchemaMigrationException.class)
-    public void testWithNoMigrationTable() {
-        getSession().execute(SchemaBuilder.dropTable(SchemaMigrationMetadataRepositoryImpl.METADATA_TABLE));
-        new SchemaMigrator().execute(new SchemaMigrationMetadataRepositoryImpl(getSession()));
-    }
-
-
-    @Test(expected = SchemaMigrationException.class)
-    public void testWithMigrationsOutOfSync() {
-        SchemaMigrationMetadataRepository repository = new SchemaMigrationMetadataRepositoryImpl(getSession());
-        repository.update(new SchemaMigrationMetadata(new SchemaMigrationDescriptor("foo", 1, step1)));
-        new SchemaMigrator().addMigration("foo", step1).execute(repository);
-    }
-
-    @Test
-    public void testExecutingAnotherProcessRunningAbort() {
-        SchemaMigrationMetadataRepository repository = new SchemaMigrationMetadataRepositoryImpl(getSession());
-        repository.update(new SchemaMigrationMetadata(new SchemaMigrationDescriptor("Mock Migration", 0, step1)));
-        new SchemaMigrator().addMigration("Mock Migration", step1).execute(repository);
-        verifyNoMoreInteractions(step1);
     }
 
     @Test
@@ -76,16 +63,61 @@ public class SchemaMigratorTest extends CassandraTestCase {
     }
 
     @Test
+    public void testExecutingAnotherProcessRunningAbort() {
+        SchemaMigrationMetadataRepository repository = new SchemaMigrationMetadataRepositoryImpl(getSession());
+        repository.update(new SchemaMigrationMetadata(new SchemaMigrationDescriptor("Mock Migration", 0, step1)));
+        new SchemaMigrator().addMigration("Mock Migration", step1).execute(repository);
+        verifyNoMoreInteractions(step1);
+    }
+
+    @Test
     public void testExecutingFingerprintMismatchAbort() {
         SchemaMigrationMetadataRepository repository = new SchemaMigrationMetadataRepositoryImpl(getSession());
-        SchemaMigrationMetadata metadata = new SchemaMigrationMetadata(new SchemaMigrationDescriptor("Mock Migration", 0, new BogusMigration()));
+        SchemaMigrationMetadata metadata = new SchemaMigrationMetadata(new SchemaMigrationDescriptor("Mock Migration", 0, new NoopMigration()));
         metadata.setStatus(SchemaMigrationStatus.Complete);
         repository.update(metadata);
         new SchemaMigrator().addMigration("Mock Migration", step1).execute(repository);
         verifyNoMoreInteractions(step1);
     }
 
-    private static class BogusMigration implements SchemaMigration {
+    @Test
+    public void testIdempotency() {
+        SchemaMigrationMetadataRepository repository = new SchemaMigrationMetadataRepositoryImpl(getSession());
+        new SchemaMigrator().addMigration("step1", new CreateTableMigration("table1")).execute(repository);
+        new SchemaMigrator().addMigration("step1", new CreateTableMigration("table1")).addMigration("step2", new CreateTableMigration("table2")).execute(repository);
+    }
+
+    @Test(expected = SchemaMigrationException.class)
+    public void testWithMigrationsOutOfSync() {
+        SchemaMigrationMetadataRepository repository = new SchemaMigrationMetadataRepositoryImpl(getSession());
+        repository.update(new SchemaMigrationMetadata(new SchemaMigrationDescriptor("foo", 1, step1)));
+        new SchemaMigrator().addMigration("foo", step1).execute(repository);
+    }
+
+    @Test(expected = SchemaMigrationException.class)
+    public void testWithNoMigrationTable() {
+        getSession().execute(SchemaBuilder.dropTable(SchemaMigrationMetadataRepositoryImpl.METADATA_TABLE));
+        new SchemaMigrator().execute(new SchemaMigrationMetadataRepositoryImpl(getSession()));
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    private static class CreateTableMigration implements SchemaMigration {
+        private final String tableName;
+
+        public CreateTableMigration(String tableName) {
+            this.tableName = tableName;
+        }
+
+        @Override
+        public void execute(Session session) {
+            session.execute(createTable(tableName).addPartitionKey("name", DataType.varchar()).addColumn("value", DataType.varchar()));
+        }
+    }
+
+    private static class NoopMigration implements SchemaMigration {
         @Override
         public void execute(Session session) {
             // Do nothing!

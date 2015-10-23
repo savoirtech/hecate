@@ -52,17 +52,19 @@ public class SchemaMigrator {
                 throw new SchemaMigrationException("Schema migrations out of sync.  Schema migration \"%s\" previously executed at position %d, but is currently at position %d.", descriptor.getId(), actual.getIndex(), expected.getIndex());
             }
             if (StringUtils.equals(expected.getToken(), actual.getToken())) {
-                LOGGER.info("Executing schema migration \"%s\"...", actual.getId());
+                LOGGER.info("Executing schema migration \"{}\"...", actual.getId());
                 descriptor.getSchemaMigration().execute(repository.getSession());
+                actual.setStatus(SchemaMigrationStatus.Complete);
+                repository.update(actual);
             } else {
                 if (actual.isRunning()) {
-                    LOGGER.error("Another process is current executing schema migration \"{}\", aborting.", actual.getId());
+                    LOGGER.error("Another process is currently executing schema migration \"{}\", aborting.", actual.getId());
                     return;
                 } else if (!StringUtils.equals(expected.getFingerprint(), actual.getFingerprint())) {
                     LOGGER.error("Schema migration \"{}\" has changed since it was executed (fingerprint mismatch), aborting.", actual.getId());
                     return;
                 }
-                LOGGER.info("Schema migration \"%s\" already complete, continuing...", actual.getId());
+                LOGGER.info("Schema migration \"{}\" already complete, continuing...", actual.getId());
             }
         }
     }
