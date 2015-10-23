@@ -16,15 +16,6 @@
 
 package com.savoirtech.hecate.migrator;
 
-import java.io.Serializable;
-
-import com.datastax.driver.core.Session;
-
-@FunctionalInterface
-public interface SchemaMigrationStep extends Serializable {
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    void execute(Session session);
+public enum SchemaMigrationStatus {
+    Running, Complete
 }

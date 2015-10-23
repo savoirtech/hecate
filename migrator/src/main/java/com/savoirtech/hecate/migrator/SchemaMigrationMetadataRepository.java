@@ -16,6 +16,15 @@
 
 package com.savoirtech.hecate.migrator;
 
-public enum SchemaMigrationStepStatus {
-    Running, Complete
+import com.datastax.driver.core.Session;
+
+public interface SchemaMigrationMetadataRepository {
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    void create(SchemaMigrationMetadata metadata);
+    SchemaMigrationMetadata retrieve(String id);
+    void update(SchemaMigrationMetadata metadata);
+    Session getSession();
 }

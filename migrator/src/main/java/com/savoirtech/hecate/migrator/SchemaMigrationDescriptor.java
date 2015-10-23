@@ -16,58 +16,38 @@
 
 package com.savoirtech.hecate.migrator;
 
-public class SchemaMigrationStepTracking {
+public class SchemaMigrationDescriptor {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private String id;
-    private int index;
-    private String token;
-    private SchemaMigrationStepStatus status;
-    private String fingerprint;
+    private final String id;
+    private final int index;
+    private final SchemaMigration schemaMigration;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
+    public SchemaMigrationDescriptor(String id, int index, SchemaMigration schemaMigration) {
+        this.id = id;
+        this.index = index;
+        this.schemaMigration = schemaMigration;
+    }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public String getFingerprint() {
-        return fingerprint;
-    }
-
-    public void setFingerprint(String fingerprint) {
-        this.fingerprint = fingerprint;
-    }
-
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public int getIndex() {
         return index;
     }
 
-    public void setIndex(int index) {
-        this.index = index;
-    }
-
-    public SchemaMigrationStepStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(SchemaMigrationStepStatus status) {
-        this.status = status;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
+    public SchemaMigration getSchemaMigration() {
+        return schemaMigration;
     }
 }
