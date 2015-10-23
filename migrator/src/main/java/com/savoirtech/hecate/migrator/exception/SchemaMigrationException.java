@@ -26,8 +26,4 @@ public class SchemaMigrationException extends HecateException {
     public SchemaMigrationException(String message, Object... args) {
         super(message, args);
     }
-
-    public SchemaMigrationException(Exception cause, String message, Object... args) {
-        super(cause, message, args);
-    }
 }
