@@ -16,7 +16,8 @@
 
 package com.savoirtech.hecate.migrator;
 
-import com.eaio.uuid.UUID;
+import java.util.UUID;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -49,7 +50,7 @@ public class SchemaMigrationMetadata {
     public SchemaMigrationMetadata(SchemaMigrationDescriptor descriptor) {
         this.id = descriptor.getId();
         this.index = descriptor.getIndex();
-        this.token = new UUID().toString();
+        this.token = UUID.randomUUID().toString();
         this.fingerprint = fingerprint(descriptor);
         this.status = SchemaMigrationStatus.Running;
     }

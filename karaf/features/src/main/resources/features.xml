@@ -29,7 +29,6 @@
         <bundle dependency="true">mvn:com.datastax.cassandra/cassandra-driver-core/${cassandra.driver.version}</bundle>
         <bundle dependency="true">mvn:io.netty/netty/${netty.version}</bundle>
         <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-core/${metrics.version}</bundle>
-
         <bundle>mvn:com.savoirtech.hecate/hecate-core/${project.version}</bundle>
     </feature>
 
