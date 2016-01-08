@@ -16,12 +16,12 @@
 
 package com.savoirtech.hecate.pojo.entities;
 
+import java.util.UUID;
+
 import com.savoirtech.hecate.annotation.Embedded;
 import com.savoirtech.hecate.annotation.Id;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import java.util.UUID;
 
 public class Person {
 //----------------------------------------------------------------------------------------------------------------------
@@ -36,6 +36,8 @@ public class Person {
 
     @Embedded
     private Address homeAddress;
+
+    private byte[] picture;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
@@ -65,6 +67,14 @@ public class Person {
         this.lastName = lastName;
     }
 
+    public byte[] getPicture() {
+        return picture;
+    }
+
+    public void setPicture(byte[] picture) {
+        this.picture = picture;
+    }
+
     public String getSsn() {
         return ssn;
     }
@@ -72,6 +82,10 @@ public class Person {
     public void setSsn(String ssn) {
         this.ssn = ssn;
     }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Canonical Methods
+//----------------------------------------------------------------------------------------------------------------------
 
     @Override
     public boolean equals(Object o) {

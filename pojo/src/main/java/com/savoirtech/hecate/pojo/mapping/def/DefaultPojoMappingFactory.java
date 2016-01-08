@@ -16,6 +16,10 @@
 
 package com.savoirtech.hecate.pojo.mapping.def;
 
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -39,10 +43,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class DefaultPojoMappingFactory implements PojoMappingFactory {
 //----------------------------------------------------------------------------------------------------------------------
@@ -128,17 +128,22 @@ public class DefaultPojoMappingFactory implements PojoMappingFactory {
 
     private void addMappings(Facet facet, List<FacetMapping> mappings) {
         GenericType facetType = facet.getType();
-        final ColumnType<?, ?> columnType = createColumnType(facet);
-        final Converter converter = converterRegistry.getConverter(facet.getType().getElementType());
-        if (facet.hasAnnotation(Embedded.class)) {
-            addEmbeddedMappings(facet, true, mappings, Facet::getName);
-        } else if (converter != null) {
-            LOGGER.debug("Creating scalar mapping for {}...", facet.getName());
-            mappings.add(new ScalarFacetMapping(facet, namingStrategy.getColumnName(facet), columnType, converter));
+        Converter converter = converterRegistry.getConverter(facetType.getRawType());
+        if (converter != null) {
+            mappings.add(new ScalarFacetMapping(facet, namingStrategy.getColumnName(facet), SimpleColumnType.INSTANCE, converter));
         } else {
-            LOGGER.debug("Creating reference mapping for {}...", facet.getName());
-            final String tableName = namingStrategy.getReferenceTableName(facet);
-            mappings.add(new ReferenceFacetMapping(facet, namingStrategy.getColumnName(facet), columnType, createPojoMapping(facetType.getElementType().getRawType(), tableName)));
+            final ColumnType<?, ?> columnType = createColumnType(facet);
+            converter = converterRegistry.getConverter(facet.getType().getElementType());
+            if (facet.hasAnnotation(Embedded.class)) {
+                addEmbeddedMappings(facet, true, mappings, Facet::getName);
+            } else if (converter != null) {
+                LOGGER.debug("Creating scalar mapping for {}...", facet.getName());
+                mappings.add(new ScalarFacetMapping(facet, namingStrategy.getColumnName(facet), columnType, converter));
+            } else {
+                LOGGER.debug("Creating reference mapping for {}...", facet.getName());
+                final String tableName = namingStrategy.getReferenceTableName(facet);
+                mappings.add(new ReferenceFacetMapping(facet, namingStrategy.getColumnName(facet), columnType, createPojoMapping(facetType.getElementType().getRawType(), tableName)));
+            }
         }
     }
 
