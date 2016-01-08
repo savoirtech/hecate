@@ -41,7 +41,7 @@
         <module>pojo</module>
         <module>gson</module>
         <module>joda-time</module>
-        <module>migrator</module>
+        <!--<module>migrator</module>-->
         <module>karaf</module>
     </modules>
 
