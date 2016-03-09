@@ -37,6 +37,7 @@ public class HydratorRowMapper<P> implements RowMapper<P> {
 
     private final PojoMapping<P> mapping;
     private final Hydrator hydrator;
+    private final List<Class> targetTypes;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -45,6 +46,7 @@ public class HydratorRowMapper<P> implements RowMapper<P> {
     public HydratorRowMapper(PojoMapping<P> mapping, Hydrator hydrator) {
         this.mapping = mapping;
         this.hydrator = hydrator;
+        targetTypes = mapping.getAllMappings().stream().map(m -> m.getFacet().getType().getRawType()).collect(Collectors.toList());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -69,7 +71,7 @@ public class HydratorRowMapper<P> implements RowMapper<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     protected FacetMappingVisitor createVisitor(Row row, final P pojo) {
-        List<Object> columns = CqlUtils.toList(row, mapping.getAllMappings().stream().map(mapping -> mapping.getFacet().getType().getRawType()).collect(Collectors.toList()));
+        List<Object> columns = CqlUtils.toList(row, targetTypes);
         Iterator<Object> columnValues = columns.iterator();
         return new RowVisitor(columnValues, pojo);
     }

@@ -82,10 +82,7 @@ public class DefaultHydrator implements Hydrator {
     @Override
     @SuppressWarnings("unchecked")
     public void resolveElements(PojoMapping<?> pojoMapping, Iterable<Object> cassandraValues, Consumer<Hydrator> callback) {
-
-            agenda.putAll(pojoMapping, cassandraValues);
-            callbacks.add(new ImmutablePair<>(pojoMapping, callback));
-
-
+        agenda.putAll(pojoMapping, cassandraValues);
+        callbacks.add(new ImmutablePair<>(pojoMapping, callback));
     }
 }

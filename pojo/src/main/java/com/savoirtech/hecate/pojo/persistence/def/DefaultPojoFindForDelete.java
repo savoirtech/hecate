@@ -41,6 +41,7 @@ public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements Poj
 //----------------------------------------------------------------------------------------------------------------------
 
     private final List<ReferenceFacetMapping> facetMappings;
+    private final List<Class> targetTypes;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -48,6 +49,7 @@ public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements Poj
 
     public DefaultPojoFindForDelete(PersistenceContext persistenceContext, PojoMapping<P> pojoMapping) {
         super(persistenceContext, pojoMapping);
+
         this.facetMappings = new LinkedList<>();
         for (FacetMapping mapping : pojoMapping.getSimpleMappings()) {
             mapping.accept(new FacetMappingVisitor() {
@@ -64,6 +66,7 @@ public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements Poj
                 }
             });
         }
+        targetTypes = facetMappings.stream().map(mapping -> mapping.getFacet().getType().getRawType()).collect(Collectors.toList());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -75,7 +78,7 @@ public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements Poj
         List<Object> parameters = Collections.singletonList(Lists.newArrayList(ids));
         ResultSet rows = executeStatement(parameters, options);
         for (Row row : rows) {
-            Iterator<Object> columnValues = CqlUtils.toList(row, facetMappings.stream().map(mapping -> mapping.getFacet().getType().getRawType()).collect(Collectors.toList())).iterator();
+            Iterator<Object> columnValues = CqlUtils.toList(row, targetTypes).iterator();
             for (ReferenceFacetMapping mapping : facetMappings) {
                 evaporator.evaporate(mapping.getElementMapping(), mapping.getColumnType().columnElements(columnValues.next()));
             }
