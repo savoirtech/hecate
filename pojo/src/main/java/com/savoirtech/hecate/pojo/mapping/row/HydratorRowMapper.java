@@ -16,6 +16,10 @@
 
 package com.savoirtech.hecate.pojo.mapping.row;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.datastax.driver.core.Row;
 import com.savoirtech.hecate.core.mapping.RowMapper;
 import com.savoirtech.hecate.core.util.CqlUtils;
@@ -25,9 +29,6 @@ import com.savoirtech.hecate.pojo.mapping.ReferenceFacetMapping;
 import com.savoirtech.hecate.pojo.mapping.ScalarFacetMapping;
 import com.savoirtech.hecate.pojo.persistence.Hydrator;
 import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
-
-import java.util.Iterator;
-import java.util.List;
 
 public class HydratorRowMapper<P> implements RowMapper<P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -54,8 +55,7 @@ public class HydratorRowMapper<P> implements RowMapper<P> {
     public P map(Row row) {
         P pojo = ReflectionUtils.newInstance(mapping.getPojoClass());
         FacetMappingVisitor visitor = createVisitor(row, pojo);
-        mapping.getIdMappings().forEach(mapping -> mapping.accept(visitor));
-        mapping.getSimpleMappings().forEach(mapping -> mapping.accept(visitor));
+        mapping.getAllMappings().forEach(mapping -> mapping.accept(visitor));
         return pojo;
     }
 
@@ -69,7 +69,7 @@ public class HydratorRowMapper<P> implements RowMapper<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     protected FacetMappingVisitor createVisitor(Row row, final P pojo) {
-        List<Object> columns = CqlUtils.toList(row);
+        List<Object> columns = CqlUtils.toList(row, mapping.getAllMappings().stream().map(mapping -> mapping.getFacet().getType().getRawType()).collect(Collectors.toList()));
         Iterator<Object> columnValues = columns.iterator();
         return new RowVisitor(columnValues, pojo);
     }

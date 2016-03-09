@@ -16,6 +16,15 @@
 
 package com.savoirtech.hecate.core.util;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.TupleType;
@@ -32,15 +41,6 @@ import com.savoirtech.hecate.test.CassandraTestCase;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
@@ -113,7 +113,7 @@ public class CqlUtilsTest extends CassandraTestCase {
             columns.stream().map(col -> "test_" + col.getLeft().getName()).forEach(selection::column);
             Select.Where select = selection.from("test_table").where(eq("id", 123));
             ResultSet result = session.execute(select);
-            List<Object> objects = CqlUtils.toList(result.one());
+            List<Object> objects = CqlUtils.toList(result.one(), Lists.newArrayList(String.class));
             for (int i = 0; i < columns.size(); ++i) {
                 ImmutablePair<DataType, Object> column = columns.get(i);
                 assertEquals("Column test_" + column.getLeft().getName() + " did not match.", column.getRight(), objects.get(i + 1));
@@ -126,7 +126,7 @@ public class CqlUtilsTest extends CassandraTestCase {
         withSession(session -> {
             session.execute("update counter_table set counter_value = counter_value + 1 where id = '1'");
             ResultSet rs = session.execute("select * from counter_table");
-            CqlUtils.toList(rs.one());
+            CqlUtils.toList(rs.one(), Lists.newArrayList(Integer.class));
         });
     }
 }

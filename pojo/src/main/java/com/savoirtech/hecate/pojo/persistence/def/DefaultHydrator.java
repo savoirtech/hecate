@@ -16,6 +16,10 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Consumer;
+
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.savoirtech.hecate.core.statement.StatementOptions;
@@ -25,10 +29,6 @@ import com.savoirtech.hecate.pojo.persistence.Hydrator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class DefaultHydrator implements Hydrator {
 //----------------------------------------------------------------------------------------------------------------------
@@ -82,7 +82,10 @@ public class DefaultHydrator implements Hydrator {
     @Override
     @SuppressWarnings("unchecked")
     public void resolveElements(PojoMapping<?> pojoMapping, Iterable<Object> cassandraValues, Consumer<Hydrator> callback) {
-        agenda.putAll(pojoMapping, cassandraValues);
-        callbacks.add(new ImmutablePair<>(pojoMapping, callback));
+
+            agenda.putAll(pojoMapping, cassandraValues);
+            callbacks.add(new ImmutablePair<>(pojoMapping, callback));
+
+
     }
 }

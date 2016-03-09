@@ -16,6 +16,12 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -28,11 +34,6 @@ import com.savoirtech.hecate.pojo.mapping.*;
 import com.savoirtech.hecate.pojo.persistence.Evaporator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoFindForDelete;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements PojoFindForDelete {
 //----------------------------------------------------------------------------------------------------------------------
@@ -74,7 +75,7 @@ public class DefaultPojoFindForDelete<P> extends PojoStatement<P> implements Poj
         List<Object> parameters = Collections.singletonList(Lists.newArrayList(ids));
         ResultSet rows = executeStatement(parameters, options);
         for (Row row : rows) {
-            Iterator<Object> columnValues = CqlUtils.toList(row).iterator();
+            Iterator<Object> columnValues = CqlUtils.toList(row, facetMappings.stream().map(mapping -> mapping.getFacet().getType().getRawType()).collect(Collectors.toList())).iterator();
             for (ReferenceFacetMapping mapping : facetMappings) {
                 evaporator.evaporate(mapping.getElementMapping(), mapping.getColumnType().columnElements(columnValues.next()));
             }

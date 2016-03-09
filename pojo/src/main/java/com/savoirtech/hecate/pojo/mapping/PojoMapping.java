@@ -16,19 +16,20 @@
 
 package com.savoirtech.hecate.pojo.mapping;
 
-import com.savoirtech.hecate.annotation.Cascade;
-import com.savoirtech.hecate.annotation.ClusteringColumn;
-import com.savoirtech.hecate.annotation.PartitionKey;
-import com.savoirtech.hecate.annotation.Ttl;
-import com.savoirtech.hecate.core.exception.HecateException;
-import org.apache.commons.lang3.Validate;
-
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.google.common.collect.Lists;
+import com.savoirtech.hecate.annotation.Cascade;
+import com.savoirtech.hecate.annotation.ClusteringColumn;
+import com.savoirtech.hecate.annotation.PartitionKey;
+import com.savoirtech.hecate.annotation.Ttl;
+import com.savoirtech.hecate.core.exception.HecateException;
+import org.apache.commons.lang3.Validate;
 
 public class PojoMapping<P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -126,6 +127,11 @@ public class PojoMapping<P> {
         }
     }
 
+    public List<FacetMapping> getAllMappings() {
+        List<FacetMapping> all = Lists.newLinkedList(idMappings);
+        all.addAll(simpleMappings);
+        return all;
+    }
     public List<FacetMapping> getIdMappings() {
         return Collections.unmodifiableList(idMappings);
     }

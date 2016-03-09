@@ -16,37 +16,46 @@
 
 package com.savoirtech.hecate.core.util;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.BiFunction;
+
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
 import com.savoirtech.hecate.core.exception.HecateException;
-
-import java.util.LinkedList;
-import java.util.List;
 
 public class CqlUtils {
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public static Object getValue(Row row, int columnIndex, DataType dataType) {
+    private static Object getPrimitive(Row row, int columnIndex, Class<?> targetType, BiFunction<Row, Integer, Object> extractor) {
+        if (row.isNull(columnIndex) && !targetType.isPrimitive()) {
+            return null;
+        } else {
+            return extractor.apply(row, columnIndex);
+        }
+    }
+
+    public static Object getValue(Row row, int columnIndex, DataType dataType, Class<?> targetType) {
         switch (dataType.getName()) {
             case ASCII:
             case VARCHAR:
             case TEXT:
                 return row.getString(columnIndex);
             case BIGINT:
-                return row.getLong(columnIndex);
+                return getPrimitive(row, columnIndex, targetType, Row::getLong);
             case BOOLEAN:
-                return row.getBool(columnIndex);
+                return getPrimitive(row, columnIndex, targetType, Row::getBool);
             case DECIMAL:
                 return row.getDecimal(columnIndex);
             case DOUBLE:
-                return row.getDouble(columnIndex);
+                return getPrimitive(row, columnIndex, targetType, Row::getDouble);
             case FLOAT:
-                return row.getFloat(columnIndex);
+                return getPrimitive(row, columnIndex, targetType, Row::getFloat);
             case INT:
-                return row.getInt(columnIndex);
+                return getPrimitive(row, columnIndex, targetType, Row::getInt);
             case TIMESTAMP:
                 return row.getDate(columnIndex);
             case UUID:
@@ -71,11 +80,11 @@ public class CqlUtils {
         }
     }
 
-    public static List<Object> toList(Row row) {
+    public static List<Object> toList(Row row, List<Class> targetTypes) {
         List<Object> results = new LinkedList<>();
         int index = 0;
         for (ColumnDefinitions.Definition def : row.getColumnDefinitions()) {
-            results.add(getValue(row, index, def.getType()));
+            results.add(getValue(row, index, def.getType(), targetTypes.get(0)));
             index++;
         }
         return results;

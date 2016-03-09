@@ -724,4 +724,20 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertEquals(1, found.size());
     }
 
+    @Test
+    public void testNullWrappers() {
+        PojoDao<String,WrapperPojo> wrapperPojo = getFactory().createPojoDao(WrapperPojo.class);
+
+        WrapperPojo pojo = new WrapperPojo();
+        wrapperPojo.save(pojo);
+
+        WrapperPojo queried = wrapperPojo.findById(pojo.getId());
+
+        assertNull(queried.getBooleanWrapper());
+        assertNull(queried.getDoubleWrapper());
+        assertNull(queried.getFloatWrapper());
+        assertNull(queried.getIntWrapper());
+        assertNull(queried.getLongWrapper());
+    }
+
 }
