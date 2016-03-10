@@ -33,8 +33,12 @@ public class BatchUpdateGroup implements UpdateGroup {
 //----------------------------------------------------------------------------------------------------------------------
 
     public BatchUpdateGroup(Session session) {
+        this(session, BatchStatement.Type.LOGGED);
+    }
+
+    public BatchUpdateGroup(Session session, BatchStatement.Type batchType) {
         this.session = session;
-        this.batchStatement = new BatchStatement(BatchStatement.Type.LOGGED);
+        this.batchStatement = new BatchStatement(batchType);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
