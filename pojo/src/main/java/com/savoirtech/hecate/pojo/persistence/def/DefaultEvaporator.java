@@ -16,17 +16,15 @@
 
 package com.savoirtech.hecate.pojo.persistence.def;
 
-import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
-import com.datastax.driver.core.ResultSetFuture;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.Uninterruptibles;
-import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.core.update.UpdateGroup;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.Evaporator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
@@ -40,14 +38,16 @@ public class DefaultEvaporator implements Evaporator {
     private final Multimap<PojoMapping<?>, Object> visited = MultimapBuilder.hashKeys().hashSetValues().build();
     private final PersistenceContext persistenceContext;
     private final StatementOptions options;
+    private final UpdateGroup updateGroup;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultEvaporator(PersistenceContext persistenceContext, StatementOptions options) {
+    public DefaultEvaporator(PersistenceContext persistenceContext, StatementOptions options, UpdateGroup updateGroup) {
         this.persistenceContext = persistenceContext;
         this.options = options;
+        this.updateGroup = updateGroup;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -76,14 +76,8 @@ public class DefaultEvaporator implements Evaporator {
                 }
             });
         }
-        final List<ResultSetFuture> futures = new LinkedList<>();
         for (PojoMapping<?> pojoMapping : visited.keySet()) {
-            persistenceContext.delete(pojoMapping).delete(futures, visited.get(pojoMapping), options);
-        }
-        try {
-            Uninterruptibles.getUninterruptibly(Futures.allAsList(futures));
-        } catch (ExecutionException e) {
-            throw new HecateException(e, "An error occurred while waiting for delete statements to finish.");
+            persistenceContext.delete(pojoMapping).delete(updateGroup, visited.get(pojoMapping), options);
         }
     }
 }

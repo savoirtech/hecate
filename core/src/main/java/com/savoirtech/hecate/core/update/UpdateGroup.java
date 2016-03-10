@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2016 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.persistence;
+package com.savoirtech.hecate.core.update;
 
-import com.savoirtech.hecate.core.statement.StatementOptions;
-import com.savoirtech.hecate.core.update.UpdateGroup;
+import com.datastax.driver.core.Statement;
 
-public interface PojoDelete<P> {
+public interface UpdateGroup {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
-
-    void delete(UpdateGroup updateGroup, Iterable<Object> ids, StatementOptions options);
+    void addUpdate(Statement statement);
+    void commit();
 }

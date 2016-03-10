@@ -16,13 +16,13 @@
 
 package com.savoirtech.hecate.pojo.persistence;
 
-import com.datastax.driver.core.ResultSetFuture;
 import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.core.update.UpdateGroup;
 
 public interface PojoInsert<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    ResultSetFuture insert(P pojo, Dehydrator dehydrator, int ttl, StatementOptions options);
+    void insert(UpdateGroup updateGroup, P pojo, Dehydrator dehydrator, int ttl, StatementOptions options);
 }

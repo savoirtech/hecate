@@ -20,10 +20,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.core.update.UpdateGroup;
 import com.savoirtech.hecate.pojo.mapping.*;
 import com.savoirtech.hecate.pojo.persistence.Dehydrator;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
@@ -46,12 +46,12 @@ public class DefaultPojoInsert<P> extends PojoStatement<P> implements PojoInsert
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public ResultSetFuture insert(P pojo, Dehydrator dehydrator, int ttl, StatementOptions options) {
+    public void insert(UpdateGroup updateGroup, P pojo, Dehydrator dehydrator, int ttl, StatementOptions options) {
         List<Object> parameters = new LinkedList<>();
         collectParameters(parameters, pojo, dehydrator, getPojoMapping().getIdMappings());
         collectParameters(parameters, pojo, dehydrator, getPojoMapping().getSimpleMappings());
         parameters.add(ttl);
-        return executeStatementAsync(parameters, options);
+        executeUpdate(updateGroup, parameters, options);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

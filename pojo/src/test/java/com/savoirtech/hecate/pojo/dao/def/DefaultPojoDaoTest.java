@@ -27,6 +27,7 @@ import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.google.common.collect.Sets;
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
+import com.savoirtech.hecate.core.update.BatchUpdateGroup;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.*;
 import com.savoirtech.hecate.pojo.entities.time.*;
@@ -738,6 +739,41 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertNull(queried.getFloatWrapper());
         assertNull(queried.getIntWrapper());
         assertNull(queried.getLongWrapper());
+    }
+
+    @Test
+    public void testSaveWithBatch() {
+        DefaultPojoDaoFactory factory = getFactory();
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        BatchUpdateGroup group = new BatchUpdateGroup(getSession());
+        dao.save(group, pojo);
+
+        SimplePojo found = dao.findById(pojo.getId());
+        assertNull(found);
+
+        group.commit();
+
+        found = dao.findById(pojo.getId());
+        assertNotNull(found);
+        assertEquals("name", found.getName());
+        assertEquals(pojo.getId(), found.getId());
+    }
+
+    @Test
+    public void testDeleteWithBatch() throws Exception {
+        DefaultPojoDaoFactory factory = getFactory();
+        final PojoDao<String, SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+        final SimplePojo pojo = new SimplePojo();
+        pojo.setName("name");
+        dao.save(pojo);
+        assertNotNull(dao.findById(pojo.getId()));
+        BatchUpdateGroup group = new BatchUpdateGroup(getSession());
+        dao.delete(group, pojo.getId());
+        assertNotNull(dao.findById(pojo.getId()));
+        group.commit();
+        assertNull(dao.findById(pojo.getId()));
     }
 
 }

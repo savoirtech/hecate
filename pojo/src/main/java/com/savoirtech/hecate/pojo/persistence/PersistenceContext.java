@@ -18,6 +18,7 @@ package com.savoirtech.hecate.pojo.persistence;
 
 import com.datastax.driver.core.*;
 import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.core.update.UpdateGroup;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 
 
@@ -26,17 +27,17 @@ public interface PersistenceContext {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    Dehydrator createDehydrator(int ttl, StatementOptions statementModifiers);
+    Dehydrator createDehydrator(UpdateGroup updateGroup, int ttl, StatementOptions statementModifiers);
 
-    Evaporator createEvaporator(StatementOptions options);
+    Evaporator createEvaporator(UpdateGroup updateGroup, StatementOptions options);
 
     Hydrator createHydrator(StatementOptions options);
 
     <P> PojoDelete delete(PojoMapping<P> mapping);
 
-    ResultSetFuture executeStatementAsync(Statement statement, StatementOptions options);
+    Statement applyOptions(Statement statement, StatementOptions options);
 
-    ResultSet executeStatement(Statement statement, StatementOptions options);
+    Session getSession();
 
     <P> PojoQueryBuilder<P> find(PojoMapping<P> mapping);
 
@@ -49,4 +50,6 @@ public interface PersistenceContext {
     <P> PojoInsert<P> insert(PojoMapping<P> mapping);
 
     PreparedStatement prepare(RegularStatement statement);
+
+    UpdateGroup createUpdateGroup();
 }

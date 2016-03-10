@@ -21,18 +21,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.google.common.collect.Lists;
 import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.core.update.UpdateGroup;
 import com.savoirtech.hecate.pojo.mapping.FacetMapping;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import com.savoirtech.hecate.pojo.persistence.PojoDelete;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.in;
 
 public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete<P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -48,7 +46,7 @@ public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void delete(List<ResultSetFuture> futures, Iterable<Object> ids, StatementOptions options) {
+    public void delete(UpdateGroup updateGroup, Iterable<Object> ids, StatementOptions options) {
         List<FacetMapping> idMappings = getPojoMapping().getIdMappings();
         if (idMappings.size() > 1) {
             for (Object compositeKey : ids) {
@@ -56,11 +54,13 @@ public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete
                     final Object facetValue = mapping.getFacet().flatten().getValue(compositeKey);
                     return mapping.getColumnValueForFacetValue(facetValue);
                 }).collect(Collectors.toList());
-                futures.add(executeStatementAsync(parameters, options));
+                executeUpdate(updateGroup, parameters, options);
             }
         } else {
             final FacetMapping mapping = idMappings.get(0);
-            futures.add(executeStatementAsync(Collections.singletonList(Lists.newLinkedList(ids).stream().map(mapping::getColumnValueForFacetValue).collect(Collectors.toList())), options));
+            for (Object id : ids) {
+                executeUpdate(updateGroup, Collections.singletonList(mapping.getColumnValueForFacetValue(id)), options);
+            }
         }
     }
 
@@ -71,11 +71,7 @@ public class DefaultPojoDelete<P> extends PojoStatement<P> implements PojoDelete
     @Override
     protected RegularStatement createStatement() {
         Delete.Where delete = QueryBuilder.delete().from(getPojoMapping().getTableName()).where();
-        if (getPojoMapping().getIdMappings().size() > 1) {
-            getPojoMapping().getIdMappings().forEach(mapping -> delete.and(QueryBuilder.eq(mapping.getColumnName(), bindMarker())));
-        } else {
-            getPojoMapping().getIdMappings().forEach(mapping -> delete.and(in(mapping.getColumnName(), bindMarker())));
-        }
+        getPojoMapping().getIdMappings().forEach(mapping -> delete.and(QueryBuilder.eq(mapping.getColumnName(), bindMarker())));
         return delete;
     }
 }

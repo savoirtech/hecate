@@ -22,6 +22,8 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
+import com.savoirtech.hecate.core.update.AsyncUpdateGroup;
+import com.savoirtech.hecate.core.update.UpdateGroup;
 import com.savoirtech.hecate.pojo.cache.def.DefaultPojoCache;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.*;
@@ -58,14 +60,21 @@ public class DefaultPersistenceContext implements PersistenceContext {
 // PersistenceContext Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Override
-    public Dehydrator createDehydrator(int ttl, StatementOptions options) {
-        return new DefaultDehydrator(this, ttl, options);
+
+    public Statement applyOptions(Statement statement, StatementOptions options) {
+        defaultOptions.applyTo(statement);
+        options.applyTo(statement);
+        return statement;
     }
 
     @Override
-    public Evaporator createEvaporator(StatementOptions options) {
-        return new DefaultEvaporator(this, options);
+    public Dehydrator createDehydrator(UpdateGroup updateGroup, int ttl, StatementOptions options) {
+        return new DefaultDehydrator(this, ttl, options, updateGroup);
+    }
+
+    @Override
+    public Evaporator createEvaporator(UpdateGroup updateGroup, StatementOptions options) {
+        return new DefaultEvaporator(this, options, updateGroup);
     }
 
     @Override
@@ -75,20 +84,13 @@ public class DefaultPersistenceContext implements PersistenceContext {
     }
 
     @Override
-    public <P> PojoDelete delete(PojoMapping<P> mapping) {
-        return deleteCache.getUnchecked(mapping);
-    }
-    
-    @Override
-    public ResultSet executeStatement(Statement statement, StatementOptions options) {
-        return executeStatementAsync(statement, options).getUninterruptibly();
+    public UpdateGroup createUpdateGroup() {
+        return new AsyncUpdateGroup(session);
     }
 
     @Override
-    public ResultSetFuture executeStatementAsync(Statement statement, StatementOptions options) {
-        defaultOptions.applyTo(statement);
-        options.applyTo(statement);
-        return session.executeAsync(statement);
+    public <P> PojoDelete delete(PojoMapping<P> mapping) {
+        return deleteCache.getUnchecked(mapping);
     }
 
     @Override
@@ -111,6 +113,11 @@ public class DefaultPersistenceContext implements PersistenceContext {
     @Override
     public <P> PojoFindForDelete findForDelete(PojoMapping<P> mapping) {
         return findForDeleteCache.getUnchecked(mapping);
+    }
+
+    @Override
+    public Session getSession() {
+        return session;
     }
 
     @Override

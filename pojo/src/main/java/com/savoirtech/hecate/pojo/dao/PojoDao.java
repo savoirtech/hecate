@@ -19,6 +19,7 @@ package com.savoirtech.hecate.pojo.dao;
 import com.savoirtech.hecate.core.query.QueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
+import com.savoirtech.hecate.core.update.UpdateGroup;
 import com.savoirtech.hecate.pojo.persistence.PojoQueryBuilder;
 
 public interface PojoDao<I, P> {
@@ -55,4 +56,23 @@ public interface PojoDao<I, P> {
     }
 
     void save(P pojo, int ttl, StatementOptions options);
+
+
+    default void delete(UpdateGroup updateGroup, I id) {
+        delete(updateGroup, id, StatementOptionsBuilder.empty());
+    }
+
+    void delete(UpdateGroup updateGroup, I id, StatementOptions options);
+
+    default void save(UpdateGroup updateGroup, P pojo) {
+        save(updateGroup, pojo, StatementOptionsBuilder.empty());
+    }
+
+    void save(UpdateGroup updateGroup, P pojo, StatementOptions options);
+
+    default void save(UpdateGroup updateGroup, P pojo, int ttl) {
+        save(updateGroup, pojo, ttl, StatementOptionsBuilder.empty());
+    }
+
+    void save(UpdateGroup updateGroup, P pojo, int ttl, StatementOptions options);
 }

@@ -22,6 +22,7 @@ import com.datastax.driver.core.*;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.core.update.UpdateGroup;
 import com.savoirtech.hecate.pojo.mapping.PojoMapping;
 import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
 import org.slf4j.Logger;
@@ -85,14 +86,21 @@ public abstract class PojoStatement<P> implements Supplier<PreparedStatement> {
 //----------------------------------------------------------------------------------------------------------------------
 
     protected ResultSet executeStatement(List<Object> parameters, StatementOptions options) {
-        getLogger().debug("CQL: {} with parameters {}", statementSupplier.get().getQueryString(), parameters);
-        BoundStatement boundStatement = statementSupplier.get().bind(parameters.toArray(new Object[parameters.size()]));
-        return persistenceContext.executeStatement(boundStatement, options);
+        return persistenceContext.getSession().execute(prepareStatement(parameters, options));
     }
 
     protected ResultSetFuture executeStatementAsync(List<Object> parameters, StatementOptions options) {
+        return persistenceContext.getSession().executeAsync(prepareStatement(parameters, options));
+    }
+
+    protected void executeUpdate(UpdateGroup updateGroup, List<Object> parameters, StatementOptions options) {
+        updateGroup.addUpdate(prepareStatement(parameters, options));
+    }
+
+    private BoundStatement prepareStatement(List<Object> parameters, StatementOptions options) {
         getLogger().debug("CQL: {} with parameters {}", statementSupplier.get().getQueryString(), parameters);
-        BoundStatement boundStatement = statementSupplier.get().bind(parameters.toArray(new Object[parameters.size()]));
-        return persistenceContext.executeStatementAsync(boundStatement, options);
+        BoundStatement statement = statementSupplier.get().bind(parameters.toArray(new Object[parameters.size()]));
+        getPersistenceContext().applyOptions(statement, options);
+        return statement;
     }
 }
