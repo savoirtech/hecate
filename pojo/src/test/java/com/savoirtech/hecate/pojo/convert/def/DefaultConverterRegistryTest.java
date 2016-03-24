@@ -19,7 +19,7 @@ package com.savoirtech.hecate.pojo.convert.def;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
 import com.savoirtech.hecate.pojo.type.GenericType;
-import com.savoirtech.hecate.pojo.util.Gender;
+import com.savoirtech.hecate.pojo.cql.Gender;
 import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 

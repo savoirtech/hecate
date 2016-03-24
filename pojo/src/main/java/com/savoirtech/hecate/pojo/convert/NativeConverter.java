@@ -16,13 +16,13 @@
 
 package com.savoirtech.hecate.pojo.convert;
 
-import com.datastax.driver.core.DataType;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.Date;
+
+import com.datastax.driver.core.DataType;
 
 public final class NativeConverter implements Converter {
 //----------------------------------------------------------------------------------------------------------------------
@@ -30,11 +30,22 @@ public final class NativeConverter implements Converter {
 //----------------------------------------------------------------------------------------------------------------------
 
     public static final Converter BOOLEAN = new NativeConverter(Boolean.class, DataType.cboolean());
+    public static final Converter BOOLEAN_TYPE = new NativeConverter(Boolean.TYPE, DataType.cboolean(), Boolean.FALSE);
+
     public static final Converter DATE = new NativeConverter(Date.class, DataType.timestamp());
+
     public static final Converter DOUBLE = new NativeConverter(Double.class, DataType.cdouble());
+    public static final Converter DOUBLE_TYPE = new NativeConverter(Double.TYPE, DataType.cdouble(), 0.0);
+
     public static final Converter FLOAT = new NativeConverter(Float.class, DataType.cfloat());
+    public static final Converter FLOAT_TYPE = new NativeConverter(Float.TYPE, DataType.cfloat(), 0.0f);
+
     public static final Converter INTEGER = new NativeConverter(Integer.class, DataType.cint());
+    public static final Converter INTEGER_TYPE = new NativeConverter(Integer.TYPE, DataType.cint(), 0);
+
     public static final Converter LONG = new NativeConverter(Long.class, DataType.bigint());
+    public static final Converter LONG_TYPE = new NativeConverter(Long.TYPE, DataType.bigint(), 0L);
+
     public static final Converter UUID = new NativeConverter(java.util.UUID.class, DataType.uuid());
     public static final Converter STRING = new NativeConverter(String.class, DataType.varchar());
     public static final Converter INET = new NativeConverter(InetAddress.class, DataType.inet());
@@ -44,14 +55,20 @@ public final class NativeConverter implements Converter {
 
     private final Class<?> valueType;
     private final DataType dataType;
+    private final Object defaultFacetValue;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
     private NativeConverter(Class<?> valueType, DataType dataType) {
+        this(valueType, dataType, null);
+    }
+
+    public NativeConverter(Class<?> valueType, DataType dataType, Object defaultFacetValue) {
         this.valueType = valueType;
         this.dataType = dataType;
+        this.defaultFacetValue = defaultFacetValue;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -76,6 +93,6 @@ public final class NativeConverter implements Converter {
     @Override
     @SuppressWarnings("unchecked")
     public Object toFacetValue(Object value) {
-        return value;
+        return value == null ? defaultFacetValue : value;
     }
 }

@@ -113,7 +113,7 @@ public class CqlUtilsTest extends CassandraTestCase {
             columns.stream().map(col -> "test_" + col.getLeft().getName()).forEach(selection::column);
             Select.Where select = selection.from("test_table").where(eq("id", 123));
             ResultSet result = session.execute(select);
-            List<Object> objects = CqlUtils.toList(result.one(), Lists.newArrayList(String.class));
+            List<Object> objects = CqlUtils.toList(result.one());
             for (int i = 0; i < columns.size(); ++i) {
                 ImmutablePair<DataType, Object> column = columns.get(i);
                 assertEquals("Column test_" + column.getLeft().getName() + " did not match.", column.getRight(), objects.get(i + 1));
@@ -126,7 +126,7 @@ public class CqlUtilsTest extends CassandraTestCase {
         withSession(session -> {
             session.execute("update counter_table set counter_value = counter_value + 1 where id = '1'");
             ResultSet rs = session.execute("select * from counter_table");
-            CqlUtils.toList(rs.one(), Lists.newArrayList(Integer.class));
+            CqlUtils.toList(rs.one());
         });
     }
 }

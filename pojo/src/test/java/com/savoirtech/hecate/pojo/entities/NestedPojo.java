@@ -16,16 +16,16 @@
 
 package com.savoirtech.hecate.pojo.entities;
 
-import com.savoirtech.hecate.annotation.Id;
-
 import java.util.UUID;
+
+import com.savoirtech.hecate.annotation.PartitionKey;
 
 public class NestedPojo {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Id
+    @PartitionKey
     private String id = UUID.randomUUID().toString();
 
     private String data;

@@ -17,7 +17,7 @@
 package com.savoirtech.hecate.pojo.convert.enumeration;
 
 import com.savoirtech.hecate.pojo.convert.Converter;
-import com.savoirtech.hecate.pojo.util.Gender;
+import com.savoirtech.hecate.pojo.cql.Gender;
 import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 

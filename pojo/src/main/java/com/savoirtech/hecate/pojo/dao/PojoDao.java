@@ -16,63 +16,52 @@
 
 package com.savoirtech.hecate.pojo.dao;
 
-import com.savoirtech.hecate.core.query.QueryResult;
-import com.savoirtech.hecate.core.statement.StatementOptions;
-import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
-import com.savoirtech.hecate.core.update.UpdateGroup;
-import com.savoirtech.hecate.pojo.persistence.PojoQueryBuilder;
+import java.util.function.Consumer;
 
-public interface PojoDao<I, P> {
+import com.datastax.driver.core.querybuilder.Select;
+import com.savoirtech.hecate.core.statement.StatementOptions;
+import com.savoirtech.hecate.core.update.UpdateGroup;
+import com.savoirtech.hecate.pojo.query.PojoQuery;
+import com.savoirtech.hecate.pojo.query.PojoQueryBuilder;
+
+public interface PojoDao<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    default void delete(I id) {
-        delete(id, StatementOptionsBuilder.empty());
-    }
+    P findByKeys(Object... keys);
 
-    void delete(I id, StatementOptions options);
+    P findByKeys(StatementOptions options, Object... keys);
+
+    void delete(P pojo);
+
+    void delete(StatementOptions options, P pojo);
+
+    void delete(UpdateGroup group, StatementOptions options, P pojo);
+
+    void deleteByKeys(Object... keys);
+
+    void deleteByKeys(StatementOptions options, Object... keys);
+
+    void deleteByKeys(UpdateGroup group, StatementOptions options, Object... keys);
 
     PojoQueryBuilder<P> find();
 
-    P findById(I id);
+    PojoQuery<P> find(Consumer<Select.Where> builder);
 
-    P findById(I id, StatementOptions options);
+    void save(P pojo);
 
-    default QueryResult<P> findByIds(Iterable<I> ids) {
-        return findByIds(ids, StatementOptionsBuilder.empty());
-    }
+    void save(P pojo, int ttl);
 
-    QueryResult<P> findByIds(Iterable<I> ids, StatementOptions options);
+    void save(StatementOptions options, P pojo);
 
-    default void save(P pojo) {
-        save(pojo, StatementOptionsBuilder.empty());
-    }
+    void save(StatementOptions options, P pojo, int ttl);
 
-    void save(P pojo, StatementOptions options);
+    void save(UpdateGroup group, P pojo);
 
-    default void save(P pojo, int ttl) {
-        save(pojo, ttl, StatementOptionsBuilder.empty());
-    }
+    void save(UpdateGroup group, P pojo, int ttl);
 
-    void save(P pojo, int ttl, StatementOptions options);
+    void save(UpdateGroup group, StatementOptions options, P pojo);
 
-
-    default void delete(UpdateGroup updateGroup, I id) {
-        delete(updateGroup, id, StatementOptionsBuilder.empty());
-    }
-
-    void delete(UpdateGroup updateGroup, I id, StatementOptions options);
-
-    default void save(UpdateGroup updateGroup, P pojo) {
-        save(updateGroup, pojo, StatementOptionsBuilder.empty());
-    }
-
-    void save(UpdateGroup updateGroup, P pojo, StatementOptions options);
-
-    default void save(UpdateGroup updateGroup, P pojo, int ttl) {
-        save(updateGroup, pojo, ttl, StatementOptionsBuilder.empty());
-    }
-
-    void save(UpdateGroup updateGroup, P pojo, int ttl, StatementOptions options);
+    void save(UpdateGroup group, StatementOptions options, P pojo, int ttl);
 }

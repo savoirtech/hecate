@@ -17,8 +17,9 @@
 package com.savoirtech.hecate.pojo.test;
 
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.schemabuilder.Create;
+import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactory;
-import com.savoirtech.hecate.pojo.mapping.verify.CreateSchemaVerifier;
 import com.savoirtech.hecate.test.CassandraTestCase;
 import org.junit.Before;
 
@@ -30,20 +31,27 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
     private DefaultPojoDaoFactory factory;
 
 //----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    public DefaultPojoDaoFactory getFactory() {
-        return factory;
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
     @Before
     public void createDaoFactory() {
         Session session = getSession();
-        this.factory = new DefaultPojoDaoFactory(session, new CreateSchemaVerifier(session));
+        this.factory = new DefaultPojoDaoFactory(session);
+    }
+
+    protected <P> PojoDao<P> createPojoDao(Class<P> pojoType) {
+        createTable(pojoType);
+        return factory.createPojoDao(pojoType);
+    }
+
+    protected void createTable(Class<?> pojoType) {
+        createTable(pojoType, factory.getNamingStrategy().getTableName(pojoType));
+    }
+
+    protected void createTable(Class<?> pojoType, String tableName) {
+        Create create = factory.getBindingFactory().createPojoBinding(pojoType).createTable(tableName);
+        logger.info("Creating \"{}\" table for class \"{}\":\n\t{}\n", tableName, pojoType.getSimpleName(), create);
+        getSession().execute(create);
     }
 }

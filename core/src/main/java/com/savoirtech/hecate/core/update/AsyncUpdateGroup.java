@@ -54,7 +54,7 @@ public class AsyncUpdateGroup implements UpdateGroup {
     }
 
     @Override
-    public void commit() {
+    public void complete() {
         try {
             Uninterruptibles.getUninterruptibly(Futures.allAsList(futures));
         } catch (ExecutionException e) {

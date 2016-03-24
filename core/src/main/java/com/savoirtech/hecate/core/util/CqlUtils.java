@@ -16,75 +16,94 @@
 
 package com.savoirtech.hecate.core.util;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BiFunction;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
+import com.datastax.driver.core.*;
 import com.savoirtech.hecate.core.exception.HecateException;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CqlUtils {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+    public static final Logger CQL_LOGGER = LoggerFactory.getLogger("com.savoirtech.hecate.cql");
+
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static Object getPrimitive(Row row, int columnIndex, Class<?> targetType, BiFunction<Row, Integer, Object> extractor) {
-        if (row.isNull(columnIndex) && !targetType.isPrimitive()) {
-            return null;
-        } else {
-            return extractor.apply(row, columnIndex);
+    public static BoundStatement bind(PreparedStatement statement, Object[] params) {
+        if(CQL_LOGGER.isDebugEnabled()) {
+            CQL_LOGGER.debug("{} parameters ({})", statement.getQueryString(), StringUtils.join(params, ","));
         }
+        return statement.bind(params);
     }
 
-    public static Object getValue(Row row, int columnIndex, DataType dataType, Class<?> targetType) {
+    public static Object getValue(GettableByIndexData gettable, int columnIndex, DataType dataType) {
+        if(gettable.isNull(columnIndex)) {
+            return null;
+        }
         switch (dataType.getName()) {
             case ASCII:
             case VARCHAR:
             case TEXT:
-                return row.getString(columnIndex);
+                return gettable.getString(columnIndex);
             case BIGINT:
-                return getPrimitive(row, columnIndex, targetType, Row::getLong);
+                return gettable.getLong(columnIndex);
             case BOOLEAN:
-                return getPrimitive(row, columnIndex, targetType, Row::getBool);
+                return gettable.getBool(columnIndex);
             case DECIMAL:
-                return row.getDecimal(columnIndex);
+                return gettable.getDecimal(columnIndex);
             case DOUBLE:
-                return getPrimitive(row, columnIndex, targetType, Row::getDouble);
+                return gettable.getDouble(columnIndex);
             case FLOAT:
-                return getPrimitive(row, columnIndex, targetType, Row::getFloat);
+                return gettable.getFloat(columnIndex);
             case INT:
-                return getPrimitive(row, columnIndex, targetType, Row::getInt);
+                return gettable.getInt(columnIndex);
             case TIMESTAMP:
-                return row.getDate(columnIndex);
+                return gettable.getDate(columnIndex);
             case UUID:
             case TIMEUUID:
-                return row.getUUID(columnIndex);
+                return gettable.getUUID(columnIndex);
             case LIST:
-                return row.getList(columnIndex, typeArgument(dataType, 0));
+                return gettable.getList(columnIndex, typeArgument(dataType, 0));
             case SET:
-                return row.getSet(columnIndex, typeArgument(dataType, 0));
+                return gettable.getSet(columnIndex, typeArgument(dataType, 0));
             case MAP:
-                return row.getMap(columnIndex, typeArgument(dataType, 0), typeArgument(dataType, 1));
+                return gettable.getMap(columnIndex, typeArgument(dataType, 0), typeArgument(dataType, 1));
             case BLOB:
-                return row.getBytes(columnIndex);
+                return gettable.getBytes(columnIndex);
             case INET:
-                return row.getInet(columnIndex);
+                return gettable.getInet(columnIndex);
             case VARINT:
-                return row.getVarint(columnIndex);
+                return gettable.getVarint(columnIndex);
             case TUPLE:
-                return row.getTupleValue(columnIndex);
+                return gettable.getTupleValue(columnIndex);
             default:
                 throw new HecateException(String.format("Unsupported data type %s.", dataType.getName()));
         }
     }
 
-    public static List<Object> toList(Row row, List<Class> targetTypes) {
+    public static List<Object> toList(TupleValue tuple) {
+        List<DataType> componentTypes = tuple.getType().getComponentTypes();
+        List<Object> results = new ArrayList<>(componentTypes.size());
+        int index = 0;
+        for (DataType dataType : componentTypes) {
+            results.add(getValue(tuple, index++, dataType));
+        }
+        return results;
+    }
+
+    public static List<Object> toList(Row row) {
         List<Object> results = new LinkedList<>();
         int index = 0;
         for (ColumnDefinitions.Definition def : row.getColumnDefinitions()) {
-            results.add(getValue(row, index, def.getType(), targetTypes.get(0)));
+            results.add(getValue(row, index, def.getType()));
             index++;
         }
         return results;

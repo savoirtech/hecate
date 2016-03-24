@@ -17,38 +17,52 @@
 package com.savoirtech.hecate.pojo.dao.def;
 
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.TableMetadata;
+import com.savoirtech.hecate.core.exception.HecateException;
+import com.savoirtech.hecate.pojo.binding.PojoBinding;
+import com.savoirtech.hecate.pojo.binding.PojoBindingFactory;
+import com.savoirtech.hecate.pojo.binding.def.DefaultPojoBindingFactory;
+import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactory;
-import com.savoirtech.hecate.pojo.mapping.PojoMappingFactory;
-import com.savoirtech.hecate.pojo.mapping.PojoMappingVerifier;
-import com.savoirtech.hecate.pojo.mapping.def.DefaultPojoMappingFactory;
-import com.savoirtech.hecate.pojo.persistence.PersistenceContext;
-import com.savoirtech.hecate.pojo.persistence.def.DefaultPersistenceContext;
+import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
+import com.savoirtech.hecate.pojo.naming.NamingStrategy;
+import com.savoirtech.hecate.pojo.naming.def.DefaultNamingStrategy;
+import com.savoirtech.hecate.pojo.query.PojoQueryContextFactory;
+import com.savoirtech.hecate.pojo.query.def.DefaultPojoQueryContextFactory;
+import com.savoirtech.hecate.pojo.statement.PojoStatementFactory;
+import com.savoirtech.hecate.pojo.statement.def.DefaultPojoStatementFactory;
 
 public class DefaultPojoDaoFactory implements PojoDaoFactory {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final PojoMappingFactory pojoMappingFactory;
-    private final PersistenceContext persistenceContext;
+    private final Session session;
+
+    private final PojoBindingFactory bindingFactory;
+    private final PojoStatementFactory statementFactory;
+    private final PojoQueryContextFactory contextFactory;
+    private final NamingStrategy namingStrategy;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoDaoFactory(Session session) {
-        this(session, null);
+        this.session = session;
+        this.statementFactory = new DefaultPojoStatementFactory(session);
+        this.namingStrategy = new DefaultNamingStrategy();
+        this.bindingFactory = new DefaultPojoBindingFactory(new FieldFacetProvider(), new DefaultConverterRegistry(), namingStrategy);
+        this.contextFactory = new DefaultPojoQueryContextFactory(session, statementFactory);
     }
 
-    public DefaultPojoDaoFactory(Session session, PojoMappingVerifier verifier) {
-        this.persistenceContext = new DefaultPersistenceContext(session);
-        this.pojoMappingFactory = new DefaultPojoMappingFactory(verifier);
-    }
-
-    public DefaultPojoDaoFactory(PojoMappingFactory pojoMappingFactory, PersistenceContext persistenceContext) {
-        this.pojoMappingFactory = pojoMappingFactory;
-        this.persistenceContext = persistenceContext;
+    public DefaultPojoDaoFactory(Session session, PojoBindingFactory bindingFactory, PojoStatementFactory statementFactory, PojoQueryContextFactory contextFactory, NamingStrategy namingStrategy) {
+        this.session = session;
+        this.bindingFactory = bindingFactory;
+        this.statementFactory = statementFactory;
+        this.contextFactory = contextFactory;
+        this.namingStrategy = namingStrategy;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -56,12 +70,42 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public <I, P> PojoDao<I, P> createPojoDao(Class<P> pojoClass) {
-        return new DefaultPojoDao<>(pojoMappingFactory.createPojoMapping(pojoClass), persistenceContext);
+    public <P> PojoDao<P> createPojoDao(Class<P> pojoClass) {
+        return createPojoDao(pojoClass, namingStrategy.getTableName(pojoClass));
     }
 
     @Override
-    public <I, P> PojoDao<I, P> createPojoDao(Class<P> pojoClass, String tableName) {
-        return new DefaultPojoDao<>(pojoMappingFactory.createPojoMapping(pojoClass, tableName), persistenceContext);
+    public <P> PojoDao<P> createPojoDao(Class<P> pojoClass, String tableName) {
+        PojoBinding<P> pojoBinding = bindingFactory.createPojoBinding(pojoClass);
+        TableMetadata tableMetadata = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace()).getTable(tableName);
+        if(tableMetadata == null) {
+            throw new HecateException("Table \"%s\" does not exist.", tableName);
+        }
+        pojoBinding.verifySchema(tableMetadata);
+        return new DefaultPojoDao<>(session, pojoBinding, tableName, statementFactory, contextFactory);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public PojoBindingFactory getBindingFactory() {
+        return bindingFactory;
+    }
+
+    public PojoQueryContextFactory getContextFactory() {
+        return contextFactory;
+    }
+
+    public NamingStrategy getNamingStrategy() {
+        return namingStrategy;
+    }
+
+    public Session getSession() {
+        return session;
+    }
+
+    public PojoStatementFactory getStatementFactory() {
+        return statementFactory;
     }
 }

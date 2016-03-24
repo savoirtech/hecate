@@ -16,15 +16,19 @@
 
 package com.savoirtech.hecate.pojo.exception;
 
+import java.util.List;
+
 import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.mapping.PojoMapping;
+import com.savoirtech.hecate.pojo.binding.PojoBinding;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class PojoNotFoundException extends HecateException {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoNotFoundException(PojoMapping<?> mapping, Object id) {
-        super("%s with id = '%s' not found in table '%s'", mapping.getPojoClass().getSimpleName(), id, mapping.getTableName());
+    public PojoNotFoundException(PojoBinding<?> binding, String tableName, List<Object> keys) {
+        super("%s with keys %s not found in table \"%s\".", binding.getPojoType().getSimpleName(), StringUtils.join(keys, ","), tableName);
     }
 }

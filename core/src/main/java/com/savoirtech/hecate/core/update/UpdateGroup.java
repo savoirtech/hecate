@@ -23,5 +23,5 @@ public interface UpdateGroup {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
     void addUpdate(Statement statement);
-    void commit();
+    void complete();
 }

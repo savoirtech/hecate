@@ -16,6 +16,11 @@
 
 package com.savoirtech.hecate.pojo.convert.def;
 
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import com.google.common.collect.MapMaker;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.convert.ConverterProvider;
@@ -24,14 +29,8 @@ import com.savoirtech.hecate.pojo.convert.NativeConverter;
 import com.savoirtech.hecate.pojo.convert.binary.ByteArrayConverter;
 import com.savoirtech.hecate.pojo.convert.enumeration.EnumConverterProvider;
 import com.savoirtech.hecate.pojo.convert.time.*;
-import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class DefaultConverterRegistry implements ConverterRegistry {
 //----------------------------------------------------------------------------------------------------------------------
@@ -61,14 +60,19 @@ public class DefaultConverterRegistry implements ConverterRegistry {
 
     public DefaultConverterRegistry() {
         registerConverter(NativeConverter.BOOLEAN);
+        registerConverter(NativeConverter.BOOLEAN_TYPE);
         registerConverter(NativeConverter.BIG_DECIMAL);
         registerConverter(NativeConverter.BIG_INTEGER);
         registerConverter(NativeConverter.DATE);
         registerConverter(NativeConverter.DOUBLE);
+        registerConverter(NativeConverter.DOUBLE_TYPE);
         registerConverter(NativeConverter.FLOAT);
+        registerConverter(NativeConverter.FLOAT_TYPE);
         registerConverter(NativeConverter.INET);
         registerConverter(NativeConverter.INTEGER);
+        registerConverter(NativeConverter.INTEGER_TYPE);
         registerConverter(NativeConverter.LONG);
+        registerConverter(NativeConverter.LONG_TYPE);
         registerConverter(NativeConverter.STRING);
         registerConverter(NativeConverter.UUID);
         registerConverter(NativeConverter.BLOB);
@@ -141,12 +145,6 @@ public class DefaultConverterRegistry implements ConverterRegistry {
     public void registerConverter(ConverterProvider provider) {
         Class<?> valueType = provider.getValueType();
         LOGGER.debug("Adding provider {} -> {}...", valueType.getCanonicalName(), provider.converterType().getCanonicalName());
-        providers.put(valueType, provider);
-        if (ClassUtils.isPrimitiveWrapper(valueType)) {
-            Class<?> primitiveType = ClassUtils.wrapperToPrimitive(valueType);
-            LOGGER.debug("Adding provider {} -> {}...", primitiveType.getCanonicalName(), provider.converterType().getCanonicalName());
-            providers.put(primitiveType, provider);
-        }
         providers.put(valueType, provider);
     }
 

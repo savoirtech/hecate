@@ -50,7 +50,7 @@ public class BatchUpdateGroup implements UpdateGroup {
     }
 
     @Override
-    public void commit() {
+    public void complete() {
         session.execute(batchStatement);
     }
 }

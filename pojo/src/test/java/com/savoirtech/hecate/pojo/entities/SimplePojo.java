@@ -16,14 +16,14 @@
 
 package com.savoirtech.hecate.pojo.entities;
 
-import com.savoirtech.hecate.annotation.Id;
-import com.savoirtech.hecate.annotation.Index;
-import com.savoirtech.hecate.annotation.Table;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import com.savoirtech.hecate.annotation.Index;
+import com.savoirtech.hecate.annotation.PartitionKey;
+import com.savoirtech.hecate.annotation.Table;
 
 @Table("simpletons")
 public class SimplePojo {
@@ -31,7 +31,7 @@ public class SimplePojo {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Id
+    @PartitionKey
     private String id = UUID.randomUUID().toString();
 
     @Index

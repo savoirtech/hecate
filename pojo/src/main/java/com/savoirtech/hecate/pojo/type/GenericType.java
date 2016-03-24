@@ -16,14 +16,14 @@
 
 package com.savoirtech.hecate.pojo.type;
 
-import com.savoirtech.hecate.core.exception.HecateException;
-import org.apache.commons.lang3.reflect.TypeUtils;
-
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.savoirtech.hecate.core.exception.HecateException;
+import org.apache.commons.lang3.reflect.TypeUtils;
 
 public class GenericType {
 //----------------------------------------------------------------------------------------------------------------------
@@ -74,13 +74,13 @@ public class GenericType {
     }
 
     public GenericType getElementType() {
-        if (Set.class.equals(rawType)) {
+        if (isSet()) {
             return getSetElementType();
-        } else if (Map.class.equals(rawType)) {
+        } else if (isMap()) {
             return getMapValueType();
-        } else if (List.class.equals(rawType)) {
+        } else if (isList()) {
             return getListElementType();
-        } else if (rawType.isArray()) {
+        } else if (isArray()) {
             return getArrayElementType();
         }
         return this;
@@ -111,5 +111,21 @@ public class GenericType {
 
     public GenericType getSetElementType() {
         return getTypeArgument(SET_ELEMENT_TYPE_VAR, Set.class);
+    }
+
+    public boolean isArray() {
+        return rawType.isArray();
+    }
+
+    public boolean isList() {
+        return List.class.equals(rawType);
+    }
+
+    public boolean isMap() {
+        return Map.class.equals(rawType);
+    }
+
+    public boolean isSet() {
+        return Set.class.equals(rawType);
     }
 }
