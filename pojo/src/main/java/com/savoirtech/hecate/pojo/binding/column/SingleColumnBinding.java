@@ -28,8 +28,10 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.savoirtech.hecate.pojo.binding.ParameterBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
-import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 import com.savoirtech.hecate.pojo.facet.Facet;
+import com.savoirtech.hecate.pojo.query.PojoQueryContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 
@@ -37,6 +39,8 @@ public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SingleColumnBinding.class);
 
     private final Facet facet;
     private final String columnName;
@@ -60,7 +64,7 @@ public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
 
     protected abstract F toFacetValue(C columnValue, PojoQueryContext context);
 
-    protected abstract void visitFacetChildren(F facetValue, PojoVisitor visitor);
+    protected abstract void visitFacetChildren(F facetValue, Predicate<Facet> predicate, PojoVisitor visitor);
 
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnBinding Implementation
@@ -119,7 +123,7 @@ public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
         if(predicate.test(facet)) {
             F facetValue = getFacetValue(pojo);
             if(facetValue != null) {
-                visitFacetChildren(facetValue, visitor);
+                visitFacetChildren(facetValue, predicate, visitor);
             }
         }
     }

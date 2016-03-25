@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2016 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,37 +14,47 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.entities;
+package com.savoirtech.hecate.pojo.convert;
 
-import com.savoirtech.hecate.annotation.Id;
+import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
 
-public class CompositeKeyPojo {
+public class PojoInstanceConverter implements Converter {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Id
-    private CompositeKey key;
-
-    private String data;
+    private final Class<?> pojoType;
 
 //----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
+// Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public String getData() {
-        return data;
+    public PojoInstanceConverter(Class<?> pojoType) {
+        this.pojoType = pojoType;
     }
 
-    public void setData(String data) {
-        this.data = data;
+//----------------------------------------------------------------------------------------------------------------------
+// Converter Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public DataType getDataType() {
+        return DataType.cboolean();
     }
 
-    public CompositeKey getKey() {
-        return key;
+    @Override
+    public Class<?> getValueType() {
+        return Boolean.class;
     }
 
-    public void setKey(CompositeKey key) {
-        this.key = key;
+    @Override
+    public Object toColumnValue(Object value) {
+        return value != null;
+    }
+
+    @Override
+    public Object toFacetValue(Object value) {
+        return Boolean.TRUE.equals(value) ? ReflectionUtils.newInstance(pojoType) : null;
     }
 }

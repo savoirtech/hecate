@@ -17,8 +17,10 @@
 package com.savoirtech.hecate.pojo.dao.def;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -186,7 +188,8 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 
     private <T> void deletePojo(T pojo, PojoBinding<T> pojoBinding, String tableName, UpdateGroup group, StatementOptions options) {
         PreparedStatement delete = statementFactory.createDelete(pojoBinding, tableName);
-        List<Object> keys = pojoBinding.getKeyBinding().getKeyParameters(pojo);
+        List<Object> keys = new LinkedList<>();
+        pojoBinding.getKeyBinding().collectParameters(pojo, keys);
         BoundStatement statement = pojoBinding.bindWhereIdEquals(delete, keys);
         options.applyTo(statement);
         group.addUpdate(statement);
@@ -213,8 +216,9 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
         }
 
         @Override
-        public <T> void visit(T pojo, PojoBinding<T> pojoBinding, String tableName) {
+        public <T> void visit(T pojo, PojoBinding<T> pojoBinding, String tableName, Predicate<Facet> predicate) {
             deletePojo(pojo, pojoBinding, tableName, group, options);
+            pojoBinding.visitChildren(pojo, predicate, this);
         }
     }
 
@@ -230,8 +234,10 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
         }
 
         @Override
-        public <T> void visit(T pojo, PojoBinding<T> pojoBinding, String tableName) {
+        public <T> void visit(T pojo, PojoBinding<T> pojoBinding, String tableName, Predicate<Facet> predicate) {
             insertPojo(pojo, pojoBinding, tableName, group, options, ttl);
+            pojoBinding.visitChildren(pojo, predicate, this);
+
         }
     }
 }

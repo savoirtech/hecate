@@ -16,17 +16,17 @@
 
 package com.savoirtech.hecate.pojo.facet.property;
 
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.facet.SubFacet;
-import com.savoirtech.hecate.pojo.facet.reflect.ReflectionFacet;
-import com.savoirtech.hecate.pojo.type.GenericType;
-import org.apache.commons.lang3.Validate;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.savoirtech.hecate.pojo.facet.Facet;
+import com.savoirtech.hecate.pojo.facet.SubFacet;
+import com.savoirtech.hecate.pojo.facet.reflect.ReflectionFacet;
+import com.savoirtech.hecate.pojo.type.GenericType;
+import org.apache.commons.lang3.Validate;
 
 public class PropertyFacet extends ReflectionFacet {
 //----------------------------------------------------------------------------------------------------------------------
@@ -64,8 +64,8 @@ public class PropertyFacet extends ReflectionFacet {
     }
 
     @Override
-    public List<Facet> subFacets(boolean allowNullParent) {
-        return PropertyFacetProvider.facetsOf(type.getRawType()).stream().map(facet -> new SubFacet(this, facet, allowNullParent)).collect(Collectors.toList());
+    public List<Facet> subFacets(boolean autoCreateParent) {
+        return PropertyFacetProvider.facetsOf(type.getRawType()).stream().map(facet -> new SubFacet(this, facet, autoCreateParent)).collect(Collectors.toList());
     }
 
 //----------------------------------------------------------------------------------------------------------------------

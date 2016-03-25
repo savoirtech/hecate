@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2016 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.annotation;
+package com.savoirtech.hecate.test;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,11 +22,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD})
-public @interface Index {
-//----------------------------------------------------------------------------------------------------------------------
-// Other Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    String value() default "";
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface Cassandra {
+    String keyspace() default "hecate";
+    int port() default 9142;
+    long timeout() default 30000;
 }

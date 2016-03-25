@@ -17,14 +17,15 @@
 package com.savoirtech.hecate.pojo.binding.facet;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 
+import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
-import com.savoirtech.hecate.pojo.binding.FacetBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.binding.column.SingleColumnBinding;
 import com.savoirtech.hecate.pojo.facet.Facet;
 
-public abstract class OneToManyFacetBinding<C,F> extends SingleColumnBinding<C,F> implements FacetBinding {
+public abstract class OneToManyFacetBinding<C,F> extends SingleColumnBinding<C,F> implements ColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -59,7 +60,7 @@ public abstract class OneToManyFacetBinding<C,F> extends SingleColumnBinding<C,F
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected void visitFacetChildren(F facetValue, PojoVisitor visitor) {
-        elementsOf(facetValue).stream().forEach(element -> elementBinding.visitChild(element, visitor));
+    protected void visitFacetChildren(F facetValue, Predicate<Facet> predicate, PojoVisitor visitor) {
+        elementsOf(facetValue).stream().forEach(element -> elementBinding.visitChild(element, predicate, visitor));
     }
 }

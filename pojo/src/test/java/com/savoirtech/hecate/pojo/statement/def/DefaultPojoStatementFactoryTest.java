@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.annotation;
+package com.savoirtech.hecate.pojo.statement.def;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
+import com.savoirtech.hecate.test.Cassandra;
+import org.junit.Test;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD})
-public @interface Key {
+public class DefaultPojoStatementFactoryTest extends AbstractDaoTestCase {
+
+    @Test
+    @Cassandra
+    public void testCreateDelete() {
+        DefaultPojoStatementFactory factory = new DefaultPojoStatementFactory(getSession());
+
+    }
+
 }

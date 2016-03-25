@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.savoirtech.hecate.annotation.Index;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.annotation.Table;
 
@@ -34,12 +33,10 @@ public class SimplePojo {
     @PartitionKey
     private String id = UUID.randomUUID().toString();
 
-    @Index
     private String name;
 
     private int[] ints;
 
-    @Index("nums_ndx")
     private Nums nums;
 
     private List<String> listOfStrings;

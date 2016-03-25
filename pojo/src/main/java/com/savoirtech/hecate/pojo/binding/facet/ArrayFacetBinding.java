@@ -23,8 +23,8 @@ import java.util.List;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
-import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 import com.savoirtech.hecate.pojo.facet.Facet;
+import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 
 public class ArrayFacetBinding<C,F> extends OneToManyFacetBinding<List<Object>,Object> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -41,7 +41,12 @@ public class ArrayFacetBinding<C,F> extends OneToManyFacetBinding<List<Object>,O
 
     @Override
     protected Collection<Object> elementsOf(Object facetValue) {
-        return arrayToList(facetValue);
+        int length = Array.getLength(facetValue);
+        List<Object> list = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            list.add(Array.get(facetValue, i));
+        }
+        return list;
     }
 
     private List<Object> arrayToList(Object array) {

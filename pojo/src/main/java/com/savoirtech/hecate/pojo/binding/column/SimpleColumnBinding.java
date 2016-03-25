@@ -18,6 +18,7 @@ package com.savoirtech.hecate.pojo.binding.column;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.binding.ParameterBinding;
@@ -80,7 +81,7 @@ public abstract class SimpleColumnBinding extends SingleColumnBinding<Object,Obj
     }
 
     @Override
-    protected void visitFacetChildren(Object facetValue, PojoVisitor visitor) {
+    protected void visitFacetChildren(Object facetValue, Predicate<Facet> predicate, PojoVisitor visitor) {
         // Do nothing (no children)!
     }
 }

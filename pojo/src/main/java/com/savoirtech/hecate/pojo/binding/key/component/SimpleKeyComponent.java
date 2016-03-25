@@ -17,9 +17,13 @@
 package com.savoirtech.hecate.pojo.binding.key.component;
 
 import com.datastax.driver.core.querybuilder.Delete;
+import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.column.SimpleColumnBinding;
+import com.savoirtech.hecate.pojo.binding.facet.SimpleFacetBinding;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.facet.Facet;
+import com.savoirtech.hecate.pojo.facet.SubFacet;
+import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
@@ -34,8 +38,28 @@ public abstract class SimpleKeyComponent extends SimpleColumnBinding implements 
     }
 
 //----------------------------------------------------------------------------------------------------------------------
+// Converter Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public Class<?> getValueType() {
+        return getConverter().getValueType();
+    }
+
+    @Override
+    public Object toFacetValue(Object value) {
+        return getConverter().toFacetValue(value);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
 // KeyComponent Implementation
 //----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public ColumnBinding createReferenceBinding(Facet referencingFacet, NamingStrategy strategy) {
+        SubFacet sub = new SubFacet(referencingFacet, getFacet(), false);
+        return new SimpleFacetBinding(sub, strategy.getColumnName(sub), getConverter());
+    }
 
     @Override
     public void delete(Delete.Where delete) {

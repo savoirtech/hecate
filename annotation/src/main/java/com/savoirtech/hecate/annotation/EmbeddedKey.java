@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.binding;
+package com.savoirtech.hecate.annotation;
 
-import com.savoirtech.hecate.pojo.facet.Facet;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface FacetBinding extends ColumnBinding {
-    Facet getFacet();
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.FIELD, ElementType.METHOD})
+public @interface EmbeddedKey {
 }

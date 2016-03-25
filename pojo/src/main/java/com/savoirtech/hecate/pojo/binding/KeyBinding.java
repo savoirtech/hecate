@@ -21,24 +21,23 @@ import java.util.List;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
-import com.savoirtech.hecate.pojo.binding.key.component.KeyComponent;
+import com.savoirtech.hecate.pojo.facet.Facet;
+import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 
 public interface KeyBinding extends ColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    ColumnBinding createReferenceBinding(Facet parent, PojoBinding<?> pojoBinding, NamingStrategy namingStrategy);
+
     void delete(Delete.Where delete);
+    List<Object> elementToKeys(Object element);
     DataType getElementDataType();
     Class<?> getElementType();
     Object getElementValue(Object pojo);
-    List<Object> elementToKeys(Object element);
-
-    List<Object> getKeyParameters(Object pojo);
 
     List<Object> getKeyParameters(List<Object> keys);
 
     void selectWhere(Select.Where select);
-
-    List<KeyComponent> getKeyComponents();
 }

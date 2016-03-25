@@ -16,10 +16,13 @@
 
 package com.savoirtech.hecate.pojo.binding.element;
 
+import java.util.function.Predicate;
+
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
+import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 
 public class PojoElementBinding implements ElementBinding {
@@ -35,8 +38,8 @@ public class PojoElementBinding implements ElementBinding {
 //----------------------------------------------------------------------------------------------------------------------
 
     @SuppressWarnings("unchecked")
-    private static <T> void visitChild(Object child, PojoBinding<T> binding, String tableName, PojoVisitor visitor) {
-        visitor.visit((T)child, binding, tableName);
+    private static <T> void visitChild(Object child, PojoBinding<T> binding, String tableName, Predicate<Facet> predicate, PojoVisitor visitor) {
+        visitor.visit((T)child, binding, tableName, predicate);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -59,7 +62,7 @@ public class PojoElementBinding implements ElementBinding {
 
     @Override
     public Class<?> getElementType() {
-        return pojoBinding.getKeyBinding().getElementType();
+        return pojoBinding.getPojoType();
     }
 
     @Override
@@ -73,7 +76,7 @@ public class PojoElementBinding implements ElementBinding {
     }
 
     @Override
-    public void visitChild(Object facetElementValue, PojoVisitor visitor) {
-        visitChild(facetElementValue, pojoBinding, tableName, visitor);
+    public void visitChild(Object facetElementValue, Predicate<Facet> predicate, PojoVisitor visitor) {
+        visitChild(facetElementValue, pojoBinding, tableName, predicate, visitor);
     }
 }

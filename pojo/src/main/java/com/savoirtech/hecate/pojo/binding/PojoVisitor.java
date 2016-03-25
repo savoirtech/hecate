@@ -16,10 +16,14 @@
 
 package com.savoirtech.hecate.pojo.binding;
 
+import java.util.function.Predicate;
+
+import com.savoirtech.hecate.pojo.facet.Facet;
+
 public interface PojoVisitor {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    <T> void visit(T pojo, PojoBinding<T> pojoBinding, String tableName);
+    <T> void visit(T pojo, PojoBinding<T> pojoBinding, String tableName, Predicate<Facet> predicate);
 }

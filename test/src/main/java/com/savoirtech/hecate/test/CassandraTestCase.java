@@ -18,63 +18,27 @@ package com.savoirtech.hecate.test;
 
 import java.util.function.Consumer;
 
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 
 public class CassandraTestCase extends AbstractTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected static final String KEYSPACE_NAME = "hecate";
-
-    private Cluster cluster;
-    private Session session;
-
-//----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    public Cluster getCluster() {
-        return cluster;
-    }
-
-    protected Session getSession() {
-        return session;
-    }
+    @Rule
+    public final CassandraRule cassandraRule = new CassandraRule();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    @After
-    public void closeSession() {
-        session.close();
-        cluster.close();
-    }
-
-    @Before
-    public void initializeCassandra() throws Exception {
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra(30000);
-        EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-        cluster = Cluster.builder().addContactPoint("localhost").withPort(9142).build();
-        Session session = cluster.newSession();
-        logger.debug("Creating keyspace {}...", KEYSPACE_NAME);
-        session.execute(String.format("CREATE KEYSPACE IF NOT EXISTS %s WITH replication = {'class':'SimpleStrategy', 'replication_factor':1};", KEYSPACE_NAME));
-        logger.debug("Keyspace {} created successfully.", KEYSPACE_NAME);
-        session.close();
-        this.session = connect();
-    }
-
-    private Session connect() {
-        return cluster.connect(KEYSPACE_NAME);
+    protected Session getSession() {
+        return cassandraRule.getSession();
     }
 
     protected void withSession(Consumer<Session> consumer) {
-        try (Session session = connect()) {
+        try (Session session = getSession()) {
             consumer.accept(session);
         }
     }

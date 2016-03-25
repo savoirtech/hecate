@@ -19,38 +19,39 @@ package com.savoirtech.hecate.pojo.binding.column;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
-import com.savoirtech.hecate.pojo.binding.FacetBinding;
+import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.ParameterBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 
-public class NestedColumnBinding extends AbstractColumnBinding {
+public class NestedColumnBinding<B extends ColumnBinding> extends AbstractColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final List<FacetBinding> facetBindings;
+    private final List<B> bindings;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public NestedColumnBinding(List<FacetBinding> facetBindings) {
-        this.facetBindings = facetBindings;
+    public NestedColumnBinding(List<B> bindings) {
+        this.bindings = bindings;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnBinding Implementation
 //----------------------------------------------------------------------------------------------------------------------
-
 
     @Override
     public void collectParameters(Object pojo, List<Object> parameters) {
@@ -64,7 +65,7 @@ public class NestedColumnBinding extends AbstractColumnBinding {
 
     @Override
     public List<ParameterBinding> getParameterBindings() {
-        return facetBindings.stream().flatMap(binding -> binding.getParameterBindings().stream()).collect(Collectors.toList());
+        return bindings.parallelStream().flatMap(binding -> binding.getParameterBindings().stream()).collect(Collectors.toList());
     }
 
     @Override
@@ -96,15 +97,19 @@ public class NestedColumnBinding extends AbstractColumnBinding {
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public List<FacetBinding> getFacetBindings() {
-        return facetBindings;
+    public List<B> getBindings() {
+        return bindings;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected void forEachBinding(Consumer<FacetBinding> consumer) {
-        facetBindings.stream().forEach(consumer);
+    protected void forEachBinding(Consumer<? super B> consumer) {
+        bindings.stream().forEach(consumer);
+    }
+
+    protected <T> Stream<T> mapBindings(Function<? super B,? extends T> function) {
+        return bindings.stream().map(function);
     }
 }

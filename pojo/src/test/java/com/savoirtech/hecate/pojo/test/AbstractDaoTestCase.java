@@ -16,42 +16,57 @@
 
 package com.savoirtech.hecate.pojo.test;
 
-import com.datastax.driver.core.Session;
+import java.util.Arrays;
+
 import com.datastax.driver.core.schemabuilder.Create;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactory;
+import com.savoirtech.hecate.pojo.facet.Facet;
+import com.savoirtech.hecate.pojo.facet.FacetProvider;
+import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
+import com.savoirtech.hecate.pojo.query.PojoQueryContextFactory;
 import com.savoirtech.hecate.test.CassandraTestCase;
-import org.junit.Before;
 
 public abstract class AbstractDaoTestCase extends CassandraTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private DefaultPojoDaoFactory factory;
+    private static final FacetProvider FACET_PROVIDER = new FieldFacetProvider();
+
+    private final Supplier<DefaultPojoDaoFactory> daoFactory = Suppliers.memoize(() -> new DefaultPojoDaoFactory(getSession()));
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Before
-    public void createDaoFactory() {
-        Session session = getSession();
-        this.factory = new DefaultPojoDaoFactory(session);
-    }
-
     protected <P> PojoDao<P> createPojoDao(Class<P> pojoType) {
-        createTable(pojoType);
-        return factory.createPojoDao(pojoType);
+        createTables(pojoType);
+        return daoFactory.get().createPojoDao(pojoType);
     }
 
-    protected void createTable(Class<?> pojoType) {
-        createTable(pojoType, factory.getNamingStrategy().getTableName(pojoType));
+    protected <P> PojoBinding<P> getPojoBinding(Class<P> pojoType) {
+        return daoFactory.get().getBindingFactory().createPojoBinding(pojoType);
+    }
+
+    protected PojoQueryContextFactory getContextFactory() {
+        return daoFactory.get().getContextFactory();
+    }
+
+    protected void createTables(Class<?>... pojoTypes) {
+        Arrays.stream(pojoTypes).forEach(pojoType -> createTable(pojoType, daoFactory.get().getNamingStrategy().getTableName(pojoType)));
     }
 
     protected void createTable(Class<?> pojoType, String tableName) {
-        Create create = factory.getBindingFactory().createPojoBinding(pojoType).createTable(tableName);
+        Create create = daoFactory.get().getBindingFactory().createPojoBinding(pojoType).createTable(tableName);
         logger.info("Creating \"{}\" table for class \"{}\":\n\t{}\n", tableName, pojoType.getSimpleName(), create);
         getSession().execute(create);
+    }
+
+    protected Facet getFacet(Class<?> pojoType, String name) {
+        return FACET_PROVIDER.getFacetsAsMap(pojoType).get(name);
     }
 }

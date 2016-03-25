@@ -16,14 +16,14 @@
 
 package com.savoirtech.hecate.pojo.entities;
 
-import com.savoirtech.hecate.annotation.Id;
+import com.savoirtech.hecate.annotation.PartitionKey;
 
 public class NoConstructorPerson {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Id 
+    @PartitionKey
     private final String ssn;
     private final String firstName;
     private final String lastName;

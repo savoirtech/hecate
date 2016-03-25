@@ -16,12 +16,9 @@
 
 package com.savoirtech.hecate.pojo.naming.legacy;
 
-import com.google.common.base.Verify;
-import com.savoirtech.hecate.annotation.Index;
 import com.savoirtech.hecate.annotation.Table;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
-import org.apache.commons.lang3.StringUtils;
 
 public class LegacyNamingStrategy implements NamingStrategy {
 //----------------------------------------------------------------------------------------------------------------------
@@ -31,15 +28,6 @@ public class LegacyNamingStrategy implements NamingStrategy {
     @Override
     public String getColumnName(Facet facet) {
         return facet.getName();
-    }
-
-    @Override
-    public String getIndexName(Facet facet) {
-        final Index annot = Verify.verifyNotNull(facet.getAnnotation(Index.class));
-        if (StringUtils.isNotEmpty(annot.value())) {
-            return annot.value();
-        }
-        return "";
     }
 
     @Override

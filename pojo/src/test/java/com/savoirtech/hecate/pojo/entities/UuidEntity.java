@@ -18,67 +18,40 @@ package com.savoirtech.hecate.pojo.entities;
 
 import java.util.UUID;
 
-import com.savoirtech.hecate.annotation.Id;
+import com.savoirtech.hecate.annotation.PartitionKey;
 
-public class WrapperPojo {
+public abstract class UuidEntity {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Id
+    @PartitionKey
     private final String id = UUID.randomUUID().toString();
-
-    private Integer intWrapper;
-    private Long longWrapper;
-    private Boolean booleanWrapper;
-    private Double doubleWrapper;
-    private Float floatWrapper;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public Boolean getBooleanWrapper() {
-        return booleanWrapper;
-    }
-
-    public void setBooleanWrapper(Boolean booleanWrapper) {
-        this.booleanWrapper = booleanWrapper;
-    }
-
-    public Double getDoubleWrapper() {
-        return doubleWrapper;
-    }
-
-    public void setDoubleWrapper(Double doubleWrapper) {
-        this.doubleWrapper = doubleWrapper;
-    }
-
-    public Float getFloatWrapper() {
-        return floatWrapper;
-    }
-
-    public void setFloatWrapper(Float floatWrapper) {
-        this.floatWrapper = floatWrapper;
-    }
-
     public String getId() {
         return id;
     }
 
-    public Integer getIntWrapper() {
-        return intWrapper;
+//----------------------------------------------------------------------------------------------------------------------
+// Canonical Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UuidEntity that = (UuidEntity) o;
+
+        return id.equals(that.id);
     }
 
-    public void setIntWrapper(Integer intWrapper) {
-        this.intWrapper = intWrapper;
-    }
-
-    public Long getLongWrapper() {
-        return longWrapper;
-    }
-
-    public void setLongWrapper(Long longWrapper) {
-        this.longWrapper = longWrapper;
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }

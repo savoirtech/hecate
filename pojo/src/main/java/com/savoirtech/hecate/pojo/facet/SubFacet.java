@@ -16,11 +16,11 @@
 
 package com.savoirtech.hecate.pojo.facet;
 
-import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
-import com.savoirtech.hecate.pojo.type.GenericType;
-
 import java.lang.annotation.Annotation;
 import java.util.List;
+
+import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
+import com.savoirtech.hecate.pojo.type.GenericType;
 
 public class SubFacet implements Facet {
 //----------------------------------------------------------------------------------------------------------------------
@@ -86,8 +86,8 @@ public class SubFacet implements Facet {
     }
 
     @Override
-    public List<Facet> subFacets(boolean allowNullParent) {
-        return child.subFacets(allowNullParent);
+    public List<Facet> subFacets(boolean autoCreateParent) {
+        return child.subFacets(autoCreateParent);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

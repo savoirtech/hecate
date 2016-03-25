@@ -16,13 +16,15 @@
 
 package com.savoirtech.hecate.pojo.binding.facet;
 
-import com.savoirtech.hecate.pojo.binding.FacetBinding;
+import java.util.function.Predicate;
+
+import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.binding.column.SimpleColumnBinding;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.facet.Facet;
 
-public class SimpleFacetBinding extends SimpleColumnBinding implements FacetBinding {
+public class SimpleFacetBinding extends SimpleColumnBinding implements ColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
@@ -36,7 +38,7 @@ public class SimpleFacetBinding extends SimpleColumnBinding implements FacetBind
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected void visitFacetChildren(Object facetValue, PojoVisitor visitor) {
+    protected void visitFacetChildren(Object facetValue, Predicate<Facet> predicate, PojoVisitor visitor) {
         // Do nothing (there are no children)!
     }
 }

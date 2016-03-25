@@ -23,7 +23,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.Embedded;
-import com.savoirtech.hecate.annotation.Key;
+import com.savoirtech.hecate.annotation.EmbeddedKey;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
@@ -88,7 +88,7 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
     private <P> List<Facet> injectFacetBindings(DefaultPojoBinding<P> binding, Class<P> pojoType) {
         List<Facet> keyFacets = new LinkedList<>();
         facetProvider.getFacets(pojoType).stream().forEach(facet -> {
-            if (facet.hasAnnotation(Key.class) ||
+            if (facet.hasAnnotation(EmbeddedKey.class) ||
                     facet.hasAnnotation(PartitionKey.class) ||
                     facet.hasAnnotation(ClusteringColumn.class)) {
                 keyFacets.add(facet);
@@ -111,7 +111,10 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
                 } else if (facetType.isArray()) {
                     binding.addFacetBinding(new ArrayFacetBinding<>(facet, columnName, createElementBinding(facet, facetType.getArrayElementType())));
                 } else if(facet.hasAnnotation(Embedded.class)) {
-                    binding.addFacetBinding(new EmbeddedFacetBinding(facet, facetProvider, converterRegistry, namingStrategy));
+                    binding.addFacetBinding(new EmbeddedFacetBinding(facet, converterRegistry, namingStrategy));
+                } else {
+                    PojoBinding<?> refBinding = createPojoBinding(facetType.getRawType());
+                    binding.addFacetBinding(refBinding.getKeyBinding().createReferenceBinding(facet, refBinding, namingStrategy));
                 }
             }
         });
@@ -129,7 +132,7 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
                 throw new HecateException("No key facets found for POJO type \"%s\".", pojoType.getCanonicalName());
             case 1:
                 Facet keyFacet = keyFacets.get(0);
-                if (keyFacet.hasAnnotation(Key.class)) {
+                if (keyFacet.hasAnnotation(EmbeddedKey.class)) {
                     binding.setKeyBinding(createCompositeKeyObjectBinding(keyFacet));
                 } else if (keyFacet.hasAnnotation(PartitionKey.class)) {
                     binding.setKeyBinding(createSimpleKeyBinding(keyFacet));

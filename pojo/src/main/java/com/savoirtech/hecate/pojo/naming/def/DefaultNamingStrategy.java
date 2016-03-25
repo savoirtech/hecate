@@ -16,18 +16,15 @@
 
 package com.savoirtech.hecate.pojo.naming.def;
 
-import com.google.common.base.Verify;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import com.savoirtech.hecate.annotation.Column;
-import com.savoirtech.hecate.annotation.Index;
 import com.savoirtech.hecate.annotation.Table;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.SubFacet;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class DefaultNamingStrategy implements NamingStrategy {
 //----------------------------------------------------------------------------------------------------------------------
@@ -35,10 +32,10 @@ public class DefaultNamingStrategy implements NamingStrategy {
 //----------------------------------------------------------------------------------------------------------------------
 
     public static String underscoreSeparated(String camelCaseName) {
-        String[] words = StringUtils.splitByCharacterTypeCamelCase(camelCaseName);
-        List<String> wordsList = new ArrayList<>(Arrays.asList(words));
-        wordsList.remove(SubFacet.SEPARATOR);
-        return StringUtils.lowerCase(StringUtils.join(wordsList, "_"));
+        return StringUtils.lowerCase(
+                Arrays.stream(StringUtils.split(camelCaseName, SubFacet.SEPARATOR))
+                        .flatMap(component -> Arrays.stream(StringUtils.splitByCharacterTypeCamelCase(component)))
+                        .collect(Collectors.joining("_")));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -49,15 +46,6 @@ public class DefaultNamingStrategy implements NamingStrategy {
     public String getColumnName(Facet facet) {
         Column column = facet.getAnnotation(Column.class);
         return column == null ? underscoreSeparated(facet.getName()) : column.value();
-    }
-
-    @Override
-    public String getIndexName(Facet facet) {
-        final Index annot = Verify.verifyNotNull(facet.getAnnotation(Index.class));
-        if (StringUtils.isNotEmpty(annot.value())) {
-            return annot.value();
-        }
-        return getColumnName(facet) + "_ndx";
     }
 
     public String getReferenceTableName(Facet facet) {

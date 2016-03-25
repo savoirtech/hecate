@@ -16,6 +16,11 @@
 
 package com.savoirtech.hecate.pojo.facet.field;
 
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.SubFacet;
 import com.savoirtech.hecate.pojo.facet.reflect.ReflectionFacet;
@@ -23,11 +28,6 @@ import com.savoirtech.hecate.pojo.type.GenericType;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class FieldFacet extends ReflectionFacet {
 //----------------------------------------------------------------------------------------------------------------------
@@ -64,8 +64,8 @@ public class FieldFacet extends ReflectionFacet {
     }
 
     @Override
-    public List<Facet> subFacets(boolean allowNullParent) {
-        return FieldFacetProvider.facetsOf(type.getRawType()).stream().map(facet -> new SubFacet(this, facet, allowNullParent)).collect(Collectors.toList());
+    public List<Facet> subFacets(boolean autoCreateParent) {
+        return FieldFacetProvider.facetsOf(type.getRawType()).stream().map(facet -> new SubFacet(this, facet, autoCreateParent)).collect(Collectors.toList());
     }
 
 //----------------------------------------------------------------------------------------------------------------------

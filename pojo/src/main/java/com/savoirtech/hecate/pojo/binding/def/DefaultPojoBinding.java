@@ -35,6 +35,8 @@ import com.savoirtech.hecate.pojo.binding.*;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 
@@ -43,9 +45,11 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPojoBinding.class);
+    
     private final Class<P> pojoType;
     private KeyBinding keyBinding;
-    private List<FacetBinding> facetBindings = new LinkedList<>();
+    private List<ColumnBinding> facetBindings = new LinkedList<>();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -58,8 +62,6 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // PojoBinding Implementation
 //----------------------------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------------------------------------------------------------
 
     @Override
     public BoundStatement bindInsert(PreparedStatement statement, P pojo, int ttl) {
@@ -188,7 +190,7 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public void addFacetBinding(FacetBinding facetBinding) {
+    public void addFacetBinding(ColumnBinding facetBinding) {
         facetBindings.add(facetBinding);
     }
 

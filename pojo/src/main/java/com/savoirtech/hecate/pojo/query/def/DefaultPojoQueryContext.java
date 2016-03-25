@@ -19,6 +19,7 @@ package com.savoirtech.hecate.pojo.query.def;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
 
 import com.datastax.driver.core.*;
 import com.google.common.base.Function;
@@ -43,15 +44,17 @@ public class DefaultPojoQueryContext implements PojoQueryContext {
     private final Session session;
     private final PojoStatementFactory statementFactory;
     private final Queue<HydratedPojo<?>> hydratedQueue = new ConcurrentLinkedQueue<>();
+    private final Executor executor;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoQueryContext(Session session, PojoStatementFactory statementFactory, int maximumCacheSize) {
+    public DefaultPojoQueryContext(Session session, PojoStatementFactory statementFactory, int maximumCacheSize, Executor executor) {
         this.session = session;
         this.statementFactory = statementFactory;
         this.pojoCache = CacheBuilder.newBuilder().build(FunctionCacheLoader.loader(key -> CacheBuilder.newBuilder().maximumSize(maximumCacheSize).build(new PojoCacheLoader<>(key.getBinding(), key.getTableName()))));
+        this.executor = executor;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -136,7 +139,7 @@ public class DefaultPojoQueryContext implements PojoQueryContext {
                 }
                 binding.injectValues(pojo, row, DefaultPojoQueryContext.this);
                 return true;
-            });
+            }, executor);
             hydratedQueue.add(new HydratedPojo<>(pojo, binding, tableName, keys, future));
             return pojo;
         }

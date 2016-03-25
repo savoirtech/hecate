@@ -18,7 +18,6 @@ package com.savoirtech.hecate.pojo.binding.key.component;
 
 import com.datastax.driver.core.schemabuilder.Create;
 import com.savoirtech.hecate.annotation.PartitionKey;
-import com.savoirtech.hecate.pojo.binding.key.component.SimpleKeyComponent;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.facet.Facet;
 

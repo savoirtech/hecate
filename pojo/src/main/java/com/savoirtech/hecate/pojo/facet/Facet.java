@@ -16,12 +16,11 @@
 
 package com.savoirtech.hecate.pojo.facet;
 
-import com.savoirtech.hecate.annotation.Cascade;
-import com.savoirtech.hecate.annotation.Index;
-import com.savoirtech.hecate.pojo.type.GenericType;
-
 import java.lang.annotation.Annotation;
 import java.util.List;
+
+import com.savoirtech.hecate.annotation.Cascade;
+import com.savoirtech.hecate.pojo.type.GenericType;
 
 public interface Facet {
 //----------------------------------------------------------------------------------------------------------------------
@@ -50,11 +49,7 @@ public interface Facet {
         return cascade == null || cascade.save();
     }
 
-    default boolean isIndexed() {
-        return hasAnnotation(Index.class);
-    }
-
     void setValue(Object pojo, Object value);
 
-    List<Facet> subFacets(boolean allowNullParent);
+    List<Facet> subFacets(boolean autoCreateParent);
 }

@@ -16,12 +16,14 @@
 
 package com.savoirtech.hecate.test;
 
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AbstractTestCase extends Assert {
 //----------------------------------------------------------------------------------------------------------------------
@@ -48,5 +50,10 @@ public class AbstractTestCase extends Assert {
         } catch (ReflectiveOperationException e) {
             fail("Unable to instantiate!");
         }
+    }
+
+    @Before
+    public void initMocks() {
+        MockitoAnnotations.initMocks(this);
     }
 }

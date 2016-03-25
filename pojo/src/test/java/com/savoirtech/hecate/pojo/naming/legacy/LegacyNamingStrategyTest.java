@@ -18,9 +18,7 @@ package com.savoirtech.hecate.pojo.naming.legacy;
 
 import java.util.Map;
 
-import com.google.common.base.VerifyException;
 import com.savoirtech.hecate.annotation.Column;
-import com.savoirtech.hecate.annotation.Index;
 import com.savoirtech.hecate.annotation.Table;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
@@ -31,7 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class LegacyNamingStrategyTest extends Assert {
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -85,17 +83,6 @@ public class LegacyNamingStrategyTest extends Assert {
         assertEquals("PojoType", strategy.getTableName(PojoType.class));
     }
 
-    @Test
-    public void testGetIndexName() {
-        assertEquals("", strategy.getIndexName(getFacet(Indexed.class, "defaultName")));
-        assertEquals("foo", strategy.getIndexName(getFacet(Indexed.class, "customName")));
-    }
-
-    @Test(expected = VerifyException.class)
-    public void testGetIndexNameOnUnindexedField() {
-        strategy.getIndexName(getFacet(Referer.class, "withAnnotation"));
-    }
-
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
@@ -108,14 +95,6 @@ public class LegacyNamingStrategyTest extends Assert {
 
     private static class Child {
         private String stringProperty;
-    }
-
-    private static class Indexed {
-        @Index
-        private String defaultName;
-
-        @Index("foo")
-        private String customName;
     }
 
     private static class Parent {

@@ -17,12 +17,17 @@
 package com.savoirtech.hecate.pojo.dao.def;
 
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
+import org.junit.Test;
 
 public class DefaultPojoDaoTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    @Test
+    public void testSave() {
+
+    }
 //    @Test
 //    public void testCascade() {
 //        final PojoDao<String, CascadedPojo> dao = getFactory().createPojoDao(CascadedPojo.class);

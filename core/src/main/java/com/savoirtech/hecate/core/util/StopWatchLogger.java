@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2016 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,60 +14,41 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.entities;
+package com.savoirtech.hecate.core.util;
 
-import com.savoirtech.hecate.annotation.ClusteringColumn;
-import com.savoirtech.hecate.annotation.PartitionKey;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.time.StopWatch;
+import org.slf4j.Logger;
 
-public class MultiFacetKeyPojo {
+public class StopWatchLogger {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    @PartitionKey
-    private String partKey;
-    
-    @ClusteringColumn(order=1)
-    private String clust1;
-    
-    @ClusteringColumn(order=2)
-    private String clust2;
-    
-    private String data;
+    private final StopWatch stopWatch = new StopWatch();
+    private final Logger logger;
 
 //----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
+// Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public String getClust1() {
-        return clust1;
+    public StopWatchLogger(Logger logger) {
+        this.logger = logger;
+        stopWatch.start();
     }
 
-    public void setClust1(String clust1) {
-        this.clust1 = clust1;
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public void info(String message, Object... params) {
+        logger.info(message + " took {} milliseconds.", ArrayUtils.add(params, stopWatch.getTime()));
+        reset();
     }
 
-    public String getClust2() {
-        return clust2;
-    }
-
-    public void setClust2(String clust2) {
-        this.clust2 = clust2;
-    }
-
-    public String getData() {
-        return data;
-    }
-
-    public void setData(String data) {
-        this.data = data;
-    }
-
-    public String getPartKey() {
-        return partKey;
-    }
-
-    public void setPartKey(String partKey) {
-        this.partKey = partKey;
+    public void reset() {
+        stopWatch.stop();
+        stopWatch.reset();
+        stopWatch.start();
     }
 }

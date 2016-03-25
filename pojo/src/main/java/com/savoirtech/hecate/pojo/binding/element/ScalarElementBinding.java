@@ -16,11 +16,14 @@
 
 package com.savoirtech.hecate.pojo.binding.element;
 
+import java.util.function.Predicate;
+
 import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
-import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 import com.savoirtech.hecate.pojo.convert.Converter;
+import com.savoirtech.hecate.pojo.facet.Facet;
+import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 
 public class ScalarElementBinding implements ElementBinding {
 //----------------------------------------------------------------------------------------------------------------------
@@ -62,7 +65,7 @@ public class ScalarElementBinding implements ElementBinding {
     }
 
     @Override
-    public void visitChild(Object facetElementValue, PojoVisitor visitor) {
+    public void visitChild(Object facetElementValue, Predicate<Facet> predicate, PojoVisitor visitor) {
         // Do nothing!
     }
 }

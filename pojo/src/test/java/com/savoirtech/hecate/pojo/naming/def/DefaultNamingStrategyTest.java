@@ -16,9 +16,9 @@
 
 package com.savoirtech.hecate.pojo.naming.def;
 
-import com.google.common.base.VerifyException;
+import java.util.Map;
+
 import com.savoirtech.hecate.annotation.Column;
-import com.savoirtech.hecate.annotation.Index;
 import com.savoirtech.hecate.annotation.Table;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
@@ -26,8 +26,6 @@ import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Map;
 
 public class DefaultNamingStrategyTest extends AbstractTestCase {
 //----------------------------------------------------------------------------------------------------------------------
@@ -84,17 +82,6 @@ public class DefaultNamingStrategyTest extends AbstractTestCase {
         assertEquals("pojo_type", strategy.getTableName(PojoType.class));
     }
 
-    @Test
-    public void testGetIndexName() {
-        assertEquals("default_name_ndx", strategy.getIndexName(getFacet(Indexed.class, "defaultName")));
-        assertEquals("foo", strategy.getIndexName(getFacet(Indexed.class, "customName")));
-    }
-
-    @Test(expected = VerifyException.class)
-    public void testGetIndexNameOnUnindexedField() {
-        strategy.getIndexName(getFacet(Referer.class, "withAnnotation"));
-    }
-
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
@@ -107,14 +94,6 @@ public class DefaultNamingStrategyTest extends AbstractTestCase {
 
     private static class Child {
         private String stringProperty;
-    }
-
-    private static class Indexed {
-        @Index
-        private String defaultName;
-
-        @Index("foo")
-        private String customName;
     }
 
     private static class Parent {

@@ -19,7 +19,7 @@ package com.savoirtech.hecate.pojo.entities;
 import java.util.UUID;
 
 import com.savoirtech.hecate.annotation.Embedded;
-import com.savoirtech.hecate.annotation.Id;
+import com.savoirtech.hecate.annotation.PartitionKey;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -28,7 +28,7 @@ public class Person {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Id
+    @PartitionKey
     private String ssn = UUID.randomUUID().toString();
 
     private String lastName;
