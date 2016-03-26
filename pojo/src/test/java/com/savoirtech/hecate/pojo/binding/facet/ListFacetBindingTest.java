@@ -36,7 +36,7 @@ public class ListFacetBindingTest extends AbstractDaoTestCase {
         PojoDao<PojoListEntity> dao = createPojoDao(PojoListEntity.class);
         PojoListEntity entity = new PojoListEntity();
         dao.save(entity);
-        entity = dao.findByKeys(entity.getId());
+        entity = dao.findByKey(entity.getId());
         assertNull(entity.getPojos());
     }
 
@@ -46,7 +46,7 @@ public class ListFacetBindingTest extends AbstractDaoTestCase {
         PojoDao<PrimitiveListEntity> dao = createPojoDao(PrimitiveListEntity.class);
         PrimitiveListEntity entity = new PrimitiveListEntity();
         dao.save(entity);
-        entity = dao.findByKeys(entity.getId());
+        entity = dao.findByKey(entity.getId());
         assertNull(entity.getInts());
     }
 
@@ -59,7 +59,7 @@ public class ListFacetBindingTest extends AbstractDaoTestCase {
         List<ElementEntity> expected = Arrays.asList(new ElementEntity(), new ElementEntity());
         entity.setPojos(expected);
         dao.save(entity);
-        entity = dao.findByKeys(entity.getId());
+        entity = dao.findByKey(entity.getId());
         assertEquals(expected, entity.getPojos());
     }
 
@@ -71,7 +71,7 @@ public class ListFacetBindingTest extends AbstractDaoTestCase {
         List<Integer> expected = Arrays.asList(3, 1, 4, 1, 5, 9);
         entity.setInts(expected);
         dao.save(entity);
-        entity = dao.findByKeys(entity.getId());
+        entity = dao.findByKey(entity.getId());
         assertEquals(expected, entity.getInts());
     }
 

@@ -24,7 +24,6 @@ import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.KeyBinding;
-import com.savoirtech.hecate.pojo.binding.key.simple.SimpleKeyBinding;
 import org.apache.commons.lang3.StringUtils;
 
 public class BindingTestCase extends AbstractDaoTestCase {
@@ -58,11 +57,11 @@ public class BindingTestCase extends AbstractDaoTestCase {
         assertEquals(cql, delete.getQueryString());
     }
 
-    protected void assertInsertEquals(SimpleKeyBinding binding, String cql) {
+    protected void assertInsertEquals(ColumnBinding binding, String cql) {
         assertInsertEquals(binding, DEFAULT_TABLE_NAME, cql);
     }
 
-    protected void assertInsertEquals(SimpleKeyBinding binding, String tableName, String cql) {
+    protected void assertInsertEquals(ColumnBinding binding, String tableName, String cql) {
         Insert insert = QueryBuilder.insertInto(tableName);
         binding.insert(insert);
         assertEquals(cql, insert.getQueryString());

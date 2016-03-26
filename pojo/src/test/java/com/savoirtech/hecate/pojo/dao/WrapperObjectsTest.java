@@ -33,7 +33,7 @@ public class WrapperObjectsTest extends AbstractDaoTestCase {
         WrapperPojo pojo = new WrapperPojo();
         dao.save(pojo);
 
-        WrapperPojo found = dao.findByKeys(pojo.getId());
+        WrapperPojo found = dao.findByKey(pojo.getId());
         assertNull(found.getBooleanWrapper());
         assertNull(found.getDoubleWrapper());
         assertNull(found.getFloatWrapper());

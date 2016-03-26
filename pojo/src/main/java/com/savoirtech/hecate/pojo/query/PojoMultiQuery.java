@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Savoir Technologies, Inc.
+ * Copyright (c) 2012-2016 Savoir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,17 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.test;
+package com.savoirtech.hecate.pojo.query;
 
-import java.util.function.Consumer;
+import com.savoirtech.hecate.core.mapping.MappedQueryResult;
+import com.savoirtech.hecate.core.statement.StatementOptions;
 
-import com.datastax.driver.core.Session;
-import org.junit.Rule;
-
-public class CassandraTestCase extends AbstractTestCase {
-//----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
-
-    @Rule
-    public final CassandraRule cassandraRule = new CassandraRule();
-
+public interface PojoMultiQuery<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected Session getSession() {
-        return cassandraRule.getSession();
-    }
-
-    protected void withSession(Consumer<Session> consumer) {
-        consumer.accept(getSession());
-    }
+    PojoMultiQuery<P> add(Object... params);
+    MappedQueryResult<P> execute();
+    MappedQueryResult<P> execute(StatementOptions options);
 }

@@ -17,8 +17,12 @@
 package com.savoirtech.hecate.core.update;
 
 import com.datastax.driver.core.BatchStatement;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.google.common.base.Function;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 
 public class BatchUpdateGroup implements UpdateGroup {
 //----------------------------------------------------------------------------------------------------------------------
@@ -52,5 +56,10 @@ public class BatchUpdateGroup implements UpdateGroup {
     @Override
     public void complete() {
         session.execute(batchStatement);
+    }
+
+    @Override
+    public ListenableFuture<Void> completeAsync() {
+        return Futures.transform(session.executeAsync(batchStatement), (Function<ResultSet, Void>) input -> null);
     }
 }

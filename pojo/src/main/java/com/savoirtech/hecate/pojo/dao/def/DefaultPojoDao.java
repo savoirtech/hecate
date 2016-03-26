@@ -26,6 +26,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Select;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.savoirtech.hecate.annotation.Ttl;
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptions;
@@ -87,7 +88,7 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 
     @Override
     public void delete(StatementOptions options, P pojo) {
-        async(group -> delete(group, options, pojo));
+        completeSync(group -> delete(group, options, pojo));
     }
 
     @Override
@@ -97,18 +98,38 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
     }
 
     @Override
-    public void deleteByKeys(Object... keys) {
-        delete(findByKeys(keys));
+    public ListenableFuture<Void> deleteAsync(P pojo) {
+        return completeAsync(group -> delete(group, StatementOptionsBuilder.empty(), pojo));
     }
 
     @Override
-    public void deleteByKeys(StatementOptions options, Object... keys) {
-        delete(options, findByKeys(keys));
+    public ListenableFuture<Void> deleteAsync(StatementOptions options, P pojo) {
+        return completeAsync(group -> delete(group, options, pojo));
     }
 
     @Override
-    public void deleteByKeys(UpdateGroup group, StatementOptions options, Object... keys) {
-        delete(group, options, findByKeys(keys));
+    public void deleteByKey(Object... values) {
+        delete(findByKey(values));
+    }
+
+    @Override
+    public void deleteByKey(StatementOptions options, Object... values) {
+        delete(options, findByKey(values));
+    }
+
+    @Override
+    public void deleteByKey(UpdateGroup group, StatementOptions options, Object... values) {
+        delete(group, options, findByKey(values));
+    }
+
+    @Override
+    public ListenableFuture<Void> deleteByKeyAsync(Object... values) {
+        return completeAsync(group -> deleteByKey(group, StatementOptionsBuilder.empty(), values));
+    }
+
+    @Override
+    public ListenableFuture<Void> deleteByKeyAsync(StatementOptions options, Object... values) {
+        return completeAsync(group -> deleteByKey(group, options, values));
     }
 
     @Override
@@ -124,30 +145,30 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
     }
 
     @Override
-    public P findByKeys(Object... keys) {
-        return findByKeys(StatementOptionsBuilder.empty(), keys);
+    public P findByKey(Object... values) {
+        return findByKey(StatementOptionsBuilder.empty(), values);
     }
 
     @Override
-    public P findByKeys(StatementOptions options, Object... keys) {
+    public P findByKey(StatementOptions options, Object... values) {
         PreparedStatement statement = statementFactory.createFindByKey(binding, tableName);
-        BoundStatement boundStatement = binding.bindWhereIdEquals(statement, Arrays.asList(keys));
+        BoundStatement boundStatement = binding.bindWhereIdEquals(statement, Arrays.asList(values));
         return new MappedQueryResult<>(session.execute(boundStatement), new PojoQueryRowMapper<>(binding, contextFactory.createPojoQueryContext())).one();
     }
 
     @Override
     public void save(P pojo) {
-        async(group -> save(group, StatementOptionsBuilder.empty(), pojo, defaultTtl));
+        completeSync(group -> save(group, StatementOptionsBuilder.empty(), pojo, defaultTtl));
     }
 
     @Override
     public void save(P pojo, int ttl) {
-        async(group -> save(group, StatementOptionsBuilder.empty(), pojo, ttl));
+        completeSync(group -> save(group, StatementOptionsBuilder.empty(), pojo, ttl));
     }
 
     @Override
     public void save(StatementOptions options, P pojo) {
-        async(group -> save(group, options, pojo, defaultTtl));
+        completeSync(group -> save(group, options, pojo, defaultTtl));
     }
 
     @Override
@@ -157,7 +178,7 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 
     @Override
     public void save(StatementOptions options, P pojo, int ttl) {
-        async(group -> save(group, options, pojo, ttl));
+        completeSync(group -> save(group, options, pojo, ttl));
     }
 
     @Override
@@ -176,11 +197,37 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
         binding.visitChildren(pojo, Facet::isCascadeSave, new SaveVisitor(group, options, ttl));
     }
 
+    @Override
+    public ListenableFuture<Void> saveAsync(P pojo) {
+        return completeAsync(group -> save(group, StatementOptionsBuilder.empty(), pojo, defaultTtl));
+    }
+
+    @Override
+    public ListenableFuture<Void> saveAsync(P pojo, int ttl) {
+        return completeAsync(group -> save(group, StatementOptionsBuilder.empty(), pojo, ttl));
+    }
+
+    @Override
+    public ListenableFuture<Void> saveAsync(StatementOptions options, P pojo) {
+        return completeAsync(group -> save(group, options, pojo, defaultTtl));
+    }
+
+    @Override
+    public ListenableFuture<Void> saveAsync(StatementOptions options, P pojo, int ttl) {
+        return completeAsync(group -> save(group, options, pojo, ttl));
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private void async(Consumer<UpdateGroup> consumer) {
+    private ListenableFuture<Void> completeAsync(Consumer<UpdateGroup> consumer) {
+        UpdateGroup group = new AsyncUpdateGroup(session);
+        consumer.accept(group);
+        return group.completeAsync();
+    }
+
+    private void completeSync(Consumer<UpdateGroup> consumer) {
         UpdateGroup group = new AsyncUpdateGroup(session);
         consumer.accept(group);
         group.complete();
@@ -207,13 +254,25 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     private class DeleteVisitor implements PojoVisitor {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
         private final UpdateGroup group;
         private final StatementOptions options;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
 
         public DeleteVisitor(UpdateGroup group, StatementOptions options) {
             this.group = group;
             this.options = options;
         }
+
+//----------------------------------------------------------------------------------------------------------------------
+// PojoVisitor Implementation
+//----------------------------------------------------------------------------------------------------------------------
 
         @Override
         public <T> void visit(T pojo, PojoBinding<T> pojoBinding, String tableName, Predicate<Facet> predicate) {
@@ -223,9 +282,17 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
     }
 
     private class SaveVisitor implements PojoVisitor {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
         private final UpdateGroup group;
         private final StatementOptions options;
         private final int ttl;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
 
         public SaveVisitor(UpdateGroup group, StatementOptions options, int ttl) {
             this.group = group;
@@ -233,11 +300,14 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
             this.ttl = ttl;
         }
 
+//----------------------------------------------------------------------------------------------------------------------
+// PojoVisitor Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
         @Override
         public <T> void visit(T pojo, PojoBinding<T> pojoBinding, String tableName, Predicate<Facet> predicate) {
             insertPojo(pojo, pojoBinding, tableName, group, options, ttl);
             pojoBinding.visitChildren(pojo, predicate, this);
-
         }
     }
 }

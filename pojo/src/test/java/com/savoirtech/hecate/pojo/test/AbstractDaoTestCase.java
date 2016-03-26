@@ -27,6 +27,7 @@ import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactory;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
+import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 import com.savoirtech.hecate.pojo.query.PojoQueryContextFactory;
 import com.savoirtech.hecate.test.CassandraTestCase;
 
@@ -54,6 +55,10 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
 
     protected PojoQueryContextFactory getContextFactory() {
         return daoFactory.get().getContextFactory();
+    }
+
+    protected NamingStrategy getNamingStrategy() {
+        return daoFactory.get().getNamingStrategy();
     }
 
     protected void createTables(Class<?>... pojoTypes) {

@@ -36,7 +36,7 @@ public class SetFacetBindingTest extends AbstractDaoTestCase {
         PojoDao<PojoSetEntity> dao = createPojoDao(PojoSetEntity.class);
         PojoSetEntity entity = new PojoSetEntity();
         dao.save(entity);
-        entity = dao.findByKeys(entity.getId());
+        entity = dao.findByKey(entity.getId());
         assertNull(entity.getPojos());
     }
 
@@ -46,7 +46,7 @@ public class SetFacetBindingTest extends AbstractDaoTestCase {
         PojoDao<PrimitiveSetEntity> dao = createPojoDao(PrimitiveSetEntity.class);
         PrimitiveSetEntity entity = new PrimitiveSetEntity();
         dao.save(entity);
-        entity = dao.findByKeys(entity.getId());
+        entity = dao.findByKey(entity.getId());
         assertNull(entity.getInts());
     }
 
@@ -59,7 +59,7 @@ public class SetFacetBindingTest extends AbstractDaoTestCase {
         Set<ElementEntity> expected = Sets.newHashSet(new ElementEntity(), new ElementEntity());
         entity.setPojos(expected);
         dao.save(entity);
-        entity = dao.findByKeys(entity.getId());
+        entity = dao.findByKey(entity.getId());
         assertEquals(expected, entity.getPojos());
     }
 
@@ -71,7 +71,7 @@ public class SetFacetBindingTest extends AbstractDaoTestCase {
         Set<Integer> expected = Sets.newHashSet(3, 1, 4, 1, 5, 9);
         entity.setInts(expected);
         dao.save(entity);
-        entity = dao.findByKeys(entity.getId());
+        entity = dao.findByKey(entity.getId());
         assertEquals(expected, entity.getInts());
     }
 

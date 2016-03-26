@@ -20,10 +20,12 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 import com.datastax.driver.core.policies.FallthroughRetryPolicy;
+import com.savoirtech.hecate.test.Cassandra;
 import com.savoirtech.hecate.test.CassandraTestCase;
 import org.junit.Before;
 import org.junit.Test;
 
+@Cassandra
 public class StatementOptionsBuilderTest extends CassandraTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields

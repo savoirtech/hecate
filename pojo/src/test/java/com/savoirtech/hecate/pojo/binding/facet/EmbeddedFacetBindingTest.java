@@ -42,7 +42,7 @@ public class EmbeddedFacetBindingTest extends AbstractDaoTestCase {
         entity.setInner(inner);
         dao.save(entity);
 
-        Outer found = dao.findByKeys(entity.getId());
+        Outer found = dao.findByKey(entity.getId());
         assertNotNull(found.getInner());
         assertEquals("foo", found.getInner().getA());
         assertEquals("bar", found.getInner().getB());
@@ -61,7 +61,7 @@ public class EmbeddedFacetBindingTest extends AbstractDaoTestCase {
         Outer entity = new Outer();
         dao.save(entity);
 
-        Outer found = dao.findByKeys(entity.getId());
+        Outer found = dao.findByKey(entity.getId());
         assertNull(found.getInner());
     }
 

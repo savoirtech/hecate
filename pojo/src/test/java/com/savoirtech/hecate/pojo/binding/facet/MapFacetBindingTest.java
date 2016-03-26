@@ -36,7 +36,7 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
         PojoDao<PojoMapEntity> dao = createPojoDao(PojoMapEntity.class);
         PojoMapEntity entity = new PojoMapEntity();
         dao.save(entity);
-        entity = dao.findByKeys(entity.getId());
+        entity = dao.findByKey(entity.getId());
         assertNull(entity.getPojos());
     }
 
@@ -46,7 +46,7 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
         PojoDao<PrimitiveMapEntity> dao = createPojoDao(PrimitiveMapEntity.class);
         PrimitiveMapEntity entity = new PrimitiveMapEntity();
         dao.save(entity);
-        entity = dao.findByKeys(entity.getId());
+        entity = dao.findByKey(entity.getId());
         assertNull(entity.getInts());
     }
 
@@ -61,7 +61,7 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
         expected.put("2", new ElementEntity());
         entity.setPojos(expected);
         dao.save(entity);
-        entity = dao.findByKeys(entity.getId());
+        entity = dao.findByKey(entity.getId());
         assertEquals(expected, entity.getPojos());
     }
 
@@ -75,7 +75,7 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
         expected.put("two", 2);
         entity.setInts(expected);
         dao.save(entity);
-        entity = dao.findByKeys(entity.getId());
+        entity = dao.findByKey(entity.getId());
         assertEquals(expected, entity.getInts());
     }
 

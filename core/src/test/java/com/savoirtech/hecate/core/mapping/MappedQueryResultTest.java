@@ -16,15 +16,17 @@
 
 package com.savoirtech.hecate.core.mapping;
 
-import com.savoirtech.hecate.test.CassandraTestCase;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.savoirtech.hecate.test.Cassandra;
+import com.savoirtech.hecate.test.CassandraTestCase;
+import org.junit.Before;
+import org.junit.Test;
+
+@Cassandra
 public class MappedQueryResultTest extends CassandraTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods

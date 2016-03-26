@@ -99,6 +99,15 @@ public class AbstractCompositeKeyBinding extends NestedColumnBinding<KeyComponen
     }
 
     @Override
+    public boolean isNullElement(Object element) {
+        return !CqlUtils.toList((TupleValue) element)
+                .stream()
+                .filter(value -> value != null)
+                .findFirst()
+                .isPresent();
+    }
+
+    @Override
     public void delete(Delete.Where delete) {
         forEachBinding(c -> c.delete(delete));
     }
@@ -114,15 +123,14 @@ public class AbstractCompositeKeyBinding extends NestedColumnBinding<KeyComponen
     }
 
     @Override
-    public Class<?> getElementType() {
-        return TupleValue.class;
-    }
-
-    @Override
     public Object getElementValue(Object pojo) {
-        List<Object> parameters = new LinkedList<>();
-        forEachBinding(c -> c.collectParameters(pojo, parameters));
-        return elementType.newValue(parameters.toArray(new Object[parameters.size()]));
+        if (pojo == null) {
+            return elementType.newValue();
+        } else {
+            List<Object> parameters = new LinkedList<>();
+            forEachBinding(c -> c.collectParameters(pojo, parameters));
+            return elementType.newValue(parameters.toArray(new Object[parameters.size()]));
+        }
     }
 
     @Override
@@ -171,14 +179,14 @@ public class AbstractCompositeKeyBinding extends NestedColumnBinding<KeyComponen
         @Override
         public void visitChildren(Object pojo, Predicate<Facet> predicate, PojoVisitor visitor) {
             Object referenced = referenceFacet.getValue(pojo);
-            if(referenced != null && predicate.test(referenceFacet)) {
+            if (referenced != null && predicate.test(referenceFacet)) {
                 visitChild(referenced, pojoBinding, tableName, predicate, visitor);
             }
         }
 
         @SuppressWarnings("unchecked")
         private <P> void visitChild(Object pojo, PojoBinding<P> binding, String tableName, Predicate<Facet> predicate, PojoVisitor visitor) {
-            visitor.visit((P)pojo, binding, tableName, predicate);
+            visitor.visit((P) pojo, binding, tableName, predicate);
         }
     }
 }

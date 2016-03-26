@@ -77,6 +77,11 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
     }
 
     @Override
+    public boolean isNullElement(Object element) {
+        return element == null;
+    }
+
+    @Override
     public List<Object> elementToKeys(Object element) {
         return Collections.singletonList(element);
     }
@@ -84,11 +89,6 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
     @Override
     public DataType getElementDataType() {
         return getConverter().getDataType();
-    }
-
-    @Override
-    public Class<?> getElementType() {
-        return getConverter().getValueType();
     }
 
     @Override
@@ -142,7 +142,6 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
 //----------------------------------------------------------------------------------------------------------------------
 // ColumnBinding Implementation
 //----------------------------------------------------------------------------------------------------------------------
-
 
         @Override
         public void injectValues(Object pojo, Iterator<Object> columnValues, PojoQueryContext context) {

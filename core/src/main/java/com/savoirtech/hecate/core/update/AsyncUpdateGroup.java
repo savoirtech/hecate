@@ -20,11 +20,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.savoirtech.hecate.core.exception.HecateException;
 
@@ -60,5 +63,10 @@ public class AsyncUpdateGroup implements UpdateGroup {
         } catch (ExecutionException e) {
             throw new HecateException("An exception occurred while awaiting statement completion.", e);
         }
+    }
+
+    @Override
+    public ListenableFuture<Void> completeAsync() {
+        return Futures.transform(Futures.allAsList(futures), (Function<List<ResultSet>, Void>) list -> null);
     }
 }

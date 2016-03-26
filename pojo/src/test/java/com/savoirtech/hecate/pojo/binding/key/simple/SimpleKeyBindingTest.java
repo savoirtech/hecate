@@ -21,15 +21,16 @@ import java.util.List;
 
 import com.datastax.driver.core.DataType;
 import com.google.common.collect.Lists;
-import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.convert.Converter;
+import com.savoirtech.hecate.pojo.dao.PojoDao;
+import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.BindingTestCase;
+import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -69,6 +70,33 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     }
 
     @Test
+    public void testElementToKeys() {
+        assertEquals(Collections.singletonList("foo"), binding.elementToKeys("foo"));
+    }
+
+    @Test
+    public void testGetElementDataType() {
+        when(converter.getDataType()).thenReturn(DataType.varchar());
+        assertEquals(DataType.varchar(), binding.getElementDataType());
+    }
+
+    @Test
+    public void testGetElementValue() {
+        SimpleEntity entity = new SimpleEntity();
+        when(converter.toColumnValue(entity.getId())).thenReturn("2");
+        assertEquals("2", binding.getElementValue(entity));
+        verify(converter).toColumnValue(entity.getId());
+    }
+
+    @Test
+    public void testGetKeyParameters() {
+        when(converter.toColumnValue("1")).thenReturn("2");
+        List<Object> keys = binding.getKeyParameters(Lists.newArrayList("1"));
+        assertEquals(Lists.newArrayList("2"), keys);
+        verify(converter).toColumnValue("1");
+    }
+
+    @Test
     public void testInsert() {
         assertInsertEquals(binding, "INSERT INTO foo(id) VALUES (?);");
     }
@@ -90,49 +118,56 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     }
 
     @Test
-    public void testGetElementDataType() {
-        when(converter.getDataType()).thenReturn(DataType.varchar());
-        assertEquals(DataType.varchar(), binding.getElementDataType());
+    @Cassandra
+    public void testReferenceFacet() {
+        createTables(SimpleEntity.class);
+        PojoDao<ReferencingEntity> dao = createPojoDao(ReferencingEntity.class);
+        ReferencingEntity entity = new ReferencingEntity();
+        SimpleEntity ref = new SimpleEntity();
+        entity.setSimpleEntity(ref);
+        dao.save(entity);
+
+        ReferencingEntity found = dao.findByKey(entity.getId());
+        assertEquals(entity, found);
+        assertEquals(ref, found.getSimpleEntity());
     }
 
     @Test
-    public void testGetElementType() {
-        when(converter.getValueType()).thenAnswer((Answer<Object>) invocationOnMock -> String.class);
-        assertEquals(String.class, binding.getElementType());
+    @Cassandra
+    public void testReferenceFacetWithNullReference() {
+        createTables(SimpleEntity.class);
+        PojoDao<ReferencingEntity> dao = createPojoDao(ReferencingEntity.class);
+        ReferencingEntity entity = new ReferencingEntity();
+        dao.save(entity);
+        ReferencingEntity found = dao.findByKey(entity.getId());
+        assertEquals(entity, found);
+        assertNull(found.getSimpleEntity());
     }
 
-    @Test
-    public void testElementToKeys() {
-        assertEquals(Collections.singletonList("foo"), binding.elementToKeys("foo"));
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
 
-    @Test
-    public void testGetElementValue() {
-        when(converter.toColumnValue("1")).thenReturn("2");
-        SimpleEntity entity = new SimpleEntity();
-        entity.setId("1");
-        assertEquals("2", binding.getElementValue(entity));
-        verify(converter).toColumnValue("1");
-    }
+    public static class ReferencingEntity extends UuidEntity {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
-    @Test
-    public void testGetKeyParameters() {
-        when(converter.toColumnValue("1")).thenReturn("2");
-        List<Object> keys = binding.getKeyParameters(Lists.newArrayList("1"));
-        assertEquals(Lists.newArrayList("2"), keys);
-        verify(converter).toColumnValue("1");
-    }
+        private SimpleEntity simpleEntity;
 
-    public static class SimpleEntity {
-        @PartitionKey
-        private String id;
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
 
-        public String getId() {
-            return id;
+        public SimpleEntity getSimpleEntity() {
+            return simpleEntity;
         }
 
-        public void setId(String id) {
-            this.id = id;
+        public void setSimpleEntity(SimpleEntity simpleEntity) {
+            this.simpleEntity = simpleEntity;
         }
+    }
+
+    public static class SimpleEntity extends UuidEntity {
     }
 }

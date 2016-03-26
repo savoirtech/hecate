@@ -19,6 +19,7 @@ package com.savoirtech.hecate.pojo.dao;
 import java.util.function.Consumer;
 
 import com.datastax.driver.core.querybuilder.Select;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.core.update.UpdateGroup;
 import com.savoirtech.hecate.pojo.query.PojoQuery;
@@ -29,9 +30,9 @@ public interface PojoDao<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    P findByKeys(Object... keys);
+    P findByKey(Object... values);
 
-    P findByKeys(StatementOptions options, Object... keys);
+    P findByKey(StatementOptions options, Object... values);
 
     void delete(P pojo);
 
@@ -39,11 +40,19 @@ public interface PojoDao<P> {
 
     void delete(UpdateGroup group, StatementOptions options, P pojo);
 
-    void deleteByKeys(Object... keys);
+    ListenableFuture<Void> deleteAsync(P pojo);
 
-    void deleteByKeys(StatementOptions options, Object... keys);
+    ListenableFuture<Void> deleteAsync(StatementOptions options, P pojo);
 
-    void deleteByKeys(UpdateGroup group, StatementOptions options, Object... keys);
+    void deleteByKey(Object... values);
+
+    void deleteByKey(StatementOptions options, Object... values);
+
+    ListenableFuture<Void> deleteByKeyAsync(Object... values);
+
+    ListenableFuture<Void> deleteByKeyAsync(StatementOptions options, Object... values);
+
+    void deleteByKey(UpdateGroup group, StatementOptions options, Object... values);
 
     PojoQueryBuilder<P> find();
 
@@ -64,4 +73,12 @@ public interface PojoDao<P> {
     void save(UpdateGroup group, StatementOptions options, P pojo);
 
     void save(UpdateGroup group, StatementOptions options, P pojo, int ttl);
+
+    ListenableFuture<Void> saveAsync(P pojo);
+
+    ListenableFuture<Void> saveAsync(P pojo, int ttl);
+
+    ListenableFuture<Void> saveAsync(StatementOptions options, P pojo);
+
+    ListenableFuture<Void> saveAsync(StatementOptions options, P pojo, int ttl);
 }

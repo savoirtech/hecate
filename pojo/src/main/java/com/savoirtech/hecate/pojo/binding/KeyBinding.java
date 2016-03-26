@@ -32,9 +32,9 @@ public interface KeyBinding extends ColumnBinding {
     ColumnBinding createReferenceBinding(Facet parent, PojoBinding<?> pojoBinding, NamingStrategy namingStrategy);
 
     void delete(Delete.Where delete);
+    boolean isNullElement(Object element);
     List<Object> elementToKeys(Object element);
     DataType getElementDataType();
-    Class<?> getElementType();
     Object getElementValue(Object pojo);
 
     List<Object> getKeyParameters(List<Object> keys);

@@ -43,7 +43,7 @@ public class CascadedObjectTest extends AbstractDaoTestCase {
         PojoDao<Department> departmentDao = createPojoDao(Department.class);
         departmentDao.save(department);
 
-        Department found = departmentDao.findByKeys(department.getId());
+        Department found = departmentDao.findByKey(department.getId());
         assertNotNull(found.getManager());
         assertNotNull(found.getManager().getAddress());
     }
@@ -64,13 +64,13 @@ public class CascadedObjectTest extends AbstractDaoTestCase {
         PojoDao<Department> departmentDao = createPojoDao(Department.class);
         departmentDao.save(department);
 
-        assertNotNull(departmentDao.findByKeys(department.getId()));
+        assertNotNull(departmentDao.findByKey(department.getId()));
 
         departmentDao.delete(department);
 
-        assertNull(departmentDao.findByKeys(department.getId()));
-        assertNull(employeeDao.findByKeys(manager.getId()));
-        assertNull(addressDao.findByKeys(address.getId()));
+        assertNull(departmentDao.findByKey(department.getId()));
+        assertNull(employeeDao.findByKey(manager.getId()));
+        assertNull(addressDao.findByKey(address.getId()));
     }
 
     public static class Address {

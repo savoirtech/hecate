@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.core.update;
 
 import com.datastax.driver.core.Statement;
+import com.google.common.util.concurrent.ListenableFuture;
 
 public interface UpdateGroup {
 //----------------------------------------------------------------------------------------------------------------------
@@ -24,4 +25,5 @@ public interface UpdateGroup {
 //----------------------------------------------------------------------------------------------------------------------
     void addUpdate(Statement statement);
     void complete();
+    ListenableFuture<Void> completeAsync();
 }

@@ -37,6 +37,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.savoirtech.hecate.core.exception.HecateException;
+import com.savoirtech.hecate.test.Cassandra;
 import com.savoirtech.hecate.test.CassandraTestCase;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Before;
@@ -45,6 +46,7 @@ import org.junit.Test;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 
+@Cassandra
 public class CqlUtilsTest extends CassandraTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields

@@ -39,7 +39,7 @@ public class PojoElementBinding implements ElementBinding {
 
     @SuppressWarnings("unchecked")
     private static <T> void visitChild(Object child, PojoBinding<T> binding, String tableName, Predicate<Facet> predicate, PojoVisitor visitor) {
-        visitor.visit((T)child, binding, tableName, predicate);
+        visitor.visit((T) child, binding, tableName, predicate);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -72,11 +72,17 @@ public class PojoElementBinding implements ElementBinding {
 
     @Override
     public Object toFacetValue(Object columnValue, PojoQueryContext context) {
-        return context.createPojo(pojoBinding, tableName, pojoBinding.getKeyBinding().elementToKeys(columnValue));
+        if (pojoBinding.getKeyBinding().isNullElement(columnValue)) {
+            return null;
+        } else {
+            return context.createPojo(pojoBinding, tableName, pojoBinding.getKeyBinding().elementToKeys(columnValue));
+        }
     }
 
     @Override
     public void visitChild(Object facetElementValue, Predicate<Facet> predicate, PojoVisitor visitor) {
-        visitChild(facetElementValue, pojoBinding, tableName, predicate, visitor);
+        if (facetElementValue != null) {
+            visitChild(facetElementValue, pojoBinding, tableName, predicate, visitor);
+        }
     }
 }
