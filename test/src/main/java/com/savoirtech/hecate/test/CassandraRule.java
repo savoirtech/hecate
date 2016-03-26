@@ -118,7 +118,7 @@ public class CassandraRule implements MethodRule {
         }
     }
 
-    private class TimedStatement extends Statement {
+    private static class TimedStatement extends Statement {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
