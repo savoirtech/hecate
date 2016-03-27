@@ -22,13 +22,21 @@ import com.datastax.driver.core.schemabuilder.Create;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
+import com.savoirtech.hecate.pojo.binding.PojoBindingFactory;
+import com.savoirtech.hecate.pojo.binding.def.DefaultPojoBindingFactory;
+import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
+import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactory;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
+import com.savoirtech.hecate.pojo.naming.def.DefaultNamingStrategy;
 import com.savoirtech.hecate.pojo.query.PojoQueryContextFactory;
+import com.savoirtech.hecate.pojo.query.def.DefaultPojoQueryContextFactory;
+import com.savoirtech.hecate.pojo.statement.PojoStatementFactory;
+import com.savoirtech.hecate.pojo.statement.def.DefaultPojoStatementFactory;
 import com.savoirtech.hecate.test.CassandraTestCase;
 
 public abstract class AbstractDaoTestCase extends CassandraTestCase {
@@ -38,7 +46,34 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
 
     private static final FacetProvider FACET_PROVIDER = new FieldFacetProvider();
 
-    private final Supplier<DefaultPojoDaoFactory> daoFactory = Suppliers.memoize(() -> new DefaultPojoDaoFactory(getSession()));
+
+    private final NamingStrategy namingStrategy = new DefaultNamingStrategy();
+    private final FacetProvider facetProvider = new FieldFacetProvider();
+    private final ConverterRegistry converterRegistry = new DefaultConverterRegistry();
+    private final PojoBindingFactory bindingFactory = new DefaultPojoBindingFactory(facetProvider, converterRegistry, namingStrategy);
+    private final Supplier<PojoStatementFactory> statementFactory = Suppliers.memoize(() -> new DefaultPojoStatementFactory(getSession()));
+    private final Supplier<PojoQueryContextFactory> contextFactory = Suppliers.memoize(() -> new DefaultPojoQueryContextFactory(getSession(), statementFactory.get()));
+    private final Supplier<DefaultPojoDaoFactory> daoFactory = Suppliers.memoize(() -> new DefaultPojoDaoFactory(getSession(), bindingFactory, statementFactory.get(), contextFactory.get(), namingStrategy));
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    protected PojoBindingFactory getBindingFactory() {
+        return bindingFactory;
+    }
+
+    public ConverterRegistry getConverterRegistry() {
+        return converterRegistry;
+    }
+
+    public FacetProvider getFacetProvider() {
+        return facetProvider;
+    }
+
+    protected NamingStrategy getNamingStrategy() {
+        return namingStrategy;
+    }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
@@ -49,29 +84,25 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
         return daoFactory.get().createPojoDao(pojoType);
     }
 
-    protected <P> PojoBinding<P> getPojoBinding(Class<P> pojoType) {
-        return daoFactory.get().getBindingFactory().createPojoBinding(pojoType);
-    }
-
-    protected PojoQueryContextFactory getContextFactory() {
-        return daoFactory.get().getContextFactory();
-    }
-
-    protected NamingStrategy getNamingStrategy() {
-        return daoFactory.get().getNamingStrategy();
+    protected void createTable(Class<?> pojoType, String tableName) {
+        Create create = daoFactory.get().getBindingFactory().createPojoBinding(pojoType).createTable(tableName);
+        logger.debug("Creating \"{}\" table for class \"{}\":\n\t{}\n", tableName, pojoType.getSimpleName(), create);
+        getSession().execute(create);
     }
 
     protected void createTables(Class<?>... pojoTypes) {
         Arrays.stream(pojoTypes).forEach(pojoType -> createTable(pojoType, daoFactory.get().getNamingStrategy().getTableName(pojoType)));
     }
 
-    protected void createTable(Class<?> pojoType, String tableName) {
-        Create create = daoFactory.get().getBindingFactory().createPojoBinding(pojoType).createTable(tableName);
-        logger.info("Creating \"{}\" table for class \"{}\":\n\t{}\n", tableName, pojoType.getSimpleName(), create);
-        getSession().execute(create);
+    protected PojoQueryContextFactory getContextFactory() {
+        return contextFactory.get();
     }
 
     protected Facet getFacet(Class<?> pojoType, String name) {
         return FACET_PROVIDER.getFacetsAsMap(pojoType).get(name);
+    }
+
+    protected <P> PojoBinding<P> getPojoBinding(Class<P> pojoType) {
+        return daoFactory.get().getBindingFactory().createPojoBinding(pojoType);
     }
 }

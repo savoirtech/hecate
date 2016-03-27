@@ -19,6 +19,7 @@ package com.savoirtech.hecate.pojo.binding.key.composite;
 import java.util.stream.Collectors;
 
 import com.savoirtech.hecate.pojo.binding.KeyBinding;
+import com.savoirtech.hecate.pojo.binding.PojoBindingFactory;
 import com.savoirtech.hecate.pojo.binding.key.component.KeyComponent;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
 import com.savoirtech.hecate.pojo.facet.Facet;
@@ -31,15 +32,15 @@ public class CompositeKeyObjectBinding extends AbstractCompositeKeyBinding imple
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static KeyComponent createComponent(Facet parent, Facet child, ConverterRegistry converterRegistry, NamingStrategy namingStrategy) {
-        return createComponent(new SubFacet(parent, child, true), converterRegistry, namingStrategy);
+    private static KeyComponent createComponent(Facet parent, Facet child, ConverterRegistry converterRegistry, NamingStrategy namingStrategy, PojoBindingFactory pojoBindingFactory) {
+        return createComponent(new SubFacet(parent, child, true), converterRegistry, namingStrategy, pojoBindingFactory);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public CompositeKeyObjectBinding(Facet parent, FacetProvider facetProvider, ConverterRegistry converterRegistry, NamingStrategy namingStrategy) {
-        super(facetProvider.getFacets(parent.getType().getRawType()).stream().map(child -> createComponent(parent, child, converterRegistry, namingStrategy)).collect(Collectors.toList()));
+    public CompositeKeyObjectBinding(Facet parent, FacetProvider facetProvider, ConverterRegistry converterRegistry, NamingStrategy namingStrategy, PojoBindingFactory pojoBindingFactory) {
+        super(facetProvider.getFacets(parent.getType().getRawType()).stream().map(child -> createComponent(parent, child, converterRegistry, namingStrategy, pojoBindingFactory)).collect(Collectors.toList()));
     }
 }

@@ -22,6 +22,7 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.core.update.UpdateGroup;
+import com.savoirtech.hecate.pojo.query.PojoMultiQuery;
 import com.savoirtech.hecate.pojo.query.PojoQuery;
 import com.savoirtech.hecate.pojo.query.PojoQueryBuilder;
 
@@ -33,6 +34,10 @@ public interface PojoDao<P> {
     P findByKey(Object... values);
 
     P findByKey(StatementOptions options, Object... values);
+
+    PojoMultiQuery<P> findByKeys();
+
+    PojoMultiQuery<P> findByKeys(StatementOptions options);
 
     void delete(P pojo);
 

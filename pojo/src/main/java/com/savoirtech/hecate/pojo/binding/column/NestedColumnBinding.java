@@ -34,7 +34,7 @@ import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 
-public class NestedColumnBinding<B extends ColumnBinding> extends AbstractColumnBinding {
+public abstract class NestedColumnBinding<B extends ColumnBinding> extends AbstractColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------

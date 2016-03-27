@@ -30,4 +30,10 @@ public interface PojoQuery<P> {
     }
 
     MappedQueryResult<P> execute(StatementOptions options, Object... params);
+
+    default PojoMultiQuery<P> multi() {
+        return multi(StatementOptionsBuilder.empty());
+    }
+
+    PojoMultiQuery<P> multi(StatementOptions options);
 }

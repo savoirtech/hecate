@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.savoirtech.hecate.pojo.binding.KeyBinding;
+import com.savoirtech.hecate.pojo.binding.PojoBindingFactory;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
@@ -29,7 +30,7 @@ public class CompositeKeyBinding extends AbstractCompositeKeyBinding implements 
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public CompositeKeyBinding(List<Facet> keyFacets, NamingStrategy namingStrategy, ConverterRegistry converterRegistry) {
-        super(keyFacets.stream().map(facet -> createComponent(facet, converterRegistry, namingStrategy)).collect(Collectors.toList()));
+    public CompositeKeyBinding(List<Facet> keyFacets, NamingStrategy namingStrategy, ConverterRegistry converterRegistry, PojoBindingFactory pojoBindingFactory) {
+        super(keyFacets.stream().map(facet -> createComponent(facet, converterRegistry, namingStrategy, pojoBindingFactory)).collect(Collectors.toList()));
     }
 }

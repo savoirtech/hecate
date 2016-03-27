@@ -38,20 +38,6 @@ public abstract class SimpleKeyComponent extends SimpleColumnBinding implements 
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Converter Implementation
-//----------------------------------------------------------------------------------------------------------------------
-
-    @Override
-    public Class<?> getValueType() {
-        return getConverter().getValueType();
-    }
-
-    @Override
-    public Object toFacetValue(Object value) {
-        return getConverter().toFacetValue(value);
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
 // KeyComponent Implementation
 //----------------------------------------------------------------------------------------------------------------------
 

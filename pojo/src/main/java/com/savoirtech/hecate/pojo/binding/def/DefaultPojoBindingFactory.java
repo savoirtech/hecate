@@ -146,7 +146,7 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
     }
 
     private KeyBinding createCompositeKeyObjectBinding(Facet facet) {
-        return new CompositeKeyObjectBinding(facet, facetProvider, converterRegistry, namingStrategy);
+        return new CompositeKeyObjectBinding(facet, facetProvider, converterRegistry, namingStrategy, this);
     }
 
     private KeyBinding createSimpleKeyBinding(Facet keyFacet) {
@@ -158,6 +158,6 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
     }
 
     private KeyBinding createCompositeKeyBinding(List<Facet> keyFacets) {
-        return new CompositeKeyBinding(keyFacets, namingStrategy, converterRegistry);
+        return new CompositeKeyBinding(keyFacets, namingStrategy, converterRegistry, this);
     }
 }

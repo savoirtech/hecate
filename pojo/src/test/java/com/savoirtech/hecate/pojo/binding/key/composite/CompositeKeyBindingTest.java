@@ -23,10 +23,8 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.PartitionKey;
-import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
-import com.savoirtech.hecate.pojo.naming.def.DefaultNamingStrategy;
 import com.savoirtech.hecate.pojo.test.BindingTestCase;
 import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Before;
@@ -45,7 +43,7 @@ public class CompositeKeyBindingTest extends BindingTestCase {
 
     @Before
     public void setUp() {
-        this.binding = new CompositeKeyBinding(Lists.newArrayList(getFacet(CompositeKeyEntity.class, "pk"), getFacet(CompositeKeyEntity.class, "cluster")), new DefaultNamingStrategy(), new DefaultConverterRegistry());
+        this.binding = new CompositeKeyBinding(Lists.newArrayList(getFacet(CompositeKeyEntity.class, "pk"), getFacet(CompositeKeyEntity.class, "cluster")), getNamingStrategy(), getConverterRegistry(), getBindingFactory());
     }
 
     @Test

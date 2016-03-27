@@ -16,21 +16,23 @@
 
 package com.savoirtech.hecate.pojo.binding.key.component;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
-import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 
-public interface KeyComponent extends ColumnBinding, Converter {
+public interface KeyComponent extends ColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
     Facet getFacet();
+    DataType getDataType();
     void delete(Delete.Where delete);
     int getOrder();
     int getRank();
     String getColumnName();
+    Object toColumnValue(Object facetValue);
     ColumnBinding createReferenceBinding(Facet referencingFacet, NamingStrategy strategy);
 }

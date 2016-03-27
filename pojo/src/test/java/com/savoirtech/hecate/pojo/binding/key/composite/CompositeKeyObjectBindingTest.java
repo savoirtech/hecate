@@ -19,11 +19,8 @@ package com.savoirtech.hecate.pojo.binding.key.composite;
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.EmbeddedKey;
 import com.savoirtech.hecate.annotation.PartitionKey;
-import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
-import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
-import com.savoirtech.hecate.pojo.naming.def.DefaultNamingStrategy;
 import com.savoirtech.hecate.pojo.test.BindingTestCase;
 import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Before;
@@ -42,7 +39,7 @@ public class CompositeKeyObjectBindingTest extends BindingTestCase {
 
     @Before
     public void setUp() {
-        binding = new CompositeKeyObjectBinding(getFacet(CompositeKeyEntity.class, "key"), new FieldFacetProvider(), new DefaultConverterRegistry(), new DefaultNamingStrategy());
+        binding = new CompositeKeyObjectBinding(getFacet(CompositeKeyEntity.class, "key"), getFacetProvider(), getConverterRegistry(), getNamingStrategy(), getBindingFactory());
     }
 
     @Test

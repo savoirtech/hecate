@@ -17,7 +17,6 @@
 package com.savoirtech.hecate.pojo.query;
 
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
-import com.savoirtech.hecate.core.statement.StatementOptions;
 
 public interface PojoMultiQuery<P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -25,6 +24,6 @@ public interface PojoMultiQuery<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     PojoMultiQuery<P> add(Object... params);
+
     MappedQueryResult<P> execute();
-    MappedQueryResult<P> execute(StatementOptions options);
 }

@@ -21,6 +21,7 @@ import java.util.List;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
+import com.savoirtech.hecate.pojo.binding.key.component.KeyComponent;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 
@@ -30,7 +31,7 @@ public interface KeyBinding extends ColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
 
     ColumnBinding createReferenceBinding(Facet parent, PojoBinding<?> pojoBinding, NamingStrategy namingStrategy);
-
+    KeyComponent createClusteringColumnReferenceComponent(Facet parent, PojoBinding<?> pojoBinding, NamingStrategy namingStrategy);
     void delete(Delete.Where delete);
     boolean isNullElement(Object element);
     List<Object> elementToKeys(Object element);

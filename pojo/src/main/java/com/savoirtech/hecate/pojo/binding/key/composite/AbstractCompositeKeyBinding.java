@@ -29,10 +29,7 @@ import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.core.util.CqlUtils;
-import com.savoirtech.hecate.pojo.binding.ColumnBinding;
-import com.savoirtech.hecate.pojo.binding.KeyBinding;
-import com.savoirtech.hecate.pojo.binding.PojoBinding;
-import com.savoirtech.hecate.pojo.binding.PojoVisitor;
+import com.savoirtech.hecate.pojo.binding.*;
 import com.savoirtech.hecate.pojo.binding.column.NestedColumnBinding;
 import com.savoirtech.hecate.pojo.binding.key.component.ClusteringColumnComponent;
 import com.savoirtech.hecate.pojo.binding.key.component.KeyComponent;
@@ -58,10 +55,11 @@ public class AbstractCompositeKeyBinding extends NestedColumnBinding<KeyComponen
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected static KeyComponent createComponent(Facet facet, ConverterRegistry converterRegistry, NamingStrategy namingStrategy) {
+    protected static KeyComponent createComponent(Facet facet, ConverterRegistry converterRegistry, NamingStrategy namingStrategy, PojoBindingFactory pojoBindingFactory) {
         Converter converter = converterRegistry.getConverter(facet.getType());
         if (converter == null) {
-            throw new HecateException("No converter found for composite key facet \"%s\" (%s)", facet.getName(), facet.getType().getRawType().getCanonicalName());
+            PojoBinding<?> pojoBinding = pojoBindingFactory.createPojoBinding(facet.getType().getRawType());
+            return pojoBinding.getKeyBinding().createClusteringColumnReferenceComponent(facet, pojoBinding, namingStrategy);
         }
         if (facet.hasAnnotation(PartitionKey.class)) {
             return new PartitionKeyComponent(facet, namingStrategy.getColumnName(facet), converter);
@@ -91,20 +89,17 @@ public class AbstractCompositeKeyBinding extends NestedColumnBinding<KeyComponen
 // KeyBinding Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+
+    @Override
+    public KeyComponent createClusteringColumnReferenceComponent(Facet parent, PojoBinding<?> pojoBinding, NamingStrategy namingStrategy) {
+        throw new HecateException("@ClusteringColumn not supported for POJOs with composite keys.");
+    }
+
     @Override
     public ColumnBinding createReferenceBinding(Facet referenceFacet, PojoBinding<?> pojoBinding, NamingStrategy namingStrategy) {
         final String tableName = namingStrategy.getReferenceTableName(referenceFacet);
         List<ColumnBinding> componentBindings = mapBindings(binding -> binding.createReferenceBinding(referenceFacet, namingStrategy)).collect(Collectors.toList());
         return new CompositeKeyReferenceBinding(referenceFacet, pojoBinding, tableName, componentBindings);
-    }
-
-    @Override
-    public boolean isNullElement(Object element) {
-        return !CqlUtils.toList((TupleValue) element)
-                .stream()
-                .filter(value -> value != null)
-                .findFirst()
-                .isPresent();
     }
 
     @Override
@@ -140,6 +135,15 @@ public class AbstractCompositeKeyBinding extends NestedColumnBinding<KeyComponen
     }
 
     @Override
+    public boolean isNullElement(Object element) {
+        return !CqlUtils.toList((TupleValue) element)
+                .stream()
+                .filter(value -> value != null)
+                .findFirst()
+                .isPresent();
+    }
+
+    @Override
     public void selectWhere(Select.Where select) {
         forEachBinding(c -> select.and(eq(c.getColumnName(), bindMarker())));
     }
@@ -149,9 +153,17 @@ public class AbstractCompositeKeyBinding extends NestedColumnBinding<KeyComponen
 //----------------------------------------------------------------------------------------------------------------------
 
     private static class CompositeKeyReferenceBinding extends NestedColumnBinding<ColumnBinding> implements ColumnBinding {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
         private final Facet referenceFacet;
         private final PojoBinding<?> pojoBinding;
         private final String tableName;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
 
         public CompositeKeyReferenceBinding(Facet referenceFacet, PojoBinding<?> pojoBinding, String tableName, List<ColumnBinding> componentBindings) {
             super(componentBindings);
@@ -160,10 +172,10 @@ public class AbstractCompositeKeyBinding extends NestedColumnBinding<KeyComponen
             this.tableName = tableName;
         }
 
-        private boolean isNull(List<Object> keys) {
-            Optional<Object> nonNull = keys.stream().filter(key -> key != null).findFirst();
-            return !nonNull.isPresent();
-        }
+//----------------------------------------------------------------------------------------------------------------------
+// ColumnBinding Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
 
         @Override
         public void injectValues(Object pojo, Iterator<Object> columnValues, PojoQueryContext context) {
@@ -182,6 +194,15 @@ public class AbstractCompositeKeyBinding extends NestedColumnBinding<KeyComponen
             if (referenced != null && predicate.test(referenceFacet)) {
                 visitChild(referenced, pojoBinding, tableName, predicate, visitor);
             }
+        }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Other Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+        private boolean isNull(List<Object> keys) {
+            Optional<Object> nonNull = keys.stream().filter(key -> key != null).findFirst();
+            return !nonNull.isPresent();
         }
 
         @SuppressWarnings("unchecked")

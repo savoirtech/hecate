@@ -36,6 +36,17 @@ public class CustomPojoQueryTest extends AbstractDaoTestCase {
 
     @Test
     @Cassandra
+    public void testConvertParameters() {
+        createTables(QueryEntity.class);
+        Select.Where where = QueryBuilder.select("pk").from("query_entity").where(eq("pk", bindMarker()));
+        CustomPojoQuery query = new CustomPojoQuery<>(getSession(), getPojoBinding(QueryEntity.class), getContextFactory(), where);
+        Object[] params= new Object[] {"one", "two", "three"};
+        Object[] converted = query.convertParameters(params);
+        assertSame(params, converted);
+    }
+
+    @Test
+    @Cassandra
     public void testExecute() {
         PojoDao<QueryEntity> dao = createPojoDao(QueryEntity.class);
         PojoQuery<QueryEntity> query = dao.find(where -> where.and(eq("pk", bindMarker())).and(eq("cluster", bindMarker())));
@@ -49,34 +60,24 @@ public class CustomPojoQueryTest extends AbstractDaoTestCase {
         assertEquals("2", found.getCluster());
     }
 
-    @Test
-    @Cassandra
-    public void testConvertParameters() {
-        createTables(QueryEntity.class);
-        Select.Where where = QueryBuilder.select("pk").from("query_entity").where(eq("pk", bindMarker()));
-        CustomPojoQuery query = new CustomPojoQuery<>(getSession(), getPojoBinding(QueryEntity.class), getContextFactory(), where);
-        Object[] params= new Object[] {"one", "two", "three"};
-        Object[] converted = query.convertParameters(params);
-        assertSame(params, converted);
-    }
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
     public static class QueryEntity {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
         @PartitionKey
         private String pk;
 
         @ClusteringColumn
         private String cluster;
 
-        public String getPk() {
-            return pk;
-        }
-
-        public void setPk(String pk) {
-            this.pk = pk;
-        }
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
 
         public String getCluster() {
             return cluster;
@@ -84,6 +85,14 @@ public class CustomPojoQueryTest extends AbstractDaoTestCase {
 
         public void setCluster(String cluster) {
             this.cluster = cluster;
+        }
+
+        public String getPk() {
+            return pk;
+        }
+
+        public void setPk(String pk) {
+            this.pk = pk;
         }
     }
 }

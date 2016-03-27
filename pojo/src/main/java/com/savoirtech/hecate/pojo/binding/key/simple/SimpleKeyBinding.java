@@ -26,12 +26,11 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
-import com.savoirtech.hecate.pojo.binding.ColumnBinding;
-import com.savoirtech.hecate.pojo.binding.KeyBinding;
-import com.savoirtech.hecate.pojo.binding.PojoBinding;
-import com.savoirtech.hecate.pojo.binding.PojoVisitor;
+import com.savoirtech.hecate.annotation.PartitionKey;
+import com.savoirtech.hecate.pojo.binding.*;
 import com.savoirtech.hecate.pojo.binding.column.SimpleColumnBinding;
 import com.savoirtech.hecate.pojo.binding.facet.SimpleFacetBinding;
+import com.savoirtech.hecate.pojo.binding.key.component.KeyComponent;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.SubFacet;
@@ -59,9 +58,22 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
         create.addPartitionKey(getColumnName(), getConverter().getDataType());
     }
 
+    @Override
+    public List<ParameterBinding> getParameterBindings() {
+        return super.getParameterBindings();
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // KeyBinding Implementation
 //----------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public KeyComponent createClusteringColumnReferenceComponent(Facet referenceFacet, PojoBinding<?> pojoBinding, NamingStrategy namingStrategy) {
+        Facet facet = new SubFacet(referenceFacet, getFacet(), false);
+        String tableName = namingStrategy.getReferenceTableName(referenceFacet);
+        String columnName = namingStrategy.getColumnName(facet);
+        return new SimpleClusteringColumnReferenceComponent(referenceFacet, facet, columnName, getConverter(), pojoBinding, tableName);
+    }
 
     @Override
     public ColumnBinding createReferenceBinding(Facet referenceFacet, PojoBinding<?> pojoBinding, NamingStrategy namingStrategy) {
@@ -74,11 +86,6 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
     @Override
     public void delete(Delete.Where delete) {
         delete.and(eq(getColumnName(), bindMarker()));
-    }
-
-    @Override
-    public boolean isNullElement(Object element) {
-        return element == null;
     }
 
     @Override
@@ -102,6 +109,11 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
     }
 
     @Override
+    public boolean isNullElement(Object element) {
+        return element == null;
+    }
+
+    @Override
     public void selectWhere(Select.Where select) {
         select.and(eq(getColumnName(), bindMarker()));
     }
@@ -118,6 +130,52 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
+
+    private static class SimpleClusteringColumnReferenceComponent extends SimpleReferenceBinding implements KeyComponent {
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
+        public SimpleClusteringColumnReferenceComponent(Facet referenceFacet, Facet facet, String columnName, Converter converter, PojoBinding<?> pojoBinding, String tableName) {
+            super(referenceFacet, facet, columnName, converter, pojoBinding, tableName);
+        }
+
+//----------------------------------------------------------------------------------------------------------------------
+// ColumnBinding Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
+        @Override
+        public void create(Create create) {
+            create.addClusteringColumn(getColumnName(), getConverter().getDataType());
+        }
+
+//----------------------------------------------------------------------------------------------------------------------
+// KeyComponent Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
+        @Override
+        public ColumnBinding createReferenceBinding(Facet referencingFacet, NamingStrategy strategy) {
+            Facet facet = new SubFacet(referencingFacet, getFacet(), false);
+            String tableName = strategy.getReferenceTableName(referencingFacet);
+            String columnName = strategy.getColumnName(facet);
+            return new SimpleReferenceBinding(referencingFacet, facet, columnName, getConverter(), getPojoBinding(), tableName);
+        }
+
+        @Override
+        public void delete(Delete.Where delete) {
+            delete.and(eq(getColumnName(), bindMarker()));
+        }
+
+        @Override
+        public int getOrder() {
+            return getFacet().getAnnotation(PartitionKey.class).order();
+        }
+
+        @Override
+        public int getRank() {
+            return 2;
+        }
+    }
 
     private static class SimpleReferenceBinding extends SimpleFacetBinding {
 //----------------------------------------------------------------------------------------------------------------------
@@ -159,6 +217,14 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
             if(referenced != null && predicate.test(referenceFacet)) {
                 visitFacetChild(referenced, pojoBinding, predicate, visitor);
             }
+        }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+        public PojoBinding<?> getPojoBinding() {
+            return pojoBinding;
         }
 
 //----------------------------------------------------------------------------------------------------------------------
