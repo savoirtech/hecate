@@ -16,6 +16,7 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -27,6 +28,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.savoirtech.hecate.annotation.Ttl;
+import com.savoirtech.hecate.core.mapping.MappedQueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
 import com.savoirtech.hecate.core.update.AsyncUpdateGroup;
@@ -42,6 +44,7 @@ import com.savoirtech.hecate.pojo.query.PojoQueryContextFactory;
 import com.savoirtech.hecate.pojo.query.custom.CustomPojoQuery;
 import com.savoirtech.hecate.pojo.query.def.DefaultPojoQueryBuilder;
 import com.savoirtech.hecate.pojo.query.finder.FindByKeyQuery;
+import com.savoirtech.hecate.pojo.query.mapper.PojoQueryRowMapper;
 import com.savoirtech.hecate.pojo.statement.PojoStatementFactory;
 
 public class DefaultPojoDao<P> implements PojoDao<P> {
@@ -150,7 +153,9 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 
     @Override
     public P findByKey(StatementOptions options, Object... values) {
-        return new FindByKeyQuery<>(session, binding, contextFactory, statementFactory.createFindByKey(binding, tableName)).execute(options, values).one();
+        PreparedStatement statement = statementFactory.createFindByKey(binding, tableName);
+        BoundStatement boundStatement = binding.bindWhereIdEquals(statement, Arrays.asList(values));
+        return new MappedQueryResult<>(session.execute(boundStatement), new PojoQueryRowMapper<>(binding, contextFactory.createPojoQueryContext())).one();
     }
 
     @Override
