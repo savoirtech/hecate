@@ -18,6 +18,7 @@ package com.savoirtech.hecate.pojo.query.finder;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
@@ -30,8 +31,8 @@ public class FindByKeyQuery<P> extends AbstractPojoQuery<P> {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public FindByKeyQuery(Session session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, PreparedStatement statement) {
-        super(session, binding, contextFactory, statement);
+    public FindByKeyQuery(Session session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, PreparedStatement statement, Executor executor) {
+        super(session, binding, contextFactory, statement, executor);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

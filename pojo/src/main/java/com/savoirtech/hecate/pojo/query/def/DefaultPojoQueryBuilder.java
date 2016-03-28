@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -52,6 +53,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     private final PojoQueryContextFactory contextFactory;
     private final List<ParameterConverter> parameterConverters = new LinkedList<>();
     private final Select.Where select;
+    private final Executor executor;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
@@ -65,12 +67,13 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoQueryBuilder(Session session, PojoBinding<P> pojoBinding, String tableName, PojoQueryContextFactory contextFactory) {
+    public DefaultPojoQueryBuilder(Session session, PojoBinding<P> pojoBinding, String tableName, PojoQueryContextFactory contextFactory, Executor executor) {
         this.session = session;
         this.pojoBinding = pojoBinding;
         this.parameterBindings = pojoBinding.getParameterBindings();
         this.contextFactory = contextFactory;
         this.select = pojoBinding.selectFrom(tableName);
+        this.executor = executor;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -85,7 +88,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public PojoQuery<P> build() {
-        return new DefaultPojoQuery<>(session, pojoBinding, contextFactory, select, parameterConverters);
+        return new DefaultPojoQuery<>(session, pojoBinding, contextFactory, select, parameterConverters, executor);
     }
 
     @Override

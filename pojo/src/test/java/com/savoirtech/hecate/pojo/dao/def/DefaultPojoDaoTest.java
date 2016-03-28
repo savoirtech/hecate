@@ -59,7 +59,8 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     @Test
     public void testSaveWithSimpleDaoFactory() {
         Person expected = new Person("Slappy", "White");
-        PojoDao<Person> dao = new DefaultPojoDaoFactory(getSession()).createPojoDao(Person.class);
+        DefaultPojoDaoFactoryBuilder factory = new DefaultPojoDaoFactoryBuilder(getSession());
+        PojoDao<Person> dao = factory.build().createPojoDao(Person.class);
         dao.save(expected);
         Person actual = dao.findByKey(expected.getId());
         assertEquals(expected, actual);
@@ -79,7 +80,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     public void testSaveWithUpdateGroupAndOptions() {
         TtlEntity expected = new TtlEntity();
         PojoDao<TtlEntity> dao = createPojoDao(TtlEntity.class);
-        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession());
+        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession(), EXECUTOR);
         long ts = System.currentTimeMillis() + 20000;
         dao.save(group, StatementOptionsBuilder.defaultTimestamp(ts).build(), expected);
         group.complete();
@@ -92,7 +93,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     public void testSaveWithUpdateGroupAndOptionsAndTtl() {
         TtlEntity expected = new TtlEntity();
         PojoDao<TtlEntity> dao = createPojoDao(TtlEntity.class);
-        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession());
+        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession(), EXECUTOR);
         long ts = System.currentTimeMillis() + 20000;
         dao.save(group, StatementOptionsBuilder.defaultTimestamp(ts).build(), expected, 60000);
         group.complete();
@@ -105,7 +106,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     public void testSaveWithUpdateGroupAndTtl() {
         TtlEntity expected = new TtlEntity();
         PojoDao<TtlEntity> dao = createPojoDao(TtlEntity.class);
-        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession());
+        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession(), EXECUTOR);
         long ts = System.currentTimeMillis() + 20000;
         dao.save(group, expected, 60000);
         group.complete();

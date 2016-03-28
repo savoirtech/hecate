@@ -16,8 +16,6 @@
 
 package com.savoirtech.hecate.pojo.query.custom;
 
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
@@ -33,17 +31,6 @@ public class CustomPojoQueryTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
-
-    @Test
-    @Cassandra
-    public void testConvertParameters() {
-        createTables(QueryEntity.class);
-        Select.Where where = QueryBuilder.select("pk").from("query_entity").where(eq("pk", bindMarker()));
-        CustomPojoQuery query = new CustomPojoQuery<>(getSession(), getPojoBinding(QueryEntity.class), getContextFactory(), where);
-        Object[] params= new Object[] {"one", "two", "three"};
-        Object[] converted = query.convertParameters(params);
-        assertSame(params, converted);
-    }
 
     @Test
     @Cassandra

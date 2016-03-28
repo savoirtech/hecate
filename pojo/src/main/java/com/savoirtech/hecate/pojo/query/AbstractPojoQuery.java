@@ -19,6 +19,7 @@ package com.savoirtech.hecate.pojo.query;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Select;
@@ -40,24 +41,27 @@ public abstract class AbstractPojoQuery<P> implements PojoQuery<P> {
     private final PojoBinding<P> binding;
     private final Session session;
     private final PreparedStatement statement;
-    private PojoQueryContextFactory contextFactory;
+    private final PojoQueryContextFactory contextFactory;
+    private final Executor executor;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public AbstractPojoQuery(Session session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, Select.Where select) {
+    public AbstractPojoQuery(Session session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, Select.Where select, Executor executor) {
         this.session = session;
         this.binding = binding;
+        this.executor = executor;
         this.statement = session.prepare(select);
         this.contextFactory = contextFactory;
     }
 
-    public AbstractPojoQuery(Session session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, PreparedStatement statement) {
+    public AbstractPojoQuery(Session session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, PreparedStatement statement, Executor executor) {
         this.session = session;
         this.binding = binding;
         this.statement = statement;
         this.contextFactory = contextFactory;
+        this.executor = executor;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -124,7 +128,7 @@ public abstract class AbstractPojoQuery<P> implements PojoQuery<P> {
         public MappedQueryResult<P> execute() {
             try {
                 Iterable<Row> rows = Iterables.concat(Uninterruptibles.getUninterruptibly(Futures.allAsList(futures)));
-                return new MappedQueryResult<P>(rows, new PojoQueryRowMapper<>(binding, contextFactory.createPojoQueryContext()));
+                return new MappedQueryResult<>(rows, new PojoQueryRowMapper<>(binding, contextFactory.createPojoQueryContext(executor)));
             } catch (ExecutionException e) {
                 throw new HecateException("A problem occurred while executing one of the queries.", e);
             }

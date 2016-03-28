@@ -17,7 +17,6 @@
 package com.savoirtech.hecate.pojo.query.def;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import com.datastax.driver.core.Session;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
@@ -30,26 +29,23 @@ public class DefaultPojoQueryContextFactory implements PojoQueryContextFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     public static final int DEFAULT_MAX_CACHE_SIZE = 5000;
-    public static final int DEFAULT_THREAD_POOL_SIZE = 5;
 
     private final Session session;
     private final PojoStatementFactory statementFactory;
     private final int maximumCacheSize;
-    private final Executor executor;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
     public DefaultPojoQueryContextFactory(Session session, PojoStatementFactory statementFactory) {
-        this(session, statementFactory, DEFAULT_MAX_CACHE_SIZE, DEFAULT_THREAD_POOL_SIZE);
+        this(session, statementFactory, DEFAULT_MAX_CACHE_SIZE);
     }
 
-    public DefaultPojoQueryContextFactory(Session session, PojoStatementFactory statementFactory, int maximumCacheSize, int threadPoolSize) {
+    public DefaultPojoQueryContextFactory(Session session, PojoStatementFactory statementFactory, int maximumCacheSize) {
         this.session = session;
         this.statementFactory = statementFactory;
         this.maximumCacheSize = maximumCacheSize;
-        this.executor = Executors.newFixedThreadPool(threadPoolSize);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -57,7 +53,7 @@ public class DefaultPojoQueryContextFactory implements PojoQueryContextFactory {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public PojoQueryContext createPojoQueryContext() {
+    public PojoQueryContext createPojoQueryContext(Executor executor) {
         return new DefaultPojoQueryContext(session, statementFactory, maximumCacheSize, executor);
     }
 }

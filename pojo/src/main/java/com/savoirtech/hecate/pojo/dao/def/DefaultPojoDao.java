@@ -19,6 +19,7 @@ package com.savoirtech.hecate.pojo.dao.def;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -60,18 +61,20 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
     private final PojoStatementFactory statementFactory;
     private final PojoQueryContextFactory contextFactory;
     private final int defaultTtl;
+    private final Executor executor;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoDao(Session session, PojoBinding<P> binding, String tableName, PojoStatementFactory statementFactory, PojoQueryContextFactory contextFactory) {
+    public DefaultPojoDao(Session session, PojoBinding<P> binding, String tableName, PojoStatementFactory statementFactory, PojoQueryContextFactory contextFactory, Executor executor) {
         this.session = session;
         this.binding = binding;
         this.tableName = tableName;
         this.statementFactory = statementFactory;
         this.contextFactory = contextFactory;
         this.defaultTtl = ttl(binding.getPojoType());
+        this.executor = executor;
     }
 
     private static int ttl(Class<?> pojoType) {
@@ -136,14 +139,14 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 
     @Override
     public PojoQueryBuilder<P> find() {
-        return new DefaultPojoQueryBuilder<>(session, binding, tableName, contextFactory);
+        return new DefaultPojoQueryBuilder<>(session, binding, tableName, contextFactory, executor);
     }
 
     @Override
     public PojoQuery<P> find(Consumer<Select.Where> builder) {
         Select.Where where = binding.selectFrom(tableName);
         builder.accept(where);
-        return new CustomPojoQuery<>(session, binding, contextFactory, where);
+        return new CustomPojoQuery<>(session, binding, contextFactory, where, executor);
     }
 
     @Override
@@ -155,7 +158,7 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
     public P findByKey(StatementOptions options, Object... values) {
         PreparedStatement statement = statementFactory.createFindByKey(binding, tableName);
         BoundStatement boundStatement = binding.bindWhereIdEquals(statement, Arrays.asList(values));
-        return new MappedQueryResult<>(session.execute(boundStatement), new PojoQueryRowMapper<>(binding, contextFactory.createPojoQueryContext())).one();
+        return new MappedQueryResult<>(session.execute(boundStatement), new PojoQueryRowMapper<>(binding, contextFactory.createPojoQueryContext(executor))).one();
     }
 
     @Override
@@ -165,7 +168,7 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 
     @Override
     public PojoMultiQuery<P> findByKeys(StatementOptions options) {
-        return new FindByKeyQuery<>(session, binding, contextFactory, statementFactory.createFindByKey(binding, tableName)).multi(options);
+        return new FindByKeyQuery<>(session, binding, contextFactory, statementFactory.createFindByKey(binding, tableName), executor).multi(options);
     }
 
     @Override
@@ -234,13 +237,13 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     private ListenableFuture<Void> completeAsync(Consumer<UpdateGroup> consumer) {
-        UpdateGroup group = new AsyncUpdateGroup(session);
+        UpdateGroup group = new AsyncUpdateGroup(session, executor);
         consumer.accept(group);
         return group.completeAsync();
     }
 
     private void completeSync(Consumer<UpdateGroup> consumer) {
-        UpdateGroup group = new AsyncUpdateGroup(session);
+        UpdateGroup group = new AsyncUpdateGroup(session, executor);
         consumer.accept(group);
         group.complete();
     }

@@ -17,6 +17,8 @@
 package com.savoirtech.hecate.pojo.test;
 
 import java.util.Arrays;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.datastax.driver.core.schemabuilder.Create;
 import com.google.common.base.Supplier;
@@ -29,17 +31,13 @@ import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
 import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactory;
-import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactory;
+import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactoryBuilder;
 import com.savoirtech.hecate.pojo.dao.listener.VerifySchemaListener;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 import com.savoirtech.hecate.pojo.naming.def.DefaultNamingStrategy;
-import com.savoirtech.hecate.pojo.query.PojoQueryContextFactory;
-import com.savoirtech.hecate.pojo.query.def.DefaultPojoQueryContextFactory;
-import com.savoirtech.hecate.pojo.statement.PojoStatementFactory;
-import com.savoirtech.hecate.pojo.statement.def.DefaultPojoStatementFactory;
 import com.savoirtech.hecate.test.CassandraTestCase;
 
 public abstract class AbstractDaoTestCase extends CassandraTestCase {
@@ -47,16 +45,22 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static final FacetProvider FACET_PROVIDER = new FieldFacetProvider();
-
+    protected static final Executor EXECUTOR = Executors.newSingleThreadExecutor();
 
     private final NamingStrategy namingStrategy = new DefaultNamingStrategy();
     private final FacetProvider facetProvider = new FieldFacetProvider();
     private final ConverterRegistry converterRegistry = new DefaultConverterRegistry();
     private final PojoBindingFactory bindingFactory = new DefaultPojoBindingFactory(facetProvider, converterRegistry, namingStrategy);
-    private final Supplier<PojoStatementFactory> statementFactory = Suppliers.memoize(() -> new DefaultPojoStatementFactory(getSession()));
-    private final Supplier<PojoQueryContextFactory> contextFactory = Suppliers.memoize(() -> new DefaultPojoQueryContextFactory(getSession(), statementFactory.get()));
-    private final Supplier<PojoDaoFactory> daoFactory = Suppliers.memoize(() -> new DefaultPojoDaoFactory(getSession(), bindingFactory, statementFactory.get(), contextFactory.get(), namingStrategy).addListener(new VerifySchemaListener(getSession())));
+
+    private final Supplier<PojoDaoFactory> daoFactory = Suppliers.memoize(() ->
+            new DefaultPojoDaoFactoryBuilder(getSession())
+                    .withBindingFactory(bindingFactory)
+                    .withNamingStrategy(namingStrategy)
+                    .withConverterRegistry(converterRegistry)
+                    .withBindingFactory(bindingFactory)
+                    .withThreadPoolSize(1)
+                    .withListener(new VerifySchemaListener(getSession()))
+                    .build());
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods
@@ -86,8 +90,7 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
         try {
             runnable.run();
             fail("Should have thrown HecateException!");
-        }
-        catch(HecateException e) {
+        } catch (HecateException e) {
             assertEquals(message, e.getMessage());
         }
     }
@@ -107,12 +110,8 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
         Arrays.stream(pojoTypes).forEach(pojoType -> createTable(pojoType, namingStrategy.getTableName(pojoType)));
     }
 
-    protected PojoQueryContextFactory getContextFactory() {
-        return contextFactory.get();
-    }
-
     protected Facet getFacet(Class<?> pojoType, String name) {
-        return FACET_PROVIDER.getFacetsAsMap(pojoType).get(name);
+        return facetProvider.getFacetsAsMap(pojoType).get(name);
     }
 
     protected <P> PojoBinding<P> getPojoBinding(Class<P> pojoType) {

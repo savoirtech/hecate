@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
@@ -40,15 +39,15 @@ public class AsyncUpdateGroup implements UpdateGroup {
 
     private final Session session;
     private final List<ResultSetFuture> futures = Collections.synchronizedList(Lists.newLinkedList());
-
-    private static final Executor TRANSFORM_EXECUTOR = Executors.newSingleThreadExecutor();
+    private final Executor executor;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public AsyncUpdateGroup(Session session) {
+    public AsyncUpdateGroup(Session session, Executor executor) {
         this.session = session;
+        this.executor = executor;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -65,12 +64,12 @@ public class AsyncUpdateGroup implements UpdateGroup {
         try {
             Uninterruptibles.getUninterruptibly(Futures.allAsList(futures));
         } catch (ExecutionException e) {
-            throw new HecateException("An exception occurred while awaiting statement completion.", e);
+            throw new HecateException(e, "An unknown exception occurred while executing query.");
         }
     }
 
     @Override
     public ListenableFuture<Void> completeAsync() {
-        return Futures.transform(Futures.allAsList(futures), (Function<List<ResultSet>, Void>) list -> null, TRANSFORM_EXECUTOR);
+        return Futures.transform(Futures.allAsList(futures), (Function<List<ResultSet>, Void>) list -> null, executor);
     }
 }

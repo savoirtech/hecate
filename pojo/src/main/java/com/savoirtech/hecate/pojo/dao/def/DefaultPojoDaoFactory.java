@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
+import java.util.concurrent.Executor;
+
 import com.datastax.driver.core.Session;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
@@ -24,19 +26,13 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.binding.PojoBindingFactory;
-import com.savoirtech.hecate.pojo.binding.def.DefaultPojoBindingFactory;
-import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactory;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryEvent;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryListener;
-import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
-import com.savoirtech.hecate.pojo.naming.def.DefaultNamingStrategy;
 import com.savoirtech.hecate.pojo.query.PojoQueryContextFactory;
-import com.savoirtech.hecate.pojo.query.def.DefaultPojoQueryContextFactory;
 import com.savoirtech.hecate.pojo.statement.PojoStatementFactory;
-import com.savoirtech.hecate.pojo.statement.def.DefaultPojoStatementFactory;
 import com.savoirtech.hecate.pojo.util.CacheKey;
 import com.savoirtech.hecate.pojo.util.FunctionCacheLoader;
 import org.apache.commons.lang3.event.EventListenerSupport;
@@ -45,6 +41,8 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
+
+    public static int DEFAULT_THREAD_POOL_SIZE = 5;
 
     private final Session session;
 
@@ -55,25 +53,19 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 
     private final EventListenerSupport<PojoDaoFactoryListener> listenerSupport = new EventListenerSupport<>(PojoDaoFactoryListener.class);
     private final LoadingCache<CacheKey, PojoDao<?>> daoCache = CacheBuilder.newBuilder().build(new FunctionCacheLoader<>(this::createPojoDaoInternal));
+    private final Executor executor;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoDaoFactory(Session session) {
-        this.session = session;
-        this.statementFactory = new DefaultPojoStatementFactory(session);
-        this.namingStrategy = new DefaultNamingStrategy();
-        this.bindingFactory = new DefaultPojoBindingFactory(new FieldFacetProvider(), new DefaultConverterRegistry(), namingStrategy);
-        this.contextFactory = new DefaultPojoQueryContextFactory(session, statementFactory);
-    }
-
-    public DefaultPojoDaoFactory(Session session, PojoBindingFactory bindingFactory, PojoStatementFactory statementFactory, PojoQueryContextFactory contextFactory, NamingStrategy namingStrategy) {
+    public DefaultPojoDaoFactory(Session session, PojoBindingFactory bindingFactory, PojoStatementFactory statementFactory, PojoQueryContextFactory contextFactory, NamingStrategy namingStrategy, Executor executor) {
         this.session = session;
         this.bindingFactory = bindingFactory;
         this.statementFactory = statementFactory;
         this.contextFactory = contextFactory;
         this.namingStrategy = namingStrategy;
+        this.executor = executor;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -109,7 +101,7 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 
     @SuppressWarnings("unchecked")
     private PojoDao<?> createPojoDaoInternal(CacheKey cacheKey) {
-        DefaultPojoDao<?> dao = new DefaultPojoDao<>(session, cacheKey.getBinding(), cacheKey.getTableName(), statementFactory, contextFactory);
+        DefaultPojoDao<?> dao = new DefaultPojoDao<>(session, cacheKey.getBinding(), cacheKey.getTableName(), statementFactory, contextFactory, executor);
         listenerSupport.fire().pojoDaoCreated(new PojoDaoFactoryEvent<>((PojoDao<Object>) dao, (PojoBinding<Object>) cacheKey.getBinding(), cacheKey.getTableName()));
         return dao;
     }

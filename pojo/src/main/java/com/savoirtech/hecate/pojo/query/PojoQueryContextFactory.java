@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.pojo.query;
 
+import java.util.concurrent.Executor;
+
 public interface PojoQueryContextFactory {
-    PojoQueryContext createPojoQueryContext();
+    PojoQueryContext createPojoQueryContext(Executor executor);
 }
