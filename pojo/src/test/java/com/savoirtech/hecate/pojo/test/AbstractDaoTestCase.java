@@ -28,7 +28,9 @@ import com.savoirtech.hecate.pojo.binding.def.DefaultPojoBindingFactory;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
 import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
+import com.savoirtech.hecate.pojo.dao.PojoDaoFactory;
 import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactory;
+import com.savoirtech.hecate.pojo.dao.listener.VerifySchemaListener;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
@@ -54,7 +56,7 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
     private final PojoBindingFactory bindingFactory = new DefaultPojoBindingFactory(facetProvider, converterRegistry, namingStrategy);
     private final Supplier<PojoStatementFactory> statementFactory = Suppliers.memoize(() -> new DefaultPojoStatementFactory(getSession()));
     private final Supplier<PojoQueryContextFactory> contextFactory = Suppliers.memoize(() -> new DefaultPojoQueryContextFactory(getSession(), statementFactory.get()));
-    private final Supplier<DefaultPojoDaoFactory> daoFactory = Suppliers.memoize(() -> new DefaultPojoDaoFactory(getSession(), bindingFactory, statementFactory.get(), contextFactory.get(), namingStrategy));
+    private final Supplier<PojoDaoFactory> daoFactory = Suppliers.memoize(() -> new DefaultPojoDaoFactory(getSession(), bindingFactory, statementFactory.get(), contextFactory.get(), namingStrategy).addListener(new VerifySchemaListener(getSession())));
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods

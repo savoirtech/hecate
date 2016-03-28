@@ -16,6 +16,10 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
+import java.util.concurrent.TimeUnit;
+
+import com.savoirtech.hecate.annotation.Ttl;
+import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
 import com.savoirtech.hecate.core.update.BatchUpdateGroup;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
@@ -60,9 +64,85 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertEquals(expected, dao.findByKey(expected.getId()));
     }
 
+    private int ttlOf(TtlEntity entity) {
+        return getSession().execute("select TTL(name) from ttl_entity where id=?", entity.getId()).one().getInt(0);
+    }
+
+    private long writeTime(TtlEntity entity) {
+        return getSession().execute("select WRITETIME(name) from ttl_entity where id=?", entity.getId()).one().getLong(0);
+    }
+
+    @Test
+    public void testSaveWithTtlAnnotation() {
+        TtlEntity entity = new TtlEntity();
+        createPojoDao(TtlEntity.class).save(entity);
+        assertTrue(ttlOf(entity) > 0);
+    }
+
+    @Test
+    public void testSaveWithTtlOverride() {
+        TtlEntity entity = new TtlEntity();
+        createPojoDao(TtlEntity.class).save(entity, 60000);
+        assertTrue(ttlOf(entity) > 30000);
+    }
+
+    @Test
+    public void testSaveWithStatementOptions() {
+        long now = System.currentTimeMillis() + 200000;
+        TtlEntity entity = new TtlEntity();
+        createPojoDao(TtlEntity.class).save(StatementOptionsBuilder.defaultTimestamp(now).build(), entity);
+        assertEquals(now, writeTime(entity));
+    }
+
+    @Test
+    public void testSaveWithStatementOptionsAndTtl() {
+        long now = System.currentTimeMillis() + 200000;
+        TtlEntity entity = new TtlEntity();
+        createPojoDao(TtlEntity.class).save(StatementOptionsBuilder.defaultTimestamp(now).build(), entity, 60000);
+        assertEquals(now, writeTime(entity));
+        assertTrue(ttlOf(entity) > 30000);
+    }
+
+    @Test
+    public void testSaveWithTtlAnnotationAsync() throws Exception {
+        TtlEntity entity = new TtlEntity();
+        createPojoDao(TtlEntity.class).saveAsync(entity).get();
+        assertTrue(ttlOf(entity) > 0);
+    }
+
+    @Test
+    public void testSaveWithTtlOverrideAsync() throws Exception {
+        TtlEntity entity = new TtlEntity();
+        createPojoDao(TtlEntity.class).saveAsync(entity, 60000).get(5, TimeUnit.SECONDS);
+        assertTrue(ttlOf(entity) > 30000);
+    }
+
+    @Test
+    public void testSaveWithStatementOptionsAsync() throws Exception {
+        long now = System.currentTimeMillis() + 200000;
+        TtlEntity entity = new TtlEntity();
+        createPojoDao(TtlEntity.class).saveAsync(StatementOptionsBuilder.defaultTimestamp(now).build(), entity).get(5, TimeUnit.SECONDS);
+        assertEquals(now, writeTime(entity));
+    }
+
+    @Test
+    public void testSaveWithStatementOptionsAndTtlAsync() throws Exception {
+        long now = System.currentTimeMillis() + 200000;
+        TtlEntity entity = new TtlEntity();
+        createPojoDao(TtlEntity.class).saveAsync(StatementOptionsBuilder.defaultTimestamp(now).build(), entity, 60000).get(5, TimeUnit.SECONDS);
+        assertEquals(now, writeTime(entity));
+        assertTrue(ttlOf(entity) > 30000);
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
+
+    @Ttl(30000)
+    public static class TtlEntity extends UuidEntity {
+        private String name = "foo";
+
+    }
 
     public static class Person extends UuidEntity {
 //----------------------------------------------------------------------------------------------------------------------

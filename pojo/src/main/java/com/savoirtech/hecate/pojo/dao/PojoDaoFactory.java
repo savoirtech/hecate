@@ -21,6 +21,8 @@ public interface PojoDaoFactory {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    PojoDaoFactory addListener(PojoDaoFactoryListener listener);
+
     <P> PojoDao<P> createPojoDao(Class<P> pojoClass);
 
     <P> PojoDao<P> createPojoDao(Class<P> pojoClass, String tableName);

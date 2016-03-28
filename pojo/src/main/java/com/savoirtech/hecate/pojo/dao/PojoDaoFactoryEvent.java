@@ -14,64 +14,47 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.binding.element;
+package com.savoirtech.hecate.pojo.dao;
 
-import java.util.function.Predicate;
+import com.savoirtech.hecate.pojo.binding.PojoBinding;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.savoirtech.hecate.pojo.binding.ElementBinding;
-import com.savoirtech.hecate.pojo.binding.PojoVisitor;
-import com.savoirtech.hecate.pojo.convert.Converter;
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.query.PojoQueryContext;
-
-public class ScalarElementBinding implements ElementBinding {
+public class PojoDaoFactoryEvent<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Converter converter;
+    private PojoDaoFactory factory;
+    private final PojoDao<P> pojoDao;
+    private final PojoBinding<P> pojoBinding;
+    private final String tableName;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ScalarElementBinding(Converter converter) {
-        this.converter = converter;
+    public PojoDaoFactoryEvent(PojoDao<P> pojoDao, PojoBinding<P> pojoBinding, String tableName) {
+        this.pojoDao = pojoDao;
+        this.pojoBinding = pojoBinding;
+        this.tableName = tableName;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// ElementBinding Implementation
+// Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Override
-    public DataType getElementDataType() {
-        return converter.getDataType();
+    public PojoDaoFactory getFactory() {
+        return factory;
     }
 
-    @Override
-    public Class<?> getElementType() {
-        return converter.getValueType();
+    public PojoBinding<P> getPojoBinding() {
+        return pojoBinding;
     }
 
-    @Override
-    public Object toColumnValue(Object facetElementValue) {
-        return converter.toColumnValue(facetElementValue);
+    public PojoDao<P> getPojoDao() {
+        return pojoDao;
     }
 
-    @Override
-    public Object toFacetValue(Object columnValue, PojoQueryContext context) {
-        return converter.toFacetValue(columnValue);
-    }
-
-    @Override
-    public void visitChild(Object facetElementValue, Predicate<Facet> predicate, PojoVisitor visitor) {
-        // Do nothing!
-    }
-
-    @Override
-    public void verifySchema(KeyspaceMetadata keyspaceMetadata) {
-        // Do nothing!
+    public String getTableName() {
+        return tableName;
     }
 }

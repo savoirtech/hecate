@@ -31,7 +31,11 @@ public class DefaultPojoBindingTest extends AbstractDaoTestCase {
     @Cassandra(keyspace = "bar")
     public void testValidateSchemaWithMissingTable() {
         PojoBinding<SimpleKeyEntity> binding = getBindingFactory().createPojoBinding(SimpleKeyEntity.class);
-        assertHecateException("Table \"foo\" not found in keyspace \"bar\".", () -> binding.verifySchema(getSession(), "foo"));
+        assertHecateException("Table \"foo\" not found in keyspace \"bar\".", verifySchema(binding, "foo"));
+    }
+
+    private Runnable verifySchema(PojoBinding<?> binding, String tableName) {
+        return () -> binding.verifySchema(getSession().getCluster().getMetadata().getKeyspace(getSession().getLoggedKeyspace()), tableName);
     }
 
 
@@ -40,7 +44,7 @@ public class DefaultPojoBindingTest extends AbstractDaoTestCase {
     public void testValidateSchemaWithMissingColumn() {
         PojoBinding<SimpleKeyEntity> binding = getBindingFactory().createPojoBinding(SimpleKeyEntity.class);
         getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("baz", DataType.varchar()));
-        assertHecateException("Table \"foo\" does not contain column \"id\" of type \"varchar\".", () -> binding.verifySchema(getSession(), "foo"));
+        assertHecateException("Table \"foo\" does not contain column \"id\" of type \"varchar\".", verifySchema(binding, "foo"));
     }
 
     @Test
@@ -48,7 +52,7 @@ public class DefaultPojoBindingTest extends AbstractDaoTestCase {
     public void testValidateSchemaWithColumnTypeMismatch() {
         PojoBinding<SimpleKeyEntity> binding = getBindingFactory().createPojoBinding(SimpleKeyEntity.class);
         getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("id", DataType.cint()));
-        assertHecateException("Column \"id\" in table \"foo\" is of the wrong type \"int\" (expected \"varchar\").", () -> binding.verifySchema(getSession(), "foo"));
+        assertHecateException("Column \"id\" in table \"foo\" is of the wrong type \"int\" (expected \"varchar\").", verifySchema(binding, "foo"));
     }
 
     @Test
@@ -56,7 +60,7 @@ public class DefaultPojoBindingTest extends AbstractDaoTestCase {
     public void testValidateSchemaWithNonPartitionKeySimple() {
         PojoBinding<SimpleKeyEntity> binding = getBindingFactory().createPojoBinding(SimpleKeyEntity.class);
         getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("baz", DataType.cint()).addColumn("id", DataType.varchar()));
-        assertHecateException("Column \"id\" in table \"foo\" is not a partition key.", () -> binding.verifySchema(getSession(), "foo"));
+        assertHecateException("Column \"id\" in table \"foo\" is not a partition key.", verifySchema(binding, "foo"));
     }
 
     @Test
@@ -64,7 +68,7 @@ public class DefaultPojoBindingTest extends AbstractDaoTestCase {
     public void testValidateSchemaWithNonPartitionKeyComposite() {
         PojoBinding<CompositeKeyEntity> binding = getBindingFactory().createPojoBinding(CompositeKeyEntity.class);
         getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("baz", DataType.cint()).addColumn("id", DataType.varchar()));
-        assertHecateException("Column \"id\" in table \"foo\" is not a partition key.", () -> binding.verifySchema(getSession(), "foo"));
+        assertHecateException("Column \"id\" in table \"foo\" is not a partition key.", verifySchema(binding, "foo"));
     }
 
     @Test
@@ -72,7 +76,7 @@ public class DefaultPojoBindingTest extends AbstractDaoTestCase {
     public void testValidateSchemaWithNonClusteringColumnComposite() {
         PojoBinding<CompositeKeyEntity> binding = getBindingFactory().createPojoBinding(CompositeKeyEntity.class);
         getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("id", DataType.varchar()).addColumn("cluster", DataType.varchar()));
-        assertHecateException("Column \"cluster\" in table \"foo\" is not a clustering column.", () -> binding.verifySchema(getSession(), "foo"));
+        assertHecateException("Column \"cluster\" in table \"foo\" is not a clustering column.", verifySchema(binding, "foo"));
     }
 
     @Test

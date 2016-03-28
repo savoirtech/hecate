@@ -25,6 +25,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
@@ -89,8 +90,8 @@ public abstract class NestedColumnBinding<B extends ColumnBinding> extends Abstr
     }
 
     @Override
-    public void verifySchema(TableMetadata metadata) {
-        forEachBinding(binding -> binding.verifySchema(metadata));
+    public void verifySchema(KeyspaceMetadata keyspaceMetadata, TableMetadata tableMetadata) {
+        forEachBinding(binding -> binding.verifySchema(keyspaceMetadata, tableMetadata));
     }
 
     @Override

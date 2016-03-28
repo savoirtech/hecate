@@ -23,6 +23,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
@@ -60,6 +61,11 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
     @Override
     public void create(Create create) {
         create.addPartitionKey(getColumnName(), getConverter().getDataType());
+    }
+
+    @Override
+    public void verifySchema(KeyspaceMetadata keyspaceMetadata, TableMetadata tableMetadata) {
+        verifyPartitionKeyColumn(tableMetadata, getColumnName(), getDataType());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -112,12 +118,7 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
         select.and(eq(getColumnName(), bindMarker()));
     }
 
-    @Override
-    public void verifySchema(TableMetadata metadata) {
-        verifyPartitionKeyColumn(metadata, getColumnName(), getDataType());
-    }
-
-    //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -208,6 +209,12 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
             } else {
                 referenceFacet.setValue(pojo, context.createPojo(pojoBinding, tableName, Collections.singletonList(key)));
             }
+        }
+
+        @Override
+        public void verifySchema(KeyspaceMetadata keyspaceMetadata, TableMetadata tableMetadata) {
+            super.verifySchema(keyspaceMetadata, tableMetadata);
+            pojoBinding.verifySchema(keyspaceMetadata, tableName);
         }
 
         @Override

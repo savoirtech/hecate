@@ -142,14 +142,13 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
     }
 
     @Override
-    public void verifySchema(Session session, String tableName) {
-        String keyspace = session.getLoggedKeyspace();
-        TableMetadata tableMetadata = session.getCluster().getMetadata().getKeyspace(keyspace).getTable(tableName);
+    public void verifySchema(KeyspaceMetadata keyspaceMetadata, String tableName) {
+        TableMetadata tableMetadata = keyspaceMetadata.getTable(tableName);
         if(tableMetadata == null) {
-            throw new SchemaVerificationException("Table \"%s\" not found in keyspace \"%s\".", tableName, keyspace);
+            throw new SchemaVerificationException("Table \"%s\" not found in keyspace \"%s\".", tableName, keyspaceMetadata.getName());
         }
-        keyBinding.verifySchema(tableMetadata);
-        facetBindings.forEach(facetBinding -> facetBinding.verifySchema(tableMetadata));
+        keyBinding.verifySchema(keyspaceMetadata, tableMetadata);
+        facetBindings.forEach(facetBinding -> facetBinding.verifySchema(keyspaceMetadata, tableMetadata));
     }
 
     @Override

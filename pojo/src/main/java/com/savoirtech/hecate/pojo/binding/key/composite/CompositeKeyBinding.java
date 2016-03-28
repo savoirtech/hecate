@@ -20,9 +20,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.TupleType;
-import com.datastax.driver.core.TupleValue;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.annotation.PartitionKey;
@@ -169,6 +167,12 @@ public class CompositeKeyBinding extends NestedColumnBinding<KeyComponent> imple
             } else {
                 referenceFacet.setValue(pojo, context.createPojo(pojoBinding, tableName, keys));
             }
+        }
+
+        @Override
+        public void verifySchema(KeyspaceMetadata keyspaceMetadata, TableMetadata tableMetadata) {
+            super.verifySchema(keyspaceMetadata, tableMetadata);
+            pojoBinding.verifySchema(keyspaceMetadata, tableName);
         }
 
         @Override

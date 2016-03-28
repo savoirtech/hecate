@@ -14,29 +14,12 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.binding;
+package com.savoirtech.hecate.pojo.dao;
 
-import java.util.function.Predicate;
-
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.query.PojoQueryContext;
-
-public interface ElementBinding {
+public interface PojoDaoFactoryListener {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    DataType getElementDataType();
-
-    Class<?> getElementType();
-
-    Object toColumnValue(Object facetElementValue);
-
-    Object toFacetValue(Object columnValue, PojoQueryContext context);
-
-    void visitChild(Object facetElementValue, Predicate<Facet> predicate, PojoVisitor visitor);
-
-    void verifySchema(KeyspaceMetadata keyspaceMetadata);
+    <P> void pojoDaoCreated(PojoDaoFactoryEvent<P> event);
 }

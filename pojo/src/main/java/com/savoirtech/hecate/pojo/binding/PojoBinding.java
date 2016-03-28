@@ -20,10 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
@@ -58,7 +55,7 @@ public interface PojoBinding<P> {
 
     Select.Where selectFromByKey(String tableName);
 
-    void verifySchema(Session session, String tableName);
+    void verifySchema(KeyspaceMetadata keyspaceMetadata, String tableName);
 
     Map<String,ParameterBinding> getParameterBindings();
 

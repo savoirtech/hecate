@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
@@ -114,8 +115,8 @@ public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
     }
 
     @Override
-    public void verifySchema(TableMetadata metadata) {
-        verifyColumn(metadata, getColumnName(), getDataType());
+    public void verifySchema(KeyspaceMetadata keyspaceMetadata, TableMetadata tableMetadata) {
+        verifyColumn(tableMetadata, getColumnName(), getDataType());
     }
 
     @Override

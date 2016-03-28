@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.pojo.binding.key.component;
 
 import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.savoirtech.hecate.annotation.PartitionKey;
@@ -39,11 +40,11 @@ public class PartitionKeyComponent extends SimpleKeyComponent {
 
 
     @Override
-    public void verifySchema(TableMetadata metadata) {
-        super.verifySchema(metadata);
-        ColumnMetadata column = metadata.getColumn(getColumnName());
-        if(!metadata.getPartitionKey().contains(column)) {
-            throw new SchemaVerificationException("Column \"%s\" in table \"%s\" is not a partition key.", getColumnName(), metadata.getName());
+    public void verifySchema(KeyspaceMetadata keyspaceMetadata, TableMetadata tableMetadata) {
+        super.verifySchema(keyspaceMetadata, tableMetadata);
+        ColumnMetadata column = tableMetadata.getColumn(getColumnName());
+        if(!tableMetadata.getPartitionKey().contains(column)) {
+            throw new SchemaVerificationException("Column \"%s\" in table \"%s\" is not a partition key.", getColumnName(), tableMetadata.getName());
         }
     }
 

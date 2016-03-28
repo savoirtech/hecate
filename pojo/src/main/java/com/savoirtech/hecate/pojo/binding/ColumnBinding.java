@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
@@ -44,7 +45,7 @@ public interface ColumnBinding {
 
     void select(Select.Selection select);
 
-    void verifySchema(TableMetadata metadata);
+    void verifySchema(KeyspaceMetadata keyspaceMetadata, TableMetadata tableMetadata);
 
     void visitChildren(Object pojo, Predicate<Facet> predicate, PojoVisitor visitor);
 }

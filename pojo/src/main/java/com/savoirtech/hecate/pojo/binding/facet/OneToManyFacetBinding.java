@@ -19,6 +19,8 @@ package com.savoirtech.hecate.pojo.binding.facet;
 import java.util.Collection;
 import java.util.function.Predicate;
 
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.TableMetadata;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
@@ -62,5 +64,11 @@ public abstract class OneToManyFacetBinding<C,F> extends SingleColumnBinding<C,F
     @Override
     protected void visitFacetChildren(F facetValue, Predicate<Facet> predicate, PojoVisitor visitor) {
         elementsOf(facetValue).stream().forEach(element -> elementBinding.visitChild(element, predicate, visitor));
+    }
+
+    @Override
+    public void verifySchema(KeyspaceMetadata keyspaceMetadata, TableMetadata tableMetadata) {
+        super.verifySchema(keyspaceMetadata, tableMetadata);
+        elementBinding.verifySchema(keyspaceMetadata);
     }
 }

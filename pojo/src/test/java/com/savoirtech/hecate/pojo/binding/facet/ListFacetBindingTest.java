@@ -33,6 +33,7 @@ public class ListFacetBindingTest extends AbstractDaoTestCase {
     @Test
     @Cassandra
     public void testWithNullPojoList() {
+        createTables(ElementEntity.class);
         PojoDao<PojoListEntity> dao = createPojoDao(PojoListEntity.class);
         PojoListEntity entity = new PojoListEntity();
         dao.save(entity);

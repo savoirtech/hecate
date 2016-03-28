@@ -14,49 +14,33 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.binding.key.component;
+package com.savoirtech.hecate.pojo.dao.listener;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.schemabuilder.Create;
-import com.savoirtech.hecate.annotation.ClusteringColumn;
-import com.savoirtech.hecate.pojo.convert.Converter;
-import com.savoirtech.hecate.pojo.facet.Facet;
+import com.datastax.driver.core.Session;
+import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryEvent;
+import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryListener;
 
-public class ClusteringColumnComponent extends SimpleKeyComponent {
+public class VerifySchemaListener implements PojoDaoFactoryListener {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+    private final Session session;
+
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ClusteringColumnComponent(Facet facet, String columnName, Converter converter) {
-        super(facet, columnName, converter);
+    public VerifySchemaListener(Session session) {
+        this.session = session;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// ColumnBinding Implementation
+// PojoDaoFactoryListener Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void create(Create create) {
-        create.addClusteringColumn(getColumnName(), getDataType());
-    }
-
-    @Override
-    public void verifySchema(KeyspaceMetadata keyspaceMetadata, TableMetadata tableMetadata) {
-        verifyClusteringColumn(tableMetadata, getColumnName(), getDataType());
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// KeyComponent Implementation
-//----------------------------------------------------------------------------------------------------------------------
-
-    @Override
-    public int getOrder() {
-        return getFacet().getAnnotation(ClusteringColumn.class).order();
-    }
-
-    @Override
-    public int getRank() {
-        return 2;
+    public <P> void pojoDaoCreated(PojoDaoFactoryEvent<P> event) {
+        event.getPojoBinding().verifySchema(session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace()), event.getTableName());
     }
 }

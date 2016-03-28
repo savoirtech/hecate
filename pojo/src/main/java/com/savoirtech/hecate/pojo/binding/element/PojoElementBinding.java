@@ -19,6 +19,7 @@ package com.savoirtech.hecate.pojo.binding.element;
 import java.util.function.Predicate;
 
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.KeyspaceMetadata;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
@@ -73,6 +74,11 @@ public class PojoElementBinding implements ElementBinding {
     @Override
     public Object toFacetValue(Object columnValue, PojoQueryContext context) {
         return context.createPojo(pojoBinding, tableName, pojoBinding.getKeyBinding().elementToKeys(columnValue));
+    }
+
+    @Override
+    public void verifySchema(KeyspaceMetadata keyspaceMetadata) {
+        pojoBinding.verifySchema(keyspaceMetadata, tableName);
     }
 
     @Override
