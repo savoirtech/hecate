@@ -200,7 +200,7 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 
     @Override
     public void save(UpdateGroup group, StatementOptions options, P pojo) {
-        save(group, StatementOptionsBuilder.empty(), pojo, defaultTtl);
+        save(group, options, pojo, defaultTtl);
     }
 
     @Override

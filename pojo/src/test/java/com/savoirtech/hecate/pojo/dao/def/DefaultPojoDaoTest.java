@@ -18,8 +18,10 @@ package com.savoirtech.hecate.pojo.dao.def;
 
 import java.util.concurrent.TimeUnit;
 
+import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 import com.savoirtech.hecate.annotation.Ttl;
 import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
+import com.savoirtech.hecate.core.update.AsyncUpdateGroup;
 import com.savoirtech.hecate.core.update.BatchUpdateGroup;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
@@ -55,6 +57,15 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     }
 
     @Test
+    public void testSaveWithSimpleDaoFactory() {
+        Person expected = new Person("Slappy", "White");
+        PojoDao<Person> dao = new DefaultPojoDaoFactory(getSession()).createPojoDao(Person.class);
+        dao.save(expected);
+        Person actual = dao.findByKey(expected.getId());
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testSaveWithUpdateGroup() {
         Person expected = new Person("Slappy", "White");
         BatchUpdateGroup group = new BatchUpdateGroup(getSession());
@@ -63,6 +74,47 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         group.complete();
         assertEquals(expected, dao.findByKey(expected.getId()));
     }
+
+    @Test
+    public void testSaveWithUpdateGroupAndOptions() {
+        TtlEntity expected = new TtlEntity();
+        PojoDao<TtlEntity> dao = createPojoDao(TtlEntity.class);
+        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession());
+        long ts = System.currentTimeMillis() + 20000;
+        dao.save(group, StatementOptionsBuilder.defaultTimestamp(ts).build(), expected);
+        group.complete();
+        assertEquals(expected, dao.findByKey(expected.getId()));
+        assertEquals(ts, writeTime(expected));
+    }
+
+
+    @Test
+    public void testSaveWithUpdateGroupAndOptionsAndTtl() {
+        TtlEntity expected = new TtlEntity();
+        PojoDao<TtlEntity> dao = createPojoDao(TtlEntity.class);
+        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession());
+        long ts = System.currentTimeMillis() + 20000;
+        dao.save(group, StatementOptionsBuilder.defaultTimestamp(ts).build(), expected, 60000);
+        group.complete();
+        assertEquals(expected, dao.findByKey(expected.getId()));
+        assertEquals(ts, writeTime(expected));
+        assertTrue(ttlOf(expected) > 30000);
+    }
+
+    @Test
+    public void testSaveWithUpdateGroupAndTtl() {
+        TtlEntity expected = new TtlEntity();
+        PojoDao<TtlEntity> dao = createPojoDao(TtlEntity.class);
+        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession());
+        long ts = System.currentTimeMillis() + 20000;
+        dao.save(group, expected, 60000);
+        group.complete();
+        assertEquals(expected, dao.findByKey(expected.getId()));
+        assertTrue(ttlOf(expected) > 30000);
+    }
+
+
+
 
     private int ttlOf(TtlEntity entity) {
         return getSession().execute("select TTL(name) from ttl_entity where id=?", entity.getId()).one().getInt(0);
@@ -133,6 +185,87 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertEquals(now, writeTime(entity));
         assertTrue(ttlOf(entity) > 30000);
     }
+
+    @Test
+    public void testDeletePojo() {
+        PojoDao<Person> dao = createPojoDao(Person.class);
+        Person pojo = new Person("Slappy", "White");
+        dao.save(pojo);
+        assertNotNull(dao.findByKey(pojo.getId()));
+        dao.delete(pojo);
+        assertNull(dao.findByKey(pojo.getId()));
+    }
+
+    @Test
+    public void testDeletePojoWithOptions() {
+        PojoDao<Person> dao = createPojoDao(Person.class);
+        Person pojo = new Person("Slappy", "White");
+        dao.save(pojo);
+        assertNotNull(dao.findByKey(pojo.getId()));
+        dao.delete(StatementOptionsBuilder.retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build(), pojo);
+        assertNull(dao.findByKey(pojo.getId()));
+    }
+
+    @Test
+    public void testDeletePojoAsync() throws Exception {
+        PojoDao<Person> dao = createPojoDao(Person.class);
+        Person pojo = new Person("Slappy", "White");
+        dao.save(pojo);
+        assertNotNull(dao.findByKey(pojo.getId()));
+        dao.deleteAsync(pojo).get();
+        assertNull(dao.findByKey(pojo.getId()));
+    }
+
+    @Test
+    public void testDeletePojoWithOptionsAsync() throws Exception {
+        PojoDao<Person> dao = createPojoDao(Person.class);
+        Person pojo = new Person("Slappy", "White");
+        dao.save(pojo);
+        assertNotNull(dao.findByKey(pojo.getId()));
+        dao.deleteAsync(StatementOptionsBuilder.retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build(), pojo).get();
+        assertNull(dao.findByKey(pojo.getId()));
+    }
+
+    @Test
+    public void testDeletePojoByKey() {
+        PojoDao<Person> dao = createPojoDao(Person.class);
+        Person pojo = new Person("Slappy", "White");
+        dao.save(pojo);
+        assertNotNull(dao.findByKey(pojo.getId()));
+        dao.deleteByKey(pojo.getId());
+        assertNull(dao.findByKey(pojo.getId()));
+    }
+
+    @Test
+    public void testDeletePojoByKeyWithOptions() {
+        PojoDao<Person> dao = createPojoDao(Person.class);
+        Person pojo = new Person("Slappy", "White");
+        dao.save(pojo);
+        assertNotNull(dao.findByKey(pojo.getId()));
+        dao.deleteByKey(StatementOptionsBuilder.retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build(), pojo.getId());
+        assertNull(dao.findByKey(pojo.getId()));
+    }
+
+    @Test
+    public void testDeletePojoByKeyAsync() throws Exception {
+        PojoDao<Person> dao = createPojoDao(Person.class);
+        Person pojo = new Person("Slappy", "White");
+        dao.save(pojo);
+        assertNotNull(dao.findByKey(pojo.getId()));
+        dao.deleteByKeyAsync(pojo.getId()).get();
+        assertNull(dao.findByKey(pojo.getId()));
+    }
+
+    @Test
+    public void testDeletePojoByKeyWithOptionsAsync() throws Exception {
+        PojoDao<Person> dao = createPojoDao(Person.class);
+        Person pojo = new Person("Slappy", "White");
+        dao.save(pojo);
+        assertNotNull(dao.findByKey(pojo.getId()));
+        dao.deleteByKeyAsync(StatementOptionsBuilder.retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build(), pojo.getId()).get();
+        assertNull(dao.findByKey(pojo.getId()));
+    }
+    
 
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
