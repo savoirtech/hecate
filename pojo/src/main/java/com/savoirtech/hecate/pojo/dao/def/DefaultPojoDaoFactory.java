@@ -17,8 +17,6 @@
 package com.savoirtech.hecate.pojo.dao.def;
 
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
-import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.binding.PojoBindingFactory;
 import com.savoirtech.hecate.pojo.binding.def.DefaultPojoBindingFactory;
@@ -77,35 +75,7 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
     @Override
     public <P> PojoDao<P> createPojoDao(Class<P> pojoClass, String tableName) {
         PojoBinding<P> pojoBinding = bindingFactory.createPojoBinding(pojoClass);
-        TableMetadata tableMetadata = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace()).getTable(tableName);
-        if(tableMetadata == null) {
-            throw new HecateException("Table \"%s\" does not exist.", tableName);
-        }
-        pojoBinding.verifySchema(tableMetadata);
+        pojoBinding.verifySchema(session, tableName);
         return new DefaultPojoDao<>(session, pojoBinding, tableName, statementFactory, contextFactory);
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-    public PojoBindingFactory getBindingFactory() {
-        return bindingFactory;
-    }
-
-    public PojoQueryContextFactory getContextFactory() {
-        return contextFactory;
-    }
-
-    public NamingStrategy getNamingStrategy() {
-        return namingStrategy;
-    }
-
-    public Session getSession() {
-        return session;
-    }
-
-    public PojoStatementFactory getStatementFactory() {
-        return statementFactory;
     }
 }

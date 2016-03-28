@@ -16,11 +16,14 @@
 
 package com.savoirtech.hecate.pojo.query.def;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Clause;
@@ -49,6 +52,14 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     private final PojoQueryContextFactory contextFactory;
     private final List<ParameterConverter> parameterConverters = new LinkedList<>();
     private final Select.Where select;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Static Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    private static List<Object> convertToList(ParameterBinding binding, Iterable<?> params) {
+        return StreamSupport.stream(((Iterable<?>) params).spliterator(), false).map(binding::toColumnValue).collect(Collectors.toList());
+    }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -115,12 +126,12 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public PojoQueryBuilder<P> in(String facetName) {
-        return append(facetName, QueryBuilder::in);
+        return append(facetName, QueryBuilder::in, InConverter::new);
     }
 
     @Override
-    public PojoQueryBuilder<P> in(String facetName, Object value) {
-        return append(facetName, QueryBuilder::in, value);
+    public PojoQueryBuilder<P> in(String facetName, Iterable<Object> values) {
+        return append(facetName, QueryBuilder::in, binding -> new ConstantParameterConverter(convertToList(binding, values)));
     }
 
     @Override
@@ -140,7 +151,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public PojoQueryBuilder<P> lte(String facetName, Object value) {
-        return append(facetName, QueryBuilder::lte);
+        return append(facetName, QueryBuilder::lte, value);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -167,6 +178,39 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
     }
 
     private PojoQueryBuilder<P> append(String facetName, BiFunction<String,Object,Clause> clause, Object value) {
-        return append(facetName, clause, binding -> new ConstantParameterConverter(value));
+        return append(facetName, clause, binding -> new ConstantParameterConverter(binding(facetName).toColumnValue(value)));
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Inner Classes
+//----------------------------------------------------------------------------------------------------------------------
+
+    private static class InConverter implements ParameterConverter {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+        private final ParameterBinding parameterBinding;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------------------------------------------------
+
+        public InConverter(ParameterBinding parameterBinding) {
+            this.parameterBinding = parameterBinding;
+        }
+
+//----------------------------------------------------------------------------------------------------------------------
+// ParameterConverter Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
+        @Override
+        public Object convertParameter(Iterator<Object> parameters) {
+            Object param = parameters.next();
+            if(param instanceof Iterable) {
+                return convertToList(parameterBinding, (Iterable<?>) param);
+            }
+            throw new HecateException("Invalid parameter type (%s) for IN expression, %s<Object> required.", param.getClass().getCanonicalName(), Iterable.class.getCanonicalName());
+        }
     }
 }

@@ -72,6 +72,17 @@ public class ArrayFacetBindingTest extends AbstractDaoTestCase {
         assertArrayEquals(expected, entity.getInts());
     }
 
+    @Test
+    @Cassandra
+    public void testWithNullElement() {
+        assertHecateException("Cassandra driver does not support null values inside list<varchar> collections.", () -> {
+            PojoDao<PojoArrayEntity> dao = createPojoDao(PojoArrayEntity.class);
+            PojoArrayEntity entity = new PojoArrayEntity();
+            entity.setPojos(new ElementEntity[] {new ElementEntity(), null, new ElementEntity()});
+            dao.save(entity);
+        });
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------

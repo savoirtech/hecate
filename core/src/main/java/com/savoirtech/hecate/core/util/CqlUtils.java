@@ -31,7 +31,7 @@ public class CqlUtils {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    public static final Logger CQL_LOGGER = LoggerFactory.getLogger("com.savoirtech.hecate.cql");
+    public static final Logger CQL_LOGGER = LoggerFactory.getLogger(CqlUtils.class);
 
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods

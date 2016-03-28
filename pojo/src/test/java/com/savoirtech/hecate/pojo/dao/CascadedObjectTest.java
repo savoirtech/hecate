@@ -30,8 +30,27 @@ public class CascadedObjectTest extends AbstractDaoTestCase {
 
     @Test
     @Cassandra
-    public void testInsertCascaded() {
+    public void testRetrieveWhenCascadedObjectRemoved() {
+        Department department = new Department();
+        Employee manager = new Employee();
+        Address address = new Address();
+        manager.setAddress(address);
+        department.setManager(manager);
 
+
+        createTables(Address.class, Employee.class);
+        PojoDao<Department> departmentDao = createPojoDao(Department.class);
+        departmentDao.save(department);
+
+        PojoDao<Employee> employeeDao = createPojoDao(Employee.class);
+        employeeDao.delete(manager);
+
+        assertHecateException(String.format("Employee with key(s) %s not found in table \"employee\".", manager.getId()), () -> departmentDao.findByKey(department.getId()));
+
+    }
+    @Test
+    @Cassandra
+    public void testInsertCascaded() {
         Department department = new Department();
         Employee manager = new Employee();
         Address address = new Address();

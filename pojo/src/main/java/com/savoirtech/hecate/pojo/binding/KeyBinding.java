@@ -33,7 +33,6 @@ public interface KeyBinding extends ColumnBinding {
     ColumnBinding createReferenceBinding(Facet parent, PojoBinding<?> pojoBinding, NamingStrategy namingStrategy);
     KeyComponent createClusteringColumnReferenceComponent(Facet parent, PojoBinding<?> pojoBinding, NamingStrategy namingStrategy);
     void delete(Delete.Where delete);
-    boolean isNullElement(Object element);
     List<Object> elementToKeys(Object element);
     DataType getElementDataType();
     Object getElementValue(Object pojo);

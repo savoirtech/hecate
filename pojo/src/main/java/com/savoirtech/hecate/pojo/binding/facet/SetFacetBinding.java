@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 import com.savoirtech.hecate.pojo.facet.Facet;
@@ -50,12 +51,16 @@ public class SetFacetBinding extends OneToManyFacetBinding<Set<Object>,Set<Objec
 
     @Override
     protected Set<Object> toColumnValue(Set<Object> facetValue) {
-        return facetValue.stream().map(getElementBinding()::toColumnValue).collect(Collectors.toSet());
+        return facetValue.stream().map(elementValue -> {
+            if(elementValue == null) {
+                throw new HecateException("Cassandra driver does not support null values inside %s collections.", getDataType());
+            }
+            return getElementBinding().toColumnValue(elementValue);
+        }).collect(Collectors.toSet());
     }
 
     @Override
     protected Set<Object> toFacetValue(Set<Object> columnValue, PojoQueryContext context) {
         return columnValue.stream().map(element -> getElementBinding().toFacetValue(element, context)).collect(Collectors.toSet());
     }
-
 }

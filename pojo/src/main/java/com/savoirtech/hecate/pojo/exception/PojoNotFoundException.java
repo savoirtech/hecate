@@ -29,6 +29,6 @@ public class PojoNotFoundException extends HecateException {
 //----------------------------------------------------------------------------------------------------------------------
 
     public PojoNotFoundException(PojoBinding<?> binding, String tableName, List<Object> keys) {
-        super("%s with keys %s not found in table \"%s\".", binding.getPojoType().getSimpleName(), StringUtils.join(keys, ","), tableName);
+        super("%s with key(s) %s not found in table \"%s\".", binding.getPojoType().getSimpleName(), StringUtils.join(keys, ","), tableName);
     }
 }

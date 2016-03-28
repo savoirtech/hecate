@@ -21,10 +21,13 @@ import java.util.List;
 
 import com.datastax.driver.core.DataType;
 import com.google.common.collect.Lists;
+import com.savoirtech.hecate.annotation.Cascade;
+import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
+import com.savoirtech.hecate.pojo.query.PojoQuery;
 import com.savoirtech.hecate.pojo.test.BindingTestCase;
 import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Before;
@@ -55,6 +58,21 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     @Before
     public void setUp() throws Exception {
         binding = new SimpleKeyBinding(getFacet(SimpleEntity.class, "id"), "id", converter);
+    }
+
+    @Test
+    @Cassandra
+    public void testClusteringColumnReference() {
+        PojoDao<SimpleEntity> refDao = createPojoDao(SimpleEntity.class);
+        PojoDao<ClusteringColumnReferenceEntity> dao = createPojoDao(ClusteringColumnReferenceEntity.class);
+        ClusteringColumnReferenceEntity entity = new ClusteringColumnReferenceEntity();
+        entity.setSimpleEntity(new SimpleEntity());
+        dao.save(entity);
+
+        assertNotNull(refDao.findByKey(entity.getSimpleEntity().getId()));
+
+        dao.delete(entity);
+        assertNull(refDao.findByKey(entity.getSimpleEntity().getId()));
     }
 
     @Test
@@ -102,19 +120,33 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     }
 
     @Test
-    public void testSelect() {
-        assertSelectEquals(binding, "SELECT id FROM foo;");
+    @Cassandra
+    public void testNonCascadedDelete() {
+        PojoDao<SimpleEntity> refDao = createPojoDao(SimpleEntity.class);
+        SimpleEntity ref = new SimpleEntity();
+        refDao.save(ref);
+
+        PojoDao<NonCascadedReferenceEntity> dao = createPojoDao(NonCascadedReferenceEntity.class);
+        NonCascadedReferenceEntity entity = new NonCascadedReferenceEntity();
+        entity.setSimpleEntity(ref);
+        dao.save(entity);
+
+        dao.delete(entity);
+
+        assertNotNull(refDao.findByKey(ref.getId()));
     }
 
     @Test
-    public void testSelectWhere() {
-        assertSelectWhereEquals(binding, "SELECT id FROM foo WHERE id=?;");
-    }
+    @Cassandra
+    public void testNonCascadedSave() {
+        PojoDao<SimpleEntity> refDao = createPojoDao(SimpleEntity.class);
+        PojoDao<NonCascadedReferenceEntity> dao = createPojoDao(NonCascadedReferenceEntity.class);
+        NonCascadedReferenceEntity entity = new NonCascadedReferenceEntity();
+        SimpleEntity ref = new SimpleEntity();
+        entity.setSimpleEntity(ref);
+        dao.save(entity);
 
-    @Test
-    public void testVisitChildren() {
-        binding.visitFacetChildren("foo", facet -> true, visitor);
-        Mockito.verifyNoMoreInteractions(visitor);
+        assertNull(refDao.findByKey(ref.getId()));
     }
 
     @Test
@@ -144,9 +176,123 @@ public class SimpleKeyBindingTest extends BindingTestCase {
         assertNull(found.getSimpleEntity());
     }
 
+    @Test
+    @Cassandra
+    public void testReferenceClusteringColumnReference() {
+        createTables(SimpleEntity.class, ClusteringColumnReferenceEntity.class);
+        PojoDao<ReferenceClusteringColumnReferenceEntity> dao = createPojoDao(ReferenceClusteringColumnReferenceEntity.class);
+
+        ReferenceClusteringColumnReferenceEntity entity = new ReferenceClusteringColumnReferenceEntity();
+        ClusteringColumnReferenceEntity reference = new ClusteringColumnReferenceEntity();
+        reference.setSimpleEntity(new SimpleEntity());
+        entity.setReference(reference);
+        dao.save(entity);
+    }
+
+    @Test
+    @Cassandra
+    public void testQuery() {
+        PojoDao<SimpleEntity> dao = createPojoDao(SimpleEntity.class);
+        SimpleEntity expected = new SimpleEntity();
+        dao.save(expected);
+
+        PojoQuery<SimpleEntity> query = dao.find().eq("id").build();
+        SimpleEntity actual = query.execute(expected.getId()).one();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testSelect() {
+        assertSelectEquals(binding, "SELECT id FROM foo;");
+    }
+
+    @Test
+    public void testSelectWhere() {
+        assertSelectWhereEquals(binding, "SELECT id FROM foo WHERE id=?;");
+    }
+
+    @Test
+    public void testVisitChildren() {
+        binding.visitFacetChildren("foo", facet -> true, visitor);
+        Mockito.verifyNoMoreInteractions(visitor);
+    }
+
+    public static class CollectionReferenceEntity extends UuidEntity {
+        private List<SimpleEntity> entities;
+
+        public List<SimpleEntity> getEntities() {
+            return entities;
+        }
+
+        public void setEntities(List<SimpleEntity> entities) {
+            this.entities = entities;
+        }
+    }
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
+
+    public static class ClusteringColumnReferenceEntity extends UuidEntity {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+        @ClusteringColumn
+        private SimpleEntity simpleEntity;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+        public SimpleEntity getSimpleEntity() {
+            return simpleEntity;
+        }
+
+        public void setSimpleEntity(SimpleEntity simpleEntity) {
+            this.simpleEntity = simpleEntity;
+        }
+    }
+
+    public static class NonCascadedReferenceEntity extends UuidEntity {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+        @Cascade(save = false, delete = false)
+        private SimpleEntity simpleEntity;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+        public SimpleEntity getSimpleEntity() {
+            return simpleEntity;
+        }
+
+        public void setSimpleEntity(SimpleEntity simpleEntity) {
+            this.simpleEntity = simpleEntity;
+        }
+    }
+
+    public static class ReferenceClusteringColumnReferenceEntity extends UuidEntity {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+        private ClusteringColumnReferenceEntity reference;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+        public ClusteringColumnReferenceEntity getReference() {
+            return reference;
+        }
+
+        public void setReference(ClusteringColumnReferenceEntity reference) {
+            this.reference = reference;
+        }
+    }
 
     public static class ReferencingEntity extends UuidEntity {
 //----------------------------------------------------------------------------------------------------------------------

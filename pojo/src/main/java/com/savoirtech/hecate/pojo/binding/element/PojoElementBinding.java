@@ -72,11 +72,7 @@ public class PojoElementBinding implements ElementBinding {
 
     @Override
     public Object toFacetValue(Object columnValue, PojoQueryContext context) {
-        if (pojoBinding.getKeyBinding().isNullElement(columnValue)) {
-            return null;
-        } else {
-            return context.createPojo(pojoBinding, tableName, pojoBinding.getKeyBinding().elementToKeys(columnValue));
-        }
+        return context.createPojo(pojoBinding, tableName, pojoBinding.getKeyBinding().elementToKeys(columnValue));
     }
 
     @Override

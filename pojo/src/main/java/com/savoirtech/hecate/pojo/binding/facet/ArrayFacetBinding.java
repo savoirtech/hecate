@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
@@ -49,16 +50,6 @@ public class ArrayFacetBinding<C,F> extends OneToManyFacetBinding<List<Object>,O
         return list;
     }
 
-    private List<Object> arrayToList(Object array) {
-        final int length = Array.getLength(array);
-        final List<Object> list = new ArrayList<>(length);
-        for (int i = 0; i < length; i++) {
-            final Object elementValue = Array.get(array, i);
-            list.add(getElementBinding().toColumnValue(elementValue));
-        }
-        return list;
-    }
-
     @Override
     protected DataType getDataType() {
         return DataType.list(getElementBinding().getElementDataType());
@@ -66,7 +57,16 @@ public class ArrayFacetBinding<C,F> extends OneToManyFacetBinding<List<Object>,O
 
     @Override
     protected List<Object> toColumnValue(Object facetValue) {
-        return arrayToList(facetValue);
+        final int length = Array.getLength(facetValue);
+        final List<Object> list = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            final Object elementValue = Array.get(facetValue, i);
+            if(elementValue == null) {
+                throw new HecateException("Cassandra driver does not support null values inside %s collections.", getDataType());
+            }
+            list.add(getElementBinding().toColumnValue(elementValue));
+        }
+        return list;
     }
 
     @Override

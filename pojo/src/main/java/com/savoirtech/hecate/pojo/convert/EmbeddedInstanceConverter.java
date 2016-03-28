@@ -14,40 +14,47 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.binding.parameter;
+package com.savoirtech.hecate.pojo.convert;
 
-import com.savoirtech.hecate.pojo.binding.ParameterBinding;
-import com.savoirtech.hecate.pojo.facet.Facet;
+import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
 
-public abstract class AbstractParameterBinding implements ParameterBinding {
+public class EmbeddedInstanceConverter implements Converter {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Facet facet;
-    private final String columnName;
+    private final Class<?> pojoType;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public AbstractParameterBinding(Facet facet, String columnName) {
-        this.facet = facet;
-        this.columnName = columnName;
+    public EmbeddedInstanceConverter(Class<?> pojoType) {
+        this.pojoType = pojoType;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// ParameterBinding Implementation
+// Converter Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
-    public String getColumnName() {
-        return columnName;
+    public DataType getDataType() {
+        return DataType.cboolean();
     }
 
     @Override
-    public String getFacetName() {
-        return facet.getName();
+    public Class<?> getValueType() {
+        return Boolean.class;
+    }
+
+    @Override
+    public Object toColumnValue(Object value) {
+        return true;
+    }
+
+    @Override
+    public Object toFacetValue(Object value) {
+        return ReflectionUtils.newInstance(pojoType);
     }
 }

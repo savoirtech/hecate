@@ -75,6 +75,17 @@ public class SetFacetBindingTest extends AbstractDaoTestCase {
         assertEquals(expected, entity.getInts());
     }
 
+    @Test
+    @Cassandra
+    public void testWithNullElement() {
+        assertHecateException("Cassandra driver does not support null values inside set<int> collections.", () -> {
+            PojoDao<PrimitiveSetEntity> dao = createPojoDao(PrimitiveSetEntity.class);
+            PrimitiveSetEntity entity = new PrimitiveSetEntity();
+            entity.setInts(Sets.newHashSet(1, null, 3));
+            dao.save(entity);
+        });
+
+    }
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------

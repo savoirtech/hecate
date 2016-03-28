@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
@@ -50,7 +51,12 @@ public class ListFacetBinding extends OneToManyFacetBinding<List<Object>, List<O
 
     @Override
     protected List<Object> toColumnValue(List<Object> facetValue) {
-        return facetValue.stream().map(getElementBinding()::toColumnValue).collect(Collectors.toList());
+        return facetValue.stream().map(elementValue -> {
+            if(elementValue == null) {
+                throw new HecateException("Cassandra driver does not support null values inside %s collections.", getDataType());
+            }
+            return getElementBinding().toColumnValue(elementValue);
+        }).collect(Collectors.toList());
     }
 
     @Override

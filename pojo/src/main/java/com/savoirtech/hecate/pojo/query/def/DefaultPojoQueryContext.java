@@ -96,10 +96,6 @@ public class DefaultPojoQueryContext implements PojoQueryContext {
             this.future = future;
         }
 
-        public P getPojo() {
-            return pojo;
-        }
-
         public PojoBinding<P> getBinding() {
             return binding;
         }

@@ -41,7 +41,7 @@ public interface PojoQueryBuilder<P> {
 
     PojoQueryBuilder<P> in(String facetName);
 
-    PojoQueryBuilder<P> in(String facetName, Object value);
+    PojoQueryBuilder<P> in(String facetName, Iterable<Object> values);
 
     PojoQueryBuilder<P> lt(String facetName);
 

@@ -114,7 +114,7 @@ public abstract class AbstractPojoQuery<P> implements PojoQuery<P> {
 
         @Override
         public PojoMultiQuery<P> add(Object... params) {
-            BoundStatement boundStatement = CqlUtils.bind(statement, convertParameters(params));
+            BoundStatement boundStatement = CqlUtils.bind(statement,  convertParameters(params));
             options.applyTo(boundStatement);
             futures.add(session.executeAsync(boundStatement));
             return this;

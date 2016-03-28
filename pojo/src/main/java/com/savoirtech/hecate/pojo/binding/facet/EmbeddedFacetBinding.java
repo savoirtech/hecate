@@ -24,7 +24,7 @@ import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.column.NestedColumnBinding;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
-import com.savoirtech.hecate.pojo.convert.PojoInstanceConverter;
+import com.savoirtech.hecate.pojo.convert.EmbeddedInstanceConverter;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 
@@ -39,7 +39,7 @@ public class EmbeddedFacetBinding extends NestedColumnBinding<ColumnBinding> imp
 
     private static List<ColumnBinding> createBindings(Facet parent, ConverterRegistry converterRegistry, NamingStrategy namingStrategy) {
         List<ColumnBinding> bindings = new LinkedList<>();
-        bindings.add(new SimpleFacetBinding(parent, namingStrategy.getColumnName(parent), new PojoInstanceConverter(parent.getType().getRawType())));
+        bindings.add(new SimpleFacetBinding(parent, namingStrategy.getColumnName(parent), new EmbeddedInstanceConverter(parent.getType().getRawType())));
         parent.subFacets(false).stream().forEach(sub -> {
             Converter converter = converterRegistry.getConverter(sub.getType());
             if(converter == null) {

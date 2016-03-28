@@ -20,10 +20,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -32,11 +29,10 @@ import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 import com.savoirtech.hecate.core.util.CqlUtils;
 import com.savoirtech.hecate.pojo.binding.*;
+import com.savoirtech.hecate.pojo.exception.SchemaVerificationException;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 
@@ -45,8 +41,6 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPojoBinding.class);
-    
     private final Class<P> pojoType;
     private KeyBinding keyBinding;
     private List<ColumnBinding> facetBindings = new LinkedList<>();
@@ -148,9 +142,14 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
     }
 
     @Override
-    public void verifySchema(TableMetadata metadata) {
-        keyBinding.verifySchema(metadata);
-        facetBindings.forEach(facetBinding -> facetBinding.verifySchema(metadata));
+    public void verifySchema(Session session, String tableName) {
+        String keyspace = session.getLoggedKeyspace();
+        TableMetadata tableMetadata = session.getCluster().getMetadata().getKeyspace(keyspace).getTable(tableName);
+        if(tableMetadata == null) {
+            throw new SchemaVerificationException("Table \"%s\" not found in keyspace \"%s\".", tableName, keyspace);
+        }
+        keyBinding.verifySchema(tableMetadata);
+        facetBindings.forEach(facetBinding -> facetBinding.verifySchema(tableMetadata));
     }
 
     @Override

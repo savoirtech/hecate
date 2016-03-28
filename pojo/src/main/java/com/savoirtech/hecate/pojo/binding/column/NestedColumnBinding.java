@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.pojo.binding.column;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -44,6 +45,10 @@ public abstract class NestedColumnBinding<B extends ColumnBinding> extends Abstr
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
+
+    public NestedColumnBinding() {
+        this.bindings = new LinkedList<>();
+    }
 
     public NestedColumnBinding(List<B> bindings) {
         this.bindings = bindings;
@@ -104,6 +109,10 @@ public abstract class NestedColumnBinding<B extends ColumnBinding> extends Abstr
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
+
+    public void addBinding(B binding) {
+        bindings.add(binding);
+    }
 
     protected void forEachBinding(Consumer<? super B> consumer) {
         bindings.stream().forEach(consumer);

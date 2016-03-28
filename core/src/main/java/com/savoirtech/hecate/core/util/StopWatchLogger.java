@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.core.util;
 
+import java.util.function.BiConsumer;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
@@ -41,14 +43,30 @@ public class StopWatchLogger {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public void info(String message, Object... params) {
-        logger.info(message + " took {} milliseconds.", ArrayUtils.add(params, stopWatch.getTime()));
+    public void debug(String message, Object... params) {
+        log(logger::debug, message, params);
+    }
+
+    private void log(BiConsumer<String,Object> consumer, String message, Object... params) {
+        consumer.accept(message + " ({} ms).", ArrayUtils.add(params, stopWatch.getTime()));
         reset();
+    }
+
+    public void error(String message, Object... params) {
+        log(logger::error, message, params);
+    }
+
+    public void info(String message, Object... params) {
+        log(logger::info, message, params);
     }
 
     public void reset() {
         stopWatch.stop();
         stopWatch.reset();
         stopWatch.start();
+    }
+
+    public void warn(String message, Object... params) {
+        log(logger::warn, message, params);
     }
 }

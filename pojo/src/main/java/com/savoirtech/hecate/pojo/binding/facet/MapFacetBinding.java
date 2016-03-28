@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.datastax.driver.core.DataType;
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 import com.savoirtech.hecate.pojo.convert.Converter;
@@ -61,7 +62,14 @@ public class MapFacetBinding extends OneToManyFacetBinding<Map<Object, Object>, 
         Map<Object, Object> columnValue = new HashMap<>();
         for (Map.Entry<Object, Object> entry : facetValue.entrySet()) {
             Object key = keyConverter.toColumnValue(entry.getKey());
-            Object value = getElementBinding().toColumnValue(entry.getValue());
+            if(key == null) {
+                throw new HecateException("Cassandra driver does not support null key values inside %s collections.", getDataType());
+            }
+            Object elementValue = entry.getValue();
+            if(elementValue == null) {
+                throw new HecateException("Cassandra driver does not support null values inside %s collections.", getDataType());
+            }
+            Object value = getElementBinding().toColumnValue(elementValue);
             columnValue.put(key, value);
         }
         return columnValue;

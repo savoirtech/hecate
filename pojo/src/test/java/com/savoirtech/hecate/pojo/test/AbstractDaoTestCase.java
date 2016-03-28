@@ -21,6 +21,7 @@ import java.util.Arrays;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.binding.PojoBindingFactory;
 import com.savoirtech.hecate.pojo.binding.def.DefaultPojoBindingFactory;
@@ -79,19 +80,29 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    protected void assertHecateException(String message, Runnable runnable) {
+        try {
+            runnable.run();
+            fail("Should have thrown HecateException!");
+        }
+        catch(HecateException e) {
+            assertEquals(message, e.getMessage());
+        }
+    }
+
     protected <P> PojoDao<P> createPojoDao(Class<P> pojoType) {
         createTables(pojoType);
         return daoFactory.get().createPojoDao(pojoType);
     }
 
     protected void createTable(Class<?> pojoType, String tableName) {
-        Create create = daoFactory.get().getBindingFactory().createPojoBinding(pojoType).createTable(tableName);
+        Create create = bindingFactory.createPojoBinding(pojoType).createTable(tableName);
         logger.debug("Creating \"{}\" table for class \"{}\":\n\t{}\n", tableName, pojoType.getSimpleName(), create);
         getSession().execute(create);
     }
 
     protected void createTables(Class<?>... pojoTypes) {
-        Arrays.stream(pojoTypes).forEach(pojoType -> createTable(pojoType, daoFactory.get().getNamingStrategy().getTableName(pojoType)));
+        Arrays.stream(pojoTypes).forEach(pojoType -> createTable(pojoType, namingStrategy.getTableName(pojoType)));
     }
 
     protected PojoQueryContextFactory getContextFactory() {
@@ -103,6 +114,6 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
     }
 
     protected <P> PojoBinding<P> getPojoBinding(Class<P> pojoType) {
-        return daoFactory.get().getBindingFactory().createPojoBinding(pojoType);
+        return bindingFactory.createPojoBinding(pojoType);
     }
 }

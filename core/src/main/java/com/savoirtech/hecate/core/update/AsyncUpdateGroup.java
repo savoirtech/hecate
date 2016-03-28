@@ -19,6 +19,8 @@ package com.savoirtech.hecate.core.update;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
@@ -38,6 +40,8 @@ public class AsyncUpdateGroup implements UpdateGroup {
 
     private final Session session;
     private final List<ResultSetFuture> futures = Collections.synchronizedList(Lists.newLinkedList());
+
+    private static final Executor TRANSFORM_EXECUTOR = Executors.newSingleThreadExecutor();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -67,6 +71,6 @@ public class AsyncUpdateGroup implements UpdateGroup {
 
     @Override
     public ListenableFuture<Void> completeAsync() {
-        return Futures.transform(Futures.allAsList(futures), (Function<List<ResultSet>, Void>) list -> null);
+        return Futures.transform(Futures.allAsList(futures), (Function<List<ResultSet>, Void>) list -> null, TRANSFORM_EXECUTOR);
     }
 }

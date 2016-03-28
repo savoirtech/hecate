@@ -27,7 +27,7 @@ public abstract class AbstractColumnBinding implements ColumnBinding {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected void verifyColumn(TableMetadata tableMetadata, String name, DataType type) {
+    protected ColumnMetadata verifyColumn(TableMetadata tableMetadata, String name, DataType type) {
         ColumnMetadata column = tableMetadata.getColumn(name);
 
         if (column == null) {
@@ -35,6 +35,21 @@ public abstract class AbstractColumnBinding implements ColumnBinding {
         }
         if (!column.getType().equals(type)) {
             throw new SchemaVerificationException("Column \"%s\" in table \"%s\" is of the wrong type \"%s\" (expected \"%s\").", name, tableMetadata.getName(), column.getType().getName(), type.getName());
+        }
+        return column;
+    }
+
+    protected void verifyPartitionKeyColumn(TableMetadata tableMetadata, String name, DataType type) {
+        ColumnMetadata column = verifyColumn(tableMetadata, name, type);
+        if(!tableMetadata.getPartitionKey().contains(column)) {
+            throw new SchemaVerificationException("Column \"%s\" in table \"%s\" is not a partition key.", name, tableMetadata.getName());
+        }
+    }
+
+    protected void verifyClusteringColumn(TableMetadata tableMetadata, String name, DataType type) {
+        ColumnMetadata column = verifyColumn(tableMetadata, name, type);
+        if(!tableMetadata.getClusteringColumns().contains(column)) {
+            throw new SchemaVerificationException("Column \"%s\" in table \"%s\" is not a clustering column.", name, tableMetadata.getName());
         }
     }
 }

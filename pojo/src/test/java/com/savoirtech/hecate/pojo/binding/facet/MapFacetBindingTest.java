@@ -79,6 +79,32 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
         assertEquals(expected, entity.getInts());
     }
 
+    @Test
+    @Cassandra
+    public void testWithNullKey() {
+        assertHecateException("Cassandra driver does not support null key values inside map<varchar, int> collections.", () -> {
+            PojoDao<PrimitiveMapEntity> dao = createPojoDao(PrimitiveMapEntity.class);
+            PrimitiveMapEntity entity = new PrimitiveMapEntity();
+            Map<String,Integer> expected = Maps.newHashMap();
+            expected.put(null, 1);
+            entity.setInts(expected);
+            dao.save(entity);
+        });
+    }
+
+    @Test
+    @Cassandra
+    public void testWithNullValue() {
+        assertHecateException("Cassandra driver does not support null values inside map<varchar, int> collections.", () -> {
+            PojoDao<PrimitiveMapEntity> dao = createPojoDao(PrimitiveMapEntity.class);
+            PrimitiveMapEntity entity = new PrimitiveMapEntity();
+            Map<String,Integer> expected = Maps.newHashMap();
+            expected.put("one", null);
+            entity.setInts(expected);
+            dao.save(entity);
+        });
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------

@@ -16,6 +16,7 @@
 
 package com.savoirtech.hecate.pojo.binding.key.composite;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.PartitionKey;
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.BindingTestCase;
@@ -46,6 +48,12 @@ public class CompositeKeyBindingTest extends BindingTestCase {
         this.binding = new CompositeKeyBinding(Lists.newArrayList(getFacet(CompositeKeyEntity.class, "pk"), getFacet(CompositeKeyEntity.class, "cluster")), getNamingStrategy(), getConverterRegistry(), getBindingFactory());
     }
 
+    @Test(expected = HecateException.class)
+    @Cassandra
+    public void testClusteringColumnReference() {
+        createPojoDao(ClusteringColumnReferenceEntity.class);
+    }
+
     @Test
     public void testCreate() {
         assertCreateEquals(binding, "CREATE TABLE foo( pk varchar, cluster varchar, PRIMARY KEY(pk, cluster))");
@@ -54,6 +62,22 @@ public class CompositeKeyBindingTest extends BindingTestCase {
     @Test
     public void testDelete() {
         assertDeleteEquals(binding, "DELETE FROM foo WHERE pk=? AND cluster=?;");
+    }
+
+    @Test
+    @Cassandra
+    public void testElementReference() {
+        createTables(CompositeKeyEntity.class);
+        PojoDao<ReferencingElementEntity> dao = createPojoDao(ReferencingElementEntity.class);
+        ReferencingElementEntity entity = new ReferencingElementEntity();
+        CompositeKeyEntity ref1 = new CompositeKeyEntity("1", "2");
+        CompositeKeyEntity ref2 = new CompositeKeyEntity("1", "3");
+        entity.setRefs(Lists.newArrayList(ref1, ref2));
+
+        dao.save(entity);
+
+        ReferencingElementEntity found = dao.findByKey(entity.getId());
+        assertEquals(Arrays.asList(ref1, ref2), found.getRefs());
     }
 
     @Test
@@ -100,39 +124,34 @@ public class CompositeKeyBindingTest extends BindingTestCase {
     }
 
     @Test
-    @Cassandra
-    public void testElementReference() {
-        createTables(CompositeKeyEntity.class);
-        PojoDao<ReferencingElementEntity> dao = createPojoDao(ReferencingElementEntity.class);
-        ReferencingElementEntity entity = new ReferencingElementEntity();
-        CompositeKeyEntity ref1 = new CompositeKeyEntity("1", "2");
-        CompositeKeyEntity ref2 = new CompositeKeyEntity("1", "3");
-        entity.setRefs(Lists.newArrayList(ref1, ref2));
-
-        dao.save(entity);
-
-        ReferencingElementEntity found = dao.findByKey(entity.getId());
-        assertEquals(Arrays.asList(ref1, ref2), found.getRefs());
-    }
-
-    @Test
-    @Cassandra
-    public void testNullElementReference() {
-        createTables(CompositeKeyEntity.class);
-        PojoDao<ReferencingElementEntity> dao = createPojoDao(ReferencingElementEntity.class);
-        ReferencingElementEntity entity = new ReferencingElementEntity();
-
-        CompositeKeyEntity ref = new CompositeKeyEntity("1", "2");
-        entity.setRefs(Lists.newArrayList(ref, null));
-        dao.save(entity);
-
-        ReferencingElementEntity found = dao.findByKey(entity.getId());
-        assertEquals(Arrays.asList(ref, null), found.getRefs());
+    public void testWithNoConverterForPartitionKey() {
+        assertHecateException("No converter found for @PartitionKey facet \"key\".", () -> getBindingFactory().createPojoBinding(NoConverterForKeyEntity.class));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
+
+    public static class ClusteringColumnReferenceEntity extends UuidEntity {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+        @ClusteringColumn
+        private CompositeKeyEntity referenced;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+        public CompositeKeyEntity getReferenced() {
+            return referenced;
+        }
+
+        public void setReferenced(CompositeKeyEntity referenced) {
+            this.referenced = referenced;
+        }
+    }
 
     public static class CompositeKeyEntity {
 //----------------------------------------------------------------------------------------------------------------------
@@ -146,13 +165,17 @@ public class CompositeKeyBindingTest extends BindingTestCase {
         private String cluster;
 
 //----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
+// Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
         public CompositeKeyEntity(String pk, String cluster) {
             this.pk = pk;
             this.cluster = cluster;
         }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
 
         public String getCluster() {
             return cluster;
@@ -170,6 +193,10 @@ public class CompositeKeyBindingTest extends BindingTestCase {
             this.pk = pk;
         }
 
+//----------------------------------------------------------------------------------------------------------------------
+// Canonical Methods
+//----------------------------------------------------------------------------------------------------------------------
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -179,7 +206,6 @@ public class CompositeKeyBindingTest extends BindingTestCase {
 
             if (pk != null ? !pk.equals(that.pk) : that.pk != null) return false;
             return cluster != null ? cluster.equals(that.cluster) : that.cluster == null;
-
         }
 
         @Override
@@ -188,6 +214,18 @@ public class CompositeKeyBindingTest extends BindingTestCase {
             result = 31 * result + (cluster != null ? cluster.hashCode() : 0);
             return result;
         }
+    }
+
+    public static class NoConverterForKeyEntity {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+        @PartitionKey
+        private Serializable key;
+
+        @ClusteringColumn
+        private String cluster;
     }
 
     public static class ReferencingElementEntity extends UuidEntity {

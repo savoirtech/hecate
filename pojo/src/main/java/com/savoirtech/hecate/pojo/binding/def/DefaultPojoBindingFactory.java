@@ -19,11 +19,12 @@ package com.savoirtech.hecate.pojo.binding.def;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.Embedded;
-import com.savoirtech.hecate.annotation.EmbeddedKey;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
@@ -34,7 +35,6 @@ import com.savoirtech.hecate.pojo.binding.element.PojoElementBinding;
 import com.savoirtech.hecate.pojo.binding.element.ScalarElementBinding;
 import com.savoirtech.hecate.pojo.binding.facet.*;
 import com.savoirtech.hecate.pojo.binding.key.composite.CompositeKeyBinding;
-import com.savoirtech.hecate.pojo.binding.key.composite.CompositeKeyObjectBinding;
 import com.savoirtech.hecate.pojo.binding.key.simple.SimpleKeyBinding;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
@@ -71,7 +71,12 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
     @Override
     @SuppressWarnings("unchecked")
     public <P> PojoBinding<P> createPojoBinding(Class<P> pojoType) {
-        return (PojoBinding<P>) cache.getUnchecked(pojoType);
+        try {
+            return (PojoBinding<P>) cache.getUnchecked(pojoType);
+        } catch (UncheckedExecutionException e) {
+            Throwables.propagateIfPossible(e.getCause(), HecateException.class);
+            throw e;
+        }
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -88,9 +93,7 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
     private <P> List<Facet> injectFacetBindings(DefaultPojoBinding<P> binding, Class<P> pojoType) {
         List<Facet> keyFacets = new LinkedList<>();
         facetProvider.getFacets(pojoType).stream().forEach(facet -> {
-            if (facet.hasAnnotation(EmbeddedKey.class) ||
-                    facet.hasAnnotation(PartitionKey.class) ||
-                    facet.hasAnnotation(ClusteringColumn.class)) {
+            if (facet.hasAnnotation(PartitionKey.class) || facet.hasAnnotation(ClusteringColumn.class)) {
                 keyFacets.add(facet);
             } else {
                 GenericType facetType = facet.getType();
@@ -110,7 +113,7 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
                     binding.addFacetBinding(new MapFacetBinding(facet, columnName, keyConverter, createElementBinding(facet, facetType.getMapValueType())));
                 } else if (facetType.isArray()) {
                     binding.addFacetBinding(new ArrayFacetBinding<>(facet, columnName, createElementBinding(facet, facetType.getArrayElementType())));
-                } else if(facet.hasAnnotation(Embedded.class)) {
+                } else if (facet.hasAnnotation(Embedded.class)) {
                     binding.addFacetBinding(new EmbeddedFacetBinding(facet, converterRegistry, namingStrategy));
                 } else {
                     PojoBinding<?> refBinding = createPojoBinding(facetType.getRawType());
@@ -132,9 +135,7 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
                 throw new HecateException("No key facets found for POJO type \"%s\".", pojoType.getCanonicalName());
             case 1:
                 Facet keyFacet = keyFacets.get(0);
-                if (keyFacet.hasAnnotation(EmbeddedKey.class)) {
-                    binding.setKeyBinding(createCompositeKeyObjectBinding(keyFacet));
-                } else if (keyFacet.hasAnnotation(PartitionKey.class)) {
+                if (keyFacet.hasAnnotation(PartitionKey.class)) {
                     binding.setKeyBinding(createSimpleKeyBinding(keyFacet));
                 } else {
                     throw new HecateException("No @PartitionKey facets found for POJO type \"%s\".", pojoType.getCanonicalName());
@@ -145,13 +146,9 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
         }
     }
 
-    private KeyBinding createCompositeKeyObjectBinding(Facet facet) {
-        return new CompositeKeyObjectBinding(facet, facetProvider, converterRegistry, namingStrategy, this);
-    }
-
     private KeyBinding createSimpleKeyBinding(Facet keyFacet) {
         Converter converter = converterRegistry.getConverter(keyFacet.getType());
-        if(converter == null) {
+        if (converter == null) {
             throw new HecateException("No converter found for @PartitionKey facet \"%s\".", keyFacet.getName());
         }
         return new SimpleKeyBinding(keyFacet, namingStrategy.getColumnName(keyFacet), converter);

@@ -23,11 +23,15 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.savoirtech.hecate.annotation.PartitionKey;
-import com.savoirtech.hecate.pojo.binding.*;
+import com.savoirtech.hecate.pojo.binding.ColumnBinding;
+import com.savoirtech.hecate.pojo.binding.KeyBinding;
+import com.savoirtech.hecate.pojo.binding.PojoBinding;
+import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.binding.column.SimpleColumnBinding;
 import com.savoirtech.hecate.pojo.binding.facet.SimpleFacetBinding;
 import com.savoirtech.hecate.pojo.binding.key.component.KeyComponent;
@@ -56,11 +60,6 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
     @Override
     public void create(Create create) {
         create.addPartitionKey(getColumnName(), getConverter().getDataType());
-    }
-
-    @Override
-    public List<ParameterBinding> getParameterBindings() {
-        return super.getParameterBindings();
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -109,16 +108,16 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
     }
 
     @Override
-    public boolean isNullElement(Object element) {
-        return element == null;
-    }
-
-    @Override
     public void selectWhere(Select.Where select) {
         select.and(eq(getColumnName(), bindMarker()));
     }
 
-//----------------------------------------------------------------------------------------------------------------------
+    @Override
+    public void verifySchema(TableMetadata metadata) {
+        verifyPartitionKeyColumn(metadata, getColumnName(), getDataType());
+    }
+
+    //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 

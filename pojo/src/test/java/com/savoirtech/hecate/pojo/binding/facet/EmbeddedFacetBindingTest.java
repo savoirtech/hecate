@@ -18,7 +18,6 @@ package com.savoirtech.hecate.pojo.binding.facet;
 
 import java.io.Serializable;
 
-import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.savoirtech.hecate.annotation.Embedded;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
@@ -48,10 +47,10 @@ public class EmbeddedFacetBindingTest extends AbstractDaoTestCase {
         assertEquals("bar", found.getInner().getB());
     }
 
-    @Test(expected = UncheckedExecutionException.class)
+    @Test
     @Cassandra
     public void testWithInvalidFieldInEmbedded() {
-        createPojoDao(BadOuter.class);
+        assertHecateException("No converter found for facet \"inner.badField\" of type java.io.Serializable.", () -> createPojoDao(BadOuter.class));
     }
 
     @Test

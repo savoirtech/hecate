@@ -16,14 +16,10 @@
 
 package com.savoirtech.hecate.pojo.binding.column;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Predicate;
 
 import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.pojo.binding.ParameterBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
-import com.savoirtech.hecate.pojo.binding.parameter.SimpleParameterBinding;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
@@ -42,15 +38,6 @@ public abstract class SimpleColumnBinding extends SingleColumnBinding<Object,Obj
     public SimpleColumnBinding(Facet facet, String columnName, Converter converter) {
         super(facet, columnName);
         this.converter = converter;
-    }
-
-//----------------------------------------------------------------------------------------------------------------------
-// ColumnBinding Implementation
-//----------------------------------------------------------------------------------------------------------------------
-
-    @Override
-    public List<ParameterBinding> getParameterBindings() {
-        return Collections.singletonList(new SimpleParameterBinding(getFacet(), getColumnName(), converter));
     }
 
 //----------------------------------------------------------------------------------------------------------------------
