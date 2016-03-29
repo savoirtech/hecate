@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.core.update;
 
+import java.util.concurrent.Executor;
+
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
@@ -31,18 +33,24 @@ public class BatchUpdateGroup implements UpdateGroup {
 
     private final Session session;
     private final BatchStatement batchStatement;
+    private final Executor executor;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public BatchUpdateGroup(Session session) {
-        this(session, BatchStatement.Type.LOGGED);
+    public BatchUpdateGroup(Session session, Executor executor) {
+        this(session, new BatchStatement(BatchStatement.Type.LOGGED), executor);
     }
 
-    public BatchUpdateGroup(Session session, BatchStatement.Type batchType) {
+    public BatchUpdateGroup(Session session, BatchStatement batchStatement, Executor executor) {
         this.session = session;
-        this.batchStatement = new BatchStatement(batchType);
+        this.batchStatement = batchStatement;
+        this.executor = executor;
+    }
+
+    public BatchUpdateGroup(Session session, BatchStatement.Type batchType, Executor executor) {
+        this(session, new BatchStatement(batchType), executor);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -60,6 +68,14 @@ public class BatchUpdateGroup implements UpdateGroup {
 
     @Override
     public ListenableFuture<Void> completeAsync() {
-        return Futures.transform(session.executeAsync(batchStatement), (Function<ResultSet, Void>) input -> null);
+        return Futures.transform(session.executeAsync(batchStatement), (Function<ResultSet, Void>) input -> null, executor);
+    }
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+    public BatchStatement getBatchStatement() {
+        return batchStatement;
     }
 }

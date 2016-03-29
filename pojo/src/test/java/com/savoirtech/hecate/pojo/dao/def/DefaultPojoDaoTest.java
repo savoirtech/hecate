@@ -69,7 +69,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     @Test
     public void testSaveWithUpdateGroup() {
         Person expected = new Person("Slappy", "White");
-        BatchUpdateGroup group = new BatchUpdateGroup(getSession());
+        BatchUpdateGroup group = new BatchUpdateGroup(getSession(), EXECUTOR);
         dao.save(group, expected);
         assertNull(dao.findByKey(expected.getId()));
         group.complete();

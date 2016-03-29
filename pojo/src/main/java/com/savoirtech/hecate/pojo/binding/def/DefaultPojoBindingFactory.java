@@ -16,13 +16,11 @@
 
 package com.savoirtech.hecate.pojo.binding.def;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import com.google.common.base.Throwables;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.LoadingCache;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.Embedded;
 import com.savoirtech.hecate.annotation.PartitionKey;
@@ -42,7 +40,6 @@ import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 import com.savoirtech.hecate.pojo.type.GenericType;
-import com.savoirtech.hecate.pojo.util.FunctionCacheLoader;
 
 public class DefaultPojoBindingFactory implements PojoBindingFactory {
 //----------------------------------------------------------------------------------------------------------------------
@@ -52,7 +49,7 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
     private final FacetProvider facetProvider;
     private final NamingStrategy namingStrategy;
     private final ConverterRegistry converterRegistry;
-    private final LoadingCache<Class<?>, PojoBinding<?>> cache = CacheBuilder.newBuilder().build(new FunctionCacheLoader<>(this::createPojoBindingInternal));
+    private final Map<Class<?>,DefaultPojoBinding<?>> bindingMap = new HashMap<>();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -70,25 +67,20 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <P> PojoBinding<P> createPojoBinding(Class<P> pojoType) {
-        try {
-            return (PojoBinding<P>) cache.getUnchecked(pojoType);
-        } catch (UncheckedExecutionException e) {
-            Throwables.propagateIfPossible(e.getCause(), HecateException.class);
-            throw e;
+    public synchronized <P> PojoBinding<P> createPojoBinding(Class<P> pojoType) {
+        DefaultPojoBinding<P> binding = (DefaultPojoBinding<P>)bindingMap.get(pojoType);
+        if(binding == null) {
+            binding = new DefaultPojoBinding<>(pojoType);
+            bindingMap.put(pojoType,binding);
+            List<Facet> keyFacets = injectFacetBindings(binding, pojoType);
+            injectKeyBinding(binding, pojoType, keyFacets);
         }
+        return binding;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
-
-    private <P> PojoBinding<P> createPojoBindingInternal(Class<P> pojoType) {
-        DefaultPojoBinding<P> binding = new DefaultPojoBinding<>(pojoType);
-        List<Facet> keyFacets = injectFacetBindings(binding, pojoType);
-        injectKeyBinding(binding, pojoType, keyFacets);
-        return binding;
-    }
 
     private <P> List<Facet> injectFacetBindings(DefaultPojoBinding<P> binding, Class<P> pojoType) {
         List<Facet> keyFacets = new LinkedList<>();

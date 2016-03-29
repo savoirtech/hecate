@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.pojo.binding.def;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import com.savoirtech.hecate.annotation.ClusteringColumn;
@@ -47,6 +48,11 @@ public class DefaultPojoBindingFactoryTest extends AbstractDaoTestCase {
         assertHecateException("Invalid facet \"map\"; no converter registered for key type \"java.io.Serializable\".", () -> getBindingFactory().createPojoBinding(NoConverterMapKey.class));
     }
 
+    @Test
+    public void testWithCircularReferences() {
+        getBindingFactory().createPojoBinding(Person.class);
+    }
+
     public static class NoConverterMapKey extends UuidEntity {
         private Map<Serializable, String> map;
 
@@ -64,5 +70,10 @@ public class DefaultPojoBindingFactoryTest extends AbstractDaoTestCase {
     public static class OnlyClustering {
         @ClusteringColumn
         private String cluster;
+    }
+
+
+    public static class Person extends UuidEntity {
+        private List<Person> children;
     }
 }
