@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 
 import com.datastax.driver.core.Session;
@@ -35,7 +37,6 @@ import com.savoirtech.hecate.pojo.query.PojoQueryContextFactory;
 import com.savoirtech.hecate.pojo.statement.PojoStatementFactory;
 import com.savoirtech.hecate.pojo.util.CacheKey;
 import com.savoirtech.hecate.pojo.util.FunctionCacheLoader;
-import org.apache.commons.lang3.event.EventListenerSupport;
 
 public class DefaultPojoDaoFactory implements PojoDaoFactory {
 //----------------------------------------------------------------------------------------------------------------------
@@ -51,7 +52,7 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
     private final PojoQueryContextFactory contextFactory;
     private final NamingStrategy namingStrategy;
 
-    private final EventListenerSupport<PojoDaoFactoryListener> listenerSupport = new EventListenerSupport<>(PojoDaoFactoryListener.class);
+    private final List<PojoDaoFactoryListener> listeners = new CopyOnWriteArrayList<>();
     private final LoadingCache<CacheKey, PojoDao<?>> daoCache = CacheBuilder.newBuilder().build(new FunctionCacheLoader<>(this::createPojoDaoInternal));
     private final Executor executor;
 
@@ -74,7 +75,7 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 
     @Override
     public DefaultPojoDaoFactory addListener(PojoDaoFactoryListener listener) {
-        listenerSupport.addListener(listener);
+        listeners.add(listener);
         return this;
     }
 
@@ -102,7 +103,7 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
     @SuppressWarnings("unchecked")
     private PojoDao<?> createPojoDaoInternal(CacheKey cacheKey) {
         DefaultPojoDao<?> dao = new DefaultPojoDao<>(session, cacheKey.getBinding(), cacheKey.getTableName(), statementFactory, contextFactory, executor);
-        listenerSupport.fire().pojoDaoCreated(new PojoDaoFactoryEvent<>((PojoDao<Object>) dao, (PojoBinding<Object>) cacheKey.getBinding(), cacheKey.getTableName()));
+        listeners.stream().forEach(listener -> listener.pojoDaoCreated(new PojoDaoFactoryEvent<>((PojoDao<Object>) dao, (PojoBinding<Object>) cacheKey.getBinding(), cacheKey.getTableName())));
         return dao;
     }
 }

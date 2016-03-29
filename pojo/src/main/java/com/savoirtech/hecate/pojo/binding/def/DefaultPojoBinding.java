@@ -33,8 +33,6 @@ import com.savoirtech.hecate.pojo.exception.SchemaVerificationException;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 
@@ -42,7 +40,6 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPojoBinding.class);
 
     private final Class<P> pojoType;
     private KeyBinding keyBinding;
@@ -88,7 +85,6 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
 
     @Override
     public List<Create> describe(String tableName) {
-        LOGGER.info("Creating schema for {} in table {}...", pojoType.getCanonicalName(), tableName);
         List<Create> creates = new LinkedList<>();
         Create create = SchemaBuilder.createTable(tableName).ifNotExists();
         creates.add(create);

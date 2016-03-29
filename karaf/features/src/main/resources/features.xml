@@ -26,9 +26,9 @@
     </feature>
 
     <feature name="hecate-core" version="${project.version}">
-        <bundle dependency="true">mvn:com.datastax.cassandra/cassandra-driver-core/${cassandra.driver.version}</bundle>
-        <bundle dependency="true">mvn:io.netty/netty/${netty.version}</bundle>
-        <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-core/${metrics.version}</bundle>
+        <bundle>mvn:com.datastax.cassandra/cassandra-driver-core/${cassandra.driver.version}</bundle>
+        <bundle>mvn:io.netty/netty/${netty.version}</bundle>
+        <bundle>mvn:io.dropwizard.metrics/metrics-core/${metrics.version}</bundle>
         <bundle>mvn:com.savoirtech.hecate/hecate-core/${project.version}</bundle>
     </feature>
 
@@ -40,8 +40,8 @@
         <feature version="${project.version}">hecate-core</feature>
         <feature version="${project.version}">hecate-annotation</feature>
 
-        <bundle dependency="true">mvn:com.google.guava/guava/${guava.version}</bundle>
-        <bundle dependency="true">mvn:org.apache.commons/commons-lang3/${commons.lang3.version}</bundle>
+        <bundle>mvn:com.google.guava/guava/${guava.version}</bundle>
+        <bundle>mvn:org.apache.commons/commons-lang3/${commons.lang3.version}</bundle>
 
         <bundle>mvn:com.savoirtech.hecate/hecate-pojo/${project.version}</bundle>
     </feature>
@@ -49,23 +49,23 @@
     <feature name="hecate-gson" version="${project.version}">
         <feature version="${project.version}">hecate-pojo</feature>
 
-        <bundle dependency="true">mvn:com.google.code.gson/gson/${gson.version}</bundle>
+        <bundle>mvn:com.google.code.gson/gson/${gson.version}</bundle>
 
         <bundle>mvn:com.savoirtech.hecate/hecate-gson/${project.version}</bundle>
     </feature>
 
     <!--<feature name="hecate-migrator" version="${project.version}">-->
-        <!--<feature version="${project.version}">hecate-core</feature>-->
+    <!--<feature version="${project.version}">hecate-core</feature>-->
 
-        <!--<bundle dependency="true">mvn:commons-codec/commons-codec/${commons.codec.version}</bundle>-->
+    <!--<bundle >mvn:commons-codec/commons-codec/${commons.codec.version}</bundle>-->
 
-        <!--<bundle>mvn:com.savoirtech.hecate/hecate-migrator/${project.version}</bundle>-->
+    <!--<bundle>mvn:com.savoirtech.hecate/hecate-migrator/${project.version}</bundle>-->
     <!--</feature>-->
 
     <feature name="hecate-joda-time" version="${project.version}">
         <feature version="${project.version}">hecate-pojo</feature>
 
-        <bundle dependency="true">mvn:joda-time/joda-time/${joda.time.version}</bundle>
+        <bundle>mvn:joda-time/joda-time/${joda.time.version}</bundle>
 
         <bundle>mvn:com.savoirtech.hecate/hecate-joda-time/${project.version}</bundle>
     </feature>
