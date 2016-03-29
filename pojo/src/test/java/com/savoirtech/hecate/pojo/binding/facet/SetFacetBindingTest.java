@@ -33,7 +33,6 @@ public class SetFacetBindingTest extends AbstractDaoTestCase {
     @Test
     @Cassandra
     public void testWithNullPojoSet() {
-        createTables(ElementEntity.class);
         PojoDao<PojoSetEntity> dao = createPojoDao(PojoSetEntity.class);
         PojoSetEntity entity = new PojoSetEntity();
         dao.save(entity);
@@ -54,7 +53,6 @@ public class SetFacetBindingTest extends AbstractDaoTestCase {
     @Test
     @Cassandra
     public void testWithPojoSet() {
-        createTables(ElementEntity.class);
         PojoDao<PojoSetEntity> dao = createPojoDao(PojoSetEntity.class);
         PojoSetEntity entity = new PojoSetEntity();
         Set<ElementEntity> expected = Sets.newHashSet(new ElementEntity(), new ElementEntity());

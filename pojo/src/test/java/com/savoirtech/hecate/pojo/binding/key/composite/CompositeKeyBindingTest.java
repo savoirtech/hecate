@@ -67,7 +67,6 @@ public class CompositeKeyBindingTest extends BindingTestCase {
     @Test
     @Cassandra
     public void testElementReference() {
-        createTables(CompositeKeyEntity.class);
         PojoDao<ReferencingElementEntity> dao = createPojoDao(ReferencingElementEntity.class);
         ReferencingElementEntity entity = new ReferencingElementEntity();
         CompositeKeyEntity ref1 = new CompositeKeyEntity("1", "2");
@@ -88,7 +87,6 @@ public class CompositeKeyBindingTest extends BindingTestCase {
     @Test
     @Cassandra
     public void testReferenceFacet() {
-        createTables(CompositeKeyEntity.class);
         PojoDao<ReferencingEntity> dao = createPojoDao(ReferencingEntity.class);
         ReferencingEntity entity = new ReferencingEntity();
         CompositeKeyEntity ref = new CompositeKeyEntity("1", "2");
@@ -103,7 +101,6 @@ public class CompositeKeyBindingTest extends BindingTestCase {
     @Test
     @Cassandra
     public void testReferenceFacetWithNullReference() {
-        createTables(CompositeKeyEntity.class);
         PojoDao<ReferencingEntity> dao = createPojoDao(ReferencingEntity.class);
         ReferencingEntity entity = new ReferencingEntity();
         dao.save(entity);
@@ -233,7 +230,7 @@ public class CompositeKeyBindingTest extends BindingTestCase {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-        private List<CompositeKeyEntity>  refs = new LinkedList<>();
+        private List<CompositeKeyEntity> refs = new LinkedList<>();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Getter/Setter Methods

@@ -35,7 +35,7 @@ public interface ColumnBinding {
 
     void collectParameters(Object pojo, List<Object> parameters);
 
-    void create(Create create);
+    void describe(Create create, List<Create> nested);
 
     List<ParameterBinding> getParameterBindings();
 

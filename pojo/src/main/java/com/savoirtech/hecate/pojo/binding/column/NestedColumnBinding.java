@@ -65,8 +65,8 @@ public abstract class NestedColumnBinding<B extends ColumnBinding> extends Abstr
     }
 
     @Override
-    public void create(Create create) {
-        forEachBinding(binding -> binding.create(create));
+    public void describe(Create create, List<Create> nested) {
+        forEachBinding(binding -> binding.describe(create, nested));
     }
 
     @Override

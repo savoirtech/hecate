@@ -33,6 +33,8 @@ import com.savoirtech.hecate.pojo.exception.SchemaVerificationException;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 
@@ -40,6 +42,7 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPojoBinding.class);
 
     private final Class<P> pojoType;
     private KeyBinding keyBinding;
@@ -65,7 +68,7 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
         parameters.add(ttl);
         return bind(statement, parameters);
     }
-    
+
     @Override
     public BoundStatement bindWhereIdEquals(PreparedStatement statement, List<Object> keys) {
         return bind(statement, keyBinding.getKeyParameters(keys));
@@ -77,18 +80,21 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
     }
 
     @Override
-    public Create createTable(String tableName) {
-        Create create = SchemaBuilder.createTable(tableName);
-        keyBinding.create(create);
-        facetBindings.forEach(binding -> binding.create(create));
-        return create.ifNotExists();
-    }
-
-    @Override
     public Delete.Where deleteFrom(String tableName) {
         Delete.Where delete = QueryBuilder.delete().from(tableName).where();
         keyBinding.delete(delete);
         return delete;
+    }
+
+    @Override
+    public List<Create> describe(String tableName) {
+        LOGGER.info("Creating schema for {} in table {}...", pojoType.getCanonicalName(), tableName);
+        List<Create> creates = new LinkedList<>();
+        Create create = SchemaBuilder.createTable(tableName).ifNotExists();
+        creates.add(create);
+        keyBinding.describe(create, creates);
+        facetBindings.forEach(binding -> binding.describe(create, creates));
+        return creates;
     }
 
     @Override

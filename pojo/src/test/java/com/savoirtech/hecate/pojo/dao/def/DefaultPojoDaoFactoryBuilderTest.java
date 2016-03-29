@@ -19,6 +19,7 @@ package com.savoirtech.hecate.pojo.dao.def;
 import java.util.concurrent.Executors;
 
 import com.savoirtech.hecate.pojo.dao.PojoDao;
+import com.savoirtech.hecate.pojo.dao.listener.CreateSchemaListener;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
 import com.savoirtech.hecate.pojo.query.def.DefaultPojoQueryContextFactory;
@@ -40,8 +41,10 @@ public class DefaultPojoDaoFactoryBuilderTest extends AbstractDaoTestCase {
     }
 
     private void useFactory(DefaultPojoDaoFactoryBuilder factoryBuilder) {
-        createTables(SimplePojo.class);
-        PojoDao<SimplePojo> dao = factoryBuilder.build().createPojoDao(SimplePojo.class);
+        DefaultPojoDaoFactory factory = factoryBuilder.build();
+        factory.addListener(new CreateSchemaListener(getSession()));
+        PojoDao<SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
+
         dao.save(new SimplePojo());
     }
 

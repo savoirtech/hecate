@@ -41,7 +41,7 @@ public interface PojoBinding<P> {
 
     P createPojo();
 
-    Create createTable(String name);
+    List<Create> describe(String tableName);
 
     Delete.Where deleteFrom(String tableName);
 

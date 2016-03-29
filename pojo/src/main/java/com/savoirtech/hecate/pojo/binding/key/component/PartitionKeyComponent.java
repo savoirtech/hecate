@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.pojo.binding.key.component;
 
+import java.util.List;
+
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
@@ -35,9 +37,14 @@ public class PartitionKeyComponent extends SimpleKeyComponent {
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// KeyComponent Implementation
+// ColumnBinding Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+
+    @Override
+    public void describe(Create create, List<Create> nested) {
+        create.addPartitionKey(getColumnName(), getDataType());
+    }
 
     @Override
     public void verifySchema(KeyspaceMetadata keyspaceMetadata, TableMetadata tableMetadata) {
@@ -48,10 +55,10 @@ public class PartitionKeyComponent extends SimpleKeyComponent {
         }
     }
 
-    @Override
-    public void create(Create create) {
-        create.addPartitionKey(getColumnName(), getDataType());
-    }
+//----------------------------------------------------------------------------------------------------------------------
+// KeyComponent Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
 
     @Override
     public int getOrder() {

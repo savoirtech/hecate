@@ -30,7 +30,6 @@ public class ArrayFacetBindingTest extends AbstractDaoTestCase {
     @Test
     @Cassandra
     public void testWithNullPojoArray() {
-        createTables(ElementEntity.class);
         PojoDao<PojoArrayEntity> dao = createPojoDao(PojoArrayEntity.class);
         PojoArrayEntity entity = new PojoArrayEntity();
         dao.save(entity);
@@ -51,7 +50,6 @@ public class ArrayFacetBindingTest extends AbstractDaoTestCase {
     @Test
     @Cassandra
     public void testWithPojoArray() {
-        createTables(ElementEntity.class);
         PojoDao<PojoArrayEntity> dao = createPojoDao(PojoArrayEntity.class);
         PojoArrayEntity entity = new PojoArrayEntity();
         ElementEntity[] expected = new ElementEntity[] {new ElementEntity(), new ElementEntity()};
@@ -77,7 +75,6 @@ public class ArrayFacetBindingTest extends AbstractDaoTestCase {
     @Cassandra
     public void testWithNullElement() {
         assertHecateException("Cassandra driver does not support null values inside list<varchar> collections.", () -> {
-            createTables(ElementEntity.class);
             PojoDao<PojoArrayEntity> dao = createPojoDao(PojoArrayEntity.class);
             PojoArrayEntity entity = new PojoArrayEntity();
             entity.setPojos(new ElementEntity[] {new ElementEntity(), null, new ElementEntity()});

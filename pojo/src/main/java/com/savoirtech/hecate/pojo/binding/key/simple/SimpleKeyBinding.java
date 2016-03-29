@@ -59,7 +59,7 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void create(Create create) {
+    public void describe(Create create, List<Create> nested) {
         create.addPartitionKey(getColumnName(), getConverter().getDataType());
     }
 
@@ -145,8 +145,9 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
 //----------------------------------------------------------------------------------------------------------------------
 
         @Override
-        public void create(Create create) {
+        public void describe(Create create, List<Create> nested) {
             create.addClusteringColumn(getColumnName(), getConverter().getDataType());
+            nested.addAll(getPojoBinding().describe(getTableName()));
         }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -156,7 +157,7 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
         @Override
         public ColumnBinding createReferenceBinding(Facet referencingFacet, NamingStrategy strategy) {
             Facet facet = new SubFacet(referencingFacet, getFacet(), false);
-            String tableName = strategy.getReferenceTableName(referencingFacet);
+            String tableName = strategy.getReferenceTableName(getReferenceFacet());
             String columnName = strategy.getColumnName(facet);
             return new SimpleReferenceBinding(referencingFacet, facet, columnName, getConverter(), getPojoBinding(), tableName);
         }
@@ -202,6 +203,12 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
 //----------------------------------------------------------------------------------------------------------------------
 
         @Override
+        public void describe(Create create, List<Create> nested) {
+            super.describe(create, nested);
+            nested.addAll(pojoBinding.describe(tableName));
+        }
+
+        @Override
         public void injectValues(Object pojo, Iterator<Object> columnValues, PojoQueryContext context) {
             Object key = columnValues.next();
             if (key == null) {
@@ -220,7 +227,7 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
         @Override
         public void visitChildren(Object pojo, Predicate<Facet> predicate, PojoVisitor visitor) {
             Object referenced = referenceFacet.getValue(pojo);
-            if(referenced != null && predicate.test(referenceFacet)) {
+            if (referenced != null && predicate.test(referenceFacet)) {
                 visitFacetChild(referenced, pojoBinding, predicate, visitor);
             }
         }
@@ -233,13 +240,21 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
             return pojoBinding;
         }
 
+        public Facet getReferenceFacet() {
+            return referenceFacet;
+        }
+
+        public String getTableName() {
+            return tableName;
+        }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
         @SuppressWarnings("unchecked")
         private <P> void visitFacetChild(Object facetValue, PojoBinding<P> binding, Predicate<Facet> predicate, PojoVisitor visitor) {
-            visitor.visit((P)facetValue, binding, tableName, predicate);
+            visitor.visit((P) facetValue, binding, tableName, predicate);
         }
     }
 }

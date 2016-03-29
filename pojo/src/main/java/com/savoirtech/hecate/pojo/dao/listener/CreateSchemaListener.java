@@ -14,42 +14,43 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.dao;
+package com.savoirtech.hecate.pojo.dao.listener;
 
-import com.savoirtech.hecate.pojo.binding.PojoBinding;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class PojoDaoFactoryEvent<P> {
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.schemabuilder.Create;
+import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryEvent;
+import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class CreateSchemaListener implements PojoDaoFactoryListener {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final PojoDao<P> pojoDao;
-    private final PojoBinding<P> pojoBinding;
-    private final String tableName;
+    private static final Logger LOGGER = LoggerFactory.getLogger(CreateSchemaListener.class);
+
+    private final Session session;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoDaoFactoryEvent(PojoDao<P> pojoDao, PojoBinding<P> pojoBinding, String tableName) {
-        this.pojoDao = pojoDao;
-        this.pojoBinding = pojoBinding;
-        this.tableName = tableName;
+    public CreateSchemaListener(Session session) {
+        this.session = session;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
+// PojoDaoFactoryListener Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-    public PojoBinding<P> getPojoBinding() {
-        return pojoBinding;
-    }
-
-    public PojoDao<P> getPojoDao() {
-        return pojoDao;
-    }
-
-    public String getTableName() {
-        return tableName;
+    @Override
+    public <P> void pojoDaoCreated(PojoDaoFactoryEvent<P> event) {
+        List<Create> creates = event.getPojoBinding().describe(event.getTableName());
+        LOGGER.info("Creating table(s) to support \"{}\":\n\t{}\n", event.getPojoBinding().getPojoType().getSimpleName(), creates.stream().map(create -> create.getQueryString()).collect(Collectors.joining("\n\t")));
+        creates.forEach(session::execute);
     }
 }

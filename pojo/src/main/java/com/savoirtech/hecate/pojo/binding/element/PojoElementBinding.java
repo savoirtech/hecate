@@ -16,10 +16,12 @@
 
 package com.savoirtech.hecate.pojo.binding.element;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.schemabuilder.Create;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
@@ -55,6 +57,12 @@ public class PojoElementBinding implements ElementBinding {
 //----------------------------------------------------------------------------------------------------------------------
 // ElementBinding Implementation
 //----------------------------------------------------------------------------------------------------------------------
+
+
+    @Override
+    public List<Create> describe() {
+        return pojoBinding.describe(tableName);
+    }
 
     @Override
     public DataType getElementDataType() {

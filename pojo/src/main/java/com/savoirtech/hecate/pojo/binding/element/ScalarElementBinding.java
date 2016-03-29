@@ -16,10 +16,13 @@
 
 package com.savoirtech.hecate.pojo.binding.element;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Predicate;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.schemabuilder.Create;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.convert.Converter;
@@ -46,6 +49,11 @@ public class ScalarElementBinding implements ElementBinding {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
+    public List<Create> describe() {
+        return Collections.emptyList();
+    }
+
+    @Override
     public DataType getElementDataType() {
         return converter.getDataType();
     }
@@ -66,12 +74,12 @@ public class ScalarElementBinding implements ElementBinding {
     }
 
     @Override
-    public void visitChild(Object facetElementValue, Predicate<Facet> predicate, PojoVisitor visitor) {
+    public void verifySchema(KeyspaceMetadata keyspaceMetadata) {
         // Do nothing!
     }
 
     @Override
-    public void verifySchema(KeyspaceMetadata keyspaceMetadata) {
+    public void visitChild(Object facetElementValue, Predicate<Facet> predicate, PojoVisitor visitor) {
         // Do nothing!
     }
 }

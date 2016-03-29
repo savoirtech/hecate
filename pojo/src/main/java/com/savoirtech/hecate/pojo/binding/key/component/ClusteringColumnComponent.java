@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.pojo.binding.key.component;
 
+import java.util.List;
+
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.schemabuilder.Create;
@@ -37,7 +39,7 @@ public class ClusteringColumnComponent extends SimpleKeyComponent {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void create(Create create) {
+    public void describe(Create create, List<Create> nested) {
         create.addClusteringColumn(getColumnName(), getDataType());
     }
 

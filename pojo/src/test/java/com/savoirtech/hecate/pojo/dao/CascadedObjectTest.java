@@ -37,8 +37,6 @@ public class CascadedObjectTest extends AbstractDaoTestCase {
         manager.setAddress(address);
         department.setManager(manager);
 
-
-        createTables(Address.class, Employee.class);
         PojoDao<Department> departmentDao = createPojoDao(Department.class);
         departmentDao.save(department);
 
@@ -57,8 +55,6 @@ public class CascadedObjectTest extends AbstractDaoTestCase {
         manager.setAddress(address);
         department.setManager(manager);
 
-
-        createTables(Address.class, Employee.class);
         PojoDao<Department> departmentDao = createPojoDao(Department.class);
         departmentDao.save(department);
 

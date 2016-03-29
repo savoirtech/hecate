@@ -30,7 +30,6 @@ public class PojoClusteringColumnTest extends AbstractDaoTestCase {
     @Test
     @Cassandra
     public void testSave() {
-        createTables(Inner.class);
         PojoDao<Outer> dao = createPojoDao(Outer.class);
 
         Outer outer = new Outer();

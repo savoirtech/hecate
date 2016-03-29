@@ -16,15 +16,12 @@
 
 package com.savoirtech.hecate.pojo.test;
 
-import java.util.Arrays;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import com.datastax.driver.core.schemabuilder.Create;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.binding.PojoBindingFactory;
 import com.savoirtech.hecate.pojo.binding.def.DefaultPojoBindingFactory;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
@@ -32,6 +29,7 @@ import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactory;
 import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactoryBuilder;
+import com.savoirtech.hecate.pojo.dao.listener.CreateSchemaListener;
 import com.savoirtech.hecate.pojo.dao.listener.VerifySchemaListener;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
@@ -59,6 +57,7 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
                     .withConverterRegistry(converterRegistry)
                     .withBindingFactory(bindingFactory)
                     .withThreadPoolSize(1)
+                    .withListener(new CreateSchemaListener(getSession()))
                     .withListener(new VerifySchemaListener(getSession()))
                     .build());
 
@@ -96,25 +95,14 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
     }
 
     protected <P> PojoDao<P> createPojoDao(Class<P> pojoType) {
-        createTables(pojoType);
         return daoFactory.get().createPojoDao(pojoType);
     }
 
-    protected void createTable(Class<?> pojoType, String tableName) {
-        Create create = bindingFactory.createPojoBinding(pojoType).createTable(tableName);
-        logger.debug("Creating \"{}\" table for class \"{}\":\n\t{}\n", tableName, pojoType.getSimpleName(), create);
-        getSession().execute(create);
-    }
-
-    protected void createTables(Class<?>... pojoTypes) {
-        Arrays.stream(pojoTypes).forEach(pojoType -> createTable(pojoType, namingStrategy.getTableName(pojoType)));
+    protected <P> PojoDao<P> createPojoDao(Class<P> pojoType, String tableName) {
+        return daoFactory.get().createPojoDao(pojoType, tableName);
     }
 
     protected Facet getFacet(Class<?> pojoType, String name) {
         return facetProvider.getFacetsAsMap(pojoType).get(name);
-    }
-
-    protected <P> PojoBinding<P> getPojoBinding(Class<P> pojoType) {
-        return bindingFactory.createPojoBinding(pojoType);
     }
 }

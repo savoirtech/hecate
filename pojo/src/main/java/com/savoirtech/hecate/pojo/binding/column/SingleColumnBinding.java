@@ -83,8 +83,7 @@ public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
         }
     }
 
-    @Override
-    public void create(Create create) {
+    public void describe(Create create, List<Create> nested) {
         create.addColumn(getColumnName(), getDataType());
     }
 

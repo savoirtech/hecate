@@ -152,7 +152,6 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     @Test
     @Cassandra
     public void testReferenceFacet() {
-        createTables(SimpleEntity.class);
         PojoDao<ReferencingEntity> dao = createPojoDao(ReferencingEntity.class);
         ReferencingEntity entity = new ReferencingEntity();
         SimpleEntity ref = new SimpleEntity();
@@ -167,7 +166,6 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     @Test
     @Cassandra
     public void testReferenceFacetWithNullReference() {
-        createTables(SimpleEntity.class);
         PojoDao<ReferencingEntity> dao = createPojoDao(ReferencingEntity.class);
         ReferencingEntity entity = new ReferencingEntity();
         dao.save(entity);
@@ -179,7 +177,6 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     @Test
     @Cassandra
     public void testReferenceClusteringColumnReference() {
-        createTables(SimpleEntity.class, ClusteringColumnReferenceEntity.class);
         PojoDao<ReferenceClusteringColumnReferenceEntity> dao = createPojoDao(ReferenceClusteringColumnReferenceEntity.class);
 
         ReferenceClusteringColumnReferenceEntity entity = new ReferenceClusteringColumnReferenceEntity();

@@ -33,7 +33,6 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
     @Test
     @Cassandra
     public void testWithNullPojoMap() {
-        createTables(ElementEntity.class);
         PojoDao<PojoMapEntity> dao = createPojoDao(PojoMapEntity.class);
         PojoMapEntity entity = new PojoMapEntity();
         dao.save(entity);
@@ -54,7 +53,6 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
     @Test
     @Cassandra
     public void testWithPojoMap() {
-        createTables(ElementEntity.class);
         PojoDao<PojoMapEntity> dao = createPojoDao(PojoMapEntity.class);
         PojoMapEntity entity = new PojoMapEntity();
         Map<String,ElementEntity> expected = Maps.newHashMap();
