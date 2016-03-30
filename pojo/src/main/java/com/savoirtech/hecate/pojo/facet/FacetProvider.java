@@ -16,11 +16,11 @@
 
 package com.savoirtech.hecate.pojo.facet;
 
-import com.savoirtech.hecate.core.exception.HecateException;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.savoirtech.hecate.core.exception.HecateException;
 
 public interface FacetProvider {
 //----------------------------------------------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ public interface FacetProvider {
 
     default Map<String, Facet> getFacetsAsMap(Class<?> pojoClass) {
         return getFacets(pojoClass).stream().collect(Collectors.toMap(Facet::getName, facet -> facet, (left, right) -> {
-            throw new HecateException("Duplicate facet %s detected.", left.getName());
+            throw new HecateException("Duplicate facet \"%s\" detected.", left.getName());
         }));
     }
 }

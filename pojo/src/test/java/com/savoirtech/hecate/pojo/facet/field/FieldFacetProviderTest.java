@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import com.savoirtech.hecate.annotation.Cascade;
 import com.savoirtech.hecate.annotation.Ignored;
+import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.entities.NestedPojo;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
@@ -117,6 +118,12 @@ public class FieldFacetProviderTest extends Assert {
         assertEquals(foo, foo.flatten());
     }
 
+    @Test(expected = HecateException.class)
+    public void testDuplicateFacetsInMap() {
+        FacetProvider facetProvider = new FieldFacetProvider();
+        facetProvider.getFacetsAsMap(DuplicateField.class);
+    }
+
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
@@ -146,6 +153,10 @@ public class FieldFacetProviderTest extends Assert {
 
     public static class FieldPojoSuper {
         private final String foo = "foo";
+        private String bar;
+    }
+
+    public static class DuplicateField extends FieldPojoSuper {
         private String bar;
     }
 }
