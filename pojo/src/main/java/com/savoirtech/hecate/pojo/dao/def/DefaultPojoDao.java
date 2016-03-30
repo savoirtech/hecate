@@ -28,7 +28,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.savoirtech.hecate.annotation.TTL;
+import com.savoirtech.hecate.annotation.Ttl;
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
@@ -78,7 +78,7 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
     }
 
     private static int ttl(Class<?> pojoType) {
-        TTL annotation = pojoType.getAnnotation(TTL.class);
+        Ttl annotation = pojoType.getAnnotation(Ttl.class);
         return annotation != null ? annotation.value() : NO_TTL;
     }
 

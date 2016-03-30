@@ -19,7 +19,7 @@ package com.savoirtech.hecate.pojo.dao.def;
 import java.util.concurrent.TimeUnit;
 
 import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
-import com.savoirtech.hecate.annotation.TTL;
+import com.savoirtech.hecate.annotation.Ttl;
 import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
 import com.savoirtech.hecate.core.update.AsyncUpdateGroup;
 import com.savoirtech.hecate.core.update.BatchUpdateGroup;
@@ -272,7 +272,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    @TTL(30000)
+    @Ttl(30000)
     public static class TtlEntity extends UuidEntity {
         private String name = "foo";
 
