@@ -21,6 +21,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation used to customize the column name.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface Column {
@@ -28,5 +31,9 @@ public @interface Column {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * The column name.
+     * @return the column name
+     */
     String value();
 }

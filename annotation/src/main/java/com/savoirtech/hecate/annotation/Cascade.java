@@ -21,6 +21,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation to control cascaded saves/deletes
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface Cascade {
@@ -28,7 +31,15 @@ public @interface Cascade {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Whether or not to cascade deletes.
+     * @return whether or not to cascade deletes
+     */
     boolean delete() default true;
 
+    /**
+     * Whether or not to cascade saves.
+     * @return whether or not to cascade saves
+     */
     boolean save() default true;
 }

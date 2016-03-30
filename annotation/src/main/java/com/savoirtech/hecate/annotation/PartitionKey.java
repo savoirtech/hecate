@@ -21,6 +21,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * An annotation which should be used to indicate that a facet is to be used as a partition key.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface PartitionKey {
@@ -28,5 +31,9 @@ public @interface PartitionKey {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * The order of the partition key with respect to other partition keys.
+     * @return the order
+     */
     int order() default 0;
 }

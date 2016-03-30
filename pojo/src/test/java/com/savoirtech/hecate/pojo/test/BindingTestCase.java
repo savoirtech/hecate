@@ -16,6 +16,7 @@
 
 package com.savoirtech.hecate.pojo.test;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -90,5 +91,10 @@ public class BindingTestCase extends AbstractDaoTestCase {
         Select.Where where = select.from(tableName).where();
         binding.selectWhere(where);
         assertEquals(cql, where.getQueryString());
+    }
+
+    public static void main(String[] args) {
+        Create.Options create = SchemaBuilder.createTable("foo").addPartitionKey("bar", DataType.varchar()).addClusteringColumn("baz", DataType.varchar()).withOptions().clusteringOrder("baz", SchemaBuilder.Direction.DESC);
+        System.out.println(create.getQueryString());
     }
 }

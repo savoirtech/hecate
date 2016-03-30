@@ -21,6 +21,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation used to indicate that a facet is to be used as a clustering column.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface ClusteringColumn {
@@ -28,6 +31,9 @@ public @interface ClusteringColumn {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    boolean descending() default false;
+    /**
+     * The order of the clustering column with respect to other clustering columns
+     * @return the order
+     */
     int order() default 0;
 }

@@ -151,6 +151,30 @@ public class SimpleKeyBindingTest extends BindingTestCase {
 
     @Test
     @Cassandra
+    public void testQuery() {
+        PojoDao<SimpleEntity> dao = createPojoDao(SimpleEntity.class);
+        SimpleEntity expected = new SimpleEntity();
+        dao.save(expected);
+
+        PojoQuery<SimpleEntity> query = dao.find().eq("id").build();
+        SimpleEntity actual = query.execute(expected.getId()).one();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Cassandra
+    public void testReferenceClusteringColumnReference() {
+        PojoDao<ReferenceClusteringColumnReferenceEntity> dao = createPojoDao(ReferenceClusteringColumnReferenceEntity.class);
+
+        ReferenceClusteringColumnReferenceEntity entity = new ReferenceClusteringColumnReferenceEntity();
+        ClusteringColumnReferenceEntity reference = new ClusteringColumnReferenceEntity();
+        reference.setSimpleEntity(new SimpleEntity());
+        entity.setReference(reference);
+        dao.save(entity);
+    }
+
+    @Test
+    @Cassandra
     public void testReferenceFacet() {
         PojoDao<ReferencingEntity> dao = createPojoDao(ReferencingEntity.class);
         ReferencingEntity entity = new ReferencingEntity();
@@ -175,30 +199,6 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     }
 
     @Test
-    @Cassandra
-    public void testReferenceClusteringColumnReference() {
-        PojoDao<ReferenceClusteringColumnReferenceEntity> dao = createPojoDao(ReferenceClusteringColumnReferenceEntity.class);
-
-        ReferenceClusteringColumnReferenceEntity entity = new ReferenceClusteringColumnReferenceEntity();
-        ClusteringColumnReferenceEntity reference = new ClusteringColumnReferenceEntity();
-        reference.setSimpleEntity(new SimpleEntity());
-        entity.setReference(reference);
-        dao.save(entity);
-    }
-
-    @Test
-    @Cassandra
-    public void testQuery() {
-        PojoDao<SimpleEntity> dao = createPojoDao(SimpleEntity.class);
-        SimpleEntity expected = new SimpleEntity();
-        dao.save(expected);
-
-        PojoQuery<SimpleEntity> query = dao.find().eq("id").build();
-        SimpleEntity actual = query.execute(expected.getId()).one();
-        assertEquals(expected, actual);
-    }
-
-    @Test
     public void testSelect() {
         assertSelectEquals(binding, "SELECT id FROM foo;");
     }
@@ -214,17 +214,6 @@ public class SimpleKeyBindingTest extends BindingTestCase {
         Mockito.verifyNoMoreInteractions(visitor);
     }
 
-    public static class CollectionReferenceEntity extends UuidEntity {
-        private List<SimpleEntity> entities;
-
-        public List<SimpleEntity> getEntities() {
-            return entities;
-        }
-
-        public void setEntities(List<SimpleEntity> entities) {
-            this.entities = entities;
-        }
-    }
 //----------------------------------------------------------------------------------------------------------------------
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
@@ -247,6 +236,26 @@ public class SimpleKeyBindingTest extends BindingTestCase {
 
         public void setSimpleEntity(SimpleEntity simpleEntity) {
             this.simpleEntity = simpleEntity;
+        }
+    }
+
+    public static class CollectionReferenceEntity extends UuidEntity {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
+
+        private List<SimpleEntity> entities;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Getter/Setter Methods
+//----------------------------------------------------------------------------------------------------------------------
+
+        public List<SimpleEntity> getEntities() {
+            return entities;
+        }
+
+        public void setEntities(List<SimpleEntity> entities) {
+            this.entities = entities;
         }
     }
 

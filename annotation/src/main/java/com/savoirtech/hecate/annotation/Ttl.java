@@ -21,6 +21,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation to control TTL values
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Ttl {
@@ -28,5 +31,9 @@ public @interface Ttl {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * The TTL value
+     * @return the TTL value
+     */
     int value();
 }

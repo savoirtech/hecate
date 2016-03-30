@@ -21,6 +21,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation used to customize the table name.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
 public @interface Table {
@@ -28,5 +31,9 @@ public @interface Table {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * The name of the table.
+     * @return the name of the table
+     */
     String value();
 }
