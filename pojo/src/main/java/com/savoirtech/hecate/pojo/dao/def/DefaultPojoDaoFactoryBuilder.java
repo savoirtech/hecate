@@ -24,7 +24,10 @@ import java.util.concurrent.Executors;
 import com.datastax.driver.core.Session;
 import com.savoirtech.hecate.pojo.binding.PojoBindingFactory;
 import com.savoirtech.hecate.pojo.binding.def.DefaultPojoBindingFactory;
+import com.savoirtech.hecate.pojo.convert.Converter;
+import com.savoirtech.hecate.pojo.convert.ConverterProvider;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
+import com.savoirtech.hecate.pojo.convert.def.ConstantConverterProvider;
 import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryListener;
 import com.savoirtech.hecate.pojo.facet.FacetProvider;
@@ -48,11 +51,12 @@ public class DefaultPojoDaoFactoryBuilder {
     private PojoStatementFactory statementFactory;
     private PojoQueryContextFactory contextFactory;
     private FacetProvider facetProvider = new FieldFacetProvider();
-    private ConverterRegistry converterRegistry = new DefaultConverterRegistry();
+    private ConverterRegistry converterRegistry;
     private int maximumCacheSize = DefaultPojoQueryContextFactory.DEFAULT_MAX_CACHE_SIZE;
     private Executor executor;
     private int threadPoolSize = DefaultPojoDaoFactory.DEFAULT_THREAD_POOL_SIZE;
     private List<PojoDaoFactoryListener> pojoFactoryListeners = new LinkedList<>();
+    private List<ConverterProvider> converterProviders = new LinkedList<>();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -76,6 +80,11 @@ public class DefaultPojoDaoFactoryBuilder {
         if(contextFactory == null) {
             contextFactory = new DefaultPojoQueryContextFactory(session, statementFactory, maximumCacheSize);
         }
+        if(converterRegistry == null) {
+            DefaultConverterRegistry converterRegistry = new DefaultConverterRegistry();
+            converterProviders.forEach(converterRegistry::registerConverter);
+            this.converterRegistry = converterRegistry;
+        }
         if(bindingFactory == null) {
             bindingFactory = new DefaultPojoBindingFactory(facetProvider, converterRegistry, namingStrategy);
         }
@@ -91,6 +100,16 @@ public class DefaultPojoDaoFactoryBuilder {
 
     public DefaultPojoDaoFactoryBuilder withContextFactory(PojoQueryContextFactory contextFactory) {
         this.contextFactory = contextFactory;
+        return this;
+    }
+
+    public DefaultPojoDaoFactoryBuilder withConverter(Converter converter) {
+        converterProviders.add(new ConstantConverterProvider(converter));
+        return this;
+    }
+
+    public DefaultPojoDaoFactoryBuilder withConverter(ConverterProvider provider) {
+        converterProviders.add(provider);
         return this;
     }
 

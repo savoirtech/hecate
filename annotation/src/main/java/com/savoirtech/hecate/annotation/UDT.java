@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.naming;
+package com.savoirtech.hecate.annotation;
 
-import com.savoirtech.hecate.pojo.facet.Facet;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface NamingStrategy {
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.FIELD,ElementType.METHOD})
+public @interface UDT {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    String getColumnName(Facet facet);
-    String getReferenceTableName(Facet facet);
-    String getTableName(Class<?> pojoClass);
-    String getUserTypeName(Facet facet);
+    String value() default "";
 }

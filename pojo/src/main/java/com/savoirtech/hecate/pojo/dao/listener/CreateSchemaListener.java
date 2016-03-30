@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.schemabuilder.Create;
+import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryEvent;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryListener;
 import org.slf4j.Logger;
@@ -49,8 +49,8 @@ public class CreateSchemaListener implements PojoDaoFactoryListener {
 
     @Override
     public <P> void pojoDaoCreated(PojoDaoFactoryEvent<P> event) {
-        List<Create> creates = event.getPojoBinding().describe(event.getTableName());
-        LOGGER.info("Creating table(s) to support \"{}\":\n\t{}\n", event.getPojoBinding().getPojoType().getSimpleName(), creates.stream().map(create -> create.getQueryString()).collect(Collectors.joining("\n\t")));
-        creates.forEach(session::execute);
+        List<SchemaStatement> statements = event.getPojoBinding().describe(event.getTableName());
+        LOGGER.info("Creating table(s) to support \"{}\":\n\t{}\n", event.getPojoBinding().getPojoType().getSimpleName(), statements.stream().map(SchemaStatement::getQueryString).collect(Collectors.joining("\n\t")));
+        statements.forEach(session::execute);
     }
 }

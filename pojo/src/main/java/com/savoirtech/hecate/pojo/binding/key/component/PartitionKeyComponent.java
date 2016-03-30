@@ -22,6 +22,7 @@ import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.schemabuilder.Create;
+import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.exception.SchemaVerificationException;
@@ -42,7 +43,7 @@ public class PartitionKeyComponent extends SimpleKeyComponent {
 
 
     @Override
-    public void describe(Create create, List<Create> nested) {
+    public void describe(Create create, List<SchemaStatement> nested) {
         create.addPartitionKey(getColumnName(), getDataType());
     }
 

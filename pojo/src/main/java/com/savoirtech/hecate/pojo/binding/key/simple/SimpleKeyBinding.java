@@ -28,6 +28,7 @@ import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
+import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.KeyBinding;
@@ -59,7 +60,7 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void describe(Create create, List<Create> nested) {
+    public void describe(Create create, List<SchemaStatement> nested) {
         create.addPartitionKey(getColumnName(), getConverter().getDataType());
     }
 
@@ -145,7 +146,7 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
 //----------------------------------------------------------------------------------------------------------------------
 
         @Override
-        public void describe(Create create, List<Create> nested) {
+        public void describe(Create create, List<SchemaStatement> nested) {
             create.addClusteringColumn(getColumnName(), getConverter().getDataType());
             nested.addAll(getPojoBinding().describe(getTableName()));
         }
@@ -203,7 +204,7 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
 //----------------------------------------------------------------------------------------------------------------------
 
         @Override
-        public void describe(Create create, List<Create> nested) {
+        public void describe(Create create, List<SchemaStatement> nested) {
             super.describe(create, nested);
             nested.addAll(pojoBinding.describe(tableName));
         }

@@ -17,8 +17,10 @@
 package com.savoirtech.hecate.pojo.naming.legacy;
 
 import com.savoirtech.hecate.annotation.Table;
+import com.savoirtech.hecate.annotation.UDT;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
+import org.apache.commons.lang3.StringUtils;
 
 public class LegacyNamingStrategy implements NamingStrategy {
 //----------------------------------------------------------------------------------------------------------------------
@@ -40,5 +42,11 @@ public class LegacyNamingStrategy implements NamingStrategy {
     public String getTableName(Class<?> pojoClass) {
         Table table = pojoClass.getAnnotation(Table.class);
         return table != null ? table.value() : pojoClass.getSimpleName();
+    }
+
+    @Override
+    public String getUserTypeName(Facet facet) {
+        UDT udt = facet.getAnnotation(UDT.class);
+        return StringUtils.isEmpty(udt.value()) ? facet.getType().getRawType().getSimpleName() : udt.value();
     }
 }

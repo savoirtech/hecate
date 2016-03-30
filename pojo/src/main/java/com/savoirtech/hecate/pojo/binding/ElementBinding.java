@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.schemabuilder.Create;
+import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 
@@ -42,5 +42,5 @@ public interface ElementBinding {
 
     void verifySchema(KeyspaceMetadata keyspaceMetadata);
 
-    List<Create> describe();
+    List<SchemaStatement> describe();
 }

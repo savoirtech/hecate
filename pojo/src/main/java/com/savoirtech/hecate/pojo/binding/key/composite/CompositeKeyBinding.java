@@ -24,6 +24,7 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
+import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.core.util.CqlUtils;
@@ -161,7 +162,7 @@ public class CompositeKeyBinding extends NestedColumnBinding<KeyComponent> imple
 
 
         @Override
-        public void describe(Create create, List<Create> nested) {
+        public void describe(Create create, List<SchemaStatement> nested) {
             super.describe(create, nested);
             nested.addAll(pojoBinding.describe(tableName));
         }

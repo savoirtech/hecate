@@ -27,6 +27,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
+import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.core.util.CqlUtils;
 import com.savoirtech.hecate.pojo.binding.*;
 import com.savoirtech.hecate.pojo.exception.SchemaVerificationException;
@@ -84,13 +85,13 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
     }
 
     @Override
-    public List<Create> describe(String tableName) {
-        List<Create> creates = new LinkedList<>();
+    public List<SchemaStatement> describe(String tableName) {
+        List<SchemaStatement> statements = new LinkedList<>();
         Create create = SchemaBuilder.createTable(tableName).ifNotExists();
-        creates.add(create);
-        keyBinding.describe(create, creates);
-        facetBindings.forEach(binding -> binding.describe(create, creates));
-        return creates;
+        statements.add(create);
+        keyBinding.describe(create, statements);
+        facetBindings.forEach(binding -> binding.describe(create, statements));
+        return statements;
     }
 
     @Override

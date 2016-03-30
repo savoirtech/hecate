@@ -27,6 +27,7 @@ import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
+import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.pojo.binding.ParameterBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.facet.Facet;
@@ -83,7 +84,7 @@ public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
         }
     }
 
-    public void describe(Create create, List<Create> nested) {
+    public void describe(Create create, List<SchemaStatement> nested) {
         create.addColumn(getColumnName(), getDataType());
     }
 

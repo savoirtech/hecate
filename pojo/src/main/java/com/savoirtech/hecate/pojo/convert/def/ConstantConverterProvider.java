@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.binding.element;
+package com.savoirtech.hecate.pojo.convert.def;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Predicate;
-
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
-import com.savoirtech.hecate.pojo.binding.ElementBinding;
-import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.convert.Converter;
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.query.PojoQueryContext;
+import com.savoirtech.hecate.pojo.convert.ConverterProvider;
 
-public class ScalarElementBinding implements ElementBinding {
+public final class ConstantConverterProvider implements ConverterProvider {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -40,46 +30,27 @@ public class ScalarElementBinding implements ElementBinding {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public ScalarElementBinding(Converter converter) {
+    public ConstantConverterProvider(Converter converter) {
         this.converter = converter;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
-// ElementBinding Implementation
+// ConverterProvider Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public List<SchemaStatement> describe() {
-        return Collections.emptyList();
+    public Class<? extends Converter> converterType() {
+        return converter.getClass();
     }
 
     @Override
-    public DataType getElementDataType() {
-        return converter.getDataType();
+    @SuppressWarnings("unchecked")
+    public Converter createConverter(Class<?> valueType) {
+        return converter;
     }
 
     @Override
-    public Class<?> getElementType() {
+    public Class<?> getValueType() {
         return converter.getValueType();
-    }
-
-    @Override
-    public Object toColumnValue(Object facetElementValue) {
-        return converter.toColumnValue(facetElementValue);
-    }
-
-    @Override
-    public Object toFacetValue(Object columnValue, PojoQueryContext context) {
-        return converter.toFacetValue(columnValue);
-    }
-
-    @Override
-    public void verifySchema(KeyspaceMetadata keyspaceMetadata) {
-        // Do nothing!
-    }
-
-    @Override
-    public void visitChild(Object facetElementValue, Predicate<Facet> predicate, PojoVisitor visitor) {
-        // Do nothing!
     }
 }

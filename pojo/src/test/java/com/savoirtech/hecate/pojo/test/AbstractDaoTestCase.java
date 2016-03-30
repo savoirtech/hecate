@@ -55,7 +55,6 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
                     .withBindingFactory(bindingFactory)
                     .withNamingStrategy(namingStrategy)
                     .withConverterRegistry(converterRegistry)
-                    .withBindingFactory(bindingFactory)
                     .withThreadPoolSize(1)
                     .withListener(new CreateSchemaListener(getSession()))
                     .withListener(new VerifySchemaListener(getSession()))

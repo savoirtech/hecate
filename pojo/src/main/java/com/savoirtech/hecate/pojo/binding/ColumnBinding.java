@@ -25,6 +25,7 @@ import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
+import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 
@@ -35,7 +36,7 @@ public interface ColumnBinding {
 
     void collectParameters(Object pojo, List<Object> parameters);
 
-    void describe(Create create, List<Create> nested);
+    void describe(Create create, List<SchemaStatement> nested);
 
     List<ParameterBinding> getParameterBindings();
 

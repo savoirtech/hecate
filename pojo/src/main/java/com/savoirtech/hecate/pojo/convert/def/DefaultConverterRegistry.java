@@ -139,7 +139,7 @@ public class DefaultConverterRegistry implements ConverterRegistry {
     }
 
     public void registerConverter(Converter converter) {
-        registerConverter(new ConstantProvider(converter));
+        registerConverter(new ConstantConverterProvider(converter));
     }
 
     public void registerConverter(ConverterProvider provider) {
@@ -156,27 +156,4 @@ public class DefaultConverterRegistry implements ConverterRegistry {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static final class ConstantProvider implements ConverterProvider {
-        private final Converter converter;
-
-        private ConstantProvider(Converter converter) {
-            this.converter = converter;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public Converter createConverter(Class<?> valueType) {
-            return converter;
-        }
-
-        @Override
-        public Class<? extends Converter> converterType() {
-            return converter.getClass();
-        }
-
-        @Override
-        public Class<?> getValueType() {
-            return converter.getValueType();
-        }
-    }
 }

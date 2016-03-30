@@ -20,11 +20,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.schemabuilder.Create;
+import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 
@@ -41,7 +44,7 @@ public interface PojoBinding<P> {
 
     P createPojo();
 
-    List<Create> describe(String tableName);
+    List<SchemaStatement> describe(String tableName);
 
     Delete.Where deleteFrom(String tableName);
 
