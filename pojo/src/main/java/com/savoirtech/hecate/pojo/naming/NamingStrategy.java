@@ -26,5 +26,4 @@ public interface NamingStrategy {
     String getColumnName(Facet facet);
     String getReferenceTableName(Facet facet);
     String getTableName(Class<?> pojoClass);
-    String getUserTypeName(Facet facet);
 }
