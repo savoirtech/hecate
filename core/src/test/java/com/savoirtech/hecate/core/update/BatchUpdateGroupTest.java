@@ -18,6 +18,7 @@ package com.savoirtech.hecate.core.update;
 
 import java.util.concurrent.Executors;
 
+import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
@@ -47,7 +48,7 @@ public class BatchUpdateGroupTest extends CassandraTestCase {
 
     @Test
     public void testCompleteAsync() throws Exception {
-        BatchUpdateGroup group = new BatchUpdateGroup(getSession(), Executors.newSingleThreadExecutor());
+        BatchUpdateGroup group = new BatchUpdateGroup(getSession(), BatchStatement.Type.UNLOGGED, Executors.newSingleThreadExecutor());
         group.addUpdate(QueryBuilder.insertInto("foo").value("bar", "baz"));
 
         getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("bar", DataType.varchar()));

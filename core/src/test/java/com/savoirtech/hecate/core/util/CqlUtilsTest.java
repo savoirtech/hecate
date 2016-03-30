@@ -25,9 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.TupleType;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
@@ -40,11 +38,12 @@ import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.test.Cassandra;
 import com.savoirtech.hecate.test.CassandraTestCase;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 
 @Cassandra
 public class CqlUtilsTest extends CassandraTestCase {
@@ -84,8 +83,8 @@ public class CqlUtilsTest extends CassandraTestCase {
         );
 
         getSession().execute(SchemaBuilder.createTable("counter_table").addPartitionKey("id", DataType.varchar()).addColumn("counter_value", DataType.counter()));
-        final Create create = SchemaBuilder.createTable("test_table").addPartitionKey("id", DataType.cint());
-        Insert insert = QueryBuilder.insertInto("test_table").value("id", 123);
+        final Create create = SchemaBuilder.createTable("test_table").addPartitionKey("id", DataType.cint()).addColumn("null_col", DataType.varchar());
+        Insert insert = QueryBuilder.insertInto("test_table").value("id", 123).value("null_col", null);
         for (ImmutablePair<DataType, Object> column : columns) {
             DataType dataType = column.getLeft();
             String columnName = "test_" + dataType.getName();
@@ -106,6 +105,36 @@ public class CqlUtilsTest extends CassandraTestCase {
     @Test
     public void testConstructor() {
         assertUtilsClass(CqlUtils.class);
+    }
+
+    @Test
+    public void testGetNullValue() {
+        List<Object> values = CqlUtils.toList(getSession().execute(select("null_col").from("test_table")).one());
+        assertEquals(1, values.size());
+        assertNull(values.get(0));
+    }
+
+    @Test
+    public void testBind() {
+        Logger.getLogger(CqlUtils.class).setLevel(Level.DEBUG);
+        PreparedStatement ps = getSession().prepare(select("id").from("test_table").where(eq("id", bindMarker())));
+
+        BoundStatement bound = CqlUtils.bind(ps, new Object[]{123});
+        assertEquals(1, getSession().execute(bound).all().size());
+    }
+
+    @Test
+    public void testTupleValueToList() {
+        TupleType tupleType = TupleType.of(
+                DataType.varchar(),
+                DataType.cboolean(),
+                DataType.cint(),
+                DataType.cfloat(),
+                DataType.cdouble());
+        TupleValue tupleValue = tupleType.newValue("foo", false, 123, 123.456f, 234.567);
+        List<Object> values = CqlUtils.toList(tupleValue);
+        assertEquals(Lists.newArrayList("foo", false, 123, 123.456f, 234.567), values);
+
     }
 
     @Test

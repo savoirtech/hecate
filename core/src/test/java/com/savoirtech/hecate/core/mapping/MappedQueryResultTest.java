@@ -55,6 +55,18 @@ public class MappedQueryResultTest extends CassandraTestCase {
     }
 
     @Test
+    public void testIterableOfRows() {
+        withSession(session -> {
+            MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test").all(), row -> row.getString(1));
+            Iterator<String> iterator = resultSet.iterator();
+            assertEquals("one", iterator.next());
+            assertEquals("two", iterator.next());
+            assertEquals("three", iterator.next());
+            assertFalse(iterator.hasNext());
+        });
+    }
+
+    @Test
     public void testList() {
         withSession(session -> {
             MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test"), row -> row.getString(1));
