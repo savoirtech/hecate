@@ -49,7 +49,7 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
     private final FacetProvider facetProvider;
     private final NamingStrategy namingStrategy;
     private final ConverterRegistry converterRegistry;
-    private final Map<Class<?>,DefaultPojoBinding<?>> bindingMap = new HashMap<>();
+    private final Map<Class<?>, DefaultPojoBinding<?>> bindingMap = new HashMap<>();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
@@ -68,10 +68,10 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
     @Override
     @SuppressWarnings("unchecked")
     public synchronized <P> PojoBinding<P> createPojoBinding(Class<P> pojoType) {
-        DefaultPojoBinding<P> binding = (DefaultPojoBinding<P>)bindingMap.get(pojoType);
-        if(binding == null) {
+        DefaultPojoBinding<P> binding = (DefaultPojoBinding<P>) bindingMap.get(pojoType);
+        if (binding == null) {
             binding = new DefaultPojoBinding<>(pojoType);
-            bindingMap.put(pojoType,binding);
+            bindingMap.put(pojoType, binding);
             List<Facet> keyFacets = injectFacetBindings(binding, pojoType);
             injectKeyBinding(binding, pojoType, keyFacets);
         }
@@ -139,10 +139,7 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
     }
 
     private KeyBinding createSimpleKeyBinding(Facet keyFacet) {
-        Converter converter = converterRegistry.getConverter(keyFacet.getType());
-        if (converter == null) {
-            throw new HecateException("No converter found for @PartitionKey facet \"%s\".", keyFacet.getName());
-        }
+        Converter converter = converterRegistry.getRequiredConverter(keyFacet.getType(), "No converter found for @PartitionKey facet \"%s\".", keyFacet.getName());
         return new SimpleKeyBinding(keyFacet, namingStrategy.getColumnName(keyFacet), converter);
     }
 

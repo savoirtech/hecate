@@ -19,29 +19,52 @@ package com.savoirtech.hecate.pojo.convert;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.type.GenericType;
 
+import static com.savoirtech.hecate.core.exception.HecateException.verifyNotNull;
+
 public interface ConverterRegistry {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns a {@link Converter} which can be used for the supplied value type
+     *
+     * @param valueType the value type
+     * @return the converter or null if no converter was found
+     */
     Converter getConverter(Class<?> valueType);
 
+    /**
+     * Returns a {@link Converter} which can be used for the supplied value type
+     *
+     * @param genericType the value type as a {@link GenericType}
+     * @return the converter or null if no converter was found
+     */
     default Converter getConverter(GenericType genericType) {
         return genericType == null ? null : getConverter(genericType.getRawType());
     }
 
-    default Converter getRequiredConverter(Class<?> valueType) {
-        Converter converter = getConverter(valueType);
-        if (converter == null) {
-            throw new HecateException("No converter found for type %s.", valueType == null ? "null" : valueType.getCanonicalName());
-        }
-        return converter;
+    /**
+     * Returns a {@link Converter} which can be used for the supplied value type.  If a converter cannot be found, a
+     * {@link HecateException} is thrown.
+     *
+     * @param valueType the value type
+     * @return the converter
+     * @throws HecateException if no converter is found
+     */
+    default Converter getRequiredConverter(Class<?> valueType, String message, Object... params) {
+        return verifyNotNull(getConverter(valueType), message, params);
     }
 
-    default Converter getRequiredConverter(GenericType genericType) {
-        if (genericType == null) {
-            throw new HecateException("GenericType parameter cannot be null.");
-        }
-        return getRequiredConverter(genericType.getRawType());
+    /**
+     * Returns a {@link Converter} which can be used for the supplied value type.  If a converter cannot be found, a
+     * {@link HecateException} is thrown.
+     *
+     * @param genericType the value type as a {@link GenericType}
+     * @return the converter
+     * @throws HecateException if no converter is found
+     */
+    default Converter getRequiredConverter(GenericType genericType, String message, Object... params) {
+        return getRequiredConverter(verifyNotNull(genericType, "GenericType parameter cannot be null.").getRawType(), message, params);
     }
 }

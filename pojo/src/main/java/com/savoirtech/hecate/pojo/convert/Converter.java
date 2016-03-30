@@ -20,46 +20,32 @@ import com.datastax.driver.core.DataType;
 
 public interface Converter {
 //----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
-
-    Converter NULL_CONVERTER = new NullConverter();
-
-//----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns the {@link DataType} to be used by this converter
+     * @return the data type
+     */
     DataType getDataType();
 
+    /**
+     * Returns the Java value type used by this converter.
+     * @return the value type
+     */
     Class<?> getValueType();
 
+    /**
+     * Converts a facet value to a column value.
+     * @param value the facet value
+     * @return the corresponding column value
+     */
     Object toColumnValue(Object value);
 
+    /**
+     * Converts a column value to a facet value.
+     * @param value the column value
+     * @return the corresponding facet value
+     */
     Object toFacetValue(Object value);
-
-//----------------------------------------------------------------------------------------------------------------------
-// Inner Classes
-//----------------------------------------------------------------------------------------------------------------------
-
-    class NullConverter implements Converter {
-        @Override
-        public Object toFacetValue(Object value) {
-            return null;
-        }
-
-        @Override
-        public DataType getDataType() {
-            return null;
-        }
-
-        @Override
-        public Object toColumnValue(Object value) {
-            return null;
-        }
-
-        @Override
-        public Class<?> getValueType() {
-            return null;
-        }
-    }
 }

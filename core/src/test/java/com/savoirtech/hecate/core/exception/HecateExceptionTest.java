@@ -31,6 +31,21 @@ public class HecateExceptionTest extends Assert {
     }
 
     @Test
+    public void testVerifyNotNul() {
+        assertEquals("foo", HecateException.verifyNotNull("foo", "This is my %s.", "message"));
+    }
+
+    @Test
+    public void testVerifyNotNullWithNull() {
+        try {
+            HecateException.verifyNotNull(null, "This is my %s.", "message");
+            fail();
+        } catch (HecateException e) {
+            assertEquals("This is my message.", e.getMessage());
+        }
+    }
+
+    @Test
     public void testWithNestedException() {
         Exception nested = new IllegalArgumentException("Oops");
         HecateException e = new HecateException(nested, "%s - %s", "foo", "bar");

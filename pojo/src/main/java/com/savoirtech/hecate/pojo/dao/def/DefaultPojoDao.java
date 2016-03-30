@@ -88,12 +88,17 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 
     @Override
     public void delete(P pojo) {
-        delete(StatementOptionsBuilder.empty(), pojo);
+        completeSync(group -> delete(group, StatementOptionsBuilder.empty(), pojo));
     }
 
     @Override
     public void delete(StatementOptions options, P pojo) {
         completeSync(group -> delete(group, options, pojo));
+    }
+
+    @Override
+    public void delete(UpdateGroup group, P pojo) {
+        delete(group, StatementOptionsBuilder.empty(), pojo);
     }
 
     @Override

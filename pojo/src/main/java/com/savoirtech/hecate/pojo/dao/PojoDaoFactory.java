@@ -21,9 +21,31 @@ public interface PojoDaoFactory {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Adds a new {@link PojoDaoFactoryListener} to this factory.
+     *
+     * @param listener the listener
+     * @return this factory
+     */
     PojoDaoFactory addListener(PojoDaoFactoryListener listener);
 
-    <P> PojoDao<P> createPojoDao(Class<P> pojoClass);
+    /**
+     * Creates a {@link PojoDao} for {@link P} objects within the default table name (defined by the {@link com.savoirtech.hecate.pojo.naming.NamingStrategy}
+     *
+     * @param pojoType the POJO type
+     * @param <P>      the POJO type parameter
+     * @return the DAO
+     * @see com.savoirtech.hecate.pojo.naming.NamingStrategy#getTableName(Class)
+     */
+    <P> PojoDao<P> createPojoDao(Class<P> pojoType);
 
-    <P> PojoDao<P> createPojoDao(Class<P> pojoClass, String tableName);
+    /**
+     * Creates a {@link PojoDao} for {@link P} objects in the specified table.
+     *
+     * @param pojoType  the POJO type
+     * @param tableName the table name
+     * @param <P>       the POJO type parameter
+     * @return the DAO
+     */
+    <P> PojoDao<P> createPojoDao(Class<P> pojoType, String tableName);
 }

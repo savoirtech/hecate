@@ -23,7 +23,19 @@ public interface PojoMultiQuery<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Executes a new query using the supplied parameters.
+     *
+     * @param params the parameters
+     * @return this query
+     */
     PojoMultiQuery<P> add(Object... params);
 
+    /**
+     * Returns a {@link MappedQueryResult} which iterates through all {@link P} objects found by all queries executed
+     * by this query.
+     *
+     * @return the query result(s)
+     */
     MappedQueryResult<P> execute();
 }

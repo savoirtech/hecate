@@ -21,33 +21,128 @@ public interface PojoQueryBuilder<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Sorts the query by the facet, ascending.
+     *
+     * @param facetName the facet name
+     * @return this builder
+     */
     PojoQueryBuilder<P> asc(String facetName);
 
+    /**
+     * Builds the query.
+     *
+     * @return the query
+     */
     PojoQuery<P> build();
 
+    /**
+     * Sorts the query by the facet, descending.
+     *
+     * @param facetName the facet name
+     * @return this builder
+     */
     PojoQueryBuilder<P> desc(String facetName);
 
+    /**
+     * Adds a parameterized "=" clause to the query for the facet.
+     *
+     * @param facetName the facet name
+     * @return this builder
+     */
     PojoQueryBuilder<P> eq(String facetName);
 
+    /**
+     * Adds a constant-valued "=" clause to the query for the facet.
+     *
+     * @param facetName the facet name
+     * @param value     the constant value
+     * @return this builder
+     */
     PojoQueryBuilder<P> eq(String facetName, Object value);
 
+    /**
+     * Adds a parameterized ">" clause to the query for the facet.
+     *
+     * @param facetName the facet name
+     * @return this builder
+     */
     PojoQueryBuilder<P> gt(String facetName);
 
+    /**
+     * Adds a constant-valued ">" clause to the query for the facet.
+     *
+     * @param facetName the facet name
+     * @param value     the constant value
+     * @return this builder
+     */
     PojoQueryBuilder<P> gt(String facetName, Object value);
 
+    /**
+     * Adds a parameterized ">=" clause to the query for the facet.
+     *
+     * @param facetName the facet name
+     * @return this builder
+     */
     PojoQueryBuilder<P> gte(String facetName);
 
+    /**
+     * Adds a constant-valued ">=" clause to the query for the facet.
+     *
+     * @param facetName the facet name
+     * @param value     the constant value
+     * @return this builder
+     */
     PojoQueryBuilder<P> gte(String facetName, Object value);
 
+    /**
+     * Adds a parameterized "IN" clause to the query for the facet.
+     *
+     * @param facetName the facet name
+     * @return this builder
+     */
     PojoQueryBuilder<P> in(String facetName);
 
+    /**
+     * Adds a constant-valued "IN" clause to the query for the facet.
+     *
+     * @param facetName the facet name
+     * @param values    the constant value
+     * @return this builder
+     */
     PojoQueryBuilder<P> in(String facetName, Iterable<Object> values);
 
+    /**
+     * Adds a parameterized "<" clause to the query for the facet.
+     *
+     * @param facetName the facet name
+     * @return this builder
+     */
     PojoQueryBuilder<P> lt(String facetName);
 
+    /**
+     * Adds a constant-valued "<" clause to the query for the facet.
+     *
+     * @param facetName the facet name
+     * @param value     the constant value
+     * @return this builder
+     */
     PojoQueryBuilder<P> lt(String facetName, Object value);
 
+    /**
+     * Adds a parameterized "<=" clause to the query for the facet.
+     *
+     * @param facetName the facet name
+     * @return this builder
+     */
     PojoQueryBuilder<P> lte(String facetName);
 
+    /**
+     * Adds a constant-valued "<=" clause to the query for the facet.
+     *
+     * @param facetName the facet name
+     * @param value     the constant value
+     * @return this builder
+     */
     PojoQueryBuilder<P> lte(String facetName, Object value);
 }

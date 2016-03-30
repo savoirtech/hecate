@@ -80,14 +80,14 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
     }
 
     @Override
-    public <P> PojoDao<P> createPojoDao(Class<P> pojoClass) {
-        return createPojoDao(pojoClass, namingStrategy.getTableName(pojoClass));
+    public <P> PojoDao<P> createPojoDao(Class<P> pojoType) {
+        return createPojoDao(pojoType, namingStrategy.getTableName(pojoType));
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <P> PojoDao<P> createPojoDao(Class<P> pojoClass, String tableName) {
-        PojoBinding<P> pojoBinding = bindingFactory.createPojoBinding(pojoClass);
+    public <P> PojoDao<P> createPojoDao(Class<P> pojoType, String tableName) {
+        PojoBinding<P> pojoBinding = bindingFactory.createPojoBinding(pojoType);
         try {
             return (PojoDao<P>) daoCache.getUnchecked(new CacheKey(pojoBinding, tableName));
         } catch (UncheckedExecutionException e) {

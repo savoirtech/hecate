@@ -41,14 +41,26 @@ public class PojoDaoFactoryEvent<P> {
 // Getter/Setter Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns the {@link PojoBinding} object corresponding to the POJO type.
+     * @return the binding
+     */
     public PojoBinding<P> getPojoBinding() {
         return pojoBinding;
     }
 
+    /**
+     * Returns the DAO.
+     * @return the DAO
+     */
     public PojoDao<P> getPojoDao() {
         return pojoDao;
     }
 
+    /**
+     * Returns the table name used by the {@link PojoDao}
+     * @return the table name
+     */
     public String getTableName() {
         return tableName;
     }

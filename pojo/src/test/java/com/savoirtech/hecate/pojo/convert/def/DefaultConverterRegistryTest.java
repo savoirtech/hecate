@@ -16,13 +16,6 @@
 
 package com.savoirtech.hecate.pojo.convert.def;
 
-import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
-import com.savoirtech.hecate.pojo.type.GenericType;
-import com.savoirtech.hecate.pojo.cql.Gender;
-import com.savoirtech.hecate.test.AbstractTestCase;
-import org.junit.Test;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -31,6 +24,13 @@ import java.sql.Connection;
 import java.time.*;
 import java.util.Date;
 import java.util.UUID;
+
+import com.savoirtech.hecate.core.exception.HecateException;
+import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
+import com.savoirtech.hecate.pojo.cql.Gender;
+import com.savoirtech.hecate.pojo.type.GenericType;
+import com.savoirtech.hecate.test.AbstractTestCase;
+import org.junit.Test;
 
 public class DefaultConverterRegistryTest extends AbstractTestCase {
 //----------------------------------------------------------------------------------------------------------------------
@@ -92,34 +92,34 @@ public class DefaultConverterRegistryTest extends AbstractTestCase {
 
     @Test
     public void testGetRequiredConverterByGenericType() throws Exception {
-        GenericType genericType2 = new GenericType(Fields.class, Fields.class.getField("field").getGenericType());
-        registry.getRequiredConverter(genericType2);
+        GenericType type = new GenericType(Fields.class, Fields.class.getField("field").getGenericType());
+        registry.getRequiredConverter(type, "No converter found!");
     }
 
     @Test(expected = HecateException.class)
     public void testGetRequiredConverterByGenericTypeWhenNotFound() throws Exception {
-        GenericType genericType2 = new GenericType(Fields.class, Fields.class.getField("connection").getGenericType());
-        registry.getRequiredConverter(genericType2);
+        GenericType type = new GenericType(Fields.class, Fields.class.getField("connection").getGenericType());
+        registry.getRequiredConverter(type, "No converter found");
     }
 
     @Test
     public void testGetRequiredConverterWhenFound() {
-        assertNotNull(registry.getRequiredConverter(String.class));
+        assertNotNull(registry.getRequiredConverter(String.class, "No converter found"));
     }
 
     @Test(expected = HecateException.class)
     public void testGetRequiredConverterWhenNotFound() {
-        registry.getRequiredConverter(Connection.class);
+        registry.getRequiredConverter(Connection.class, "No converter found");
     }
 
     @Test(expected = HecateException.class)
     public void testGetRequiredConverterWithNullClass() {
-        registry.getRequiredConverter((Class<?>) null);
+        registry.getRequiredConverter((Class<?>) null, "No converter found");
     }
 
     @Test(expected = HecateException.class)
     public void testGetRequiredConverterWithNullGenericType() {
-        registry.getRequiredConverter((GenericType) null);
+        registry.getRequiredConverter((GenericType) null, "No converter found");
     }
 
 //----------------------------------------------------------------------------------------------------------------------

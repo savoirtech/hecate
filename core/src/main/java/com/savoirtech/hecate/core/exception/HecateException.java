@@ -36,4 +36,14 @@ public class HecateException extends RuntimeException {
     public HecateException(Exception cause, String message, Object... args) {
         super(interpolate(message, args), cause);
     }
+
+    public static <T> T verifyNotNull(T object, String message, Object... params) {
+        if(object == null) {
+            throw new HecateException(message, params);
+        }
+        return object;
+    }
+
+
+
 }

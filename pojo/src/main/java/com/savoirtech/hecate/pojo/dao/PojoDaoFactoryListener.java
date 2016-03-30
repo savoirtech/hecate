@@ -21,5 +21,11 @@ public interface PojoDaoFactoryListener {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Called when a {@link PojoDao} is created.
+     *
+     * @param event the event
+     * @param <P>   the POJO type parameter
+     */
     <P> void pojoDaoCreated(PojoDaoFactoryEvent<P> event);
 }

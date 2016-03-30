@@ -19,7 +19,6 @@ package com.savoirtech.hecate.pojo.binding.facet;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.column.NestedColumnBinding;
 import com.savoirtech.hecate.pojo.convert.Converter;
@@ -41,10 +40,7 @@ public class EmbeddedFacetBinding extends NestedColumnBinding<ColumnBinding> imp
         List<ColumnBinding> bindings = new LinkedList<>();
         bindings.add(new SimpleFacetBinding(parent, namingStrategy.getColumnName(parent), new EmbeddedInstanceConverter(parent.getType().getRawType())));
         parent.subFacets(false).stream().forEach(sub -> {
-            Converter converter = converterRegistry.getConverter(sub.getType());
-            if(converter == null) {
-                throw new HecateException("No converter found for facet \"%s\" of type %s.", sub.getName(), sub.getType().getRawType().getCanonicalName());
-            }
+            Converter converter = converterRegistry.getRequiredConverter(sub.getType(), "No converter found for facet \"%s\" of type %s.", sub.getName(), sub.getType().getRawType().getCanonicalName());
             bindings.add(new SimpleFacetBinding(sub, namingStrategy.getColumnName(sub), converter));
         });
         return bindings;
