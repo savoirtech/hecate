@@ -53,14 +53,14 @@ dao.save(person);
 
 ## Retrieving Objects
 
-### Find by key
+### Find by Key
 
 ```Java
 PojoDao<Person> dao = pojoDaoFactory.createPojoDao(Person.class);
 Person person = dao.findByKey("123456789");
 ```
 
-### Find By Ids
+### Find By Keys
 
 ```Java
 PojoDao<Person> dao = pojoDaoFactory.createPojoDao(Person.class);
