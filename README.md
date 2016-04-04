@@ -3,7 +3,7 @@ Hecate
 
 Hecate is a general-purpose utilities library for [Apache Cassandra] (http://cassandra.apache.org/).
 
-Hecate was born from a 2012 [Apache](http://www.apache.org/licenses/LICENSE-2.0)-licensed effort, originally created by
+Hecate was born from a 2012 [Apache](./LICENSE.txt)-licensed effort, originally created by
 Jeff Genender.
 
 At JavaOne 2013, Jeff Geneder and Johan Edstrom presented 
@@ -20,5 +20,10 @@ API for storing Java objects in Cassandra.
 
 It became quite obvious that the future of Cassandra hinged upon the Cassandra Query Language (CQL).  In 2014, Hecate
 was completely rewritten using the [Java Driver for Apache Cassandra](https://github.com/datastax/java-driver).
+
+## The Magic
+
+Hecate is a Greek goddess often associated with magic and witchcraft.  The majority of Hecate's (the library, 
+not the goddess) magic resides in the [POJO](pojo/README.md) library.
 
 
