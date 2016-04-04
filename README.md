@@ -1,25 +1,24 @@
 Hecate
 ======
 
-Hecate came out of an ASF Licensed effort, originally created by Jeff Genender.
+Hecate is a general-purpose utilities library for [Apache Cassandra] (http://cassandra.apache.org/).
+
+Hecate was born from 2012 [Apache](http://www.apache.org/licenses/LICENSE-2.0)-licensed effort, originally created by
+Jeff Genender.
 
 At JavaOne 2013, Jeff Geneder and Johan Edstrom presented 
 [Building a Country on Java Open Source](https://www.youtube.com/watch?v=hMGfEwLwMUc) where they describe Hecate's 
 initial usage.
 
-======
+## The Early Days
 
-This has become a library that we use frequently at http://savoirtech.com as we very rapidly can build
-new data models, index, and search those.
+Originally, Hecate was written using [Hector](http://hector-client.github.io/hector/build/html/index.html).  Hector's 
+API was quite cumbersome for the developer, so Hecate was created to alleviate that burden by providing a simple-to-use 
+API for storing Java objects in Cassandra.
 
-It is a library that has undergone several iterations and heavy load testing.
-In the simplest DAO solution we hold around 5000 req/s against an 8 node VM based cluster.
-(We never got any further than that since the surrounding HW failed)
+## Enter CQL
 
-If you want more of the background on this - https://oracleus.activeevents.com/2013/connect/sessionDetail.ww?SESSION_ID=3674
-
-Since then a CQL mapper and library has been added, still retaining a very simple
-model for quickly building Java applictions without having to worry about Cassandra.
-
+In 2014, it became quite obvious that the future of Cassandra hinged upon the Cassandra Query Language (CQL).  Hecate
+was completely rewritten using the [Java Driver for Apache Cassandra](https://github.com/datastax/java-driver).
 
 
