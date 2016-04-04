@@ -62,7 +62,7 @@ public interface PojoQueryBuilder<P> {
     PojoQueryBuilder<P> eq(String facetName, Object value);
 
     /**
-     * Adds a parameterized ">" clause to the query for the facet.
+     * Adds a parameterized "&gt;" clause to the query for the facet.
      *
      * @param facetName the facet name
      * @return this builder
@@ -70,7 +70,7 @@ public interface PojoQueryBuilder<P> {
     PojoQueryBuilder<P> gt(String facetName);
 
     /**
-     * Adds a constant-valued ">" clause to the query for the facet.
+     * Adds a constant-valued "&gt;" clause to the query for the facet.
      *
      * @param facetName the facet name
      * @param value     the constant value
@@ -79,7 +79,7 @@ public interface PojoQueryBuilder<P> {
     PojoQueryBuilder<P> gt(String facetName, Object value);
 
     /**
-     * Adds a parameterized ">=" clause to the query for the facet.
+     * Adds a parameterized "&gt;=" clause to the query for the facet.
      *
      * @param facetName the facet name
      * @return this builder
@@ -87,7 +87,7 @@ public interface PojoQueryBuilder<P> {
     PojoQueryBuilder<P> gte(String facetName);
 
     /**
-     * Adds a constant-valued ">=" clause to the query for the facet.
+     * Adds a constant-valued "&gt;=" clause to the query for the facet.
      *
      * @param facetName the facet name
      * @param value     the constant value
@@ -113,7 +113,7 @@ public interface PojoQueryBuilder<P> {
     PojoQueryBuilder<P> in(String facetName, Iterable<Object> values);
 
     /**
-     * Adds a parameterized "<" clause to the query for the facet.
+     * Adds a parameterized "&lt;" clause to the query for the facet.
      *
      * @param facetName the facet name
      * @return this builder
@@ -121,7 +121,7 @@ public interface PojoQueryBuilder<P> {
     PojoQueryBuilder<P> lt(String facetName);
 
     /**
-     * Adds a constant-valued "<" clause to the query for the facet.
+     * Adds a constant-valued "&lt;" clause to the query for the facet.
      *
      * @param facetName the facet name
      * @param value     the constant value
@@ -130,7 +130,7 @@ public interface PojoQueryBuilder<P> {
     PojoQueryBuilder<P> lt(String facetName, Object value);
 
     /**
-     * Adds a parameterized "<=" clause to the query for the facet.
+     * Adds a parameterized "&lt;=" clause to the query for the facet.
      *
      * @param facetName the facet name
      * @return this builder
@@ -138,7 +138,7 @@ public interface PojoQueryBuilder<P> {
     PojoQueryBuilder<P> lte(String facetName);
 
     /**
-     * Adds a constant-valued "<=" clause to the query for the facet.
+     * Adds a constant-valued "&lt;=" clause to the query for the facet.
      *
      * @param facetName the facet name
      * @param value     the constant value
