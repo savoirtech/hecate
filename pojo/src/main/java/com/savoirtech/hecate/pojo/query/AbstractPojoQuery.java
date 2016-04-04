@@ -28,6 +28,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
+import com.savoirtech.hecate.core.query.QueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.core.util.CqlUtils;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
@@ -75,7 +76,7 @@ public abstract class AbstractPojoQuery<P> implements PojoQuery<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public MappedQueryResult<P> execute(StatementOptions options, Object... params) {
+    public QueryResult<P> execute(StatementOptions options, Object... params) {
         return multi(options).add(params).execute();
     }
 

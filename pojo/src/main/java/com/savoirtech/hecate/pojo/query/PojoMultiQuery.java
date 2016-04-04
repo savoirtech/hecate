@@ -17,6 +17,7 @@
 package com.savoirtech.hecate.pojo.query;
 
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
+import com.savoirtech.hecate.core.query.QueryResult;
 
 public interface PojoMultiQuery<P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -37,5 +38,5 @@ public interface PojoMultiQuery<P> {
      *
      * @return the query result(s)
      */
-    MappedQueryResult<P> execute();
+    QueryResult<P> execute();
 }

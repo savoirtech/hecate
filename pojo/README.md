@@ -4,10 +4,29 @@ Hecate allows you to perform "CRUD" (create, read, update, and delete) operation
 
 # PojoDao
 
+## A Simple Pojo
+
+For our examples, let's consider a simple "Person" class:
+
+```Java
+public class Person {
+  @PartitionKey
+  private String ssn;
+  
+  private String lastName;
+  private String firstName;
+  
+  // Getters/setters
+}
+```
+
+The @PartitionKey annotation identifies a field as a member of the "partition key" of the table which will be used
+to store Person objects.  The lastName and firstName fields will automatically be persisted.
+
 ## Saving Objects
 
 ```Java
-PojoDao<String,Person> dao = pojoDaoFactory.createPojoDao(Person.class);
+PojoDao<Person> dao = pojoDaoFactory.createPojoDao(Person.class);
 Person person = new Person();
 person.setSsn("123456789");
 person.setFirstName("Super");
@@ -18,14 +37,14 @@ dao.save(person);
 ## Deleting Objects
 
 ```Java
-PojoDao<String,Person> dao = pojoDaoFactory.createPojoDao(Person.class);
+PojoDao<Person> dao = pojoDaoFactory.createPojoDao(Person.class);
 dao.delete("123456789");
 ```
 
 ## Updating Objects
 
 ```Java
-PojoDao<String,Person> dao = pojoDaoFactory.createPojoDao(Person.class);
+PojoDao<Person> dao = pojoDaoFactory.createPojoDao(Person.class);
 Person person = ...;
 
 person.setFirstName("Iron");
@@ -34,26 +53,35 @@ dao.save(person);
 
 ## Retrieving Objects
 
-### Find by Id
+### Find by key
 
 ```Java
-PojoDao<String,Person> dao = pojoDaoFactory.createPojoDao(Person.class);
-Person person = dao.findById("123456789");
+PojoDao<Person> dao = pojoDaoFactory.createPojoDao(Person.class);
+Person person = dao.findByKey("123456789");
 ```
 
 ### Find By Ids
 
 ```Java
-PojoDao<String,Person> dao = pojoDaoFactory.createPojoDao(Person.class);
-QueryResult<Person> people = dao.findByIds(Arrays.asList("123456789", "987654321"));
+PojoDao<Person> dao = pojoDaoFactory.createPojoDao(Person.class);
+PojoMultiQuery<Person> query = dao.findByKeys();
+QueryResult<Person> result = query.add("12345").add("67890").execute();
 ```
 
-### Custom Queries
+### Building Queries
 
 ```Java
-PojoDao<String,Person> dao = pojoDaoFactory.createPojoDao(Person.class);
+PojoDao<Person> dao = pojoDaoFactory.createPojoDao(Person.class);
 PojoQuery<Person> query = dao.find().eq("lastName").build();
 QueryResult<Person> smiths = query.execute("Smith"); 
+```
+
+### Custom Queries (Bring Your Own Where Clause)
+
+```Java
+PojoDao<Person> dao = pojoDaoFactory.createPojoDao(Person.class);
+PojoQuery<Person> query = dao.find(where -> where.and(eq("last_name", bindMarker())));
+QueryResult<Person> smiths = query.execute("Smith");
 ```
 
 ### QueryResult
@@ -70,7 +98,7 @@ List<Person> list = people.list();
 // Iterate through results
 Iterator<Person> iterator = people.iterate();
 
-// Use Java Streams API...
+// Use Java 8 Streams API...
 List<String> lastNames = people.stream().map(Person::getLastName).collect(Collectors.toList());
 
 ```
@@ -81,14 +109,15 @@ Creating a PojoDaoFactory can be as simple as:
 
 ```Java
 Session session = ...;
-PojoDaoFactory factory = new DefaultPojoDaoFactory(session);
+PojoDaoFactory factory = new DefaultPojoDaoFactoryBuilder(session).build();
 ```
 
 This will create a PojoDaoFactory with reasonable default settings.  If you would like Hecate to automatically 
-create the schema for you, you can use a CreateSchemaVerifier:
+create the schema for you, you can use a CreateSchemaListener:
  
  ```Java
  Session session = ...;
- PojoMappingVerifier verifier = new CreateSchemaVerifier(session);
- PojoDaoFactory factory = new DefaultPojoDaoFactory(session, verifier);
+ PojoDaoFactory factory = new DefaultPojoDaoFactoryBuilder(session)
+                                .withListener(new CreateSchemaListener(session))
+                                .build();
  ```
