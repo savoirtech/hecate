@@ -3,7 +3,7 @@ Hecate
 
 Hecate is a general-purpose utilities library for [Apache Cassandra] (http://cassandra.apache.org/).
 
-Hecate was born from 2012 [Apache](http://www.apache.org/licenses/LICENSE-2.0)-licensed effort, originally created by
+Hecate was born from a 2012 [Apache](http://www.apache.org/licenses/LICENSE-2.0)-licensed effort, originally created by
 Jeff Genender.
 
 At JavaOne 2013, Jeff Geneder and Johan Edstrom presented 
@@ -18,7 +18,7 @@ API for storing Java objects in Cassandra.
 
 ## Enter CQL
 
-In 2014, it became quite obvious that the future of Cassandra hinged upon the Cassandra Query Language (CQL).  Hecate
+It became quite obvious that the future of Cassandra hinged upon the Cassandra Query Language (CQL).  In 2014, Hecate
 was completely rewritten using the [Java Driver for Apache Cassandra](https://github.com/datastax/java-driver).
 
 
