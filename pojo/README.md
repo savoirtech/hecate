@@ -1,4 +1,4 @@
-# Hecate POJO Mapping
+# Hecate POJO
 
 Hecate allows you to perform "CRUD" (create, read, update, and delete) operations in Cassandra using Plain 'Ole Java Objects (POJOs)!  
 
@@ -115,9 +115,56 @@ PojoDaoFactory factory = new DefaultPojoDaoFactoryBuilder(session).build();
 This will create a PojoDaoFactory with reasonable default settings.  If you would like Hecate to automatically 
 create the schema for you, you can use a CreateSchemaListener:
  
- ```Java
+```Java
  Session session = ...;
  PojoDaoFactory factory = new DefaultPojoDaoFactoryBuilder(session)
                                 .withListener(new CreateSchemaListener(session))
                                 .build();
- ```
+```
+ 
+# Composite Keys
+ 
+Using "partition keys" and "clustering columns", you can slice and dice your data in various ways in order to make 
+retrieval very efficient.  Hecate's API is designed with composite keys in mind:
+ 
+```Java
+public class Address {
+ 
+  @PartitionKey(order=1)
+  private String country;
+   
+  @PartitionKey(order=2)
+  private String state;
+   
+  @ClusteringColumn
+  private String postalCode;   
+}
+ 
+```
+ 
+Notice the "order" attributes on the @PartitionKey annotations.  We are not guaranteed that the fields will be found
+in the same order they are defined in the source code when asking for them using Java reflection, so we use the order 
+attribute to sort the @PartitionKeys correctly (can be used on @ClusteringColumn also).
+
+## Finding by a Composite Key
+
+Finding an Address by its full composite key is simple:
+
+```Java
+PojoDao<Address> dao = daoFactory.createPojoDao(Address.class);
+Address address = dao.findByKey("US", "CO", "80127");
+```
+
+Here, we pass in the values for the country, state, and postalCode fields.  The keys must be presented in the correct 
+order.
+
+## Finding Objects by Composite Keys
+
+```Java
+PojoDao<Address> dao = daoFactory.createPojoDao(Address.class);
+PojoMultiQuery<Address> query = dao.findByKeys();
+QueryResult<Address> result = query
+                               .add("US", "CO", "80127")
+                               .add("US", "OH", "45030")
+                               .execute();
+```
