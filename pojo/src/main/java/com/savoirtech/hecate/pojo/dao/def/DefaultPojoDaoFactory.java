@@ -43,7 +43,7 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    public static int DEFAULT_THREAD_POOL_SIZE = 5;
+    public static final int DEFAULT_THREAD_POOL_SIZE = 5;
 
     private final Session session;
 
