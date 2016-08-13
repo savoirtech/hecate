@@ -148,7 +148,7 @@ public class DefaultConverterRegistry implements ConverterRegistry {
         providers.put(valueType, provider);
     }
 
-    protected <T> Stream<T> serviceStream(Class<T> serviceClass) {
+    protected final <T> Stream<T> serviceStream(Class<T> serviceClass) {
         return StreamSupport.stream(ServiceLoader.load(serviceClass).spliterator(), false);
     }
 
