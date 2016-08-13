@@ -50,7 +50,7 @@ public class EmbeddedInstanceConverter implements Converter {
 
     @Override
     public Object toColumnValue(Object value) {
-        return true;
+        return Boolean.TRUE;
     }
 
     @Override

@@ -78,7 +78,7 @@ public class DefaultPojoStatementFactory implements PojoStatementFactory {
     private <K, V> LoadingCache<K, V> cacheFor(Function<K, V> fn) {
         return CacheBuilder.newBuilder().build(new CacheLoader<K, V>() {
             @Override
-            public V load(K key) throws Exception {
+            public V load(K key) {
                 return fn.apply(key);
             }
         });

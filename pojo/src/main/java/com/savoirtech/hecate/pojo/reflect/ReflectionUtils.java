@@ -16,16 +16,16 @@
 
 package com.savoirtech.hecate.pojo.reflect;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.function.Function;
+
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.savoirtech.hecate.core.exception.HecateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.function.Function;
 
 public class ReflectionUtils {
 //----------------------------------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ public class ReflectionUtils {
             } catch (NoSuchMethodException e) {
                 Function<Class<?>,Object> fn = unsafeInstantiator.get();
                 if (fn == null) {
-                    throw new HecateException("Unable to instantiate object of type %s (no-arg constructor missing).", pojoClass.getCanonicalName());
+                    throw new HecateException(e, "Unable to instantiate object of type %s (no-arg constructor missing).", pojoClass.getCanonicalName());
                 }
                 return (T) fn.apply(pojoClass);
             }

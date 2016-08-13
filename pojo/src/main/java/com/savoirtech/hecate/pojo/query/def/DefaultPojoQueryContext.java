@@ -82,14 +82,12 @@ public class DefaultPojoQueryContext implements PojoQueryContext {
 //----------------------------------------------------------------------------------------------------------------------
 
     private static class HydratedPojo<P> {
-        private final P pojo;
         private final PojoBinding<P> binding;
         private final String tableName;
         private final List<Object> keys;
         private final ListenableFuture<Boolean> future;
 
-        public HydratedPojo(P pojo, PojoBinding<P> binding, String tableName, List<Object> keys, ListenableFuture<Boolean> future) {
-            this.pojo = pojo;
+        public HydratedPojo(PojoBinding<P> binding, String tableName, List<Object> keys, ListenableFuture<Boolean> future) {
             this.binding = binding;
             this.tableName = tableName;
             this.keys = keys;
@@ -131,12 +129,12 @@ public class DefaultPojoQueryContext implements PojoQueryContext {
             ListenableFuture<Boolean> future = Futures.transform(rsFuture, (Function<ResultSet, Boolean>) resultSet -> {
                 Row row = resultSet.one();
                 if (row == null) {
-                    return false;
+                    return Boolean.FALSE;
                 }
                 binding.injectValues(pojo, row, DefaultPojoQueryContext.this);
-                return true;
+                return Boolean.TRUE;
             }, executor);
-            hydratedQueue.add(new HydratedPojo<>(pojo, binding, tableName, keys, future));
+            hydratedQueue.add(new HydratedPojo<>(binding, tableName, keys, future));
             return pojo;
         }
     }

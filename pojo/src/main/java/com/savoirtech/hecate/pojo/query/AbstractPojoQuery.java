@@ -131,7 +131,7 @@ public abstract class AbstractPojoQuery<P> implements PojoQuery<P> {
                 Iterable<Row> rows = Iterables.concat(Uninterruptibles.getUninterruptibly(Futures.allAsList(futures)));
                 return new MappedQueryResult<>(rows, new PojoQueryRowMapper<>(binding, contextFactory.createPojoQueryContext(executor)));
             } catch (ExecutionException e) {
-                throw new HecateException("A problem occurred while executing one of the queries.", e);
+                throw new HecateException(e, "A problem occurred while executing one of the queries.");
             }
         }
     }

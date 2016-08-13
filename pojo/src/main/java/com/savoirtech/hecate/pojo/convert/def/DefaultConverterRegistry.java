@@ -138,11 +138,11 @@ public class DefaultConverterRegistry implements ConverterRegistry {
         return null;
     }
 
-    public void registerConverter(Converter converter) {
+    public final void registerConverter(Converter converter) {
         registerConverter(new ConstantConverterProvider(converter));
     }
 
-    public void registerConverter(ConverterProvider provider) {
+    public final void registerConverter(ConverterProvider provider) {
         Class<?> valueType = provider.getValueType();
         LOGGER.debug("Adding provider {} -> {}...", valueType.getCanonicalName(), provider.converterType().getCanonicalName());
         providers.put(valueType, provider);
