@@ -78,7 +78,7 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     @Test
     public void testCreate() {
         when(converter.getDataType()).thenReturn(DataType.varchar());
-        assertCreateEquals(binding, "CREATE TABLE foo( id varchar, PRIMARY KEY(id))");
+        assertCreateEquals(binding, "CREATE TABLE IF NOT EXISTS foo( id varchar, PRIMARY KEY(id))");
         verify(converter).getDataType();
     }
 

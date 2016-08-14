@@ -16,13 +16,11 @@
 
 package com.savoirtech.hecate.pojo.binding.element;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Predicate;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
+import com.savoirtech.hecate.core.schema.Schema;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.convert.Converter;
@@ -48,9 +46,10 @@ public class ScalarElementBinding implements ElementBinding {
 // ElementBinding Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
+
     @Override
-    public List<SchemaStatement> describe() {
-        return Collections.emptyList();
+    public void describe(Schema schema) {
+        // Do nothing!
     }
 
     @Override

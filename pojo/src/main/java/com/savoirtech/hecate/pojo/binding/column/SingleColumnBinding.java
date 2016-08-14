@@ -26,8 +26,8 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.schemabuilder.Create;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
+import com.savoirtech.hecate.core.schema.Schema;
+import com.savoirtech.hecate.core.schema.Table;
 import com.savoirtech.hecate.pojo.binding.ParameterBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.facet.Facet;
@@ -72,7 +72,6 @@ public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
 // ColumnBinding Implementation
 //----------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     @SuppressWarnings("unchecked")
     public void collectParameters(Object pojo, List<Object> parameters) {
@@ -84,8 +83,9 @@ public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
         }
     }
 
-    public void describe(Create create, List<SchemaStatement> nested) {
-        create.addColumn(getColumnName(), getDataType());
+    @Override
+    public void describe(Table table, Schema schema) {
+        table.addColumn(getColumnName(), getDataType());
     }
 
     @Override
@@ -163,14 +163,19 @@ public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
 
     private class SingleColumnParameterBinding implements ParameterBinding {
-        @Override
-        public String getFacetName() {
-            return facet.getName();
-        }
+//----------------------------------------------------------------------------------------------------------------------
+// ParameterBinding Implementation
+//----------------------------------------------------------------------------------------------------------------------
+
 
         @Override
         public String getColumnName() {
             return columnName;
+        }
+
+        @Override
+        public String getFacetName() {
+            return facet.getName();
         }
 
         @Override

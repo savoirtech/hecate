@@ -19,6 +19,7 @@ package com.savoirtech.hecate.pojo.dao.def;
 import java.util.concurrent.TimeUnit;
 
 import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.savoirtech.hecate.annotation.Ttl;
 import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
 import com.savoirtech.hecate.core.update.AsyncUpdateGroup;
@@ -224,6 +225,16 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         dao.save(pojo);
         assertNotNull(dao.findByKey(pojo.getId()));
         dao.deleteAsync(StatementOptionsBuilder.retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build(), pojo).get();
+        assertNull(dao.findByKey(pojo.getId()));
+    }
+
+    @Test
+    public void testDeleteWithGroup() throws Exception {
+
+        PojoDao<Person> dao = createPojoDao(Person.class);
+        Person pojo = new Person("Slappy", "White");
+        dao.save(pojo);
+        dao.delete(new AsyncUpdateGroup(cassandraRule.getSession(), MoreExecutors.directExecutor()), pojo);
         assertNull(dao.findByKey(pojo.getId()));
     }
 

@@ -27,7 +27,8 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
+import com.savoirtech.hecate.core.schema.Schema;
+import com.savoirtech.hecate.core.schema.Table;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 
@@ -44,7 +45,7 @@ public interface PojoBinding<P> {
 
     P createPojo();
 
-    List<SchemaStatement> describe(String tableName);
+    void describe(Table table, Schema schema);
 
     Delete.Where deleteFrom(String tableName);
 

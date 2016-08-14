@@ -23,7 +23,8 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
-import com.google.common.collect.Lists;
+import com.datastax.driver.core.schemabuilder.SchemaStatement;
+import com.savoirtech.hecate.core.schema.Schema;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.KeyBinding;
 import org.apache.commons.lang3.StringUtils;
@@ -44,9 +45,10 @@ public class BindingTestCase extends AbstractDaoTestCase {
     }
 
     protected void assertCreateEquals(ColumnBinding binding, String tableName, String cql) {
-        Create create = SchemaBuilder.createTable(tableName);
-        binding.describe(create, Lists.newLinkedList());
-        assertEquals(cql, StringUtils.normalizeSpace(create.getQueryString()));
+        Schema schema = new Schema();
+        binding.describe(schema.createTable(tableName), schema);
+        SchemaStatement statement = schema.items().findFirst().get().createStatement();
+        assertEquals(cql, StringUtils.normalizeSpace(statement.getQueryString()));
     }
 
     protected void assertDeleteEquals(KeyBinding binding, String cql) {

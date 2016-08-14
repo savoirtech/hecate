@@ -29,8 +29,8 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.schemabuilder.Create;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
+import com.savoirtech.hecate.core.schema.Schema;
+import com.savoirtech.hecate.core.schema.Table;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.ParameterBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
@@ -66,8 +66,8 @@ public abstract class NestedColumnBinding<B extends ColumnBinding> extends Abstr
     }
 
     @Override
-    public void describe(Create create, List<SchemaStatement> nested) {
-        forEachBinding(binding -> binding.describe(create, nested));
+    public void describe(Table table, Schema schema) {
+        forEachBinding(binding -> binding.describe(table, schema));
     }
 
     @Override

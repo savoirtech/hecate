@@ -16,20 +16,31 @@
 
 package com.savoirtech.hecate.pojo.binding.def;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.schemabuilder.Create;
-import com.datastax.driver.core.schemabuilder.SchemaBuilder;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
+import com.savoirtech.hecate.core.schema.Schema;
+import com.savoirtech.hecate.core.schema.Table;
 import com.savoirtech.hecate.core.util.CqlUtils;
-import com.savoirtech.hecate.pojo.binding.*;
+import com.savoirtech.hecate.pojo.binding.ColumnBinding;
+import com.savoirtech.hecate.pojo.binding.KeyBinding;
+import com.savoirtech.hecate.pojo.binding.ParameterBinding;
+import com.savoirtech.hecate.pojo.binding.PojoBinding;
+import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.exception.SchemaVerificationException;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
@@ -85,13 +96,9 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
     }
 
     @Override
-    public List<SchemaStatement> describe(String tableName) {
-        List<SchemaStatement> statements = new LinkedList<>();
-        Create create = SchemaBuilder.createTable(tableName).ifNotExists();
-        statements.add(create);
-        keyBinding.describe(create, statements);
-        facetBindings.forEach(binding -> binding.describe(create, statements));
-        return statements;
+    public void describe(Table table, Schema schema) {
+        keyBinding.describe(table, schema);
+        facetBindings.forEach(binding -> binding.describe(table, schema));
     }
 
     @Override

@@ -14,32 +14,33 @@
  * limitations under the License.
  */
 
-package com.savoirtech.hecate.pojo.binding;
+package com.savoirtech.hecate.core.schema;
 
-import java.util.function.Predicate;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Stream;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.savoirtech.hecate.core.schema.Schema;
-import com.savoirtech.hecate.pojo.facet.Facet;
-import com.savoirtech.hecate.pojo.query.PojoQueryContext;
+public class Schema {
+//----------------------------------------------------------------------------------------------------------------------
+// Fields
+//----------------------------------------------------------------------------------------------------------------------
 
-public interface ElementBinding {
+    private final List<SchemaItem> schemaItems = new LinkedList<>();
+
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    DataType getElementDataType();
+    public Stream<SchemaItem> items() {
+        return schemaItems.stream();
+    }
 
-    Class<?> getElementType();
+    public Table createTable(String tableName) {
+        return withSchemaItem(new Table(tableName));
+    }
 
-    Object toColumnValue(Object facetElementValue);
-
-    Object toFacetValue(Object columnValue, PojoQueryContext context);
-
-    void visitChild(Object facetElementValue, Predicate<Facet> predicate, PojoVisitor visitor);
-
-    void verifySchema(KeyspaceMetadata keyspaceMetadata);
-
-    void describe(Schema schema);
+    private <T extends SchemaItem> T withSchemaItem(T item) {
+        schemaItems.add(item);
+        return item;
+    }
 }

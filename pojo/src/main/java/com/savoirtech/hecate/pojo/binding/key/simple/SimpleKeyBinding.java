@@ -27,9 +27,9 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.schemabuilder.Create;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.annotation.PartitionKey;
+import com.savoirtech.hecate.core.schema.Schema;
+import com.savoirtech.hecate.core.schema.Table;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.KeyBinding;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
@@ -60,8 +60,8 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void describe(Create create, List<SchemaStatement> nested) {
-        create.addPartitionKey(getColumnName(), getConverter().getDataType());
+    public void describe(Table table, Schema schema) {
+        table.addPartitionKey(getColumnName(), getConverter().getDataType());
     }
 
     @Override
@@ -146,9 +146,9 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
 //----------------------------------------------------------------------------------------------------------------------
 
         @Override
-        public void describe(Create create, List<SchemaStatement> nested) {
-            create.addClusteringColumn(getColumnName(), getConverter().getDataType());
-            nested.addAll(getPojoBinding().describe(getTableName()));
+        public void describe(Table table, Schema schema) {
+            table.addClusteringColumn(getColumnName(), getConverter().getDataType());
+            getPojoBinding().describe(schema.createTable(getTableName()), schema);
         }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -204,9 +204,9 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
 //----------------------------------------------------------------------------------------------------------------------
 
         @Override
-        public void describe(Create create, List<SchemaStatement> nested) {
-            super.describe(create, nested);
-            nested.addAll(pojoBinding.describe(tableName));
+        public void describe(Table table, Schema schema) {
+            super.describe(table, schema);
+            pojoBinding.describe(schema.createTable(tableName), schema);
         }
 
         @Override

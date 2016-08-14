@@ -103,7 +103,7 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
     @SuppressWarnings("unchecked")
     private PojoDao<?> createPojoDaoInternal(CacheKey cacheKey) {
         DefaultPojoDao<?> dao = new DefaultPojoDao<>(session, cacheKey.getBinding(), cacheKey.getTableName(), statementFactory, contextFactory, executor);
-        listeners.stream().forEach(listener -> listener.pojoDaoCreated(new PojoDaoFactoryEvent<>((PojoDao<Object>) dao, (PojoBinding<Object>) cacheKey.getBinding(), cacheKey.getTableName())));
+        listeners.forEach(listener -> listener.pojoDaoCreated(new PojoDaoFactoryEvent<>((PojoDao<Object>) dao, (PojoBinding<Object>) cacheKey.getBinding(), cacheKey.getTableName())));
         return dao;
     }
 }

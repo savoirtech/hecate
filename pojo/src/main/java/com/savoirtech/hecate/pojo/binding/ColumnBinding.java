@@ -24,8 +24,8 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.schemabuilder.Create;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
+import com.savoirtech.hecate.core.schema.Schema;
+import com.savoirtech.hecate.core.schema.Table;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 
@@ -36,7 +36,7 @@ public interface ColumnBinding {
 
     void collectParameters(Object pojo, List<Object> parameters);
 
-    void describe(Create create, List<SchemaStatement> nested);
+    void describe(Table table, Schema schema);
 
     List<ParameterBinding> getParameterBindings();
 

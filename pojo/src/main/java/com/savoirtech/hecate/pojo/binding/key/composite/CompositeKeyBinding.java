@@ -16,19 +16,31 @@
 
 package com.savoirtech.hecate.pojo.binding.key.composite;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.TupleType;
+import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.schemabuilder.Create;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.exception.HecateException;
+import com.savoirtech.hecate.core.schema.Schema;
+import com.savoirtech.hecate.core.schema.Table;
 import com.savoirtech.hecate.core.util.CqlUtils;
-import com.savoirtech.hecate.pojo.binding.*;
+import com.savoirtech.hecate.pojo.binding.ColumnBinding;
+import com.savoirtech.hecate.pojo.binding.KeyBinding;
+import com.savoirtech.hecate.pojo.binding.PojoBinding;
+import com.savoirtech.hecate.pojo.binding.PojoBindingFactory;
+import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.binding.column.NestedColumnBinding;
 import com.savoirtech.hecate.pojo.binding.key.component.ClusteringColumnComponent;
 import com.savoirtech.hecate.pojo.binding.key.component.KeyComponent;
@@ -162,9 +174,9 @@ public class CompositeKeyBinding extends NestedColumnBinding<KeyComponent> imple
 
 
         @Override
-        public void describe(Create create, List<SchemaStatement> nested) {
-            super.describe(create, nested);
-            nested.addAll(pojoBinding.describe(tableName));
+        public void describe(Table table, Schema schema) {
+            super.describe(table, schema);
+            pojoBinding.describe(schema.createTable(tableName), schema);
         }
 
         @Override

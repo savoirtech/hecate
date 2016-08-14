@@ -56,7 +56,7 @@ public class CompositeKeyBindingTest extends BindingTestCase {
 
     @Test
     public void testCreate() {
-        assertCreateEquals(binding, "CREATE TABLE foo( pk varchar, cluster varchar, PRIMARY KEY(pk, cluster))");
+        assertCreateEquals(binding, "CREATE TABLE IF NOT EXISTS foo( pk varchar, cluster varchar, PRIMARY KEY(pk, cluster))");
     }
 
     @Test
