@@ -19,7 +19,7 @@
     <parent>
         <artifactId>hecate-karaf-parent</artifactId>
         <groupId>com.savoirtech.hecate</groupId>
-        <version>3.0.0.Beta2-SNAPSHOT</version>
+        <version>3.0.0.Beta2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -32,13 +32,13 @@
         <dependency>
             <groupId>com.savoirtech.hecate</groupId>
             <artifactId>hecate-karaf</artifactId>
-            <version>3.0.0.Beta2-SNAPSHOT</version>
+            <version>3.0.0.Beta2</version>
         </dependency>
 
         <dependency>
             <groupId>com.savoirtech.hecate</groupId>
             <artifactId>hecate-test</artifactId>
-            <version>3.0.0.Beta2-SNAPSHOT</version>
+            <version>3.0.0.Beta2</version>
             <scope>test</scope>
         </dependency>
 
