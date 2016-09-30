@@ -103,8 +103,10 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 
     @Override
     public void delete(UpdateGroup group, StatementOptions options, P pojo) {
-        deletePojo(pojo, binding, tableName, group, options);
-        binding.visitChildren(pojo, Facet::isCascadeDelete, new DeleteVisitor(group, options));
+        if (pojo != null) {
+            deletePojo(pojo, binding, tableName, group, options);
+            binding.visitChildren(pojo, Facet::isCascadeDelete, new DeleteVisitor(group, options));
+        }
     }
 
     @Override

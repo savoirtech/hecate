@@ -199,6 +199,12 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     }
 
     @Test
+    public void testDeleteNullPojo() {
+        PojoDao<Person> dao = createPojoDao(Person.class);
+        dao.delete(null);
+    }
+
+    @Test
     public void testDeletePojoWithOptions() {
         PojoDao<Person> dao = createPojoDao(Person.class);
         Person pojo = new Person("Slappy", "White");
@@ -246,6 +252,12 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         assertNotNull(dao.findByKey(pojo.getId()));
         dao.deleteByKey(pojo.getId());
         assertNull(dao.findByKey(pojo.getId()));
+    }
+
+    @Test
+    public void testDeletePojoByKeyWhenNotFound() {
+        PojoDao<Person> dao = createPojoDao(Person.class);
+        dao.deleteByKey("bogus");
     }
 
     @Test
