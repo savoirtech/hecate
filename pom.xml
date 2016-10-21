@@ -90,7 +90,7 @@
         <commons-collections-version>3.2.1</commons-collections-version>
         <commons-collections4-version>4.0</commons-collections4-version>
         <commons-lang-version>2.6</commons-lang-version>
-        <commons-lang3-version>3.1</commons-lang3-version>
+        <commons-lang3-version>3.4</commons-lang3-version>
 
         <commons-pool-version>1.6</commons-pool-version>
         <concurrentLinkedHashMap-version>1.4</concurrentLinkedHashMap-version>
@@ -99,7 +99,7 @@
         <!-- https://github.com/hector-client/hector/commit/47617b183c5ae28f0e8ce800ac1d86b6625c69b6 -->
         <guava-version>13.0.1</guava-version>
 
-        <datastax-driver-version>2.0.1</datastax-driver-version>
+        <datastax-driver-version>2.1.7.1</datastax-driver-version>
         <hectorcore-version>1.1-4</hectorcore-version>
         <httpclient-version>4.2.3</httpclient-version>
         <httpcore-version>4.2.3</httpcore-version>
