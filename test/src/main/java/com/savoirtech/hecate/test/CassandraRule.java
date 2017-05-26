@@ -57,7 +57,7 @@ public class CassandraRule implements MethodRule {
 //----------------------------------------------------------------------------------------------------------------------
 
     public Session getSession() {
-        if(session == null) {
+        if (session == null) {
             throw new IllegalStateException("Method " + currentMethod.getName() + "() not @Cassandra-annotated, Cassandra Session not available.");
         }
         return session;
@@ -97,18 +97,21 @@ public class CassandraRule implements MethodRule {
             EmbeddedCassandraServerHelper.startEmbeddedCassandra(cassandra.timeout());
             EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
             Cluster cluster = Cluster.builder().addContactPoint("localhost").withPort(cassandra.port()).build();
-            try(Session tempSession = cluster.newSession()) {
-                logger.debug("Creating keyspace {}...", cassandra.keyspace());
+            try (Session tempSession = cluster.newSession()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Creating keyspace {}...", cassandra.keyspace());
+                }
                 tempSession.execute(String.format("CREATE KEYSPACE IF NOT EXISTS %s WITH replication = {'class':'SimpleStrategy', 'replication_factor':1};", cassandra.keyspace()));
-                logger.debug("Keyspace {} created successfully.", cassandra.keyspace());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Keyspace {} created successfully.", cassandra.keyspace());
+                }
             }
             session = cluster.connect(cassandra.keyspace());
             try {
                 final long before = System.currentTimeMillis();
                 inner.evaluate();
                 logger.debug("{}(): {} ms", method.getName(), System.currentTimeMillis() - before);
-            }
-            finally {
+            } finally {
                 logger.debug("Closing session...");
                 session.close();
                 logger.debug("Closing cluster...");
