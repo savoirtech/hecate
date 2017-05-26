@@ -1,21 +1,24 @@
 language: java
 jdk:
-  - oraclejdk8
+- oraclejdk8
 sudo: false
 install: true
 addons:
   sonarqube:
     branches:
-      - hecate-3.0.x
-    organization: "savoir-technologies"
+    - hecate-3.0.x
+    organization: savoir-technologies
     token:
-      secure: "mxdHskXTAgKPfbnWo2v3R434QWnf5IzqxyzrBzIYsTFVSX2iBMzWD4poLhj66t3QXwfLbppaCM/RZ4pZ5GHiYnaI0mNzlXVYIBRUZ9H2N+VP6VgUxUDF4Q3ClBnse+7jvbjux/EMR/0CAQjIlyhahRNJ9CdkoAToDDz2JKL+EPc="
+      secure: mxdHskXTAgKPfbnWo2v3R434QWnf5IzqxyzrBzIYsTFVSX2iBMzWD4poLhj66t3QXwfLbppaCM/RZ4pZ5GHiYnaI0mNzlXVYIBRUZ9H2N+VP6VgUxUDF4Q3ClBnse+7jvbjux/EMR/0CAQjIlyhahRNJ9CdkoAToDDz2JKL+EPc=
   apt:
     packages:
-      - oracle-java8-installer
+    - oracle-java8-installer
 script:
-  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
+- mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
 cache:
   directories:
-    - '$HOME/.m2/repository'
-    - '$HOME/.sonar/cache'
+  - "$HOME/.m2/repository"
+  - "$HOME/.sonar/cache"
+notifications:
+  slack:
+    secure: CPiiRaS7Q/z0X5BLcD0ttBGLi1B1tN+7q+eeagr9ePaajPr8VuedoaEmY2Flu4ty9LIMl7EmSrCyataAu45UsHaV3Jh3JjykzeTqz7t1Lcn9MTqOxugIulEV7zwriAhB/K8C+x6MkvFLohh9enXKXczZnsk+mbg8neAmso9RRug=
