@@ -5,6 +5,8 @@ sudo: false
 install: true
 addons:
   sonarqube:
+    branches:
+      - hecate-3.0.x
     organization: "savoir-technologies"
     token:
       secure: "mxdHskXTAgKPfbnWo2v3R434QWnf5IzqxyzrBzIYsTFVSX2iBMzWD4poLhj66t3QXwfLbppaCM/RZ4pZ5GHiYnaI0mNzlXVYIBRUZ9H2N+VP6VgUxUDF4Q3ClBnse+7jvbjux/EMR/0CAQjIlyhahRNJ9CdkoAToDDz2JKL+EPc="
