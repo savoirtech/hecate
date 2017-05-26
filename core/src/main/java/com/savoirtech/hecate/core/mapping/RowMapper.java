@@ -27,6 +27,6 @@ public interface RowMapper<T> {
     T map(Row row);
 
     default void mappingComplete() {
-        // Do nothing;
+
     }
 }

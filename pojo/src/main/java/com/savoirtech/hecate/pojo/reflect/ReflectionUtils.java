@@ -41,13 +41,7 @@ public class ReflectionUtils {
             f.setAccessible(true);
             final Object unsafe = f.get(null);
             final Method allocateInstance = unsafeClass.getMethod("allocateInstance", Class.class);
-            return (type) -> {
-                try {
-                    return allocateInstance.invoke(unsafe, type);
-                } catch (ReflectiveOperationException e) {
-                    throw new HecateException(e, "Unable to allocate %s instance.", type.getCanonicalName());
-                }
-            };
+            return type -> invokeAllocateInstance(unsafe, allocateInstance, type);
         } catch (ReflectiveOperationException e) {
             LOGGER.warn("Unable to use sun.misc.Unsafe class to instantiate objects!", e);
             return null;
@@ -58,20 +52,32 @@ public class ReflectionUtils {
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    private static <T> T instantiate(Class<T> pojoClass) throws InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
+        try {
+            Constructor<T> constructor = pojoClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (NoSuchMethodException e) {
+            Function<Class<?>,Object> fn = unsafeInstantiator.get();
+            if (fn == null) {
+                throw new HecateException(e, "Unable to instantiate object of type %s (no-arg constructor missing).", pojoClass.getCanonicalName());
+            }
+            return (T) fn.apply(pojoClass);
+        }
+    }
+
+    private static Object invokeAllocateInstance(Object unsafe, Method allocateInstance, Class<?> type) {
+        try {
+            return allocateInstance.invoke(unsafe, type);
+        } catch (ReflectiveOperationException e) {
+            throw new HecateException(e, "Unable to allocate %s instance.", type.getCanonicalName());
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> T newInstance(Class<T> pojoClass) {
         try {
-            try {
-                Constructor<T> constructor = pojoClass.getDeclaredConstructor();
-                constructor.setAccessible(true);
-                return constructor.newInstance();
-            } catch (NoSuchMethodException e) {
-                Function<Class<?>,Object> fn = unsafeInstantiator.get();
-                if (fn == null) {
-                    throw new HecateException(e, "Unable to instantiate object of type %s (no-arg constructor missing).", pojoClass.getCanonicalName());
-                }
-                return (T) fn.apply(pojoClass);
-            }
+            return instantiate(pojoClass);
         } catch (ReflectiveOperationException e) {
             throw new HecateException(e, "Unable to instantiate object of type %s.", pojoClass.getCanonicalName());
         }

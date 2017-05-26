@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -209,7 +210,7 @@ public class CompositeKeyBinding extends NestedColumnBinding<KeyComponent> imple
 //----------------------------------------------------------------------------------------------------------------------
 
         private boolean isNull(List<Object> keys) {
-            Optional<Object> nonNull = keys.stream().filter(key -> key != null).findFirst();
+            Optional<Object> nonNull = keys.stream().filter(Objects::nonNull).findFirst();
             return !nonNull.isPresent();
         }
 

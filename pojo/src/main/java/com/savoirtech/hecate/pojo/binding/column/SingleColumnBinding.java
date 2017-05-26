@@ -32,8 +32,6 @@ import com.savoirtech.hecate.pojo.binding.ParameterBinding;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 
@@ -41,8 +39,6 @@ public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SingleColumnBinding.class);
 
     private final Facet facet;
     private final String columnName;
@@ -166,7 +162,6 @@ public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
 // ParameterBinding Implementation
 //----------------------------------------------------------------------------------------------------------------------
-
 
         @Override
         public String getColumnName() {

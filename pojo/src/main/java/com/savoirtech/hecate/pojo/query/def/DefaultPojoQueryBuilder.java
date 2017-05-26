@@ -60,7 +60,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     private static List<Object> convertToList(ParameterBinding binding, Iterable<?> params) {
-        return StreamSupport.stream(((Iterable<?>) params).spliterator(), false).map(binding::toColumnValue).collect(Collectors.toList());
+        return StreamSupport.stream(params.spliterator(), false).map(binding::toColumnValue).collect(Collectors.toList());
     }
 
 //----------------------------------------------------------------------------------------------------------------------

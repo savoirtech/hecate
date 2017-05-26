@@ -81,9 +81,9 @@ public class DefaultPojoDaoFactoryBuilder {
             contextFactory = new DefaultPojoQueryContextFactory(session, statementFactory, maximumCacheSize);
         }
         if(converterRegistry == null) {
-            DefaultConverterRegistry converterRegistry = new DefaultConverterRegistry();
-            converterProviders.forEach(converterRegistry::registerConverter);
-            this.converterRegistry = converterRegistry;
+            DefaultConverterRegistry reg = new DefaultConverterRegistry();
+            converterProviders.forEach(reg::registerConverter);
+            this.converterRegistry = reg;
         }
         if(bindingFactory == null) {
             bindingFactory = new DefaultPojoBindingFactory(facetProvider, converterRegistry, namingStrategy);

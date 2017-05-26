@@ -104,7 +104,7 @@ public class DefaultPojoBindingFactory implements PojoBindingFactory {
                     }
                     binding.addFacetBinding(new MapFacetBinding(facet, columnName, keyConverter, createElementBinding(facet, facetType.getMapValueType())));
                 } else if (facetType.isArray()) {
-                    binding.addFacetBinding(new ArrayFacetBinding<>(facet, columnName, createElementBinding(facet, facetType.getArrayElementType())));
+                    binding.addFacetBinding(new ArrayFacetBinding(facet, columnName, createElementBinding(facet, facetType.getArrayElementType())));
                 } else if (facet.hasAnnotation(Embedded.class)) {
                     binding.addFacetBinding(new EmbeddedFacetBinding(facet, converterRegistry, namingStrategy));
                 } else {

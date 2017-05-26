@@ -54,7 +54,9 @@ public class CreateSchemaListener implements PojoDaoFactoryListener {
         Schema schema = new Schema();
         event.getPojoBinding().describe(schema.createTable(event.getTableName()), schema);
         List<SchemaStatement> statements = schema.items().map(SchemaItem::createStatement).collect(Collectors.toList());
-        LOGGER.info("Creating table(s) to support \"{}\":\n\t{}\n", event.getPojoBinding().getPojoType().getSimpleName(), statements.stream().map(SchemaStatement::getQueryString).collect(Collectors.joining("\n\t")));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Creating table(s) to support \"{}\":\n\t{}\n", event.getPojoBinding().getPojoType().getSimpleName(), statements.stream().map(SchemaStatement::getQueryString).collect(Collectors.joining("\n\t")));
+        }
         statements.forEach(session::execute);
     }
 }

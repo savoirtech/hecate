@@ -26,15 +26,11 @@ import com.savoirtech.hecate.pojo.facet.SubFacet;
 import com.savoirtech.hecate.pojo.facet.reflect.ReflectionFacet;
 import com.savoirtech.hecate.pojo.type.GenericType;
 import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class FieldFacet extends ReflectionFacet {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FieldFacet.class);
 
     private final Field field;
     private final GenericType type;

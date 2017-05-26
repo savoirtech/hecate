@@ -48,7 +48,7 @@ public class IdempotentCreateSchemaListener implements PojoDaoFactoryListener {
     public static final String DEFAULT_TABLE_NAME = "hecate_schema_idempotency";
     public static final String KEY = "key";
     public static final String CLAIM_ID_COL = "claim_id";
-    private static Logger LOGGER = LoggerFactory.getLogger(IdempotentCreateSchemaListener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IdempotentCreateSchemaListener.class);
     private final Session session;
     private final PreparedStatement insertStatement;
     private final PreparedStatement selectStatement;

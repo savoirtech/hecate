@@ -27,7 +27,7 @@ import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 
-public class ArrayFacetBinding<C,F> extends OneToManyFacetBinding<List<Object>,Object> {
+public class ArrayFacetBinding extends OneToManyFacetBinding<List<Object>, Object> {
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ public class ArrayFacetBinding<C,F> extends OneToManyFacetBinding<List<Object>,O
         final List<Object> list = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
             final Object elementValue = Array.get(facetValue, i);
-            if(elementValue == null) {
+            if (elementValue == null) {
                 throw new HecateException("Cassandra driver does not support null values inside %s collections.", getDataType());
             }
             list.add(getElementBinding().toColumnValue(elementValue));
