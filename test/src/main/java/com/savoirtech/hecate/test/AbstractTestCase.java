@@ -41,14 +41,18 @@ public class AbstractTestCase extends Assert {
         try {
             ctor = c.getDeclaredConstructor();
             assertTrue(Modifier.isPrivate(ctor.getModifiers()));
-            ctor.setAccessible(true);
-            try {
-                ctor.newInstance();
-            } catch (ReflectiveOperationException e) {
-                fail("Unable to instantiate!");
-            }
+            assertInstantiatable(ctor);
         } catch (NoSuchMethodException e) {
             fail("No default constructor defined for class " + c.getCanonicalName());
+        }
+    }
+
+    private void assertInstantiatable(Constructor ctor) {
+        ctor.setAccessible(true);
+        try {
+            ctor.newInstance();
+        } catch (ReflectiveOperationException e) {
+            fail("Unable to instantiate!");
         }
     }
 
