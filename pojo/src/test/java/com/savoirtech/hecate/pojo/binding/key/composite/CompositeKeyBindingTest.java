@@ -17,15 +17,11 @@
 package com.savoirtech.hecate.pojo.binding.key.composite;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.BindingTestCase;
 import com.savoirtech.hecate.test.Cassandra;
@@ -65,50 +61,10 @@ public class CompositeKeyBindingTest extends BindingTestCase {
     }
 
     @Test
-    @Cassandra
-    public void testElementReference() {
-        PojoDao<ReferencingElementEntity> dao = createPojoDao(ReferencingElementEntity.class);
-        ReferencingElementEntity entity = new ReferencingElementEntity();
-        CompositeKeyEntity ref1 = new CompositeKeyEntity("1", "2");
-        CompositeKeyEntity ref2 = new CompositeKeyEntity("1", "3");
-        entity.setRefs(Lists.newArrayList(ref1, ref2));
-
-        dao.save(entity);
-
-        ReferencingElementEntity found = dao.findByKey(entity.getId());
-        assertEquals(Arrays.asList(ref1, ref2), found.getRefs());
-    }
-
-    @Test
     public void testInsert() {
-        assertInsertEquals(binding, "INSERT INTO foo(pk,cluster) VALUES (?,?);");
+        assertInsertEquals(binding, "INSERT INTO foo (pk,cluster) VALUES (?,?);");
     }
 
-    @Test
-    @Cassandra
-    public void testReferenceFacet() {
-        PojoDao<ReferencingEntity> dao = createPojoDao(ReferencingEntity.class);
-        ReferencingEntity entity = new ReferencingEntity();
-        CompositeKeyEntity ref = new CompositeKeyEntity("1", "2");
-        entity.setRef(ref);
-        dao.save(entity);
-
-        ReferencingEntity found = dao.findByKey(entity.getId());
-        assertEquals(entity, found);
-        assertNotNull(found.getRef());
-    }
-
-    @Test
-    @Cassandra
-    public void testReferenceFacetWithNullReference() {
-        PojoDao<ReferencingEntity> dao = createPojoDao(ReferencingEntity.class);
-        ReferencingEntity entity = new ReferencingEntity();
-        dao.save(entity);
-
-        ReferencingEntity found = dao.findByKey(entity.getId());
-        assertEquals(entity, found);
-        assertNull(found.getRef());
-    }
 
     @Test
     public void testSelect() {
@@ -225,43 +181,5 @@ public class CompositeKeyBindingTest extends BindingTestCase {
         private String cluster;
     }
 
-    public static class ReferencingElementEntity extends UuidEntity {
-//----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
 
-        private List<CompositeKeyEntity> refs = new LinkedList<>();
-
-//----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-        public List<CompositeKeyEntity> getRefs() {
-            return refs;
-        }
-
-        public void setRefs(List<CompositeKeyEntity> refs) {
-            this.refs = refs;
-        }
-    }
-
-    public static class ReferencingEntity extends UuidEntity {
-//----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
-
-        private CompositeKeyEntity ref;
-
-//----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-        public CompositeKeyEntity getRef() {
-            return ref;
-        }
-
-        public void setRef(CompositeKeyEntity ref) {
-            this.ref = ref;
-        }
-    }
 }

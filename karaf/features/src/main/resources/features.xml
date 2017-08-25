@@ -27,7 +27,11 @@
 
     <feature name="hecate-core" version="${project.version}">
         <bundle>mvn:com.datastax.cassandra/cassandra-driver-core/${cassandra.driver.version}</bundle>
-        <bundle>mvn:io.netty/netty/${netty.version}</bundle>
+        <bundle>mvn:io.netty/netty-buffer/${netty.version}</bundle>
+        <bundle>mvn:io.netty/netty-codec/${netty.version}</bundle>
+        <bundle>mvn:io.netty/netty-common/${netty.version}</bundle>
+        <bundle>mvn:io.netty/netty-handler/${netty.version}</bundle>
+        <bundle>mvn:io.netty/netty-transport/${netty.version}</bundle>
         <bundle>mvn:io.dropwizard.metrics/metrics-core/${metrics.version}</bundle>
         <bundle>mvn:com.savoirtech.hecate/hecate-core/${project.version}</bundle>
     </feature>

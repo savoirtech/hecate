@@ -63,6 +63,8 @@ public class DefaultConverterRegistry implements ConverterRegistry {
         registerConverter(NativeConverter.BOOLEAN_TYPE);
         registerConverter(NativeConverter.BIG_DECIMAL);
         registerConverter(NativeConverter.BIG_INTEGER);
+        registerConverter(NativeConverter.BYTE);
+        registerConverter(NativeConverter.BYTE_TYPE);
         registerConverter(NativeConverter.DATE);
         registerConverter(NativeConverter.DOUBLE);
         registerConverter(NativeConverter.DOUBLE_TYPE);
@@ -73,7 +75,10 @@ public class DefaultConverterRegistry implements ConverterRegistry {
         registerConverter(NativeConverter.INTEGER_TYPE);
         registerConverter(NativeConverter.LONG);
         registerConverter(NativeConverter.LONG_TYPE);
+        registerConverter(NativeConverter.SHORT);
+        registerConverter(NativeConverter.SHORT_TYPE);
         registerConverter(NativeConverter.STRING);
+        registerConverter(NativeConverter.TIMESTAMP);
         registerConverter(NativeConverter.UUID);
         registerConverter(NativeConverter.BLOB);
 

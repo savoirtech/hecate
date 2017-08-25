@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.util.Date;
 
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.LocalDate;
 
 public final class NativeConverter implements Converter {
 //----------------------------------------------------------------------------------------------------------------------
@@ -32,7 +33,9 @@ public final class NativeConverter implements Converter {
     public static final Converter BOOLEAN = new NativeConverter(Boolean.class, DataType.cboolean());
     public static final Converter BOOLEAN_TYPE = new NativeConverter(Boolean.TYPE, DataType.cboolean(), Boolean.FALSE);
 
-    public static final Converter DATE = new NativeConverter(Date.class, DataType.timestamp());
+    public static final Converter DATE = new NativeConverter(LocalDate.class, DataType.date());
+
+    public static final Converter TIMESTAMP = new NativeConverter(Date.class, DataType.timestamp());
 
     public static final Converter DOUBLE = new NativeConverter(Double.class, DataType.cdouble());
     public static final Converter DOUBLE_TYPE = new NativeConverter(Double.TYPE, DataType.cdouble(), 0.0);
@@ -45,6 +48,12 @@ public final class NativeConverter implements Converter {
 
     public static final Converter LONG = new NativeConverter(Long.class, DataType.bigint());
     public static final Converter LONG_TYPE = new NativeConverter(Long.TYPE, DataType.bigint(), 0L);
+
+    public static final Converter BYTE = new NativeConverter(Byte.class, DataType.tinyint());
+    public static final Converter BYTE_TYPE = new NativeConverter(Byte.TYPE, DataType.tinyint());
+
+    public static final Converter SHORT = new NativeConverter(Short.class, DataType.smallint());
+    public static final Converter SHORT_TYPE = new NativeConverter(Short.TYPE, DataType.smallint());
 
     public static final Converter UUID = new NativeConverter(java.util.UUID.class, DataType.uuid());
     public static final Converter STRING = new NativeConverter(String.class, DataType.varchar());

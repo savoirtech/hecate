@@ -16,11 +16,17 @@
 
 package com.savoirtech.hecate.core.util;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.CodecRegistry;
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.GettableByIndexData;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.TypeCodec;
 import com.savoirtech.hecate.core.exception.HecateException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -55,8 +61,12 @@ public class CqlUtils {
                 return gettable.getString(columnIndex);
             case BIGINT:
                 return gettable.getLong(columnIndex);
+            case TINYINT:
+                return gettable.getByte(columnIndex);
             case BOOLEAN:
                 return gettable.getBool(columnIndex);
+            case DATE:
+                return gettable.getDate(columnIndex);
             case DECIMAL:
                 return gettable.getDecimal(columnIndex);
             case DOUBLE:
@@ -65,8 +75,12 @@ public class CqlUtils {
                 return gettable.getFloat(columnIndex);
             case INT:
                 return gettable.getInt(columnIndex);
+            case SMALLINT:
+                return gettable.getShort(columnIndex);
+            case TIME:
+                return gettable.getTime(columnIndex);
             case TIMESTAMP:
-                return gettable.getDate(columnIndex);
+                return gettable.getTimestamp(columnIndex);
             case UUID:
             case TIMEUUID:
                 return gettable.getUUID(columnIndex);
@@ -89,16 +103,6 @@ public class CqlUtils {
         }
     }
 
-    public static List<Object> toList(TupleValue tuple) {
-        List<DataType> componentTypes = tuple.getType().getComponentTypes();
-        List<Object> results = new ArrayList<>(componentTypes.size());
-        int index = 0;
-        for (DataType dataType : componentTypes) {
-            results.add(getValue(tuple, index++, dataType));
-        }
-        return results;
-    }
-
     public static List<Object> toList(Row row) {
         List<Object> results = new LinkedList<>();
         int index = 0;
@@ -110,7 +114,9 @@ public class CqlUtils {
     }
 
     private static Class<?> typeArgument(DataType dataType, int index) {
-        return dataType.getTypeArguments().get(index).asJavaClass();
+        final DataType arg = dataType.getTypeArguments().get(index);
+        final TypeCodec<Object> codec = CodecRegistry.DEFAULT_INSTANCE.codecFor(arg);
+        return codec.getJavaType().getRawType();
     }
 
 //----------------------------------------------------------------------------------------------------------------------

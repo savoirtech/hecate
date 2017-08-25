@@ -116,7 +116,7 @@ public class SimpleKeyBindingTest extends BindingTestCase {
 
     @Test
     public void testInsert() {
-        assertInsertEquals(binding, "INSERT INTO foo(id) VALUES (?);");
+        assertInsertEquals(binding, "INSERT INTO foo (id) VALUES (?);");
     }
 
     @Test
@@ -159,18 +159,6 @@ public class SimpleKeyBindingTest extends BindingTestCase {
         PojoQuery<SimpleEntity> query = dao.find().eq("id").build();
         SimpleEntity actual = query.execute(expected.getId()).one();
         assertEquals(expected, actual);
-    }
-
-    @Test
-    @Cassandra
-    public void testReferenceClusteringColumnReference() {
-        PojoDao<ReferenceClusteringColumnReferenceEntity> dao = createPojoDao(ReferenceClusteringColumnReferenceEntity.class);
-
-        ReferenceClusteringColumnReferenceEntity entity = new ReferenceClusteringColumnReferenceEntity();
-        ClusteringColumnReferenceEntity reference = new ClusteringColumnReferenceEntity();
-        reference.setSimpleEntity(new SimpleEntity());
-        entity.setReference(reference);
-        dao.save(entity);
     }
 
     @Test
@@ -280,25 +268,6 @@ public class SimpleKeyBindingTest extends BindingTestCase {
         }
     }
 
-    public static class ReferenceClusteringColumnReferenceEntity extends UuidEntity {
-//----------------------------------------------------------------------------------------------------------------------
-// Fields
-//----------------------------------------------------------------------------------------------------------------------
-
-        private ClusteringColumnReferenceEntity reference;
-
-//----------------------------------------------------------------------------------------------------------------------
-// Getter/Setter Methods
-//----------------------------------------------------------------------------------------------------------------------
-
-        public ClusteringColumnReferenceEntity getReference() {
-            return reference;
-        }
-
-        public void setReference(ClusteringColumnReferenceEntity reference) {
-            this.reference = reference;
-        }
-    }
 
     public static class ReferencingEntity extends UuidEntity {
 //----------------------------------------------------------------------------------------------------------------------

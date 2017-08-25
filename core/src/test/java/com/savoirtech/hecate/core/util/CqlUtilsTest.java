@@ -59,7 +59,6 @@ public class CqlUtilsTest extends CassandraTestCase {
 
     @Before
     public void createTable() throws Exception {
-        TupleType tupleType = TupleType.of(DataType.text(), DataType.cint());
         columns = Arrays.asList(
                 example(DataType.ascii(), "ascii_value"),
                 example(DataType.bigint(), 123456L),
@@ -75,7 +74,6 @@ public class CqlUtilsTest extends CassandraTestCase {
                 example(DataType.uuid(), UUID.randomUUID()),
                 example(DataType.varchar(), "varchar_value"),
                 example(DataType.varint(), new BigInteger("1234567890")),
-                example(tupleType, tupleType.newValue("Hello", 1)),
                 example(DataType.blob(), ByteBuffer.wrap("Hello, World!".getBytes())),
                 example(DataType.list(DataType.text()), Lists.newArrayList("hello", "world")),
                 example(DataType.set(DataType.text()), Sets.newHashSet("hello", "world")),
@@ -121,20 +119,6 @@ public class CqlUtilsTest extends CassandraTestCase {
 
         BoundStatement bound = CqlUtils.bind(ps, new Object[]{123});
         assertEquals(1, getSession().execute(bound).all().size());
-    }
-
-    @Test
-    public void testTupleValueToList() {
-        TupleType tupleType = TupleType.of(
-                DataType.varchar(),
-                DataType.cboolean(),
-                DataType.cint(),
-                DataType.cfloat(),
-                DataType.cdouble());
-        TupleValue tupleValue = tupleType.newValue("foo", false, 123, 123.456f, 234.567);
-        List<Object> values = CqlUtils.toList(tupleValue);
-        assertEquals(Lists.newArrayList("foo", false, 123, 123.456f, 234.567), values);
-
     }
 
     @Test
