@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import com.savoirtech.hecate.test.Cassandra;
 import com.savoirtech.hecate.test.CassandraTestCase;
+import io.reactivex.Flowable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -74,6 +75,18 @@ public class MappedQueryResultTest extends CassandraTestCase {
             assertTrue(results.contains("one"));
             assertTrue(results.contains("two"));
             assertTrue(results.contains("three"));
+        });
+    }
+
+    @Test
+    public void testFlowable() {
+        withSession(session -> {
+            MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test"), row -> row.getString(1));
+            Flowable<String> results = resultSet.flowable();
+            List<String> list = results.toList().blockingGet();
+            assertTrue(list.contains("one"));
+            assertTrue(list.contains("two"));
+            assertTrue(list.contains("three"));
         });
     }
 

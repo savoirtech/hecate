@@ -16,16 +16,12 @@
 
 package com.savoirtech.hecate.core.util;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
-import com.datastax.driver.core.*;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
@@ -38,12 +34,22 @@ import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.test.Cassandra;
 import com.savoirtech.hecate.test.CassandraTestCase;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 
 @Cassandra
 public class CqlUtilsTest extends CassandraTestCase {
@@ -114,15 +120,17 @@ public class CqlUtilsTest extends CassandraTestCase {
 
     @Test
     public void testBind() {
-        Logger.getLogger(CqlUtils.class).setLevel(Level.DEBUG);
+        final Logger logbackLogger = (Logger) LoggerFactory.getLogger(CqlUtils.class);
+        logbackLogger.setLevel(Level.DEBUG);
         PreparedStatement ps = getSession().prepare(select("id").from("test_table").where(eq("id", bindMarker())));
 
         BoundStatement bound = CqlUtils.bind(ps, new Object[]{123});
         assertEquals(1, getSession().execute(bound).all().size());
+        logbackLogger.setLevel(Level.INFO);
     }
 
     @Test
-    public void testGetValue() throws Exception {
+    public void testGetValue() {
         withSession(session -> {
             Select.Selection selection = select().column("id");
             columns.stream().map(col -> "test_" + col.getLeft().getName()).forEach(selection::column);

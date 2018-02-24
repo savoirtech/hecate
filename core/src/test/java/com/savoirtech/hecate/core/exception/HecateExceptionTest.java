@@ -31,7 +31,7 @@ public class HecateExceptionTest extends Assert {
     }
 
     @Test
-    public void testVerifyNotNul() {
+    public void testVerifyNotNull() {
         assertEquals("foo", HecateException.verifyNotNull("foo", "This is my %s.", "message"));
     }
 

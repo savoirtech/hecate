@@ -28,7 +28,7 @@
     <groupId>com.savoirtech.hecate</groupId>
     <artifactId>hecate-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.1.0-SNAPSHOT</version>
     <name>SavoirTech ::: Hecate ::: Parent</name>
 
     <inceptionYear>2012</inceptionYear>
@@ -40,8 +40,6 @@
         <module>pojo</module>
         <module>gson</module>
         <module>joda-time</module>
-        <!--<module>migrator</module>-->
-        <module>karaf</module>
     </modules>
 
     <scm>
@@ -56,9 +54,9 @@
 
 
         <!-- Dependency Versions -->
-        <cassandra.version>3.9</cassandra.version>
+        <cassandra.version>3.11.2</cassandra.version>
         <cassandra.driver.version>3.1.4</cassandra.driver.version>
-        <cassandra.unit.version>3.1.3.2</cassandra.unit.version>
+        <cassandra.unit.version>3.3.0.2</cassandra.unit.version>
         <commons.codec.version>1.10</commons.codec.version>
         <commons.lang3.version>3.4</commons.lang3.version>
         <guava.version>18.0</guava.version>
@@ -71,6 +69,7 @@
         <netty.version>4.0.51.Final</netty.version>
         <osgi.version>6.0.0</osgi.version>
         <pax.exam.version>4.5.0</pax.exam.version>
+        <rxjava.version>2.1.9</rxjava.version>
         <slf4j.version>1.7.7</slf4j.version>
         <eaio.uuid.version>3.2</eaio.uuid.version>
 
@@ -102,16 +101,6 @@
                 <groupId>org.apache.cassandra</groupId>
                 <artifactId>cassandra-all</artifactId>
                 <version>${cassandra.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>ch.qos.logback</groupId>
-                        <artifactId>logback-classic</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>ch.qos.logback</groupId>
-                        <artifactId>logback-core</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -200,13 +189,7 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
+        
     </dependencies>
 
 </project>
