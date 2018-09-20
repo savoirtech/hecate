@@ -23,9 +23,14 @@ import java.util.function.Function;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.savoirtech.hecate.core.exception.HecateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.Optional.ofNullable;
 
 public class ReflectionUtils {
 //----------------------------------------------------------------------------------------------------------------------
@@ -33,6 +38,13 @@ public class ReflectionUtils {
 //----------------------------------------------------------------------------------------------------------------------
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionUtils.class);
+
+    private static LoadingCache<Class<?>, Instantiator<?>> INSTANTIATOR_CACHE = CacheBuilder.newBuilder().build(new CacheLoader<Class<?>, Instantiator<?>>() {
+        @Override
+        public Instantiator<?> load(Class<?> key) {
+            return createInstantiator(key);
+        }
+    });
 
     private static Supplier<Function<Class<?>, Object>> unsafeInstantiator = Suppliers.memoize(() -> {
         try {
@@ -52,17 +64,15 @@ public class ReflectionUtils {
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private static <T> T instantiate(Class<T> pojoClass) throws InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
+    private static <T> Instantiator<T> createInstantiator(Class<T> pojoClass) {
         try {
-            Constructor<T> constructor = pojoClass.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            return constructor.newInstance();
+            final Constructor<T> ctor = pojoClass.getDeclaredConstructor();
+            ctor.setAccessible(true);
+            return ctor::newInstance;
         } catch (NoSuchMethodException e) {
-            Function<Class<?>,Object> fn = unsafeInstantiator.get();
-            if (fn == null) {
-                throw new HecateException(e, "Unable to instantiate object of type %s (no-arg constructor missing).", pojoClass.getCanonicalName());
-            }
-            return (T) fn.apply(pojoClass);
+            final Function<Class<?>, Object> fn = ofNullable(unsafeInstantiator.get())
+                    .orElseThrow(() -> new HecateException(e, "Unable to instantiate object of type %s (no-arg constructor missing).", pojoClass.getCanonicalName()));
+            return () -> pojoClass.cast(fn.apply(pojoClass));
         }
     }
 
@@ -77,7 +87,8 @@ public class ReflectionUtils {
     @SuppressWarnings("unchecked")
     public static <T> T newInstance(Class<T> pojoClass) {
         try {
-            return instantiate(pojoClass);
+            final Instantiator<?> instantiator = INSTANTIATOR_CACHE.getUnchecked(pojoClass);
+            return pojoClass.cast(instantiator.instantiate());
         } catch (ReflectiveOperationException e) {
             throw new HecateException(e, "Unable to instantiate object of type %s.", pojoClass.getCanonicalName());
         }
