@@ -16,8 +16,6 @@
 
 package com.savoirtech.hecate.core.query;
 
-import io.reactivex.Flowable;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -54,10 +52,4 @@ public interface QueryResult<T> {
      * @return a {@link Stream} of the results
      */
     Stream<T> stream();
-
-    /**
-     * Returns an RxJava {@link Flowable} of the results.
-     * @return an RxJava {@link Flowable} of the results
-     */
-    Flowable<T> flowable();
 }

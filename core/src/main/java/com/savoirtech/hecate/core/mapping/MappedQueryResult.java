@@ -16,12 +16,6 @@
 
 package com.savoirtech.hecate.core.mapping;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.google.common.collect.Iterators;
-import com.savoirtech.hecate.core.query.QueryResult;
-import io.reactivex.Flowable;
-
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,6 +23,11 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.google.common.collect.Iterators;
+import com.savoirtech.hecate.core.query.QueryResult;
 
 public class MappedQueryResult<T> implements QueryResult<T> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -55,18 +54,6 @@ public class MappedQueryResult<T> implements QueryResult<T> {
 //----------------------------------------------------------------------------------------------------------------------
 // QueryResult Implementation
 //----------------------------------------------------------------------------------------------------------------------
-
-    @Override
-    public Flowable<T> flowable() {
-        final Iterator<Row> iterator = rows.iterator();
-        return Flowable.generate(emitter -> {
-            if (iterator.hasNext()) {
-                emitter.onNext(mapper.map(iterator.next()));
-            } else {
-                emitter.onComplete();
-            }
-        });
-    }
 
     @Override
     public Iterator<T> iterator() {
