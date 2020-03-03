@@ -16,7 +16,7 @@
 
 package com.savoirtech.hecate.joda.time;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
@@ -48,7 +48,7 @@ public abstract class JodaTimeConverterProviderTest extends Assert {
     protected <T> void assertSupportsType(Class<T> jodaType, T instance) {
         Converter converter = new DefaultConverterRegistry().getConverter(jodaType);
         assertNotNull(converter);
-        assertEquals(DataType.varchar(), converter.getDataType());
+        assertEquals(DataTypes.TEXT, converter.getDataType());
         assertEquals(jodaType, converter.getValueType());
         assertNull(converter.toColumnValue(null));
         assertNull(converter.toFacetValue(null));

@@ -16,13 +16,16 @@
 
 package com.savoirtech.hecate.pojo.convert.binary;
 
-import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.test.AbstractTestCase;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
 
-public class ByteArrayConverterTest extends AbstractTestCase {
+public class ByteArrayConverterTest {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
@@ -30,7 +33,7 @@ public class ByteArrayConverterTest extends AbstractTestCase {
     @Test
     public void testGetDataType() throws Exception {
         ByteArrayConverter converter = new ByteArrayConverter();
-        assertEquals(DataType.blob(), converter.getDataType());
+        assertEquals(DataTypes.BLOB, converter.getDataType());
     }
 
     @Test

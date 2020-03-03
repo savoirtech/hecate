@@ -16,10 +16,10 @@
 
 package com.savoirtech.hecate.pojo.query.custom;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import java.util.concurrent.Executor;
 
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.query.AbstractPojoQuery;
 import com.savoirtech.hecate.pojo.query.PojoQueryContextFactory;
@@ -29,7 +29,7 @@ public class CustomPojoQuery<P> extends AbstractPojoQuery<P> {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public CustomPojoQuery(Session session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, Select.Where select, Executor executor) {
+    public CustomPojoQuery(CqlSession session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, Select select, Executor executor) {
         super(session, binding, contextFactory, select, executor);
     }
 

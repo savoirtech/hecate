@@ -16,13 +16,18 @@
 
 package com.savoirtech.hecate.pojo.binding.facet;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import com.savoirtech.hecate.test.CassandraSingleton;
 import java.io.Serializable;
 
 import com.savoirtech.hecate.annotation.Embedded;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
+import org.junit.After;
 import org.junit.Test;
 
 public class EmbeddedFacetBindingTest extends AbstractDaoTestCase {
@@ -30,8 +35,12 @@ public class EmbeddedFacetBindingTest extends AbstractDaoTestCase {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    @After
+    public void after() {
+        CassandraSingleton.clean();
+    }
+
     @Test
-    @Cassandra
     public void testWithEmbedded() {
         PojoDao<Outer> dao = createPojoDao(Outer.class);
         Outer entity = new Outer();
@@ -48,13 +57,11 @@ public class EmbeddedFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithInvalidFieldInEmbedded() {
         assertHecateException("No converter found for facet \"inner.badField\" of type java.io.Serializable.", () -> createPojoDao(BadOuter.class));
     }
 
     @Test
-    @Cassandra
     public void testWithNullEmbedded() {
         PojoDao<Outer> dao = createPojoDao(Outer.class);
         Outer entity = new Outer();

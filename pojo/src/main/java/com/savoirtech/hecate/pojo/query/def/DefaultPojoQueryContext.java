@@ -16,18 +16,20 @@
 
 package com.savoirtech.hecate.pojo.query.def;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
-import com.datastax.driver.core.*;
-import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.exception.PojoNotFoundException;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
@@ -41,7 +43,7 @@ public class DefaultPojoQueryContext implements PojoQueryContext {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final LoadingCache<CacheKey, LoadingCache<List<Object>, Object>> pojoCache;
-    private final Session session;
+    private final CqlSession session;
     private final PojoStatementFactory statementFactory;
     private final Queue<HydratedPojo<?>> hydratedQueue = new ConcurrentLinkedQueue<>();
     private final Executor executor;
@@ -50,7 +52,7 @@ public class DefaultPojoQueryContext implements PojoQueryContext {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoQueryContext(Session session, PojoStatementFactory statementFactory, int maximumCacheSize, Executor executor) {
+    public DefaultPojoQueryContext(CqlSession session, PojoStatementFactory statementFactory, int maximumCacheSize, Executor executor) {
         this.session = session;
         this.statementFactory = statementFactory;
         this.pojoCache = CacheBuilder.newBuilder().build(FunctionCacheLoader.loader(key -> CacheBuilder.newBuilder().maximumSize(maximumCacheSize).build(new PojoCacheLoader<>(key.getBinding(), key.getTableName()))));
@@ -65,7 +67,7 @@ public class DefaultPojoQueryContext implements PojoQueryContext {
     public void awaitCompletion() {
         while (!hydratedQueue.isEmpty()) {
             HydratedPojo<?> hydratedPojo = hydratedQueue.remove();
-            if(!Futures.getUnchecked(hydratedPojo.getFuture())) {
+            if(!Futures.getUnchecked(hydratedPojo.getFuture().toCompletableFuture())) {
                 throw new PojoNotFoundException(hydratedPojo.getBinding(), hydratedPojo.getTableName(), hydratedPojo.getKeys());
             }
         }
@@ -85,9 +87,9 @@ public class DefaultPojoQueryContext implements PojoQueryContext {
         private final PojoBinding<P> binding;
         private final String tableName;
         private final List<Object> keys;
-        private final ListenableFuture<Boolean> future;
+        private final CompletionStage<Boolean> future;
 
-        public HydratedPojo(PojoBinding<P> binding, String tableName, List<Object> keys, ListenableFuture<Boolean> future) {
+        public HydratedPojo(PojoBinding<P> binding, String tableName, List<Object> keys, CompletionStage<Boolean> future) {
             this.binding = binding;
             this.tableName = tableName;
             this.keys = keys;
@@ -106,7 +108,7 @@ public class DefaultPojoQueryContext implements PojoQueryContext {
             return keys;
         }
 
-        public ListenableFuture<Boolean> getFuture() {
+        public CompletionStage<Boolean> getFuture() {
             return future;
         }
     }
@@ -125,8 +127,8 @@ public class DefaultPojoQueryContext implements PojoQueryContext {
             P pojo = binding.createPojo();
             binding.getKeyBinding().injectValues(pojo, keys.iterator(), DefaultPojoQueryContext.this);
             PreparedStatement statement = statementFactory.createFindByKey(binding, tableName);
-            ResultSetFuture rsFuture = session.executeAsync(binding.bindWhereIdEquals(statement, keys));
-            ListenableFuture<Boolean> future = Futures.transform(rsFuture, (Function<ResultSet, Boolean>) resultSet -> {
+            CompletionStage<AsyncResultSet> rsFuture = session.executeAsync(binding.bindWhereIdEquals(statement, keys));
+            CompletionStage<Boolean> future = rsFuture.thenApplyAsync(resultSet -> {
                 Row row = resultSet.one();
                 if (row == null) {
                     return Boolean.FALSE;

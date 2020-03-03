@@ -16,6 +16,10 @@
 
 package com.savoirtech.hecate.pojo.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import com.savoirtech.hecate.test.CassandraSingleton;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -36,9 +40,8 @@ import com.savoirtech.hecate.pojo.facet.FacetProvider;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 import com.savoirtech.hecate.pojo.naming.def.DefaultNamingStrategy;
-import com.savoirtech.hecate.test.CassandraTestCase;
 
-public abstract class AbstractDaoTestCase extends CassandraTestCase {
+public abstract class AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -51,13 +54,13 @@ public abstract class AbstractDaoTestCase extends CassandraTestCase {
     private final PojoBindingFactory bindingFactory = new DefaultPojoBindingFactory(facetProvider, converterRegistry, namingStrategy);
 
     private final Supplier<PojoDaoFactory> daoFactory = Suppliers.memoize(() ->
-            new DefaultPojoDaoFactoryBuilder(getSession())
+            new DefaultPojoDaoFactoryBuilder(CassandraSingleton.getSession())
                     .withBindingFactory(bindingFactory)
                     .withNamingStrategy(namingStrategy)
                     .withConverterRegistry(converterRegistry)
                     .withThreadPoolSize(1)
-                    .withListener(new CreateSchemaListener(getSession()))
-                    .withListener(new VerifySchemaListener(getSession()))
+                    .withListener(new CreateSchemaListener(CassandraSingleton.getSession()))
+                    .withListener(new VerifySchemaListener(CassandraSingleton.getSession()))
                     .build());
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -16,50 +16,57 @@
 
 package com.savoirtech.hecate.core.update;
 
-import java.util.concurrent.Executors;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.selectFrom;
+import static org.junit.Assert.assertEquals;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.schemabuilder.SchemaBuilder;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
+
 import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.test.Cassandra;
-import com.savoirtech.hecate.test.CassandraTestCase;
+import com.savoirtech.hecate.test.CassandraSingleton;
+import org.junit.After;
 import org.junit.Test;
 
-@Cassandra
-public class AsyncUpdateGroupTest extends CassandraTestCase {
+public class AsyncUpdateGroupTest {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    @After
+    public void after() {
+        CassandraSingleton.clean();
+    }
+
     @Test
     public void testComplete() {
-        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession(), Executors.newSingleThreadExecutor());
-        getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("bar", DataType.varchar()));
+        AsyncUpdateGroup group = new AsyncUpdateGroup(CassandraSingleton.getSession());
+        CassandraSingleton.getSession().execute(SchemaBuilder.createTable("foo").withPartitionKey("bar", DataTypes.TEXT).build());
 
-        group.addUpdate(QueryBuilder.insertInto("foo").value("bar", "baz"));
+        group.addUpdate(QueryBuilder.insertInto("foo").value("bar", literal("baz")).build());
         group.complete();
 
-        assertEquals(1, getSession().execute("select bar from foo where bar = ?", "baz").all().size());
+        assertEquals(1, CassandraSingleton.getSession().execute(selectFrom("foo").all().whereColumn("bar").isEqualTo(literal("baz")).build()).all().size());
     }
 
     @Test
     public void testCompleteAsync() throws Exception {
-        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession(), Executors.newSingleThreadExecutor());
-        getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("bar", DataType.varchar()));
+        AsyncUpdateGroup group = new AsyncUpdateGroup(CassandraSingleton.getSession());
+        CassandraSingleton.getSession().execute(SchemaBuilder.createTable("foo").withPartitionKey("bar", DataTypes.TEXT).build());
 
-        group.addUpdate(QueryBuilder.insertInto("foo").value("bar", "baz"));
+        group.addUpdate(QueryBuilder.insertInto("foo").value("bar", literal("baz")).build());
         group.completeAsync().get();
 
-        assertEquals(1, getSession().execute("select bar from foo where bar = ?", "baz").all().size());
+        assertEquals(1, CassandraSingleton.getSession().execute(selectFrom("foo").all().whereColumn("bar").isEqualTo(literal("baz")).build()).all().size());
     }
 
     @Test(expected = HecateException.class)
     public void testWithInvalidQuery() throws Exception {
-        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession(), Executors.newSingleThreadExecutor());
-        getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("bar", DataType.varchar()));
+        AsyncUpdateGroup group = new AsyncUpdateGroup(CassandraSingleton.getSession());
+        CassandraSingleton.getSession().execute(SchemaBuilder.createTable("foo").withPartitionKey("bar", DataTypes.TEXT).build());
 
-        group.addUpdate(QueryBuilder.insertInto("foo").value("bogus", "baz"));
+        group.addUpdate(QueryBuilder.insertInto("foo").value("bogus", literal("baz")).build());
         group.complete();
     }
 }

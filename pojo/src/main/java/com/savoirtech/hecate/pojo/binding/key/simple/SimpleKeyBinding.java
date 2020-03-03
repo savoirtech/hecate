@@ -16,17 +16,20 @@
 
 package com.savoirtech.hecate.pojo.binding.key.simple;
 
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.bindMarker;
+
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.relation.OngoingWhereClause;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.schema.Schema;
 import com.savoirtech.hecate.core.schema.Table;
@@ -42,9 +45,6 @@ import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.SubFacet;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
-
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 
 public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding {
 //----------------------------------------------------------------------------------------------------------------------
@@ -90,8 +90,8 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
     }
 
     @Override
-    public void delete(Delete.Where delete) {
-        delete.and(eq(getColumnName(), bindMarker()));
+    public Delete delete(OngoingWhereClause<Delete> delete) {
+        return delete.whereColumn(getColumnName()).isEqualTo(bindMarker());
     }
 
     @Override
@@ -115,8 +115,8 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
     }
 
     @Override
-    public void selectWhere(Select.Where select) {
-        select.and(eq(getColumnName(), bindMarker()));
+    public Select selectWhere(Select select) {
+        return select.whereColumn(getColumnName()).isEqualTo(bindMarker());
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -164,8 +164,8 @@ public class SimpleKeyBinding extends SimpleColumnBinding implements KeyBinding 
         }
 
         @Override
-        public void delete(Delete.Where delete) {
-            delete.and(eq(getColumnName(), bindMarker()));
+        public Delete delete(OngoingWhereClause<Delete> delete) {
+            return delete.whereColumn(getColumnName()).isEqualTo(bindMarker());
         }
 
         @Override

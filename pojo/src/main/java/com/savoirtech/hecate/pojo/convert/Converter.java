@@ -16,7 +16,7 @@
 
 package com.savoirtech.hecate.pojo.convert;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataType;
 
 public interface Converter {
 //----------------------------------------------------------------------------------------------------------------------

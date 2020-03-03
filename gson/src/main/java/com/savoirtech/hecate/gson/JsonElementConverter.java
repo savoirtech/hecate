@@ -16,7 +16,8 @@
 
 package com.savoirtech.hecate.gson;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.savoirtech.hecate.pojo.convert.Converter;
@@ -28,7 +29,7 @@ public class JsonElementConverter implements Converter {
 
     @Override
     public DataType getDataType() {
-        return DataType.varchar();
+        return DataTypes.TEXT;
     }
 
     @Override

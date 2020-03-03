@@ -16,17 +16,17 @@
 
 package com.savoirtech.hecate.core.statement;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
-import com.datastax.driver.core.policies.FallthroughRetryPolicy;
-import com.savoirtech.hecate.test.Cassandra;
-import com.savoirtech.hecate.test.CassandraTestCase;
+import static com.savoirtech.hecate.test.CassandraSingleton.getSession;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.cql.Statement;
 import org.junit.Before;
 import org.junit.Test;
 
-@Cassandra
-public class StatementOptionsBuilderTest extends CassandraTestCase {
+public class StatementOptionsBuilderTest {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -44,75 +44,65 @@ public class StatementOptionsBuilderTest extends CassandraTestCase {
 
     @Test
     public void testConsistencyLevel() throws Exception {
-        statement.setConsistencyLevel(ConsistencyLevel.ALL);
+        statement = statement.setConsistencyLevel(ConsistencyLevel.ALL);
         assertEquals(ConsistencyLevel.ALL, statement.getConsistencyLevel());
-        StatementOptionsBuilder.consistencyLevel(ConsistencyLevel.EACH_QUORUM).build().applyTo(statement);
+        statement = StatementOptionsBuilder.consistencyLevel(ConsistencyLevel.EACH_QUORUM).build().applyTo(statement);
         assertEquals(ConsistencyLevel.EACH_QUORUM, statement.getConsistencyLevel());
     }
 
     @Test
     public void testDefaultTimestamp() throws Exception {
-        statement.setDefaultTimestamp(999L);
-        assertEquals(999L, statement.getDefaultTimestamp());
-        StatementOptionsBuilder.defaultTimestamp(12345L).build().applyTo(statement);
-        assertEquals(12345L, statement.getDefaultTimestamp());
+        statement = statement.setQueryTimestamp(999L);
+        assertEquals(999L, statement.getQueryTimestamp());
+        statement = StatementOptionsBuilder.defaultTimestamp(12345L).build().applyTo(statement);
+        assertEquals(12345L, statement.getQueryTimestamp());
     }
 
     @Test
     public void testDisableTracing() throws Exception {
-        statement.enableTracing();
+        statement = statement.setTracing(true);
         assertTrue(statement.isTracing());
-        StatementOptionsBuilder.disableTracing().build().applyTo(statement);
+        statement = StatementOptionsBuilder.disableTracing().build().applyTo(statement);
         assertFalse(statement.isTracing());
     }
 
     @Test
     public void testEnableTracing() throws Exception {
-        statement.disableTracing();
+        statement = statement.setTracing(false);
         assertFalse(statement.isTracing());
-        StatementOptionsBuilder.enableTracing().build().applyTo(statement);
+        statement = StatementOptionsBuilder.enableTracing().build().applyTo(statement);
         assertTrue(statement.isTracing());
     }
 
     @Test
     public void testFetchSize() throws Exception {
-        statement.setFetchSize(123);
-        assertEquals(123, statement.getFetchSize());
-        StatementOptionsBuilder.fetchSize(456).build().applyTo(statement);
-        assertEquals(456, statement.getFetchSize());
-    }
-
-    @Test
-    public void testRetryPolicy() throws Exception {
-        statement.setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
-        assertEquals(FallthroughRetryPolicy.INSTANCE, statement.getRetryPolicy());
-        StatementOptionsBuilder.retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build().applyTo(statement);
-        assertEquals(DowngradingConsistencyRetryPolicy.INSTANCE, statement.getRetryPolicy());
+        statement = statement.setPageSize(123);
+        assertEquals(123, statement.getPageSize());
+        statement = StatementOptionsBuilder.fetchSize(456).build().applyTo(statement);
+        assertEquals(456, statement.getPageSize());
     }
 
     @Test
     public void testSerialConsistencyLevel() throws Exception {
-        statement.setSerialConsistencyLevel(ConsistencyLevel.SERIAL);
+        statement = statement.setSerialConsistencyLevel(ConsistencyLevel.SERIAL);
         assertEquals(ConsistencyLevel.SERIAL, statement.getSerialConsistencyLevel());
-        StatementOptionsBuilder.serialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL).build().applyTo(statement);
+        statement = StatementOptionsBuilder.serialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL).build().applyTo(statement);
         assertEquals(ConsistencyLevel.LOCAL_SERIAL, statement.getSerialConsistencyLevel());
     }
 
     @Test
     public void testEmpty() {
-        statement.setConsistencyLevel(ConsistencyLevel.ALL);
-        statement.setDefaultTimestamp(999L);
-        statement.enableTracing();
-        statement.setFetchSize(123);
-        statement.setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
-        statement.setSerialConsistencyLevel(ConsistencyLevel.SERIAL);
+        statement = statement.setConsistencyLevel(ConsistencyLevel.ALL);
+        statement = statement.setQueryTimestamp(999L);
+        statement = statement.setTracing(true);
+        statement = statement.setPageSize(123);
+        statement = statement.setSerialConsistencyLevel(ConsistencyLevel.SERIAL);
 
-        StatementOptionsBuilder.empty().applyTo(statement);
+        statement = StatementOptionsBuilder.empty().applyTo(statement);
         assertEquals(ConsistencyLevel.ALL, statement.getConsistencyLevel());
-        assertEquals(999L, statement.getDefaultTimestamp());
+        assertEquals(999L, statement.getQueryTimestamp());
         assertTrue(statement.isTracing());
-        assertEquals(123, statement.getFetchSize());
-        assertEquals(FallthroughRetryPolicy.INSTANCE, statement.getRetryPolicy());
+        assertEquals(123, statement.getPageSize());
         assertEquals(ConsistencyLevel.SERIAL, statement.getSerialConsistencyLevel());
     }
 }

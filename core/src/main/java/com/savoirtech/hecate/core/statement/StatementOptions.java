@@ -16,12 +16,12 @@
 
 package com.savoirtech.hecate.core.statement;
 
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 public interface StatementOptions {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    void applyTo(Statement statement);
+    Statement applyTo(Statement statement);
 }

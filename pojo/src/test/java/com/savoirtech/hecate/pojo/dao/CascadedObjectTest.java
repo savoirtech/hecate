@@ -16,11 +16,13 @@
 
 package com.savoirtech.hecate.pojo.dao;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.util.UUID;
 
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Test;
 
 public class CascadedObjectTest extends AbstractDaoTestCase {
@@ -29,7 +31,6 @@ public class CascadedObjectTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
-    @Cassandra
     public void testRetrieveWhenCascadedObjectRemoved() {
         Department department = new Department();
         Employee manager = new Employee();
@@ -47,7 +48,6 @@ public class CascadedObjectTest extends AbstractDaoTestCase {
 
     }
     @Test
-    @Cassandra
     public void testInsertCascaded() {
         Department department = new Department();
         Employee manager = new Employee();
@@ -64,7 +64,6 @@ public class CascadedObjectTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testDeleteCascaded() {
 
         Department department = new Department();

@@ -16,13 +16,13 @@
 
 package com.savoirtech.hecate.pojo.statement.def;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import java.util.function.Function;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -42,13 +42,13 @@ public class DefaultPojoStatementFactory implements PojoStatementFactory {
     private LoadingCache<CacheKey, PreparedStatement> deleteCache = cacheFor(this::loadDelete);
     private LoadingCache<CacheKey, PreparedStatement> findByKeyCache = cacheFor(this::loadFindByKey);
 
-    private final Session session;
+    private final CqlSession session;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoStatementFactory(Session session) {
+    public DefaultPojoStatementFactory(CqlSession session) {
         this.session = session;
     }
 
@@ -85,20 +85,20 @@ public class DefaultPojoStatementFactory implements PojoStatementFactory {
     }
 
     private PreparedStatement loadDelete(CacheKey key) {
-        Delete.Where delete = key.getBinding().deleteFrom(key.getTableName());
-        LOGGER.info("{}.delete(): {}", key.getBinding().getPojoType().getSimpleName(), delete.getQueryString());
-        return  session.prepare(delete);
+        Delete delete = key.getBinding().deleteFrom(key.getTableName());
+        LOGGER.info("{}.delete(): {}", key.getBinding().getPojoType().getSimpleName(), delete.asCql());
+        return session.prepare(delete.build());
     }
 
     protected PreparedStatement loadFindByKey(CacheKey key) {
-        Select.Where select = key.getBinding().selectFromByKey(key.getTableName());
-        LOGGER.info("{}.findByKey(): {}", key.getBinding().getPojoType().getSimpleName(), select.getQueryString());
-        return session.prepare(select);
+        Select select = key.getBinding().selectFromByKey(key.getTableName());
+        LOGGER.info("{}.findByKey(): {}", key.getBinding().getPojoType().getSimpleName(), select.asCql());
+        return session.prepare(select.build());
     }
 
     protected PreparedStatement loadInsert(CacheKey key) {
         Insert insert = key.getBinding().insertInto(key.getTableName());
-        LOGGER.info("{}.insert(): {}", key.getBinding().getPojoType().getSimpleName(), insert.getQueryString());
-        return session.prepare(insert);
+        LOGGER.info("{}.insert(): {}", key.getBinding().getPojoType().getSimpleName(), insert.asCql());
+        return session.prepare(insert.build());
     }
 }

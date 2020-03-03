@@ -16,7 +16,8 @@
 
 package com.savoirtech.hecate.pojo.binding.key.component;
 
-import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.relation.OngoingWhereClause;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.column.SimpleColumnBinding;
 import com.savoirtech.hecate.pojo.binding.facet.SimpleFacetBinding;
@@ -25,8 +26,7 @@ import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.SubFacet;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.bindMarker;
 
 public abstract class SimpleKeyComponent extends SimpleColumnBinding implements KeyComponent {
 //----------------------------------------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ public abstract class SimpleKeyComponent extends SimpleColumnBinding implements 
     }
 
     @Override
-    public void delete(Delete.Where delete) {
-        delete.and(eq(getColumnName(), bindMarker()));
+    public Delete delete(OngoingWhereClause<Delete> delete) {
+        return delete.whereColumn(getColumnName()).isEqualTo(bindMarker());
     }
 }

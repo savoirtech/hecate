@@ -16,31 +16,27 @@
 
 package com.savoirtech.hecate.pojo.dao.listener;
 
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactory;
 import com.savoirtech.hecate.pojo.dao.def.DefaultPojoDaoFactoryBuilder;
 import com.savoirtech.hecate.pojo.exception.SchemaVerificationException;
-import com.savoirtech.hecate.test.Cassandra;
-import com.savoirtech.hecate.test.CassandraRule;
+import com.savoirtech.hecate.test.CassandraSingleton;
+import java.util.Optional;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import static com.savoirtech.hecate.pojo.dao.listener.IdempotentCreateSchemaListener.CLAIM_ID_COL;
 import static com.savoirtech.hecate.pojo.dao.listener.IdempotentCreateSchemaListener.DEFAULT_TABLE_NAME;
 import static com.savoirtech.hecate.pojo.dao.listener.IdempotentCreateSchemaListener.KEY;
 
-@Cassandra
 public class IdempotentCreateSchemaListenerTest extends Assert {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
-
-    @Rule
-    public final CassandraRule cassandraRule = new CassandraRule();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
@@ -48,33 +44,38 @@ public class IdempotentCreateSchemaListenerTest extends Assert {
 
     @Before
     public void createIdempotencyTable() {
-        cassandraRule.getSession().execute(IdempotentCreateSchemaListener.createIdempotencyTable());
+        CassandraSingleton.getSession().execute(IdempotentCreateSchemaListener.createIdempotencyTable());
+    }
+
+    @After
+    public void after() {
+        CassandraSingleton.clean();
     }
 
     @Test
     public void testCreateSchema() {
-        Session session = cassandraRule.getSession();
+        CqlSession session = CassandraSingleton.getSession();
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactoryBuilder(session).withListener(new IdempotentCreateSchemaListener(session)).build();
         factory.createPojoDao(MyPojo.class);
-        TableMetadata table = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace()).getTable("my_pojo");
+        TableMetadata table = session.getMetadata().getKeyspace(session.getKeyspace().get()).get().getTable("my_pojo").get();
         assertNotNull(table);
     }
 
     @Test
     public void testCreateSchemaWhenAlreadyClaimed() {
-        Session session = cassandraRule.getSession();
+        CqlSession session = CassandraSingleton.getSession();
         session.execute(String.format("insert into %s (%s,%s) values ('%s', '%s')",
                 DEFAULT_TABLE_NAME, KEY, CLAIM_ID_COL, "TABLE my_pojo", "12345"));
 
         DefaultPojoDaoFactory factory = new DefaultPojoDaoFactoryBuilder(session).withListener(new IdempotentCreateSchemaListener(session)).build();
         factory.createPojoDao(MyPojo.class);
-        TableMetadata table = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace()).getTable("my_pojo");
-        assertNull(table);
+        Optional<TableMetadata> table = session.getMetadata().getKeyspace(session.getKeyspace().get()).get().getTable("my_pojo");
+        assertFalse(table.isPresent());
     }
 
     @Test(expected = SchemaVerificationException.class)
     public void testWhenIdempotencyTableNotFound() {
-        Session session = cassandraRule.getSession();
+        CqlSession session = CassandraSingleton.getSession();
         new IdempotentCreateSchemaListener(session,"fake_table");
     }
 

@@ -16,9 +16,10 @@
 
 package com.savoirtech.hecate.pojo.dao;
 
+import static org.junit.Assert.assertNull;
+
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Test;
 
 public class WrapperObjectsTest extends AbstractDaoTestCase {
@@ -27,7 +28,6 @@ public class WrapperObjectsTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
-    @Cassandra
     public void testNullsPreserved() {
         PojoDao<WrapperPojo> dao = createPojoDao(WrapperPojo.class);
         WrapperPojo pojo = new WrapperPojo();

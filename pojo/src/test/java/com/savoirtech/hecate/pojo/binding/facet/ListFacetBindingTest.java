@@ -16,13 +16,15 @@
 
 package com.savoirtech.hecate.pojo.binding.facet;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import java.util.Arrays;
 import java.util.List;
 
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Test;
 
 public class ListFacetBindingTest extends AbstractDaoTestCase {
@@ -31,7 +33,6 @@ public class ListFacetBindingTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
-    @Cassandra
     public void testWithNullPojoList() {
         PojoDao<PojoListEntity> dao = createPojoDao(PojoListEntity.class);
         PojoListEntity entity = new PojoListEntity();
@@ -41,7 +42,6 @@ public class ListFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithNullPrimitiveList() {
         PojoDao<PrimitiveListEntity> dao = createPojoDao(PrimitiveListEntity.class);
         PrimitiveListEntity entity = new PrimitiveListEntity();
@@ -51,7 +51,6 @@ public class ListFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithPojoList() {
         PojoDao<PojoListEntity> dao = createPojoDao(PojoListEntity.class);
         PojoListEntity entity = new PojoListEntity();
@@ -63,7 +62,6 @@ public class ListFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithPrimitiveList() {
         PojoDao<PrimitiveListEntity> dao = createPojoDao(PrimitiveListEntity.class);
         PrimitiveListEntity entity = new PrimitiveListEntity();
@@ -75,9 +73,8 @@ public class ListFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithNullElement() {
-        assertHecateException("Cassandra driver does not support null values inside list<int> collections.", () -> {
+        assertHecateException("Cassandra driver does not support null values inside List(INT, not frozen) collections.", () -> {
             PojoDao<PrimitiveListEntity> dao = createPojoDao(PrimitiveListEntity.class);
             PrimitiveListEntity entity = new PrimitiveListEntity();
             entity.setInts(Arrays.asList(1, null, 3));

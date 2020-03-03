@@ -16,10 +16,13 @@
 
 package com.savoirtech.hecate.pojo.dao;
 
+import static org.junit.Assert.assertEquals;
+
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
+import com.savoirtech.hecate.test.CassandraSingleton;
+import org.junit.After;
 import org.junit.Test;
 
 public class PojoClusteringColumnTest extends AbstractDaoTestCase {
@@ -27,8 +30,12 @@ public class PojoClusteringColumnTest extends AbstractDaoTestCase {
 // Inner Classes
 //----------------------------------------------------------------------------------------------------------------------
 
+    @After
+    public void after() {
+        CassandraSingleton.clean();
+    }
+
     @Test
-    @Cassandra
     public void testSave() {
         PojoDao<Outer> dao = createPojoDao(Outer.class);
 

@@ -16,16 +16,18 @@
 
 package com.savoirtech.hecate.pojo.binding.column;
 
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.querybuilder.insert.OngoingValues;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
+import com.datastax.oss.driver.api.querybuilder.select.OngoingSelection;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.core.schema.Schema;
 import com.savoirtech.hecate.core.schema.Table;
 import com.savoirtech.hecate.pojo.binding.ParameterBinding;
@@ -33,7 +35,7 @@ import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.bindMarker;
 
 public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
@@ -101,13 +103,13 @@ public abstract class SingleColumnBinding<C, F> extends AbstractColumnBinding {
     }
 
     @Override
-    public void insert(Insert insert) {
-        insert.value(getColumnName(), bindMarker());
+    public RegularInsert insert(OngoingValues insertInto) {
+        return insertInto.value(getColumnName(), bindMarker());
     }
 
     @Override
-    public void select(Select.Selection select) {
-        select.column(getColumnName());
+    public Select select(OngoingSelection select) {
+        return select.column(getColumnName());
     }
 
     @Override

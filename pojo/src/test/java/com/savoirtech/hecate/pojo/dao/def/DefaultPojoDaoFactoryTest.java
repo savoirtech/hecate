@@ -21,12 +21,16 @@ import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryEvent;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryListener;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
+import com.savoirtech.hecate.test.CassandraSingleton;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class DefaultPojoDaoFactoryTest extends AbstractDaoTestCase {
@@ -44,10 +48,14 @@ public class DefaultPojoDaoFactoryTest extends AbstractDaoTestCase {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
+    @Before
+    public void init() {
+        MockitoAnnotations.initMocks(this);
+    }
+
     @Test
-    @Cassandra
     public void testDaoFactoryListener() {
-        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactoryBuilder(getSession()).withListener(listener).build();
+        DefaultPojoDaoFactory factory = new DefaultPojoDaoFactoryBuilder(CassandraSingleton.getSession()).withListener(listener).build();
         PojoDao<ListenerEntity> expected = factory.createPojoDao(ListenerEntity.class);
         verify(listener).pojoDaoCreated(eventCaptor.capture());
         PojoDaoFactoryEvent<ListenerEntity> event = eventCaptor.getValue();

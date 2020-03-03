@@ -16,13 +16,15 @@
 
 package com.savoirtech.hecate.pojo.query.finder;
 
-import java.util.Date;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.time.Instant;
 
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Test;
 
 public class FindByKeyQueryTest extends AbstractDaoTestCase {
@@ -31,10 +33,9 @@ public class FindByKeyQueryTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
-    @Cassandra
     public void testConvertParameters() {
         PojoDao<LogEntry> dao = createPojoDao(LogEntry.class);
-        Date now = new Date();
+        Instant now = Instant.now();
         LogEntry expected = new LogEntry();
         expected.setCategory("cat");
         expected.setTimestamp(now);
@@ -61,7 +62,7 @@ public class FindByKeyQueryTest extends AbstractDaoTestCase {
         private String category;
 
         @ClusteringColumn
-        private Date timestamp;
+        private Instant timestamp;
 
 
         private String message;
@@ -86,11 +87,11 @@ public class FindByKeyQueryTest extends AbstractDaoTestCase {
             this.message = message;
         }
 
-        public Date getTimestamp() {
+        public Instant getTimestamp() {
             return timestamp;
         }
 
-        public void setTimestamp(Date timestamp) {
+        public void setTimestamp(Instant timestamp) {
             this.timestamp = timestamp;
         }
     }

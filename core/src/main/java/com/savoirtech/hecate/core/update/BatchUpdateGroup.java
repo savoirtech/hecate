@@ -16,41 +16,42 @@
 
 package com.savoirtech.hecate.core.update;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BatchType;
+import com.datastax.oss.driver.api.core.cql.BatchableStatement;
+import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-
-import com.datastax.driver.core.BatchStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
-import com.google.common.base.Function;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
+import java.util.function.Function;
 
 public class BatchUpdateGroup implements UpdateGroup {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Session session;
-    private final BatchStatement batchStatement;
+    private final CqlSession session;
+    private BatchStatement batchStatement;
     private final Executor executor;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public BatchUpdateGroup(Session session, Executor executor) {
-        this(session, new BatchStatement(BatchStatement.Type.LOGGED), executor);
+    public BatchUpdateGroup(CqlSession session, Executor executor) {
+        this(session, BatchStatement.newInstance(DefaultBatchType.LOGGED), executor);
     }
 
-    public BatchUpdateGroup(Session session, BatchStatement batchStatement, Executor executor) {
+    public BatchUpdateGroup(CqlSession session, BatchStatement batchStatement, Executor executor) {
         this.session = session;
         this.batchStatement = batchStatement;
         this.executor = executor;
     }
 
-    public BatchUpdateGroup(Session session, BatchStatement.Type batchType, Executor executor) {
-        this(session, new BatchStatement(batchType), executor);
+    public BatchUpdateGroup(CqlSession session, BatchType batchType, Executor executor) {
+        this(session, BatchStatement.newInstance(batchType), executor);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -58,7 +59,12 @@ public class BatchUpdateGroup implements UpdateGroup {
 //----------------------------------------------------------------------------------------------------------------------
 
     public void addUpdate(Statement statement) {
-        batchStatement.add(statement);
+        try {
+            BatchableStatement batchableStatement = (BatchableStatement) statement;
+            batchStatement = batchStatement.add(batchableStatement);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid statement type for BatchUpdateGroup.addUpdate: " + statement.getClass());
+        }
     }
 
     @Override
@@ -67,8 +73,8 @@ public class BatchUpdateGroup implements UpdateGroup {
     }
 
     @Override
-    public ListenableFuture<Void> completeAsync() {
-        return Futures.transform(session.executeAsync(batchStatement), (Function<ResultSet, Void>) input -> null, executor);
+    public CompletableFuture<Void> completeAsync() {
+        return session.executeAsync(batchStatement).thenApplyAsync((Function<AsyncResultSet, Void>) input -> null, executor).toCompletableFuture();
     }
 
 //----------------------------------------------------------------------------------------------------------------------

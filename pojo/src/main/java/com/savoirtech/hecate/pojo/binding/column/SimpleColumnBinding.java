@@ -16,9 +16,8 @@
 
 package com.savoirtech.hecate.pojo.binding.column;
 
+import com.datastax.oss.driver.api.core.type.DataType;
 import java.util.function.Predicate;
-
-import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.pojo.binding.PojoVisitor;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.facet.Facet;

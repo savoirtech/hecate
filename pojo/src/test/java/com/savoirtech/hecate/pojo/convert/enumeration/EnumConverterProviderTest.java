@@ -16,12 +16,14 @@
 
 package com.savoirtech.hecate.pojo.convert.enumeration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.cql.Gender;
-import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 
-public class EnumConverterProviderTest extends AbstractTestCase {
+public class EnumConverterProviderTest {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------

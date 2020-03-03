@@ -16,10 +16,10 @@
 
 package com.savoirtech.hecate.pojo.binding;
 
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.type.DataType;
 import java.util.function.Predicate;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.savoirtech.hecate.core.schema.Schema;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;

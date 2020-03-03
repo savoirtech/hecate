@@ -16,18 +16,20 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.Select;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.savoirtech.hecate.annotation.Ttl;
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
 import com.savoirtech.hecate.core.statement.StatementOptions;
@@ -55,7 +57,7 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 
     public static final int NO_TTL = 0;
 
-    private final Session session;
+    private final CqlSession session;
     private final PojoBinding<P> binding;
     private final String tableName;
     private final PojoStatementFactory statementFactory;
@@ -67,7 +69,7 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoDao(Session session, PojoBinding<P> binding, String tableName, PojoStatementFactory statementFactory, PojoQueryContextFactory contextFactory, Executor executor) {
+    public DefaultPojoDao(CqlSession session, PojoBinding<P> binding, String tableName, PojoStatementFactory statementFactory, PojoQueryContextFactory contextFactory, Executor executor) {
         this.session = session;
         this.binding = binding;
         this.tableName = tableName;
@@ -110,12 +112,12 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
     }
 
     @Override
-    public ListenableFuture<Void> deleteAsync(P pojo) {
+    public CompletableFuture<Void> deleteAsync(P pojo) {
         return completeAsync(group -> delete(group, StatementOptionsBuilder.empty(), pojo));
     }
 
     @Override
-    public ListenableFuture<Void> deleteAsync(StatementOptions options, P pojo) {
+    public CompletableFuture<Void> deleteAsync(StatementOptions options, P pojo) {
         return completeAsync(group -> delete(group, options, pojo));
     }
 
@@ -135,12 +137,12 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
     }
 
     @Override
-    public ListenableFuture<Void> deleteByKeyAsync(Object... values) {
+    public CompletableFuture<Void> deleteByKeyAsync(Object... values) {
         return completeAsync(group -> deleteByKey(group, StatementOptionsBuilder.empty(), values));
     }
 
     @Override
-    public ListenableFuture<Void> deleteByKeyAsync(StatementOptions options, Object... values) {
+    public CompletableFuture<Void> deleteByKeyAsync(StatementOptions options, Object... values) {
         return completeAsync(group -> deleteByKey(group, options, values));
     }
 
@@ -150,10 +152,10 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
     }
 
     @Override
-    public PojoQuery<P> find(Consumer<Select.Where> builder) {
-        Select.Where where = binding.selectFrom(tableName);
-        builder.accept(where);
-        return new CustomPojoQuery<>(session, binding, contextFactory, where, executor);
+    public PojoQuery<P> find(Function<Select, Select> builder) {
+        Select where = binding.selectFrom(tableName);
+        Select select = builder.apply(where);
+        return new CustomPojoQuery<>(session, binding, contextFactory, select, executor);
     }
 
     @Override
@@ -220,22 +222,22 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
     }
 
     @Override
-    public ListenableFuture<Void> saveAsync(P pojo) {
+    public CompletableFuture<Void> saveAsync(P pojo) {
         return completeAsync(group -> save(group, StatementOptionsBuilder.empty(), pojo, defaultTtl));
     }
 
     @Override
-    public ListenableFuture<Void> saveAsync(P pojo, int ttl) {
+    public CompletableFuture<Void> saveAsync(P pojo, int ttl) {
         return completeAsync(group -> save(group, StatementOptionsBuilder.empty(), pojo, ttl));
     }
 
     @Override
-    public ListenableFuture<Void> saveAsync(StatementOptions options, P pojo) {
+    public CompletableFuture<Void> saveAsync(StatementOptions options, P pojo) {
         return completeAsync(group -> save(group, options, pojo, defaultTtl));
     }
 
     @Override
-    public ListenableFuture<Void> saveAsync(StatementOptions options, P pojo, int ttl) {
+    public CompletableFuture<Void> saveAsync(StatementOptions options, P pojo, int ttl) {
         return completeAsync(group -> save(group, options, pojo, ttl));
     }
 
@@ -243,14 +245,14 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private ListenableFuture<Void> completeAsync(Consumer<UpdateGroup> consumer) {
-        UpdateGroup group = new AsyncUpdateGroup(session, executor);
+    private CompletableFuture<Void> completeAsync(Consumer<UpdateGroup> consumer) {
+        UpdateGroup group = new AsyncUpdateGroup(session);
         consumer.accept(group);
         return group.completeAsync();
     }
 
     private void completeSync(Consumer<UpdateGroup> consumer) {
-        UpdateGroup group = new AsyncUpdateGroup(session, executor);
+        UpdateGroup group = new AsyncUpdateGroup(session);
         consumer.accept(group);
         group.complete();
     }
@@ -260,15 +262,15 @@ public class DefaultPojoDao<P> implements PojoDao<P> {
         List<Object> keys = new LinkedList<>();
         pojoBinding.getKeyBinding().collectParameters(pojo, keys);
         BoundStatement statement = pojoBinding.bindWhereIdEquals(delete, keys);
-        options.applyTo(statement);
-        group.addUpdate(statement);
+        Statement optionsApplied = options.applyTo(statement);
+        group.addUpdate(optionsApplied);
     }
 
     private <T> void insertPojo(T pojo, PojoBinding<T> pojoBinding, String tableName, UpdateGroup group, StatementOptions options, int ttl) {
         PreparedStatement insert = statementFactory.createInsert(pojoBinding, tableName);
         BoundStatement statement = pojoBinding.bindInsert(insert, pojo, ttl);
-        options.applyTo(statement);
-        group.addUpdate(statement);
+        Statement optionsApplied = options.applyTo(statement);
+        group.addUpdate(optionsApplied);
     }
 
 //----------------------------------------------------------------------------------------------------------------------

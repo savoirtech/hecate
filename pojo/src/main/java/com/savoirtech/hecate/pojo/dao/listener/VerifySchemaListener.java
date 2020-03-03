@@ -16,7 +16,7 @@
 
 package com.savoirtech.hecate.pojo.dao.listener;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryEvent;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryListener;
 
@@ -25,13 +25,13 @@ public class VerifySchemaListener implements PojoDaoFactoryListener {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Session session;
+    private final CqlSession session;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public VerifySchemaListener(Session session) {
+    public VerifySchemaListener(CqlSession session) {
         this.session = session;
     }
 
@@ -41,6 +41,6 @@ public class VerifySchemaListener implements PojoDaoFactoryListener {
 
     @Override
     public <P> void pojoDaoCreated(PojoDaoFactoryEvent<P> event) {
-        event.getPojoBinding().verifySchema(session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace()), event.getTableName());
+        event.getPojoBinding().verifySchema(session.getMetadata().getKeyspace(session.getKeyspace().get()).get(), event.getTableName());
     }
 }

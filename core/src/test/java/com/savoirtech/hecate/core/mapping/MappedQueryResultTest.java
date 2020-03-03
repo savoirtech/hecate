@@ -16,25 +16,28 @@
 
 package com.savoirtech.hecate.core.mapping;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import com.savoirtech.hecate.test.CassandraSingleton;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.savoirtech.hecate.test.Cassandra;
-import com.savoirtech.hecate.test.CassandraTestCase;
 import org.junit.Before;
 import org.junit.Test;
 
-@Cassandra
-public class MappedQueryResultTest extends CassandraTestCase {
+public class MappedQueryResultTest {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
     @Before
     public void createTables() {
-        withSession(session -> {
+        CassandraSingleton.withSession(session -> {
             session.execute("create table if not exists test (id int primary key, value varchar)");
             session.execute("insert into test (id,value) values (1, 'one')");
             session.execute("insert into test (id,value) values (2, 'two')");
@@ -44,7 +47,7 @@ public class MappedQueryResultTest extends CassandraTestCase {
 
     @Test
     public void testIterator() {
-        withSession(session -> {
+        CassandraSingleton.withSession(session -> {
             MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test"), row -> row.getString(1));
             Iterator<String> iterator = resultSet.iterator();
             assertEquals("one", iterator.next());
@@ -56,7 +59,7 @@ public class MappedQueryResultTest extends CassandraTestCase {
 
     @Test
     public void testIterableOfRows() {
-        withSession(session -> {
+        CassandraSingleton.withSession(session -> {
             MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test").all(), row -> row.getString(1));
             Iterator<String> iterator = resultSet.iterator();
             assertEquals("one", iterator.next());
@@ -68,7 +71,7 @@ public class MappedQueryResultTest extends CassandraTestCase {
 
     @Test
     public void testList() {
-        withSession(session -> {
+        CassandraSingleton.withSession(session -> {
             MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test"), row -> row.getString(1));
             List<String> results = resultSet.list();
             assertTrue(results.contains("one"));
@@ -79,7 +82,7 @@ public class MappedQueryResultTest extends CassandraTestCase {
 
     @Test
     public void testOne() {
-        withSession(session -> {
+        CassandraSingleton.withSession(session -> {
             MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test"), row -> row.getString(1));
             assertEquals("one", resultSet.one());
         });
@@ -87,7 +90,7 @@ public class MappedQueryResultTest extends CassandraTestCase {
 
     @Test
     public void testOneWithNoResults() {
-        withSession(session -> {
+        CassandraSingleton.withSession(session -> {
             MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test where id = 5"), row -> row.getString(1));
             assertNull(resultSet.one());
         });
@@ -95,7 +98,7 @@ public class MappedQueryResultTest extends CassandraTestCase {
 
     @Test
     public void testStream() {
-        withSession(session -> {
+        CassandraSingleton.withSession(session -> {
             MappedQueryResult<String> resultSet = new MappedQueryResult<>(session.execute("select id, value from test"), row -> row.getString(1));
             Set<String> strings = resultSet.stream().map(String::toUpperCase).collect(Collectors.toSet());
             assertEquals(3, strings.size());

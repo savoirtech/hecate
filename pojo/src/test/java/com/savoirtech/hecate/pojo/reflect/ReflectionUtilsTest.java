@@ -16,12 +16,14 @@
 
 package com.savoirtech.hecate.pojo.reflect;
 
+import static com.savoirtech.hecate.test.TestUtils.assertUtilsClass;
+import static org.junit.Assert.assertNotNull;
+
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.entities.NoConstructorPerson;
-import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 
-public class ReflectionUtilsTest extends AbstractTestCase {
+public class ReflectionUtilsTest {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------

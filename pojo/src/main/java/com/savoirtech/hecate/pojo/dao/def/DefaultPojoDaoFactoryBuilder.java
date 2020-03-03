@@ -16,12 +16,12 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import com.datastax.driver.core.Session;
 import com.savoirtech.hecate.pojo.binding.PojoBindingFactory;
 import com.savoirtech.hecate.pojo.binding.def.DefaultPojoBindingFactory;
 import com.savoirtech.hecate.pojo.convert.Converter;
@@ -44,7 +44,7 @@ public class DefaultPojoDaoFactoryBuilder {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Session session;
+    private final CqlSession session;
 
     private PojoBindingFactory bindingFactory;
     private NamingStrategy namingStrategy = new DefaultNamingStrategy();
@@ -62,7 +62,7 @@ public class DefaultPojoDaoFactoryBuilder {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoDaoFactoryBuilder(Session session) {
+    public DefaultPojoDaoFactoryBuilder(CqlSession session) {
         this.session = session;
     }
 

@@ -16,13 +16,13 @@
 
 package com.savoirtech.hecate.pojo.query.def;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.collect.Iterators;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.query.AbstractPojoQuery;
@@ -40,7 +40,7 @@ public class DefaultPojoQuery<P> extends AbstractPojoQuery<P> {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoQuery(Session session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, Select.Where select, List<ParameterConverter> parameterConverters, Executor executor) {
+    public DefaultPojoQuery(CqlSession session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, Select select, List<ParameterConverter> parameterConverters, Executor executor) {
         super(session, binding, contextFactory, select, executor);
         this.parameterConverters = parameterConverters;
     }

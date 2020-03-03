@@ -16,15 +16,16 @@
 
 package com.savoirtech.hecate.pojo.binding.key.component;
 
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.ColumnMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.schema.Schema;
 import com.savoirtech.hecate.core.schema.Table;
 import com.savoirtech.hecate.pojo.convert.Converter;
 import com.savoirtech.hecate.pojo.exception.SchemaVerificationException;
 import com.savoirtech.hecate.pojo.facet.Facet;
+import java.util.Optional;
 
 public class PartitionKeyComponent extends SimpleKeyComponent {
 //----------------------------------------------------------------------------------------------------------------------
@@ -47,8 +48,8 @@ public class PartitionKeyComponent extends SimpleKeyComponent {
     @Override
     public void verifySchema(KeyspaceMetadata keyspaceMetadata, TableMetadata tableMetadata) {
         super.verifySchema(keyspaceMetadata, tableMetadata);
-        ColumnMetadata column = tableMetadata.getColumn(getColumnName());
-        if(!tableMetadata.getPartitionKey().contains(column)) {
+        Optional<ColumnMetadata> column = tableMetadata.getColumn(getColumnName());
+        if(!column.isPresent() || !tableMetadata.getPartitionKey().contains(column.get())) {
             throw new SchemaVerificationException("Column \"%s\" in table \"%s\" is not a partition key.", getColumnName(), tableMetadata.getName());
         }
     }

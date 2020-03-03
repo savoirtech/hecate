@@ -16,18 +16,19 @@
 
 package com.savoirtech.hecate.pojo.convert;
 
-import com.datastax.driver.core.DataType;
-import com.savoirtech.hecate.test.AbstractTestCase;
+import static org.junit.Assert.assertEquals;
+
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import org.junit.Test;
 
-public class NativeConverterTest extends AbstractTestCase {
+public class NativeConverterTest {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
     public void testGetDataType() throws Exception {
-        assertEquals(DataType.varchar(), NativeConverter.STRING.getDataType());
+        assertEquals(DataTypes.TEXT, NativeConverter.STRING.getDataType());
     }
 
     @Test

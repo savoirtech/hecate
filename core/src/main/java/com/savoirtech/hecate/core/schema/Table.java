@@ -16,14 +16,14 @@
 
 package com.savoirtech.hecate.core.schema;
 
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
+import com.datastax.oss.driver.api.querybuilder.schema.CreateTableStart;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.schemabuilder.Create;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
-
-import static com.datastax.driver.core.schemabuilder.SchemaBuilder.createTable;
+import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createTable;
 
 public class Table implements SchemaItem {
 //----------------------------------------------------------------------------------------------------------------------
@@ -48,12 +48,27 @@ public class Table implements SchemaItem {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public SchemaStatement createStatement() {
-        Create create = createTable(tableName).ifNotExists();
-        partitionKeys.forEach(col -> create.addPartitionKey(col.getName(), col.getType()));
-        clusteringColumns.forEach(col -> create.addClusteringColumn(col.getName(), col.getType()));
-        columns.forEach(col -> create.addColumn(col.getName(), col.getType()));
-        return create;
+    public SimpleStatement createStatement() {
+        CreateTableStart createStart = createTable(tableName).ifNotExists();
+
+        CreateTable create = null;
+        for (ColumnDefinition partitionKey : partitionKeys) {
+            if (create == null) {
+                create = createStart.withPartitionKey(partitionKey.getName(), partitionKey.getType());
+            } else {
+                create = create.withPartitionKey(partitionKey.getName(), partitionKey.getType());
+            }
+        }
+
+        for (ColumnDefinition clusteringColumn : clusteringColumns) {
+            create = create.withClusteringColumn(clusteringColumn.getName(), clusteringColumn.getType());
+        }
+
+        for (ColumnDefinition column : columns) {
+            create = create.withColumn(column.getName(), column.getType());
+        }
+
+        return create.build();
     }
 
     @Override

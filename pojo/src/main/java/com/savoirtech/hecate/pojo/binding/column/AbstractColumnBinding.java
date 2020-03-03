@@ -16,11 +16,12 @@
 
 package com.savoirtech.hecate.pojo.binding.column;
 
-import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.ColumnMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
+import com.datastax.oss.driver.api.core.type.DataType;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.exception.SchemaVerificationException;
+import java.util.Optional;
 
 public abstract class AbstractColumnBinding implements ColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
@@ -28,15 +29,15 @@ public abstract class AbstractColumnBinding implements ColumnBinding {
 //----------------------------------------------------------------------------------------------------------------------
 
     protected ColumnMetadata verifyColumn(TableMetadata tableMetadata, String name, DataType type) {
-        ColumnMetadata column = tableMetadata.getColumn(name);
+        Optional<ColumnMetadata> column = tableMetadata.getColumn(name);
 
-        if (column == null) {
-            throw new SchemaVerificationException("Table \"%s\" does not contain column \"%s\" of type \"%s\".", tableMetadata.getName(), name, type.getName());
+        if (!column.isPresent()) {
+            throw new SchemaVerificationException("Table \"%s\" does not contain column \"%s\" of type \"%s\".", tableMetadata.getName(), name, type.asCql(true, true));
         }
-        if (!column.getType().equals(type)) {
-            throw new SchemaVerificationException("Column \"%s\" in table \"%s\" is of the wrong type \"%s\" (expected \"%s\").", name, tableMetadata.getName(), column.getType().getName(), type.getName());
+        if (!column.get().getType().equals(type)) {
+            throw new SchemaVerificationException("Column \"%s\" in table \"%s\" is of the wrong type \"%s\" (expected \"%s\").", name, tableMetadata.getName(), column.get().getType().asCql(true, true), type.asCql(true, true));
         }
-        return column;
+        return column.get();
     }
 
     protected void verifyPartitionKeyColumn(TableMetadata tableMetadata, String name, DataType type) {
@@ -48,7 +49,7 @@ public abstract class AbstractColumnBinding implements ColumnBinding {
 
     protected void verifyClusteringColumn(TableMetadata tableMetadata, String name, DataType type) {
         ColumnMetadata column = verifyColumn(tableMetadata, name, type);
-        if(!tableMetadata.getClusteringColumns().contains(column)) {
+        if(!tableMetadata.getClusteringColumns().containsKey(column)) {
             throw new SchemaVerificationException("Column \"%s\" in table \"%s\" is not a clustering column.", name, tableMetadata.getName());
         }
     }

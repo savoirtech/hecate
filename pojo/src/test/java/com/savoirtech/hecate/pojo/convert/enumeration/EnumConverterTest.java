@@ -16,12 +16,14 @@
 
 package com.savoirtech.hecate.pojo.convert.enumeration;
 
-import com.datastax.driver.core.DataType;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.savoirtech.hecate.pojo.cql.Gender;
-import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 
-public class EnumConverterTest extends AbstractTestCase {
+public class EnumConverterTest {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
@@ -29,7 +31,7 @@ public class EnumConverterTest extends AbstractTestCase {
     @Test
     public void testDataType() {
         EnumConverter converter = new EnumConverter(Gender.class);
-        assertEquals(DataType.varchar(), converter.getDataType());
+        assertEquals(DataTypes.TEXT, converter.getDataType());
     }
 
     @Test

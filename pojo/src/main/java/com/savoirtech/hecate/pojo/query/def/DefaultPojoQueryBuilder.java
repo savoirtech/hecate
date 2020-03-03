@@ -16,20 +16,21 @@
 
 package com.savoirtech.hecate.pojo.query.def;
 
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.bindMarker;
+
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
+import com.datastax.oss.driver.api.querybuilder.relation.ColumnRelationBuilder;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.Clause;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.ParameterBinding;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
@@ -40,19 +41,17 @@ import com.savoirtech.hecate.pojo.query.PojoQueryContextFactory;
 import com.savoirtech.hecate.pojo.query.parameter.ConstantParameterConverter;
 import com.savoirtech.hecate.pojo.query.parameter.ParameterBindingConverter;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
-
 public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Session session;
+    private final CqlSession session;
     private final PojoBinding<P> pojoBinding;
     private final Map<String,ParameterBinding> parameterBindings;
     private final PojoQueryContextFactory contextFactory;
     private final List<ParameterConverter> parameterConverters = new LinkedList<>();
-    private final Select.Where select;
+    private Select select;
     private final Executor executor;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -67,7 +66,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoQueryBuilder(Session session, PojoBinding<P> pojoBinding, String tableName, PojoQueryContextFactory contextFactory, Executor executor) {
+    public DefaultPojoQueryBuilder(CqlSession session, PojoBinding<P> pojoBinding, String tableName, PojoQueryContextFactory contextFactory, Executor executor) {
         this.session = session;
         this.pojoBinding = pojoBinding;
         this.parameterBindings = pojoBinding.getParameterBindings();
@@ -82,7 +81,7 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public PojoQueryBuilder<P> asc(String facetName) {
-        select.orderBy(QueryBuilder.asc(binding(facetName).getColumnName()));
+        this.select = select.orderBy(binding(facetName).getColumnName(), ClusteringOrder.ASC);
         return this;
     }
 
@@ -93,81 +92,81 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
 
     @Override
     public PojoQueryBuilder<P> desc(String facetName) {
-        select.orderBy(QueryBuilder.desc(binding(facetName).getColumnName()));
+        this.select = select.orderBy(binding(facetName).getColumnName(), ClusteringOrder.DESC);
         return this;
     }
 
     @Override
     public PojoQueryBuilder<P> eq(String facetName) {
-        return append(facetName, QueryBuilder::eq);
+        return append(facetName, builder -> builder.isEqualTo(bindMarker()));
     }
 
     @Override
     public PojoQueryBuilder<P> eq(String facetName, Object value) {
-        return append(facetName, QueryBuilder::eq, value);
+        return append(facetName, builder -> builder.isEqualTo(bindMarker()), value);
     }
 
     @Override
     public PojoQueryBuilder<P> gt(String facetName) {
-        return append(facetName, QueryBuilder::gt);
+        return append(facetName, builder -> builder.isGreaterThan(bindMarker()));
     }
 
     @Override
     public PojoQueryBuilder<P> gt(String facetName, Object value) {
-        return append(facetName, QueryBuilder::gt, value);
+        return append(facetName, builder -> builder.isGreaterThan(bindMarker()), value);
     }
 
     @Override
     public PojoQueryBuilder<P> gte(String facetName) {
-        return append(facetName, QueryBuilder::gte);
+        return append(facetName, builder -> builder.isGreaterThanOrEqualTo(bindMarker()));
     }
 
     @Override
     public PojoQueryBuilder<P> gte(String facetName, Object value) {
-        return append(facetName, QueryBuilder::gte, value);
+        return append(facetName, builder -> builder.isGreaterThanOrEqualTo(bindMarker()), value);
     }
 
     @Override
     public PojoQueryBuilder<P> in(String facetName) {
-        return append(facetName, QueryBuilder::in, InConverter::new);
+        return append(facetName, builder -> builder.in(bindMarker()), InConverter::new);
     }
 
     @Override
     public PojoQueryBuilder<P> in(String facetName, Iterable<Object> values) {
-        return append(facetName, QueryBuilder::in, binding -> new ConstantParameterConverter(convertToList(binding, values)));
+        return append(facetName, builder -> builder.in(bindMarker()), binding -> new ConstantParameterConverter(convertToList(binding, values)));
     }
 
     @Override
     public PojoQueryBuilder<P> lt(String facetName) {
-        return append(facetName, QueryBuilder::lt);
+        return append(facetName, builder -> builder.isLessThan(bindMarker()));
     }
 
     @Override
     public PojoQueryBuilder<P> lt(String facetName, Object value) {
-        return append(facetName, QueryBuilder::lt, value);
+        return append(facetName, builder -> builder.isLessThan(bindMarker()), value);
     }
 
     @Override
     public PojoQueryBuilder<P> lte(String facetName) {
-        return append(facetName, QueryBuilder::lte);
+        return append(facetName, builder -> builder.isLessThanOrEqualTo(bindMarker()));
     }
 
     @Override
     public PojoQueryBuilder<P> lte(String facetName, Object value) {
-        return append(facetName, QueryBuilder::lte, value);
+        return append(facetName, builder -> builder.isLessThanOrEqualTo(bindMarker()), value);
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    private PojoQueryBuilder<P> append(String facetName, BiFunction<String,Object,Clause> clause) {
-        return append(facetName, clause, ParameterBindingConverter::new);
+    private PojoQueryBuilder<P> append(String facetName, Function<ColumnRelationBuilder<Select>, Select> columnFunction) {
+        return append(facetName, columnFunction, ParameterBindingConverter::new);
     }
 
-    private PojoQueryBuilder<P> append(String facetName, BiFunction<String,Object,Clause> clauseFn, Function<ParameterBinding,ParameterConverter> converterFn) {
+    private PojoQueryBuilder<P> append(String facetName, Function<ColumnRelationBuilder<Select>, Select> columnFunction, Function<ParameterBinding,ParameterConverter> converterFn) {
         ParameterBinding binding = binding(facetName);
-        select.and(clauseFn.apply(binding.getColumnName(), bindMarker()));
+        this.select = columnFunction.apply(select.whereColumn(binding.getColumnName()));
         parameterConverters.add(converterFn.apply(binding));
         return this;
     }
@@ -180,8 +179,8 @@ public class DefaultPojoQueryBuilder<P> implements PojoQueryBuilder<P> {
         return binding;
     }
 
-    private PojoQueryBuilder<P> append(String facetName, BiFunction<String,Object,Clause> clause, Object value) {
-        return append(facetName, clause, binding -> new ConstantParameterConverter(binding(facetName).toColumnValue(value)));
+    private PojoQueryBuilder<P> append(String facetName, Function<ColumnRelationBuilder<Select>, Select> columnFunction, Object value) {
+        return append(facetName, columnFunction, binding -> new ConstantParameterConverter(binding(facetName).toColumnValue(value)));
     }
 
 //----------------------------------------------------------------------------------------------------------------------

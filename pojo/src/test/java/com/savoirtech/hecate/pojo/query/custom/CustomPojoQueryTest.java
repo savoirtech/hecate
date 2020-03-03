@@ -16,16 +16,16 @@
 
 package com.savoirtech.hecate.pojo.query.custom;
 
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.bindMarker;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.query.PojoQuery;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Test;
-
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 
 public class CustomPojoQueryTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
@@ -33,10 +33,9 @@ public class CustomPojoQueryTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
-    @Cassandra
     public void testExecute() {
         PojoDao<QueryEntity> dao = createPojoDao(QueryEntity.class);
-        PojoQuery<QueryEntity> query = dao.find(where -> where.and(eq("pk", bindMarker())).and(eq("cluster", bindMarker())));
+        PojoQuery<QueryEntity> query = dao.find(select -> select.whereColumn("pk").isEqualTo(bindMarker()).whereColumn("cluster").isEqualTo(bindMarker()));
         QueryEntity entity = new QueryEntity();
         entity.setPk("1");
         entity.setCluster("2");

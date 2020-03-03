@@ -16,11 +16,11 @@
 
 package com.savoirtech.hecate.pojo.dao.listener;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.core.schema.Schema;
 import com.savoirtech.hecate.core.schema.SchemaItem;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryEvent;
@@ -35,13 +35,13 @@ public class CreateSchemaListener implements PojoDaoFactoryListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CreateSchemaListener.class);
 
-    private final Session session;
+    private final CqlSession session;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public CreateSchemaListener(Session session) {
+    public CreateSchemaListener(CqlSession session) {
         this.session = session;
     }
 
@@ -53,9 +53,9 @@ public class CreateSchemaListener implements PojoDaoFactoryListener {
     public <P> void pojoDaoCreated(PojoDaoFactoryEvent<P> event) {
         Schema schema = new Schema();
         event.getPojoBinding().describe(schema.createTable(event.getTableName()), schema);
-        List<SchemaStatement> statements = schema.items().map(SchemaItem::createStatement).collect(Collectors.toList());
+        List<SimpleStatement> statements = schema.items().map(SchemaItem::createStatement).collect(Collectors.toList());
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Creating table(s) to support \"{}\":\n\t{}\n", event.getPojoBinding().getPojoType().getSimpleName(), statements.stream().map(SchemaStatement::getQueryString).collect(Collectors.joining("\n\t")));
+            LOGGER.info("Creating table(s) to support \"{}\":\n\t{}\n", event.getPojoBinding().getPojoType().getSimpleName(), statements.stream().map(SimpleStatement::getQuery).collect(Collectors.joining("\n\t")));
         }
         statements.forEach(session::execute);
     }

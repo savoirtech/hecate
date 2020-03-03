@@ -16,15 +16,21 @@
 
 package com.savoirtech.hecate.pojo.dao.listener;
 
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.bindMarker;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.insertInto;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.selectFrom;
+import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createTable;
+
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import java.util.Optional;
 import java.util.UUID;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.schemabuilder.Create;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
 import com.savoirtech.hecate.core.schema.Schema;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryEvent;
 import com.savoirtech.hecate.pojo.dao.PojoDaoFactoryListener;
@@ -32,13 +38,6 @@ import com.savoirtech.hecate.pojo.exception.SchemaVerificationException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.datastax.driver.core.DataType.varchar;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static com.datastax.driver.core.schemabuilder.SchemaBuilder.createTable;
 
 public class IdempotentCreateSchemaListener implements PojoDaoFactoryListener {
 //----------------------------------------------------------------------------------------------------------------------
@@ -49,7 +48,7 @@ public class IdempotentCreateSchemaListener implements PojoDaoFactoryListener {
     public static final String KEY = "key";
     public static final String CLAIM_ID_COL = "claim_id";
     private static final Logger LOGGER = LoggerFactory.getLogger(IdempotentCreateSchemaListener.class);
-    private final Session session;
+    private final CqlSession session;
     private final PreparedStatement insertStatement;
     private final PreparedStatement selectStatement;
 
@@ -57,46 +56,49 @@ public class IdempotentCreateSchemaListener implements PojoDaoFactoryListener {
 // Static Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    public static Create createIdempotencyTable() {
+    public static SimpleStatement createIdempotencyTable() {
         return createIdempotencyTable(DEFAULT_TABLE_NAME);
     }
 
-    public static Create createIdempotencyTable(String tableName) {
+    public static SimpleStatement createIdempotencyTable(String tableName) {
         return createTable(tableName)
-                .addPartitionKey(KEY, varchar())
-                .addColumn(CLAIM_ID_COL, varchar());
+                .withPartitionKey(KEY, DataTypes.TEXT)
+                .withColumn(CLAIM_ID_COL, DataTypes.TEXT)
+                .build();
     }
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public IdempotentCreateSchemaListener(Session session) {
+    public IdempotentCreateSchemaListener(CqlSession session) {
         this(session, DEFAULT_TABLE_NAME);
     }
 
-    public IdempotentCreateSchemaListener(Session session, String tableName) {
+    public IdempotentCreateSchemaListener(CqlSession session, String tableName) {
         this.session = session;
         verifyIdempotencyTable(session, tableName);
 
         insertStatement = session.prepare(
                 insertInto(tableName)
-                        .ifNotExists()
                         .value(KEY, bindMarker())
-                        .value(CLAIM_ID_COL, bindMarker()));
+                        .value(CLAIM_ID_COL, bindMarker())
+                        .ifNotExists()
+                        .build());
 
         selectStatement = session.prepare(
-                select(CLAIM_ID_COL)
-                        .from(tableName)
-                        .where()
-                        .and(eq(KEY, bindMarker())));
+                selectFrom(tableName)
+                        .column(CLAIM_ID_COL)
+                        .whereColumn(KEY)
+                        .isEqualTo(bindMarker())
+                        .build());
     }
 
-    private static void verifyIdempotencyTable(Session session, String tableName) {
-        KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
-        TableMetadata table = keyspace.getTable(tableName);
-        if (table == null) {
-            final Create create = createIdempotencyTable(tableName);
+    private static void verifyIdempotencyTable(CqlSession session, String tableName) {
+        Optional<KeyspaceMetadata> keyspace = session.getMetadata().getKeyspace(session.getKeyspace().get());
+        Optional<TableMetadata> table = keyspace.get().getTable(tableName);
+        if (!table.isPresent()) {
+            final SimpleStatement create = createIdempotencyTable(tableName);
             LOGGER.error("Schema idempotency table \"{}\" does not exist, please create it using the following CQL:\n\t{}", tableName, create);
             throw new SchemaVerificationException("Schema idempotency table \"%s\" does not exist, see logs for instructions.", tableName);
         }
@@ -118,7 +120,7 @@ public class IdempotentCreateSchemaListener implements PojoDaoFactoryListener {
             session.execute(insertStatement.bind(key, claimId));
             Row row = session.execute(selectStatement.bind(key)).one();
             if (StringUtils.equals(claimId, row.getString(0))) {
-                final SchemaStatement statement = schemaItem.createStatement();
+                final SimpleStatement statement = schemaItem.createStatement();
                 LOGGER.info("Creating table(s) to support \"{}\":\n\t{}\n", event.getPojoBinding().getPojoType().getSimpleName(), statement);
                 session.execute(statement);
             }

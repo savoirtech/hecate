@@ -16,11 +16,11 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 
-import com.datastax.driver.core.Session;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
@@ -45,7 +45,7 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 
     public static final int DEFAULT_THREAD_POOL_SIZE = 5;
 
-    private final Session session;
+    private final CqlSession session;
 
     private final PojoBindingFactory bindingFactory;
     private final PojoStatementFactory statementFactory;
@@ -60,7 +60,7 @@ public class DefaultPojoDaoFactory implements PojoDaoFactory {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoDaoFactory(Session session, PojoBindingFactory bindingFactory, PojoStatementFactory statementFactory, PojoQueryContextFactory contextFactory, NamingStrategy namingStrategy, Executor executor) {
+    public DefaultPojoDaoFactory(CqlSession session, PojoBindingFactory bindingFactory, PojoStatementFactory statementFactory, PojoQueryContextFactory contextFactory, NamingStrategy namingStrategy, Executor executor) {
         this.session = session;
         this.bindingFactory = bindingFactory;
         this.statementFactory = statementFactory;

@@ -16,7 +16,7 @@
 
 package com.savoirtech.hecate.gson;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.google.gson.*;
 import com.savoirtech.hecate.pojo.convert.def.DefaultConverterRegistry;
 import org.junit.Assert;
@@ -50,7 +50,7 @@ public class JsonElementConverterTest extends Assert {
 
     @Test
     public void testGetDataType() {
-        assertEquals(DataType.varchar(), new JsonElementConverter().getDataType());
+        assertEquals(DataTypes.TEXT, new JsonElementConverter().getDataType());
     }
 
     @Test

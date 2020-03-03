@@ -16,14 +16,18 @@
 
 package com.savoirtech.hecate.pojo.test;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.schemabuilder.Create;
-import com.datastax.driver.core.schemabuilder.SchemaBuilder;
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
+import static org.junit.Assert.assertEquals;
+
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
+import com.datastax.oss.driver.api.querybuilder.insert.InsertInto;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.api.querybuilder.select.SelectFrom;
 import com.savoirtech.hecate.core.schema.Schema;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.binding.KeyBinding;
@@ -47,8 +51,8 @@ public class BindingTestCase extends AbstractDaoTestCase {
     protected void assertCreateEquals(ColumnBinding binding, String tableName, String cql) {
         Schema schema = new Schema();
         binding.describe(schema.createTable(tableName), schema);
-        SchemaStatement statement = schema.items().findFirst().get().createStatement();
-        assertEquals(cql, StringUtils.normalizeSpace(statement.getQueryString()));
+        SimpleStatement statement = schema.items().findFirst().get().createStatement();
+        assertEquals(cql, StringUtils.normalizeSpace(statement.getQuery()));
     }
 
     protected void assertDeleteEquals(KeyBinding binding, String cql) {
@@ -56,9 +60,9 @@ public class BindingTestCase extends AbstractDaoTestCase {
     }
 
     protected void assertDeleteEquals(KeyBinding binding, String tableName, String cql) {
-        Delete.Where delete = QueryBuilder.delete().from(tableName).where();
-        binding.delete(delete);
-        assertEquals(cql, delete.getQueryString());
+        Delete delete = QueryBuilder.deleteFrom(tableName).where();
+        delete = binding.delete(delete);
+        assertEquals(cql, delete.toString());
     }
 
     protected void assertInsertEquals(ColumnBinding binding, String cql) {
@@ -66,9 +70,9 @@ public class BindingTestCase extends AbstractDaoTestCase {
     }
 
     protected void assertInsertEquals(ColumnBinding binding, String tableName, String cql) {
-        Insert insert = QueryBuilder.insertInto(tableName);
-        binding.insert(insert);
-        assertEquals(cql, insert.getQueryString());
+        InsertInto insertInto = QueryBuilder.insertInto(tableName);
+        Insert insert = binding.insert(insertInto);
+        assertEquals(cql, insert.toString());
     }
 
     protected void assertSelectEquals(ColumnBinding binding, String cql)
@@ -77,9 +81,9 @@ public class BindingTestCase extends AbstractDaoTestCase {
     }
 
     protected void assertSelectEquals(ColumnBinding binding, String tableName, String cql) {
-        Select.Selection select = QueryBuilder.select();
-        binding.select(select);
-        assertEquals(cql, select.from(tableName).getQueryString());
+        SelectFrom selectFrom = QueryBuilder.selectFrom(tableName);
+        Select select = binding.select(selectFrom);
+        assertEquals(cql, select.toString());
     }
 
     protected void assertSelectWhereEquals(KeyBinding binding, String cql)
@@ -88,15 +92,14 @@ public class BindingTestCase extends AbstractDaoTestCase {
     }
 
     protected void assertSelectWhereEquals(KeyBinding binding, String tableName, String cql) {
-        Select.Selection select = QueryBuilder.select();
-        binding.select(select);
-        Select.Where where = select.from(tableName).where();
-        binding.selectWhere(where);
-        assertEquals(cql, where.getQueryString());
+        SelectFrom selectFrom = QueryBuilder.selectFrom(tableName);
+        Select select = binding.select(selectFrom);
+        select = binding.selectWhere(select);
+        assertEquals(cql, select.toString());
     }
 
     public static void main(String[] args) {
-        Create.Options create = SchemaBuilder.createTable("foo").addPartitionKey("bar", DataType.varchar()).addClusteringColumn("baz", DataType.varchar()).withOptions().clusteringOrder("baz", SchemaBuilder.Direction.DESC);
-        System.out.println(create.getQueryString());
+        SimpleStatement create = SchemaBuilder.createTable("foo").withPartitionKey("bar", DataTypes.TEXT).withClusteringColumn("baz", DataTypes.TEXT).withClusteringOrder("baz", ClusteringOrder.DESC).build();
+        System.out.println(create.toString());
     }
 }

@@ -16,13 +16,15 @@
 
 package com.savoirtech.hecate.pojo.binding.facet;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import java.util.Set;
 
 import com.google.common.collect.Sets;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Test;
 
 public class SetFacetBindingTest extends AbstractDaoTestCase {
@@ -31,7 +33,6 @@ public class SetFacetBindingTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
-    @Cassandra
     public void testWithNullPojoSet() {
         PojoDao<PojoSetEntity> dao = createPojoDao(PojoSetEntity.class);
         PojoSetEntity entity = new PojoSetEntity();
@@ -41,7 +42,6 @@ public class SetFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithNullPrimitiveSet() {
         PojoDao<PrimitiveSetEntity> dao = createPojoDao(PrimitiveSetEntity.class);
         PrimitiveSetEntity entity = new PrimitiveSetEntity();
@@ -51,7 +51,6 @@ public class SetFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithPojoSet() {
         PojoDao<PojoSetEntity> dao = createPojoDao(PojoSetEntity.class);
         PojoSetEntity entity = new PojoSetEntity();
@@ -63,7 +62,6 @@ public class SetFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithPrimitiveSet() {
         PojoDao<PrimitiveSetEntity> dao = createPojoDao(PrimitiveSetEntity.class);
         PrimitiveSetEntity entity = new PrimitiveSetEntity();
@@ -75,9 +73,8 @@ public class SetFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithNullElement() {
-        assertHecateException("Cassandra driver does not support null values inside set<int> collections.", () -> {
+        assertHecateException("Cassandra driver does not support null values inside Set(INT, not frozen) collections.", () -> {
             PojoDao<PrimitiveSetEntity> dao = createPojoDao(PrimitiveSetEntity.class);
             PrimitiveSetEntity entity = new PrimitiveSetEntity();
             entity.setInts(Sets.newHashSet(1, null, 3));

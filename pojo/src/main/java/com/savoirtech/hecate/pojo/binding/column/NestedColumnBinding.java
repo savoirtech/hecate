@@ -16,6 +16,12 @@
 
 package com.savoirtech.hecate.pojo.binding.column;
 
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
+import com.datastax.oss.driver.api.querybuilder.insert.OngoingValues;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
+import com.datastax.oss.driver.api.querybuilder.select.OngoingSelection;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,10 +31,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.core.schema.Schema;
 import com.savoirtech.hecate.core.schema.Table;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
@@ -81,13 +83,29 @@ public abstract class NestedColumnBinding<B extends ColumnBinding> extends Abstr
     }
 
     @Override
-    public void insert(Insert insert) {
-        forEachBinding(facetBinding -> facetBinding.insert(insert));
+    public RegularInsert insert(OngoingValues insertInto) {
+        RegularInsert last = null;
+        for (B binding : bindings) {
+            if (last == null) {
+                last = binding.insert(insertInto);
+            } else {
+                last = binding.insert(last);
+            }
+        }
+        return last;
     }
 
     @Override
-    public void select(Select.Selection select) {
-        forEachBinding(binding -> binding.select(select));
+    public Select select(OngoingSelection select) {
+        Select last = null;
+        for (B binding : bindings) {
+            if (last == null) {
+                last = binding.select(select);
+            } else {
+                last = binding.select(last);
+            }
+        }
+        return last;
     }
 
     @Override

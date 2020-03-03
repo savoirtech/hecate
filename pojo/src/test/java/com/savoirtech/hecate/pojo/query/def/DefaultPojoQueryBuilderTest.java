@@ -16,6 +16,9 @@
 
 package com.savoirtech.hecate.pojo.query.def;
 
+import static org.junit.Assert.assertEquals;
+
+import com.savoirtech.hecate.test.CassandraSingleton;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -25,11 +28,11 @@ import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.query.PojoMultiQuery;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-@Cassandra
+
 public class DefaultPojoQueryBuilderTest extends AbstractDaoTestCase {
     public static final String PARTITION_KEY_VALUE = "pk";
     //----------------------------------------------------------------------------------------------------------------------
@@ -50,6 +53,11 @@ public class DefaultPojoQueryBuilderTest extends AbstractDaoTestCase {
         dao.save(new QueryPojo(PARTITION_KEY_VALUE, now));
         dao.save(new QueryPojo(PARTITION_KEY_VALUE, now.plusDays(1)));
         dao.save(new QueryPojo(PARTITION_KEY_VALUE, now.plusDays(2)));
+    }
+
+    @After
+    public void after() {
+        CassandraSingleton.clean();
     }
 
     @Test

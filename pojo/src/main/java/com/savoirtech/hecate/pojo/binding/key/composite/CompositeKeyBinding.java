@@ -16,13 +16,16 @@
 
 package com.savoirtech.hecate.pojo.binding.key.composite;
 
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.bindMarker;
+
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.relation.OngoingWhereClause;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
@@ -38,9 +41,6 @@ import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
 import org.apache.commons.lang3.builder.CompareToBuilder;
-
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 
 public class CompositeKeyBinding extends NestedColumnBinding<KeyComponent> implements KeyBinding {
 //----------------------------------------------------------------------------------------------------------------------
@@ -89,8 +89,16 @@ public class CompositeKeyBinding extends NestedColumnBinding<KeyComponent> imple
     }
 
     @Override
-    public void delete(Delete.Where delete) {
-        forEachBinding(c -> c.delete(delete));
+    public Delete delete(OngoingWhereClause<Delete> delete) {
+        Delete last = null;
+        for (KeyComponent binding : getBindings()) {
+            if (last == null) {
+                last = binding.delete(delete);
+            } else {
+                last = binding.delete(last);
+            }
+        }
+        return last;
     }
 
     @Override
@@ -115,7 +123,15 @@ public class CompositeKeyBinding extends NestedColumnBinding<KeyComponent> imple
     }
 
     @Override
-    public void selectWhere(Select.Where select) {
-        forEachBinding(c -> select.and(eq(c.getColumnName(), bindMarker())));
+    public Select selectWhere(Select select) {
+        Select last = null;
+        for (KeyComponent binding : getBindings()) {
+            if (last == null) {
+                last = select.whereColumn(binding.getColumnName()).isEqualTo(bindMarker());
+            } else {
+                last = last.whereColumn(binding.getColumnName()).isEqualTo(bindMarker());
+            }
+        }
+        return last;
     }
 }

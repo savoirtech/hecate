@@ -16,38 +16,33 @@
 
 package com.savoirtech.hecate.core.update;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.Statement;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.savoirtech.hecate.core.exception.HecateException;
+import java.util.stream.Collectors;
 
 public class AsyncUpdateGroup implements UpdateGroup {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    private final Session session;
-    private final List<ResultSetFuture> futures = Collections.synchronizedList(Lists.newLinkedList());
-    private final Executor executor;
+    private final CqlSession session;
+    private final List<CompletionStage> futures = Collections.synchronizedList(Lists.newLinkedList());
 
 //----------------------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public AsyncUpdateGroup(Session session, Executor executor) {
+    public AsyncUpdateGroup(CqlSession session) {
         this.session = session;
-        this.executor = executor;
     }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -62,14 +57,17 @@ public class AsyncUpdateGroup implements UpdateGroup {
     @Override
     public void complete() {
         try {
-            Uninterruptibles.getUninterruptibly(Futures.allAsList(futures));
+            Uninterruptibles.getUninterruptibly(CompletableFuture.allOf(futures.stream().map(stage -> stage.toCompletableFuture()).collect(Collectors.toList()).toArray(new CompletableFuture[0])));
         } catch (ExecutionException e) {
             throw new HecateException(e, "An unknown exception occurred while executing query.");
         }
     }
 
     @Override
-    public ListenableFuture<Void> completeAsync() {
-        return Futures.transform(Futures.allAsList(futures), (Function<List<ResultSet>, Void>) list -> null, executor);
+    public CompletableFuture<Void> completeAsync() {
+        return CompletableFuture.allOf(futures.stream()
+                .map(stage -> stage.toCompletableFuture())
+                .collect(Collectors.toList())
+                .toArray(new CompletableFuture[0]));
     }
 }

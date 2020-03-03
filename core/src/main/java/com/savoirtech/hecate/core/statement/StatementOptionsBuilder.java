@@ -16,13 +16,12 @@
 
 package com.savoirtech.hecate.core.statement;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.policies.RetryPolicy;
-
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class StatementOptionsBuilder {
 //----------------------------------------------------------------------------------------------------------------------
@@ -30,7 +29,7 @@ public class StatementOptionsBuilder {
 //----------------------------------------------------------------------------------------------------------------------
 
     private static final StatementOptions EMPTY = new StatementOptionsBuilder().build();
-    private final List<Consumer<Statement>> options = new LinkedList<>();
+    private final List<Function<Statement, Statement>> options = new LinkedList<>();
 
 //----------------------------------------------------------------------------------------------------------------------
 // Static Methods
@@ -60,6 +59,11 @@ public class StatementOptionsBuilder {
         return new StatementOptionsBuilder().withFetchSize(size);
     }
 
+    /**
+     * 4.x driver no longer supports retryPolicy settings on a statement.
+     * In addition, by default, there is now only one default retry policy implementation
+     */
+    @Deprecated
     public static StatementOptionsBuilder retryPolicy(RetryPolicy policy) {
         return new StatementOptionsBuilder().withRetryPolicy(policy);
     }
@@ -81,7 +85,7 @@ public class StatementOptionsBuilder {
 //----------------------------------------------------------------------------------------------------------------------
 
     public StatementOptions build() {
-        return statement -> options.forEach(option -> option.accept(statement));
+        return new DefaultStatementOptions(options);
     }
 
     public StatementOptionsBuilder withConsistencyLevel(ConsistencyLevel level) {
@@ -90,27 +94,26 @@ public class StatementOptionsBuilder {
     }
 
     private StatementOptionsBuilder withDefaultTimestamp(long timestamp) {
-        options.add(stmt -> stmt.setDefaultTimestamp(timestamp));
+        options.add(stmt -> stmt.setQueryTimestamp(timestamp));
         return this;
     }
 
     private StatementOptionsBuilder withDisableTracing() {
-        options.add(Statement::disableTracing);
+        options.add(stmt -> stmt.setTracing(false));
         return this;
     }
 
     private StatementOptionsBuilder withEnableTracing() {
-        options.add(Statement::enableTracing);
+        options.add(stmt -> stmt.setTracing(true));
         return this;
     }
 
     private StatementOptionsBuilder withFetchSize(int size) {
-        options.add(stmt -> stmt.setFetchSize(size));
+        options.add(stmt -> stmt.setPageSize(size));
         return this;
     }
 
     private StatementOptionsBuilder withRetryPolicy(RetryPolicy policy) {
-        options.add(stmt -> stmt.setRetryPolicy(policy));
         return this;
     }
 

@@ -16,7 +16,8 @@
 
 package com.savoirtech.hecate.pojo.convert.enumeration;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.savoirtech.hecate.pojo.convert.Converter;
 
 public class EnumConverter implements Converter {
@@ -40,7 +41,7 @@ public class EnumConverter implements Converter {
 
     @Override
     public DataType getDataType() {
-        return DataType.varchar();
+        return DataTypes.TEXT;
     }
 
     @Override

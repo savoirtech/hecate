@@ -16,7 +16,7 @@
 
 package com.savoirtech.hecate.pojo.query.mapper;
 
-import com.datastax.driver.core.Row;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.savoirtech.hecate.core.mapping.RowMapper;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;

@@ -16,10 +16,18 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.savoirtech.hecate.test.CassandraSingleton;
 import java.util.concurrent.TimeUnit;
 
-import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.savoirtech.hecate.annotation.Ttl;
 import com.savoirtech.hecate.core.statement.StatementOptionsBuilder;
 import com.savoirtech.hecate.core.update.AsyncUpdateGroup;
@@ -27,11 +35,9 @@ import com.savoirtech.hecate.core.update.BatchUpdateGroup;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Before;
 import org.junit.Test;
 
-@Cassandra
 public class DefaultPojoDaoTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
@@ -60,7 +66,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     @Test
     public void testSaveWithSimpleDaoFactory() {
         Person expected = new Person("Slappy", "White");
-        DefaultPojoDaoFactoryBuilder factory = new DefaultPojoDaoFactoryBuilder(getSession());
+        DefaultPojoDaoFactoryBuilder factory = new DefaultPojoDaoFactoryBuilder(CassandraSingleton.getSession());
         PojoDao<Person> dao = factory.build().createPojoDao(Person.class);
         dao.save(expected);
         Person actual = dao.findByKey(expected.getId());
@@ -70,7 +76,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     @Test
     public void testSaveWithUpdateGroup() {
         Person expected = new Person("Slappy", "White");
-        BatchUpdateGroup group = new BatchUpdateGroup(getSession(), EXECUTOR);
+        BatchUpdateGroup group = new BatchUpdateGroup(CassandraSingleton.getSession(), EXECUTOR);
         dao.save(group, expected);
         assertNull(dao.findByKey(expected.getId()));
         group.complete();
@@ -81,7 +87,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     public void testSaveWithUpdateGroupAndOptions() {
         TtlEntity expected = new TtlEntity();
         PojoDao<TtlEntity> dao = createPojoDao(TtlEntity.class);
-        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession(), EXECUTOR);
+        AsyncUpdateGroup group = new AsyncUpdateGroup(CassandraSingleton.getSession());
         long ts = System.currentTimeMillis() + 20000;
         dao.save(group, StatementOptionsBuilder.defaultTimestamp(ts).build(), expected);
         group.complete();
@@ -94,7 +100,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     public void testSaveWithUpdateGroupAndOptionsAndTtl() {
         TtlEntity expected = new TtlEntity();
         PojoDao<TtlEntity> dao = createPojoDao(TtlEntity.class);
-        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession(), EXECUTOR);
+        AsyncUpdateGroup group = new AsyncUpdateGroup(CassandraSingleton.getSession());
         long ts = System.currentTimeMillis() + 20000;
         dao.save(group, StatementOptionsBuilder.defaultTimestamp(ts).build(), expected, 60000);
         group.complete();
@@ -107,7 +113,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
     public void testSaveWithUpdateGroupAndTtl() {
         TtlEntity expected = new TtlEntity();
         PojoDao<TtlEntity> dao = createPojoDao(TtlEntity.class);
-        AsyncUpdateGroup group = new AsyncUpdateGroup(getSession(), EXECUTOR);
+        AsyncUpdateGroup group = new AsyncUpdateGroup(CassandraSingleton.getSession());
         long ts = System.currentTimeMillis() + 20000;
         dao.save(group, expected, 60000);
         group.complete();
@@ -119,11 +125,13 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
 
 
     private int ttlOf(TtlEntity entity) {
-        return getSession().execute("select TTL(name) from ttl_entity where id=?", entity.getId()).one().getInt(0);
+        SimpleStatement query = QueryBuilder.selectFrom("ttl_entity").ttl("name").whereColumn("id").isEqualTo(literal(entity.getId())).build();
+        return CassandraSingleton.getSession().execute(query).one().getInt(0);
     }
 
     private long writeTime(TtlEntity entity) {
-        return getSession().execute("select WRITETIME(name) from ttl_entity where id=?", entity.getId()).one().getLong(0);
+        SimpleStatement query = QueryBuilder.selectFrom("ttl_entity").writeTime("name").whereColumn("id").isEqualTo(literal(entity.getId())).build();
+        return CassandraSingleton.getSession().execute(query).one().getLong(0);
     }
 
     @Test
@@ -210,7 +218,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         Person pojo = new Person("Slappy", "White");
         dao.save(pojo);
         assertNotNull(dao.findByKey(pojo.getId()));
-        dao.delete(StatementOptionsBuilder.retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build(), pojo);
+        dao.delete(StatementOptionsBuilder.consistencyLevel(ConsistencyLevel.ALL).build(), pojo);
         assertNull(dao.findByKey(pojo.getId()));
     }
 
@@ -230,7 +238,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         Person pojo = new Person("Slappy", "White");
         dao.save(pojo);
         assertNotNull(dao.findByKey(pojo.getId()));
-        dao.deleteAsync(StatementOptionsBuilder.retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build(), pojo).get();
+        dao.deleteAsync(StatementOptionsBuilder.consistencyLevel(ConsistencyLevel.ALL).build(), pojo).get();
         assertNull(dao.findByKey(pojo.getId()));
     }
 
@@ -240,7 +248,9 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         PojoDao<Person> dao = createPojoDao(Person.class);
         Person pojo = new Person("Slappy", "White");
         dao.save(pojo);
-        dao.delete(new AsyncUpdateGroup(cassandraRule.getSession(), MoreExecutors.directExecutor()), pojo);
+        AsyncUpdateGroup asyncUpdateGroup = new AsyncUpdateGroup(CassandraSingleton.getSession());
+        dao.delete(asyncUpdateGroup, pojo);
+        asyncUpdateGroup.complete();
         assertNull(dao.findByKey(pojo.getId()));
     }
 
@@ -266,7 +276,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         Person pojo = new Person("Slappy", "White");
         dao.save(pojo);
         assertNotNull(dao.findByKey(pojo.getId()));
-        dao.deleteByKey(StatementOptionsBuilder.retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build(), pojo.getId());
+        dao.deleteByKey(StatementOptionsBuilder.consistencyLevel(ConsistencyLevel.ALL).build(), pojo.getId());
         assertNull(dao.findByKey(pojo.getId()));
     }
 
@@ -286,7 +296,7 @@ public class DefaultPojoDaoTest extends AbstractDaoTestCase {
         Person pojo = new Person("Slappy", "White");
         dao.save(pojo);
         assertNotNull(dao.findByKey(pojo.getId()));
-        dao.deleteByKeyAsync(StatementOptionsBuilder.retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build(), pojo.getId()).get();
+        dao.deleteByKeyAsync(StatementOptionsBuilder.consistencyLevel(ConsistencyLevel.ALL).build(), pojo.getId()).get();
         assertNull(dao.findByKey(pojo.getId()));
     }
     

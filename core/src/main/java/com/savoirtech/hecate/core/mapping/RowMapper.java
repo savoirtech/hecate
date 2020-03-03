@@ -16,7 +16,7 @@
 
 package com.savoirtech.hecate.core.mapping;
 
-import com.datastax.driver.core.Row;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 @FunctionalInterface
 public interface RowMapper<T> {

@@ -16,13 +16,13 @@
 
 package com.savoirtech.hecate.core.schema;
 
-import com.datastax.driver.core.schemabuilder.SchemaStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 public interface SchemaItem {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    SchemaStatement createStatement();
+    SimpleStatement createStatement();
     String getKey();
 }

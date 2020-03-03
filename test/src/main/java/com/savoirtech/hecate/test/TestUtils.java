@@ -13,31 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.savoirtech.hecate.test;
 
-import java.util.function.Consumer;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import com.datastax.driver.core.Session;
-import org.junit.Rule;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import org.junit.Before;
+import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class CassandraTestCase extends AbstractTestCase {
+public class TestUtils {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-    @Rule
-    public final CassandraRule cassandraRule = new CassandraRule();
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
 //----------------------------------------------------------------------------------------------------------------------
 
-    protected Session getSession() {
-        return cassandraRule.getSession();
+    public static void assertUtilsClass(Class<?> c) {
+        Constructor ctor = null;
+        try {
+            ctor = c.getDeclaredConstructor();
+            assertTrue(Modifier.isPrivate(ctor.getModifiers()));
+            assertInstantiatable(ctor);
+        } catch (NoSuchMethodException e) {
+            fail("No default constructor defined for class " + c.getCanonicalName());
+        }
     }
 
-    protected void withSession(Consumer<Session> consumer) {
-        consumer.accept(getSession());
+    private static void assertInstantiatable(Constructor ctor) {
+        ctor.setAccessible(true);
+        try {
+            ctor.newInstance();
+        } catch (ReflectiveOperationException e) {
+            fail("Unable to instantiate!");
+        }
+    }
+
+    @Before
+    public void initMocks() {
+        MockitoAnnotations.initMocks(this);
     }
 }

@@ -16,15 +16,16 @@
 
 package com.savoirtech.hecate.pojo.dao;
 
+import com.datastax.oss.driver.api.querybuilder.select.Select;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import com.datastax.driver.core.querybuilder.Select;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.core.update.UpdateGroup;
 import com.savoirtech.hecate.pojo.query.PojoMultiQuery;
 import com.savoirtech.hecate.pojo.query.PojoQuery;
 import com.savoirtech.hecate.pojo.query.PojoQueryBuilder;
+import java.util.function.Function;
 
 public interface PojoDao<P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -69,7 +70,7 @@ public interface PojoDao<P> {
      * @param pojo the POJO
      * @return a future which will be completed when the POJO is deleted
      */
-    ListenableFuture<Void> deleteAsync(P pojo);
+    CompletableFuture<Void> deleteAsync(P pojo);
 
     /**
      * Asynchronously deletes a POJO using the supplied {@link StatementOptions}.
@@ -78,7 +79,7 @@ public interface PojoDao<P> {
      * @param pojo    the POJO
      * @return a future which will be completed when the POJO is deleted
      */
-    ListenableFuture<Void> deleteAsync(StatementOptions options, P pojo);
+    CompletableFuture<Void> deleteAsync(StatementOptions options, P pojo);
 
     /**
      * Deletes a POJO by its primary key.
@@ -111,7 +112,7 @@ public interface PojoDao<P> {
      * @param components the components of the primary key
      * @return a future which will be completed when the POJO is deleted
      */
-    ListenableFuture<Void> deleteByKeyAsync(Object... components);
+    CompletableFuture<Void> deleteByKeyAsync(Object... components);
 
     /**
      * Asynchronously deletes a POJO by its primary key using the supplied {@link StatementOptions}.
@@ -120,7 +121,7 @@ public interface PojoDao<P> {
      * @param components the components of the primary key
      * @return a future which will be completed when the POJO is deleted
      */
-    ListenableFuture<Void> deleteByKeyAsync(StatementOptions options, Object... components);
+    CompletableFuture<Void> deleteByKeyAsync(StatementOptions options, Object... components);
 
     /**
      * Returns a {@link PojoQueryBuilder} which can be used to build a query to find {@link P} objects.
@@ -132,10 +133,10 @@ public interface PojoDao<P> {
     /**
      * Returns a {@link PojoQuery} which uses a custom where clause to find {@link P} objects.
      *
-     * @param builder a consumer which builds a custom where clause
+     * @param builder a function which builds a custom where clause
      * @return the query
      */
-    PojoQuery<P> find(Consumer<Select.Where> builder);
+    PojoQuery<P> find(Function<Select, Select> builder);
 
     /**
      * Finds an POJO by its primary key.
@@ -246,7 +247,7 @@ public interface PojoDao<P> {
      * @param pojo the POJO
      * @return a future which will be completed when the POJO is saved
      */
-    ListenableFuture<Void> saveAsync(P pojo);
+    CompletableFuture<Void> saveAsync(P pojo);
 
     /**
      * Asynchronously saves a POJO using the supplied TTL value.
@@ -255,7 +256,7 @@ public interface PojoDao<P> {
      * @param ttl  the TTL
      * @return a future which will be completed when the POJO is saved
      */
-    ListenableFuture<Void> saveAsync(P pojo, int ttl);
+    CompletableFuture<Void> saveAsync(P pojo, int ttl);
 
     /**
      * Asynchronously saves a POJO using the supplied {@link StatementOptions}.
@@ -264,7 +265,7 @@ public interface PojoDao<P> {
      * @param pojo    the POJO
      * @return a future which will be completed when the POJO is saved
      */
-    ListenableFuture<Void> saveAsync(StatementOptions options, P pojo);
+    CompletableFuture<Void> saveAsync(StatementOptions options, P pojo);
 
     /**
      * Asynchronously saves a POJO using the supplied {@link StatementOptions} and TTL value.
@@ -274,5 +275,5 @@ public interface PojoDao<P> {
      * @param ttl     the TTL
      * @return a future which will be completed when the POJO is saved
      */
-    ListenableFuture<Void> saveAsync(StatementOptions options, P pojo, int ttl);
+    CompletableFuture<Void> saveAsync(StatementOptions options, P pojo, int ttl);
 }

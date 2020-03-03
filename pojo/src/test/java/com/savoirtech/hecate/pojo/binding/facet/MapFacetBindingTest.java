@@ -16,13 +16,15 @@
 
 package com.savoirtech.hecate.pojo.binding.facet;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import java.util.Map;
 
 import com.google.common.collect.Maps;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Test;
 
 public class MapFacetBindingTest extends AbstractDaoTestCase {
@@ -31,7 +33,6 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
-    @Cassandra
     public void testWithNullPojoMap() {
         PojoDao<PojoMapEntity> dao = createPojoDao(PojoMapEntity.class);
         PojoMapEntity entity = new PojoMapEntity();
@@ -41,7 +42,6 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithNullPrimitiveMap() {
         PojoDao<PrimitiveMapEntity> dao = createPojoDao(PrimitiveMapEntity.class);
         PrimitiveMapEntity entity = new PrimitiveMapEntity();
@@ -51,7 +51,6 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithPojoMap() {
         PojoDao<PojoMapEntity> dao = createPojoDao(PojoMapEntity.class);
         PojoMapEntity entity = new PojoMapEntity();
@@ -65,7 +64,6 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithPrimitiveMap() {
         PojoDao<PrimitiveMapEntity> dao = createPojoDao(PrimitiveMapEntity.class);
         PrimitiveMapEntity entity = new PrimitiveMapEntity();
@@ -79,9 +77,8 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithNullKey() {
-        assertHecateException("Cassandra driver does not support null key values inside map<varchar, int> collections.", () -> {
+        assertHecateException("Cassandra driver does not support null key values inside Map(TEXT => INT, not frozen) collections.", () -> {
             PojoDao<PrimitiveMapEntity> dao = createPojoDao(PrimitiveMapEntity.class);
             PrimitiveMapEntity entity = new PrimitiveMapEntity();
             Map<String,Integer> expected = Maps.newHashMap();
@@ -92,9 +89,8 @@ public class MapFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithNullValue() {
-        assertHecateException("Cassandra driver does not support null values inside map<varchar, int> collections.", () -> {
+        assertHecateException("Cassandra driver does not support null values inside Map(TEXT => INT, not frozen) collections.", () -> {
             PojoDao<PrimitiveMapEntity> dao = createPojoDao(PrimitiveMapEntity.class);
             PrimitiveMapEntity entity = new PrimitiveMapEntity();
             Map<String,Integer> expected = Maps.newHashMap();

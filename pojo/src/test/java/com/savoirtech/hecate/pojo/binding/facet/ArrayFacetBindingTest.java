@@ -16,10 +16,12 @@
 
 package com.savoirtech.hecate.pojo.binding.facet;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNull;
+
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Test;
 
 public class ArrayFacetBindingTest extends AbstractDaoTestCase {
@@ -28,7 +30,6 @@ public class ArrayFacetBindingTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
-    @Cassandra
     public void testWithNullPojoArray() {
         PojoDao<PojoArrayEntity> dao = createPojoDao(PojoArrayEntity.class);
         PojoArrayEntity entity = new PojoArrayEntity();
@@ -38,7 +39,6 @@ public class ArrayFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithNullPrimitiveArray() {
         PojoDao<PrimitiveArrayEntity> dao = createPojoDao(PrimitiveArrayEntity.class);
         PrimitiveArrayEntity entity = new PrimitiveArrayEntity();
@@ -48,7 +48,6 @@ public class ArrayFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithPojoArray() {
         PojoDao<PojoArrayEntity> dao = createPojoDao(PojoArrayEntity.class);
         PojoArrayEntity entity = new PojoArrayEntity();
@@ -60,7 +59,6 @@ public class ArrayFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithPrimitiveArray() {
         PojoDao<PrimitiveArrayEntity> dao = createPojoDao(PrimitiveArrayEntity.class);
         PrimitiveArrayEntity entity = new PrimitiveArrayEntity();
@@ -72,9 +70,8 @@ public class ArrayFacetBindingTest extends AbstractDaoTestCase {
     }
 
     @Test
-    @Cassandra
     public void testWithNullElement() {
-        assertHecateException("Cassandra driver does not support null values inside list<varchar> collections.", () -> {
+        assertHecateException("Cassandra driver does not support null values inside List(TEXT, not frozen) collections.", () -> {
             PojoDao<PojoArrayEntity> dao = createPojoDao(PojoArrayEntity.class);
             PojoArrayEntity entity = new PojoArrayEntity();
             entity.setPojos(new ElementEntity[] {new ElementEntity(), null, new ElementEntity()});

@@ -16,7 +16,8 @@
 
 package com.savoirtech.hecate.pojo.convert.time;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.savoirtech.hecate.pojo.convert.Converter;
 
 import java.time.LocalTime;
@@ -28,7 +29,7 @@ public class JavaLocalTimeConverter implements Converter {
 
     @Override
     public DataType getDataType() {
-        return DataType.varchar();
+        return DataTypes.TEXT;
     }
 
     @Override

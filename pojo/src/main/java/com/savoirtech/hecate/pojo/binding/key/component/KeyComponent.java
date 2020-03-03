@@ -16,8 +16,9 @@
 
 package com.savoirtech.hecate.pojo.binding.key.component;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.relation.OngoingWhereClause;
 import com.savoirtech.hecate.pojo.binding.ColumnBinding;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
@@ -29,7 +30,7 @@ public interface KeyComponent extends ColumnBinding {
 
     Facet getFacet();
     DataType getDataType();
-    void delete(Delete.Where delete);
+    Delete delete(OngoingWhereClause<Delete> delete);
     int getOrder();
     int getRank();
     String getColumnName();

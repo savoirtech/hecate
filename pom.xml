@@ -54,58 +54,39 @@
 
 
         <!-- Dependency Versions -->
-        <cassandra.version>3.11.2</cassandra.version>
-        <cassandra.driver.version>3.1.4</cassandra.driver.version>
-        <cassandra.unit.version>3.3.0.2</cassandra.unit.version>
-        <commons.codec.version>1.10</commons.codec.version>
-        <commons.lang3.version>3.4</commons.lang3.version>
+        <cassandra.driver.version>4.4.0</cassandra.driver.version>
+        <commons.codec.version>1.14</commons.codec.version>
+        <commons.lang3.version>3.9</commons.lang3.version>
         <guava.version>18.0</guava.version>
-        <gson.version>2.3.1</gson.version>
-        <joda.time.version>2.7</joda.time.version>
+        <gson.version>2.8.6</gson.version>
+        <joda.time.version>2.10.5</joda.time.version>
         <junit.version>4.11</junit.version>
-        <karaf.version>3.0.3</karaf.version>
-        <metrics.version>3.1.2</metrics.version>
+        <karaf.version>4.2.0</karaf.version>
+        <metrics.version>4.0.5</metrics.version>
         <mockito.version>1.10.19</mockito.version>
-        <netty.version>4.0.51.Final</netty.version>
+        <netty.version>4.1.45.Final</netty.version>
         <osgi.version>6.0.0</osgi.version>
         <pax.exam.version>4.5.0</pax.exam.version>
         <slf4j.version>1.7.7</slf4j.version>
         <eaio.uuid.version>3.2</eaio.uuid.version>
 
+        <logback.version>1.2.3</logback.version>
+        <testcontainer.version>1.12.5</testcontainer.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
 
-            <!-- CQL3 - Driver -->
             <dependency>
-                <groupId>com.datastax.cassandra</groupId>
-                <artifactId>cassandra-driver-core</artifactId>
+                <groupId>com.datastax.oss</groupId>
+                <artifactId>java-driver-core</artifactId>
                 <version>${cassandra.driver.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.codahale.metrics</groupId>
-                        <artifactId>metrics-core</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
-                <groupId>org.cassandraunit</groupId>
-                <artifactId>cassandra-unit</artifactId>
-                <version>${cassandra.unit.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.cassandra</groupId>
-                <artifactId>cassandra-all</artifactId>
-                <version>${cassandra.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.cassandra</groupId>
-                <artifactId>cassandra-thrift</artifactId>
-                <version>${cassandra.version}</version>
+                <groupId>com.datastax.oss</groupId>
+                <artifactId>java-driver-query-builder</artifactId>
+                <version>${cassandra.driver.version}</version>
             </dependency>
 
             <dependency>
@@ -169,6 +150,24 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${testcontainer.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>cassandra</artifactId>
+                <version>${testcontainer.version}</version>
             </dependency>
 
         </dependencies>

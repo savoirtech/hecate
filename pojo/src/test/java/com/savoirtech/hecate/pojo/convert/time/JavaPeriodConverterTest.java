@@ -16,7 +16,7 @@
 
 package com.savoirtech.hecate.pojo.convert.time;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -52,7 +52,7 @@ public class JavaPeriodConverterTest extends Assert {
 
     @Test
     public void testGetDataType() {
-        assertEquals(DataType.varchar(), new JavaPeriodConverter().getDataType());
+        assertEquals(DataTypes.TEXT, new JavaPeriodConverter().getDataType());
     }
 
     @Test

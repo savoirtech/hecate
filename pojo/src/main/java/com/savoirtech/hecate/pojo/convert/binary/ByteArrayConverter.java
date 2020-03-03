@@ -16,7 +16,8 @@
 
 package com.savoirtech.hecate.pojo.convert.binary;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.savoirtech.hecate.pojo.convert.Converter;
 
 import java.nio.ByteBuffer;
@@ -28,7 +29,7 @@ public class ByteArrayConverter implements Converter {
 
     @Override
     public DataType getDataType() {
-        return DataType.blob();
+        return DataTypes.BLOB;
     }
 
     @Override

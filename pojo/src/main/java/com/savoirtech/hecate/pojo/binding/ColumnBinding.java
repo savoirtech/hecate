@@ -16,14 +16,16 @@
 
 package com.savoirtech.hecate.pojo.binding;
 
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
+import com.datastax.oss.driver.api.querybuilder.insert.OngoingValues;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
+import com.datastax.oss.driver.api.querybuilder.select.OngoingSelection;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.core.schema.Schema;
 import com.savoirtech.hecate.core.schema.Table;
 import com.savoirtech.hecate.pojo.facet.Facet;
@@ -42,9 +44,9 @@ public interface ColumnBinding {
 
     void injectValues(Object pojo, Iterator<Object> columnValues, PojoQueryContext context);
 
-    void insert(Insert insert);
+    RegularInsert insert(OngoingValues insertInto);
 
-    void select(Select.Selection select);
+    Select select(OngoingSelection select);
 
     void verifySchema(KeyspaceMetadata keyspaceMetadata, TableMetadata tableMetadata);
 

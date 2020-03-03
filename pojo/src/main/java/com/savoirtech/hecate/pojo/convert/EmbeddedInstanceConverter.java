@@ -16,7 +16,8 @@
 
 package com.savoirtech.hecate.pojo.convert;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
 
 public class EmbeddedInstanceConverter implements Converter {
@@ -40,7 +41,7 @@ public class EmbeddedInstanceConverter implements Converter {
 
     @Override
     public DataType getDataType() {
-        return DataType.cboolean();
+        return DataTypes.BOOLEAN;
     }
 
     @Override

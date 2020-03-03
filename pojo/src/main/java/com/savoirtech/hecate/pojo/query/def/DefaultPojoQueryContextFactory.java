@@ -16,9 +16,9 @@
 
 package com.savoirtech.hecate.pojo.query.def;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import java.util.concurrent.Executor;
 
-import com.datastax.driver.core.Session;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 import com.savoirtech.hecate.pojo.query.PojoQueryContextFactory;
 import com.savoirtech.hecate.pojo.statement.PojoStatementFactory;
@@ -30,7 +30,7 @@ public class DefaultPojoQueryContextFactory implements PojoQueryContextFactory {
 
     public static final int DEFAULT_MAX_CACHE_SIZE = 5000;
 
-    private final Session session;
+    private final CqlSession session;
     private final PojoStatementFactory statementFactory;
     private final int maximumCacheSize;
 
@@ -38,11 +38,11 @@ public class DefaultPojoQueryContextFactory implements PojoQueryContextFactory {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public DefaultPojoQueryContextFactory(Session session, PojoStatementFactory statementFactory) {
+    public DefaultPojoQueryContextFactory(CqlSession session, PojoStatementFactory statementFactory) {
         this(session, statementFactory, DEFAULT_MAX_CACHE_SIZE);
     }
 
-    public DefaultPojoQueryContextFactory(Session session, PojoStatementFactory statementFactory, int maximumCacheSize) {
+    public DefaultPojoQueryContextFactory(CqlSession session, PojoStatementFactory statementFactory, int maximumCacheSize) {
         this.session = session;
         this.statementFactory = statementFactory;
         this.maximumCacheSize = maximumCacheSize;

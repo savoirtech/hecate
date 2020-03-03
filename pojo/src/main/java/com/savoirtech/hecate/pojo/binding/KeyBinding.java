@@ -16,11 +16,12 @@
 
 package com.savoirtech.hecate.pojo.binding;
 
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.relation.OngoingWhereClause;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import java.util.List;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.pojo.binding.key.component.KeyComponent;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
@@ -32,12 +33,12 @@ public interface KeyBinding extends ColumnBinding {
 
     ColumnBinding createReferenceBinding(Facet parent, PojoBinding<?> pojoBinding, NamingStrategy namingStrategy);
     KeyComponent createClusteringColumnReferenceComponent(Facet parent, PojoBinding<?> pojoBinding, NamingStrategy namingStrategy);
-    void delete(Delete.Where delete);
+    Delete delete(OngoingWhereClause<Delete> delete);
     List<Object> elementToKeys(Object element);
     DataType getElementDataType();
     Object getElementValue(Object pojo);
 
     List<Object> getKeyParameters(List<Object> keys);
 
-    void selectWhere(Select.Where select);
+    Select selectWhere(Select select);
 }

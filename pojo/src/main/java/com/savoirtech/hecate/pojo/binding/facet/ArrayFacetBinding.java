@@ -16,12 +16,13 @@
 
 package com.savoirtech.hecate.pojo.binding.facet;
 
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.facet.Facet;
@@ -52,7 +53,7 @@ public class ArrayFacetBinding extends OneToManyFacetBinding<List<Object>, Objec
 
     @Override
     protected DataType getDataType() {
-        return DataType.list(getElementBinding().getElementDataType());
+        return DataTypes.listOf(getElementBinding().getElementDataType());
     }
 
     @Override

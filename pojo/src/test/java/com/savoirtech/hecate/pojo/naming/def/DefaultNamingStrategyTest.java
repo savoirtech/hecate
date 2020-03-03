@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.pojo.naming.def;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Map;
 
 import com.savoirtech.hecate.annotation.Column;
@@ -23,11 +25,10 @@ import com.savoirtech.hecate.annotation.Table;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.facet.field.FieldFacetProvider;
 import com.savoirtech.hecate.pojo.naming.NamingStrategy;
-import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DefaultNamingStrategyTest extends AbstractTestCase {
+public class DefaultNamingStrategyTest {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------

@@ -16,6 +16,8 @@
 
 package com.savoirtech.hecate.pojo.query.def;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.time.OffsetDateTime;
 
 import com.savoirtech.hecate.annotation.ClusteringColumn;
@@ -23,7 +25,6 @@ import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.query.PojoQuery;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Test;
 
 public class DefaultPojoQueryTest extends AbstractDaoTestCase {
@@ -32,7 +33,6 @@ public class DefaultPojoQueryTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 
     @Test
-    @Cassandra
     public void testConvertParameters() {
         PojoDao<QueryEntity> dao = createPojoDao(QueryEntity.class);
         PojoQuery<QueryEntity> query = dao.find().eq("pk").eq("cluster").build();

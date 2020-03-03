@@ -16,66 +16,69 @@
 
 package com.savoirtech.hecate.pojo.binding.def;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.schemabuilder.SchemaBuilder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
 import com.savoirtech.hecate.annotation.ClusteringColumn;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
+import com.savoirtech.hecate.test.CassandraSingleton;
+import org.junit.After;
 import org.junit.Test;
 
 public class DefaultPojoBindingTest extends AbstractDaoTestCase {
 
+    @After
+    public void after() {
+        CassandraSingleton.clean();
+    }
+
     @Test
-    @Cassandra(keyspace = "bar")
     public void testValidateSchemaWithMissingTable() {
         PojoBinding<SimpleKeyEntity> binding = getBindingFactory().createPojoBinding(SimpleKeyEntity.class);
-        assertHecateException("Table \"foo\" not found in keyspace \"bar\".", verifySchema(binding, "foo"));
+        assertHecateException("Table \"doesnotexist\" not found in keyspace \"hecate\".", verifySchema(binding, "doesnotexist"));
     }
 
     private Runnable verifySchema(PojoBinding<?> binding, String tableName) {
-        return () -> binding.verifySchema(getSession().getCluster().getMetadata().getKeyspace(getSession().getLoggedKeyspace()), tableName);
+        return () -> binding.verifySchema(CassandraSingleton.getSession().getMetadata().getKeyspace(CassandraSingleton.getSession().getKeyspace().get()).get(), tableName);
     }
 
 
     @Test
-    @Cassandra
     public void testValidateSchemaWithMissingColumn() {
         PojoBinding<SimpleKeyEntity> binding = getBindingFactory().createPojoBinding(SimpleKeyEntity.class);
-        getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("baz", DataType.varchar()));
-        assertHecateException("Table \"foo\" does not contain column \"id\" of type \"varchar\".", verifySchema(binding, "foo"));
+        CassandraSingleton.getSession().execute(SchemaBuilder.createTable("foo").withPartitionKey("baz", DataTypes.TEXT).build());
+        assertHecateException("Table \"foo\" does not contain column \"id\" of type \"text\".", verifySchema(binding, "foo"));
     }
 
     @Test
-    @Cassandra
     public void testValidateSchemaWithColumnTypeMismatch() {
         PojoBinding<SimpleKeyEntity> binding = getBindingFactory().createPojoBinding(SimpleKeyEntity.class);
-        getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("id", DataType.cint()));
-        assertHecateException("Column \"id\" in table \"foo\" is of the wrong type \"int\" (expected \"varchar\").", verifySchema(binding, "foo"));
+        CassandraSingleton.getSession().execute(SchemaBuilder.createTable("foo").withPartitionKey("id", DataTypes.INT).build());
+        assertHecateException("Column \"id\" in table \"foo\" is of the wrong type \"int\" (expected \"text\").", verifySchema(binding, "foo"));
     }
 
     @Test
-    @Cassandra
     public void testValidateSchemaWithNonPartitionKeySimple() {
         PojoBinding<SimpleKeyEntity> binding = getBindingFactory().createPojoBinding(SimpleKeyEntity.class);
-        getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("baz", DataType.cint()).addColumn("id", DataType.varchar()));
+        CassandraSingleton.getSession().execute(SchemaBuilder.createTable("foo").withPartitionKey("baz", DataTypes.INT).withColumn("id", DataTypes.TEXT).build());
         assertHecateException("Column \"id\" in table \"foo\" is not a partition key.", verifySchema(binding, "foo"));
     }
 
     @Test
-    @Cassandra
     public void testValidateSchemaWithNonPartitionKeyComposite() {
         PojoBinding<CompositeKeyEntity> binding = getBindingFactory().createPojoBinding(CompositeKeyEntity.class);
-        getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("baz", DataType.cint()).addColumn("id", DataType.varchar()));
+        CassandraSingleton.getSession().execute(SchemaBuilder.createTable("foo").withPartitionKey("baz", DataTypes.INT).withColumn("id", DataTypes.TEXT).build());
         assertHecateException("Column \"id\" in table \"foo\" is not a partition key.", verifySchema(binding, "foo"));
     }
 
     @Test
-    @Cassandra
     public void testValidateSchemaWithNonClusteringColumnComposite() {
         PojoBinding<CompositeKeyEntity> binding = getBindingFactory().createPojoBinding(CompositeKeyEntity.class);
-        getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("id", DataType.varchar()).addColumn("cluster", DataType.varchar()));
+        CassandraSingleton.getSession().execute(SchemaBuilder.createTable("foo").withPartitionKey("id", DataTypes.TEXT).withColumn("cluster", DataTypes.TEXT).build());
         assertHecateException("Column \"cluster\" in table \"foo\" is not a clustering column.", verifySchema(binding, "foo"));
     }
 

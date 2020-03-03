@@ -16,17 +16,18 @@
 
 package com.savoirtech.hecate.core.util;
 
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.ListType;
+import com.datastax.oss.driver.api.core.type.MapType;
+import com.datastax.oss.driver.api.core.type.SetType;
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+import com.datastax.oss.protocol.internal.ProtocolConstants;
 import java.util.LinkedList;
 import java.util.List;
-
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.GettableByIndexData;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.TypeCodec;
 import com.savoirtech.hecate.core.exception.HecateException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -45,77 +46,82 @@ public class CqlUtils {
 
     public static BoundStatement bind(PreparedStatement statement, Object[] params) {
         if(CQL_LOGGER.isDebugEnabled()) {
-            CQL_LOGGER.debug("{} parameters ({})", statement.getQueryString(), StringUtils.join(params, ","));
+            CQL_LOGGER.debug("{} parameters ({})", statement.getQuery(), StringUtils.join(params, ","));
         }
         return statement.bind(params);
     }
 
-    public static Object getValue(GettableByIndexData gettable, int columnIndex, DataType dataType) {
-        if(gettable.isNull(columnIndex)) {
+    public static Object getValue(Row row, int columnIndex, DataType dataType) {
+        if(row.isNull(columnIndex)) {
             return null;
         }
-        switch (dataType.getName()) {
-            case ASCII:
-            case VARCHAR:
-            case TEXT:
-                return gettable.getString(columnIndex);
-            case BIGINT:
-                return gettable.getLong(columnIndex);
-            case TINYINT:
-                return gettable.getByte(columnIndex);
-            case BOOLEAN:
-                return gettable.getBool(columnIndex);
-            case DATE:
-                return gettable.getDate(columnIndex);
-            case DECIMAL:
-                return gettable.getDecimal(columnIndex);
-            case DOUBLE:
-                return gettable.getDouble(columnIndex);
-            case FLOAT:
-                return gettable.getFloat(columnIndex);
-            case INT:
-                return gettable.getInt(columnIndex);
-            case SMALLINT:
-                return gettable.getShort(columnIndex);
-            case TIME:
-                return gettable.getTime(columnIndex);
-            case TIMESTAMP:
-                return gettable.getTimestamp(columnIndex);
-            case UUID:
-            case TIMEUUID:
-                return gettable.getUUID(columnIndex);
-            case LIST:
-                return gettable.getList(columnIndex, typeArgument(dataType, 0));
-            case SET:
-                return gettable.getSet(columnIndex, typeArgument(dataType, 0));
-            case MAP:
-                return gettable.getMap(columnIndex, typeArgument(dataType, 0), typeArgument(dataType, 1));
-            case BLOB:
-                return gettable.getBytes(columnIndex);
-            case INET:
-                return gettable.getInet(columnIndex);
-            case VARINT:
-                return gettable.getVarint(columnIndex);
-            case TUPLE:
-                return gettable.getTupleValue(columnIndex);
+
+        switch (dataType.getProtocolCode()) {
+            case ProtocolConstants.DataType.ASCII:
+                return row.getString(columnIndex);
+            case ProtocolConstants.DataType.BIGINT:
+                return row.getLong(columnIndex);
+            case ProtocolConstants.DataType.BLOB:
+                return row.getByteBuffer(columnIndex);
+            case ProtocolConstants.DataType.BOOLEAN:
+                return row.getBoolean(columnIndex);
+            case ProtocolConstants.DataType.COUNTER:
+                return row.getLong(columnIndex);
+            case ProtocolConstants.DataType.DECIMAL:
+                return row.getBigDecimal(columnIndex);
+            case ProtocolConstants.DataType.DOUBLE:
+                return row.getDouble(columnIndex);
+            case ProtocolConstants.DataType.FLOAT:
+                return row.getFloat(columnIndex);
+            case ProtocolConstants.DataType.INT:
+                return row.getInt(columnIndex);
+            case ProtocolConstants.DataType.TIMESTAMP:
+                return row.getInstant(columnIndex);
+            case ProtocolConstants.DataType.UUID:
+                return row.getUuid(columnIndex);
+            case ProtocolConstants.DataType.VARINT:
+                return row.getBigInteger(columnIndex);
+            case ProtocolConstants.DataType.TIMEUUID:
+                return row.getUuid(columnIndex);
+            case ProtocolConstants.DataType.INET:
+                return row.getInetAddress(columnIndex);
+            case ProtocolConstants.DataType.DATE:
+                return row.getLocalDate(columnIndex);
+            case ProtocolConstants.DataType.TIME:
+                return row.getLocalTime(columnIndex);
+            case ProtocolConstants.DataType.SMALLINT:
+                return row.getShort(columnIndex);
+            case ProtocolConstants.DataType.TINYINT:
+                return row.getByte(columnIndex);
+            case ProtocolConstants.DataType.DURATION:
+                return row.getCqlDuration(columnIndex);
+            case ProtocolConstants.DataType.LIST:
+                return row.getList(columnIndex, typeArgument(row, ((ListType) dataType).getElementType()));
+            case ProtocolConstants.DataType.SET:
+                return row.getSet(columnIndex, typeArgument(row, ((SetType) dataType).getElementType()));
+            case ProtocolConstants.DataType.MAP:
+                return row.getMap(columnIndex, typeArgument(row, ((MapType) dataType).getKeyType()), typeArgument(row, ((MapType) dataType).getValueType()));
+            case ProtocolConstants.DataType.TUPLE:
+                return row.getTupleValue(columnIndex);
+            case ProtocolConstants.DataType.VARCHAR:
+                return row.getString(columnIndex);
             default:
-                throw new HecateException(String.format("Unsupported data type %s.", dataType.getName()));
+                throw new HecateException(String.format("Unsupported data type %s.", dataType.asCql(true, true)));
         }
     }
 
     public static List<Object> toList(Row row) {
         List<Object> results = new LinkedList<>();
         int index = 0;
-        for (ColumnDefinitions.Definition def : row.getColumnDefinitions()) {
+        for (ColumnDefinition def : row.getColumnDefinitions()) {
             results.add(getValue(row, index, def.getType()));
             index++;
         }
         return results;
     }
 
-    private static Class<?> typeArgument(DataType dataType, int index) {
-        final DataType arg = dataType.getTypeArguments().get(index);
-        final TypeCodec<Object> codec = CodecRegistry.DEFAULT_INSTANCE.codecFor(arg);
+    private static Class<?> typeArgument(Row row, DataType dataType) {
+        final TypeCodec<Object> codec = row.codecRegistry().codecFor(dataType);
         return codec.getJavaType().getRawType();
     }
 

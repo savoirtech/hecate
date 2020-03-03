@@ -16,6 +16,7 @@
 
 package com.savoirtech.hecate.pojo.dao.def;
 
+import com.savoirtech.hecate.test.CassandraSingleton;
 import java.util.concurrent.Executors;
 
 import com.savoirtech.hecate.pojo.dao.PojoDao;
@@ -26,10 +27,8 @@ import com.savoirtech.hecate.pojo.query.def.DefaultPojoQueryContextFactory;
 import com.savoirtech.hecate.pojo.statement.PojoStatementFactory;
 import com.savoirtech.hecate.pojo.statement.def.DefaultPojoStatementFactory;
 import com.savoirtech.hecate.pojo.test.AbstractDaoTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Test;
 
-@Cassandra
 public class DefaultPojoDaoFactoryBuilderTest extends AbstractDaoTestCase {
 //----------------------------------------------------------------------------------------------------------------------
 // Other Methods
@@ -42,14 +41,14 @@ public class DefaultPojoDaoFactoryBuilderTest extends AbstractDaoTestCase {
 
     private void useFactory(DefaultPojoDaoFactoryBuilder factoryBuilder) {
         DefaultPojoDaoFactory factory = factoryBuilder.build();
-        factory.addListener(new CreateSchemaListener(getSession()));
+        factory.addListener(new CreateSchemaListener(CassandraSingleton.getSession()));
         PojoDao<SimplePojo> dao = factory.createPojoDao(SimplePojo.class);
 
         dao.save(new SimplePojo());
     }
 
     private DefaultPojoDaoFactoryBuilder builder() {
-        return new DefaultPojoDaoFactoryBuilder(getSession());
+        return new DefaultPojoDaoFactoryBuilder(CassandraSingleton.getSession());
     }
 
     @Test
@@ -59,8 +58,8 @@ public class DefaultPojoDaoFactoryBuilderTest extends AbstractDaoTestCase {
 
     @Test
     public void testWithCostomeContextFactory() {
-        PojoStatementFactory statementFactory = new DefaultPojoStatementFactory(getSession());
-        useFactory(builder().withContextFactory(new DefaultPojoQueryContextFactory(getSession(), statementFactory)));
+        PojoStatementFactory statementFactory = new DefaultPojoStatementFactory(CassandraSingleton.getSession());
+        useFactory(builder().withContextFactory(new DefaultPojoQueryContextFactory(CassandraSingleton.getSession(), statementFactory)));
     }
 
     @Test
@@ -75,7 +74,7 @@ public class DefaultPojoDaoFactoryBuilderTest extends AbstractDaoTestCase {
 
     @Test
     public void testWithCustomStatementFactory() {
-        useFactory(builder().withStatementFactory(new DefaultPojoStatementFactory(getSession())));
+        useFactory(builder().withStatementFactory(new DefaultPojoStatementFactory(CassandraSingleton.getSession())));
     }
 
 //----------------------------------------------------------------------------------------------------------------------

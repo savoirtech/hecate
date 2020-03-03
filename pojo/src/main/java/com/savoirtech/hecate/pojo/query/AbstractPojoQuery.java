@@ -16,16 +16,25 @@
 
 package com.savoirtech.hecate.pojo.query;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.internal.core.cql.MultiPageResultSet;
+import com.datastax.oss.driver.internal.core.cql.SinglePageResultSet;
+import com.datastax.oss.driver.internal.core.util.concurrent.CompletableFutures;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
-import com.datastax.driver.core.*;
-import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.Uninterruptibles;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.core.mapping.MappedQueryResult;
 import com.savoirtech.hecate.core.query.QueryResult;
@@ -33,6 +42,7 @@ import com.savoirtech.hecate.core.statement.StatementOptions;
 import com.savoirtech.hecate.core.util.CqlUtils;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 import com.savoirtech.hecate.pojo.query.mapper.PojoQueryRowMapper;
+import java.util.stream.Collectors;
 
 public abstract class AbstractPojoQuery<P> implements PojoQuery<P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -40,7 +50,7 @@ public abstract class AbstractPojoQuery<P> implements PojoQuery<P> {
 //----------------------------------------------------------------------------------------------------------------------
 
     private final PojoBinding<P> binding;
-    private final Session session;
+    private final CqlSession session;
     private final PreparedStatement statement;
     private final PojoQueryContextFactory contextFactory;
     private final Executor executor;
@@ -49,15 +59,15 @@ public abstract class AbstractPojoQuery<P> implements PojoQuery<P> {
 // Constructors
 //----------------------------------------------------------------------------------------------------------------------
 
-    public AbstractPojoQuery(Session session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, Select.Where select, Executor executor) {
+    public AbstractPojoQuery(CqlSession session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, Select select, Executor executor) {
         this.session = session;
         this.binding = binding;
         this.executor = executor;
-        this.statement = session.prepare(select);
+        this.statement = session.prepare(select.build());
         this.contextFactory = contextFactory;
     }
 
-    public AbstractPojoQuery(Session session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, PreparedStatement statement, Executor executor) {
+    public AbstractPojoQuery(CqlSession session, PojoBinding<P> binding, PojoQueryContextFactory contextFactory, PreparedStatement statement, Executor executor) {
         this.session = session;
         this.binding = binding;
         this.statement = statement;
@@ -102,7 +112,7 @@ public abstract class AbstractPojoQuery<P> implements PojoQuery<P> {
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
 
-        private final List<ResultSetFuture> futures = new LinkedList<>();
+        private final List<CompletionStage<AsyncResultSet>> futures = new LinkedList<>();
         private final StatementOptions options;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -120,17 +130,37 @@ public abstract class AbstractPojoQuery<P> implements PojoQuery<P> {
         @Override
         public PojoMultiQuery<P> add(Object... params) {
             BoundStatement boundStatement = CqlUtils.bind(statement,  convertParameters(params));
-            options.applyTo(boundStatement);
-            futures.add(session.executeAsync(boundStatement));
+            Statement optionsApplied = options.applyTo(boundStatement);
+            futures.add(session.executeAsync(optionsApplied).toCompletableFuture());
             return this;
         }
 
         @Override
         public MappedQueryResult<P> execute() {
             try {
-                Iterable<Row> rows = Iterables.concat(Uninterruptibles.getUninterruptibly(Futures.allAsList(futures)));
+                CompletableFutures.getUninterruptibly(CompletableFuture.allOf(futures.stream()
+                        .map(stage -> stage.toCompletableFuture())
+                        .collect(Collectors.toList())
+                        .toArray(new CompletableFuture[0])));
+
+                ResultSet[] results = new ResultSet[futures.size()];
+                for (CompletionStage<AsyncResultSet> stage : futures) {
+                    int index = futures.indexOf(stage);
+                    AsyncResultSet asyncResultSet = stage.toCompletableFuture().get();
+                    if (asyncResultSet.hasMorePages()) {
+                        results[index] = new MultiPageResultSet(asyncResultSet);
+                    } else {
+                        results[index] = new SinglePageResultSet(asyncResultSet);
+                    }
+
+                }
+
+                Iterable<Row> rows = Iterables.concat(results);
+
                 return new MappedQueryResult<>(rows, new PojoQueryRowMapper<>(binding, contextFactory.createPojoQueryContext(executor)));
             } catch (ExecutionException e) {
+                throw new HecateException(e, "A problem occurred while executing one of the queries.");
+            } catch (InterruptedException e) {
                 throw new HecateException(e, "A problem occurred while executing one of the queries.");
             }
         }

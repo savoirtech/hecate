@@ -24,7 +24,6 @@ import com.savoirtech.hecate.annotation.PartitionKey;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.test.BindingTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,35 +44,34 @@ public class CompositeKeyBindingTest extends BindingTestCase {
     }
 
     @Test(expected = HecateException.class)
-    @Cassandra
     public void testClusteringColumnReference() {
         createPojoDao(ClusteringColumnReferenceEntity.class);
     }
 
     @Test
     public void testCreate() {
-        assertCreateEquals(binding, "CREATE TABLE IF NOT EXISTS foo( pk varchar, cluster varchar, PRIMARY KEY(pk, cluster))");
+        assertCreateEquals(binding, "CREATE TABLE IF NOT EXISTS foo (pk text,cluster text,PRIMARY KEY(pk,cluster))");
     }
 
     @Test
     public void testDelete() {
-        assertDeleteEquals(binding, "DELETE FROM foo WHERE pk=? AND cluster=?;");
+        assertDeleteEquals(binding, "DELETE FROM foo WHERE pk=? AND cluster=?");
     }
 
     @Test
     public void testInsert() {
-        assertInsertEquals(binding, "INSERT INTO foo (pk,cluster) VALUES (?,?);");
+        assertInsertEquals(binding, "INSERT INTO foo (pk,cluster) VALUES (?,?)");
     }
 
 
     @Test
     public void testSelect() {
-        assertSelectEquals(binding, "SELECT pk,cluster FROM foo;");
+        assertSelectEquals(binding, "SELECT pk,cluster FROM foo");
     }
 
     @Test
     public void testSelectWhere() {
-        assertSelectWhereEquals(binding, "SELECT pk,cluster FROM foo WHERE pk=? AND cluster=?;");
+        assertSelectWhereEquals(binding, "SELECT pk,cluster FROM foo WHERE pk=? AND cluster=?");
     }
 
     @Test

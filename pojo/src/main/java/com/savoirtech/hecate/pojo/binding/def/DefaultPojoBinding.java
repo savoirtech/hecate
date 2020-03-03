@@ -16,23 +16,30 @@
 
 package com.savoirtech.hecate.pojo.binding.def;
 
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.bindMarker;
+
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.delete.DeleteSelection;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
+import com.datastax.oss.driver.api.querybuilder.insert.InsertInto;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.api.querybuilder.select.SelectFrom;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
 import com.savoirtech.hecate.core.schema.Schema;
 import com.savoirtech.hecate.core.schema.Table;
 import com.savoirtech.hecate.core.util.CqlUtils;
@@ -45,8 +52,6 @@ import com.savoirtech.hecate.pojo.exception.SchemaVerificationException;
 import com.savoirtech.hecate.pojo.facet.Facet;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
 import com.savoirtech.hecate.pojo.reflect.ReflectionUtils;
-
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 
 public class DefaultPojoBinding<P> implements PojoBinding<P> {
 //----------------------------------------------------------------------------------------------------------------------
@@ -89,10 +94,9 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
     }
 
     @Override
-    public Delete.Where deleteFrom(String tableName) {
-        Delete.Where delete = QueryBuilder.delete().from(tableName).where();
-        keyBinding.delete(delete);
-        return delete;
+    public Delete deleteFrom(String tableName) {
+        DeleteSelection deleteSelection = QueryBuilder.deleteFrom(tableName);
+        return keyBinding.delete(deleteSelection);
     }
 
     @Override
@@ -129,36 +133,38 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
 
     @Override
     public Insert insertInto(String tableName) {
-        Insert insert = QueryBuilder.insertInto(tableName);
-        keyBinding.insert(insert);
-        facetBindings.forEach(binding -> binding.insert(insert));
-        insert.using(QueryBuilder.ttl(bindMarker()));
-        return insert;
+        InsertInto insertInto = QueryBuilder.insertInto(tableName);
+        RegularInsert insert = keyBinding.insert(insertInto);
+        for (ColumnBinding columnBinding : facetBindings) {
+            insert = columnBinding.insert(insert);
+        }
+        return insert.usingTtl(bindMarker());
     }
 
     @Override
-    public Select.Where selectFrom(String tableName) {
-        Select.Selection select = QueryBuilder.select();
-        keyBinding.select(select);
-        facetBindings.forEach(binding -> binding.select(select));
-        return select.from(tableName).where();
-    }
-
-    @Override
-    public Select.Where selectFromByKey(String tableName) {
-        Select.Where select = selectFrom(tableName);
-        keyBinding.selectWhere(select);
+    public Select selectFrom(String tableName) {
+        SelectFrom selectFrom = QueryBuilder.selectFrom(tableName);
+        Select select = keyBinding.select(selectFrom);
+        for (ColumnBinding columnBinding : facetBindings) {
+            select = columnBinding.select(select);
+        }
         return select;
     }
 
     @Override
+    public Select selectFromByKey(String tableName) {
+        Select select = QueryBuilder.selectFrom(tableName).all();
+        return keyBinding.selectWhere(select);
+    }
+
+    @Override
     public void verifySchema(KeyspaceMetadata keyspaceMetadata, String tableName) {
-        TableMetadata tableMetadata = keyspaceMetadata.getTable(tableName);
-        if(tableMetadata == null) {
+        Optional<TableMetadata> tableMetadata = keyspaceMetadata.getTable(tableName);
+        if(!tableMetadata.isPresent()) {
             throw new SchemaVerificationException("Table \"%s\" not found in keyspace \"%s\".", tableName, keyspaceMetadata.getName());
         }
-        keyBinding.verifySchema(keyspaceMetadata, tableMetadata);
-        facetBindings.forEach(facetBinding -> facetBinding.verifySchema(keyspaceMetadata, tableMetadata));
+        keyBinding.verifySchema(keyspaceMetadata, tableMetadata.get());
+        facetBindings.forEach(facetBinding -> facetBinding.verifySchema(keyspaceMetadata, tableMetadata.get()));
     }
 
     @Override

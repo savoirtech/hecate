@@ -16,8 +16,8 @@
 
 package com.savoirtech.hecate.core.update;
 
-import com.datastax.driver.core.Statement;
-import com.google.common.util.concurrent.ListenableFuture;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import java.util.concurrent.CompletableFuture;
 
 public interface UpdateGroup {
 //----------------------------------------------------------------------------------------------------------------------
@@ -25,5 +25,5 @@ public interface UpdateGroup {
 //----------------------------------------------------------------------------------------------------------------------
     void addUpdate(Statement statement);
     void complete();
-    ListenableFuture<Void> completeAsync();
+    CompletableFuture<Void> completeAsync();
 }

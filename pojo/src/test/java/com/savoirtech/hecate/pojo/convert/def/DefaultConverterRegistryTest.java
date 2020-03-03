@@ -16,23 +16,24 @@
 
 package com.savoirtech.hecate.pojo.convert.def;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.time.*;
-import java.util.Date;
 import java.util.UUID;
 
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.convert.ConverterRegistry;
 import com.savoirtech.hecate.pojo.cql.Gender;
 import com.savoirtech.hecate.pojo.type.GenericType;
-import com.savoirtech.hecate.test.AbstractTestCase;
 import org.junit.Test;
 
-public class DefaultConverterRegistryTest extends AbstractTestCase {
+public class DefaultConverterRegistryTest {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -48,7 +49,6 @@ public class DefaultConverterRegistryTest extends AbstractTestCase {
         assertNotNull(registry.getConverter(Boolean.class));
         assertNotNull(registry.getConverter(BigDecimal.class));
         assertNotNull(registry.getConverter(BigInteger.class));
-        assertNotNull(registry.getConverter(Date.class));
         assertNotNull(registry.getConverter(Double.class));
         assertNotNull(registry.getConverter(Float.class));
         assertNotNull(registry.getConverter(InetAddress.class));

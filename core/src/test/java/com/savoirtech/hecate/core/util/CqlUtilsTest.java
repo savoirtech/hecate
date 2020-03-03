@@ -16,43 +16,45 @@
 
 package com.savoirtech.hecate.core.util;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.schemabuilder.Create;
-import com.datastax.driver.core.schemabuilder.SchemaBuilder;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.bindMarker;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.selectFrom;
+import static com.savoirtech.hecate.test.TestUtils.assertUtilsClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
+import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.internal.core.type.DefaultListType;
+import com.datastax.oss.driver.internal.core.type.DefaultMapType;
+import com.datastax.oss.driver.internal.core.type.DefaultSetType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.savoirtech.hecate.core.exception.HecateException;
-import com.savoirtech.hecate.test.Cassandra;
-import com.savoirtech.hecate.test.CassandraTestCase;
+import com.savoirtech.hecate.test.CassandraSingleton;
+import java.time.Instant;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-
-@Cassandra
-public class CqlUtilsTest extends CassandraTestCase {
+public class CqlUtilsTest {
 //----------------------------------------------------------------------------------------------------------------------
 // Fields
 //----------------------------------------------------------------------------------------------------------------------
@@ -66,40 +68,36 @@ public class CqlUtilsTest extends CassandraTestCase {
     @Before
     public void createTable() throws Exception {
         columns = Arrays.asList(
-                example(DataType.ascii(), "ascii_value"),
-                example(DataType.bigint(), 123456L),
-                example(DataType.cboolean(), false),
-                example(DataType.cdouble(), 123.456),
-                example(DataType.cfloat(), 123.456f),
-                example(DataType.cint(), 123456),
-                example(DataType.decimal(), new BigDecimal("123.456")),
-                example(DataType.inet(), InetAddress.getLocalHost()),
-                example(DataType.text(), "text_value"),
-                example(DataType.timestamp(), new Date()),
-                example(DataType.timeuuid(), UUID.fromString(new com.eaio.uuid.UUID().toString())),
-                example(DataType.uuid(), UUID.randomUUID()),
-                example(DataType.varchar(), "varchar_value"),
-                example(DataType.varint(), new BigInteger("1234567890")),
-                example(DataType.blob(), ByteBuffer.wrap("Hello, World!".getBytes())),
-                example(DataType.list(DataType.text()), Lists.newArrayList("hello", "world")),
-                example(DataType.set(DataType.text()), Sets.newHashSet("hello", "world")),
-                example(DataType.map(DataType.text(), DataType.cint()), Maps.asMap(Sets.newHashSet("one", "two", "three"), String::length))
-        );
+                example(DataTypes.ASCII, "ascii_value"),
+                example(DataTypes.BIGINT, 123456L),
+                example(DataTypes.BOOLEAN, false),
+                example(DataTypes.DOUBLE, 123.456),
+                example(DataTypes.FLOAT, 123.456f),
+                example(DataTypes.INT, 123456),
+                example(DataTypes.DECIMAL, new BigDecimal("123.456")),
+                example(DataTypes.INET, InetAddress.getLocalHost()),
+                example(DataTypes.TEXT, "text_value"),
+                example(DataTypes.TIMESTAMP, Instant.now()),
+                example(DataTypes.TIMEUUID, UUID.fromString(new com.eaio.uuid.UUID().toString())),
+                example(DataTypes.UUID, UUID.randomUUID()),
+                example(DataTypes.VARINT, new BigInteger("1234567890")),
+                example(DataTypes.BLOB, ByteBuffer.wrap("Hello, World!".getBytes())),
+                example(new DefaultListType(DataTypes.TEXT, false), Lists.newArrayList("hello", "world")),
+                example(new DefaultSetType(DataTypes.TEXT, false), Sets.newHashSet("hello", "world")),
+                example(new DefaultMapType(DataTypes.TEXT, DataTypes.INT, false), Maps.asMap(Sets.newHashSet("one", "two", "three"), String::length)));
 
-        getSession().execute(SchemaBuilder.createTable("counter_table").addPartitionKey("id", DataType.varchar()).addColumn("counter_value", DataType.counter()));
-        final Create create = SchemaBuilder.createTable("test_table").addPartitionKey("id", DataType.cint()).addColumn("null_col", DataType.varchar());
-        Insert insert = QueryBuilder.insertInto("test_table").value("id", 123).value("null_col", null);
+        CassandraSingleton.getSession().execute(SchemaBuilder.createTable("counter_table").ifNotExists().withPartitionKey("id", DataTypes.TEXT).withColumn("counter_value", DataTypes.COUNTER).build());
+        CreateTable create = SchemaBuilder.createTable("test_table").ifNotExists().withPartitionKey("id", DataTypes.INT).withColumn("null_col", DataTypes.TEXT);
+        RegularInsert insert = QueryBuilder.insertInto("test_table").value("id", literal(123)).value("null_col", literal(null));
         for (ImmutablePair<DataType, Object> column : columns) {
             DataType dataType = column.getLeft();
-            String columnName = "test_" + dataType.getName();
-            create.addColumn(columnName, dataType);
-            insert.value(columnName, column.getRight());
+            String columnName = "test_" + dataType.getProtocolCode();
+            create = create.withColumn(columnName, dataType);
+            insert = insert.value(columnName, literal(column.getRight()));
         }
 
-        withSession(session -> {
-            session.execute(create);
-            session.execute(insert);
-        });
+        CassandraSingleton.getSession().execute(create.build());
+        CassandraSingleton.getSession().execute(insert.build());
     }
 
     private ImmutablePair<DataType, Object> example(DataType dataType, Object value) {
@@ -113,43 +111,44 @@ public class CqlUtilsTest extends CassandraTestCase {
 
     @Test
     public void testGetNullValue() {
-        List<Object> values = CqlUtils.toList(getSession().execute(select("null_col").from("test_table")).one());
+        List<Object> values = CqlUtils.toList(CassandraSingleton.getSession().execute(selectFrom("test_table").column("null_col").build()).one());
         assertEquals(1, values.size());
         assertNull(values.get(0));
     }
 
     @Test
     public void testBind() {
-        final Logger logbackLogger = (Logger) LoggerFactory.getLogger(CqlUtils.class);
-        logbackLogger.setLevel(Level.DEBUG);
-        PreparedStatement ps = getSession().prepare(select("id").from("test_table").where(eq("id", bindMarker())));
+        PreparedStatement ps = CassandraSingleton.getSession().prepare(selectFrom("test_table").column("id").whereColumn("id").isEqualTo(bindMarker()).build());
 
         BoundStatement bound = CqlUtils.bind(ps, new Object[]{123});
-        assertEquals(1, getSession().execute(bound).all().size());
-        logbackLogger.setLevel(Level.INFO);
+        assertEquals(1, CassandraSingleton.getSession().execute(bound).all().size());
     }
 
     @Test
     public void testGetValue() {
-        withSession(session -> {
-            Select.Selection selection = select().column("id");
-            columns.stream().map(col -> "test_" + col.getLeft().getName()).forEach(selection::column);
-            Select.Where select = selection.from("test_table").where(eq("id", 123));
-            ResultSet result = session.execute(select);
+        CassandraSingleton.withSession(session -> {
+            Select selection = selectFrom("test_table").column("id");
+            for (ImmutablePair<DataType, Object> column : columns) {
+                selection = selection.column("test_" + column.getLeft().getProtocolCode());
+            }
+            Select select = selection.whereColumn("id").isEqualTo(literal(123));
+            ResultSet result = session.execute(select.build());
             List<Object> objects = CqlUtils.toList(result.one());
             for (int i = 0; i < columns.size(); ++i) {
                 ImmutablePair<DataType, Object> column = columns.get(i);
-                assertEquals("Column test_" + column.getLeft().getName() + " did not match.", column.getRight(), objects.get(i + 1));
+                assertEquals("Column test_" + column.getLeft().getProtocolCode() + " did not match.", column.getRight(), objects.get(i + 1));
             }
         });
     }
 
-    @Test(expected = HecateException.class)
+    @Test
     public void testGetValueInvalidType() {
-        withSession(session -> {
+        CassandraSingleton.withSession(session -> {
             session.execute("update counter_table set counter_value = counter_value + 1 where id = '1'");
             ResultSet rs = session.execute("select * from counter_table");
-            CqlUtils.toList(rs.one());
+            List<Object> result = CqlUtils.toList(rs.one());
+            assertTrue(result.contains("1"));
+            assertTrue(result.contains(1L));
         });
     }
 }

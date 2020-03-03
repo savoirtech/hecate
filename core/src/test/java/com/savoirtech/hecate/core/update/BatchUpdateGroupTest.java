@@ -16,43 +16,50 @@
 
 package com.savoirtech.hecate.core.update;
 
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
+import static org.junit.Assert.assertEquals;
+
+import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
+import com.savoirtech.hecate.test.CassandraSingleton;
 import java.util.concurrent.Executors;
 
-import com.datastax.driver.core.BatchStatement;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.schemabuilder.SchemaBuilder;
-import com.savoirtech.hecate.test.Cassandra;
-import com.savoirtech.hecate.test.CassandraTestCase;
+import org.junit.After;
 import org.junit.Test;
 
-@Cassandra
-public class BatchUpdateGroupTest extends CassandraTestCase {
+public class BatchUpdateGroupTest {
+
+    @After
+    public void after() {
+        CassandraSingleton.clean();
+    }
 
     @Test
     public void testAddUpdate() {
-        BatchUpdateGroup group = new BatchUpdateGroup(getSession(), Executors.newSingleThreadExecutor());
-        group.addUpdate(QueryBuilder.insertInto("foo").value("bar", "baz"));
-        assertEquals(1, group.getBatchStatement().getStatements().size());
+        BatchUpdateGroup group = new BatchUpdateGroup(CassandraSingleton.getSession(), Executors.newSingleThreadExecutor());
+        group.addUpdate(QueryBuilder.insertInto("foo").value("bar", literal("baz")).build());
+        assertEquals(1, group.getBatchStatement().size());
     }
 
     @Test
     public void testComplete() {
-        BatchUpdateGroup group = new BatchUpdateGroup(getSession(), Executors.newSingleThreadExecutor());
-        group.addUpdate(QueryBuilder.insertInto("foo").value("bar", "baz"));
+        BatchUpdateGroup group = new BatchUpdateGroup(CassandraSingleton.getSession(), Executors.newSingleThreadExecutor());
+        group.addUpdate(QueryBuilder.insertInto("foo").value("bar", literal("baz")).build());
 
-        getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("bar", DataType.varchar()));
+        CassandraSingleton.getSession().execute(SchemaBuilder.createTable("foo").withPartitionKey("bar", DataTypes.TEXT).build());
         group.complete();
-        assertEquals(1, getSession().execute("select bar from foo").all().size());
+        assertEquals(1, CassandraSingleton.getSession().execute("select bar from foo").all().size());
     }
 
     @Test
     public void testCompleteAsync() throws Exception {
-        BatchUpdateGroup group = new BatchUpdateGroup(getSession(), BatchStatement.Type.UNLOGGED, Executors.newSingleThreadExecutor());
-        group.addUpdate(QueryBuilder.insertInto("foo").value("bar", "baz"));
+        BatchUpdateGroup group = new BatchUpdateGroup(CassandraSingleton.getSession(), DefaultBatchType.UNLOGGED, Executors.newSingleThreadExecutor());
+        group.addUpdate(QueryBuilder.insertInto("foo").value("bar", literal("baz")).build());
 
-        getSession().execute(SchemaBuilder.createTable("foo").addPartitionKey("bar", DataType.varchar()));
+        CassandraSingleton.getSession().execute(SchemaBuilder.createTable("foo").withPartitionKey("bar", DataTypes.TEXT).build());
         group.completeAsync().get();
-        assertEquals(1, getSession().execute("select bar from foo").all().size());
+        assertEquals(1, CassandraSingleton.getSession().execute("select bar from foo").all().size());
     }
 }

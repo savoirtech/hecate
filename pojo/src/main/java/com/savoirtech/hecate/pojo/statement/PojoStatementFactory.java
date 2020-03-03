@@ -16,8 +16,7 @@
 
 package com.savoirtech.hecate.pojo.statement;
 
-
-import com.datastax.driver.core.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.savoirtech.hecate.pojo.binding.PojoBinding;
 
 public interface PojoStatementFactory {

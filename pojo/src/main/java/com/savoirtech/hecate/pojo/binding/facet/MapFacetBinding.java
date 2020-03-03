@@ -16,11 +16,12 @@
 
 package com.savoirtech.hecate.pojo.binding.facet;
 
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.datastax.driver.core.DataType;
 import com.savoirtech.hecate.core.exception.HecateException;
 import com.savoirtech.hecate.pojo.binding.ElementBinding;
 import com.savoirtech.hecate.pojo.query.PojoQueryContext;
@@ -54,7 +55,7 @@ public class MapFacetBinding extends OneToManyFacetBinding<Map<Object, Object>, 
 
     @Override
     protected DataType getDataType() {
-        return DataType.map(keyConverter.getDataType(), getElementBinding().getElementDataType());
+        return DataTypes.mapOf(keyConverter.getDataType(), getElementBinding().getElementDataType());
     }
 
     @Override

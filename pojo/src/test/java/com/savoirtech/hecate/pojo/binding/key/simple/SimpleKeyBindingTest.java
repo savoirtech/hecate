@@ -16,10 +16,10 @@
 
 package com.savoirtech.hecate.pojo.binding.key.simple;
 
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import java.util.Collections;
 import java.util.List;
 
-import com.datastax.driver.core.DataType;
 import com.google.common.collect.Lists;
 import com.savoirtech.hecate.annotation.Cascade;
 import com.savoirtech.hecate.annotation.ClusteringColumn;
@@ -29,12 +29,16 @@ import com.savoirtech.hecate.pojo.dao.PojoDao;
 import com.savoirtech.hecate.pojo.entities.UuidEntity;
 import com.savoirtech.hecate.pojo.query.PojoQuery;
 import com.savoirtech.hecate.pojo.test.BindingTestCase;
-import com.savoirtech.hecate.test.Cassandra;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -57,11 +61,11 @@ public class SimpleKeyBindingTest extends BindingTestCase {
 
     @Before
     public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
         binding = new SimpleKeyBinding(getFacet(SimpleEntity.class, "id"), "id", converter);
     }
 
     @Test
-    @Cassandra
     public void testClusteringColumnReference() {
         PojoDao<SimpleEntity> refDao = createPojoDao(SimpleEntity.class);
         PojoDao<ClusteringColumnReferenceEntity> dao = createPojoDao(ClusteringColumnReferenceEntity.class);
@@ -77,14 +81,14 @@ public class SimpleKeyBindingTest extends BindingTestCase {
 
     @Test
     public void testCreate() {
-        when(converter.getDataType()).thenReturn(DataType.varchar());
-        assertCreateEquals(binding, "CREATE TABLE IF NOT EXISTS foo( id varchar, PRIMARY KEY(id))");
+        when(converter.getDataType()).thenReturn(DataTypes.TEXT);
+        assertCreateEquals(binding, "CREATE TABLE IF NOT EXISTS foo (id text PRIMARY KEY)");
         verify(converter).getDataType();
     }
 
     @Test
     public void testDelete() {
-        assertDeleteEquals(binding, "DELETE FROM foo WHERE id=?;");
+        assertDeleteEquals(binding, "DELETE FROM foo WHERE id=?");
     }
 
     @Test
@@ -94,8 +98,8 @@ public class SimpleKeyBindingTest extends BindingTestCase {
 
     @Test
     public void testGetElementDataType() {
-        when(converter.getDataType()).thenReturn(DataType.varchar());
-        assertEquals(DataType.varchar(), binding.getElementDataType());
+        when(converter.getDataType()).thenReturn(DataTypes.TEXT);
+        assertEquals(DataTypes.TEXT, binding.getElementDataType());
     }
 
     @Test
@@ -116,11 +120,10 @@ public class SimpleKeyBindingTest extends BindingTestCase {
 
     @Test
     public void testInsert() {
-        assertInsertEquals(binding, "INSERT INTO foo (id) VALUES (?);");
+        assertInsertEquals(binding, "INSERT INTO foo (id) VALUES (?)");
     }
 
     @Test
-    @Cassandra
     public void testNonCascadedDelete() {
         PojoDao<SimpleEntity> refDao = createPojoDao(SimpleEntity.class);
         SimpleEntity ref = new SimpleEntity();
@@ -137,7 +140,6 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     }
 
     @Test
-    @Cassandra
     public void testNonCascadedSave() {
         PojoDao<SimpleEntity> refDao = createPojoDao(SimpleEntity.class);
         PojoDao<NonCascadedReferenceEntity> dao = createPojoDao(NonCascadedReferenceEntity.class);
@@ -150,7 +152,6 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     }
 
     @Test
-    @Cassandra
     public void testQuery() {
         PojoDao<SimpleEntity> dao = createPojoDao(SimpleEntity.class);
         SimpleEntity expected = new SimpleEntity();
@@ -162,7 +163,6 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     }
 
     @Test
-    @Cassandra
     public void testReferenceFacet() {
         PojoDao<ReferencingEntity> dao = createPojoDao(ReferencingEntity.class);
         ReferencingEntity entity = new ReferencingEntity();
@@ -176,7 +176,6 @@ public class SimpleKeyBindingTest extends BindingTestCase {
     }
 
     @Test
-    @Cassandra
     public void testReferenceFacetWithNullReference() {
         PojoDao<ReferencingEntity> dao = createPojoDao(ReferencingEntity.class);
         ReferencingEntity entity = new ReferencingEntity();
@@ -188,12 +187,12 @@ public class SimpleKeyBindingTest extends BindingTestCase {
 
     @Test
     public void testSelect() {
-        assertSelectEquals(binding, "SELECT id FROM foo;");
+        assertSelectEquals(binding, "SELECT id FROM foo");
     }
 
     @Test
     public void testSelectWhere() {
-        assertSelectWhereEquals(binding, "SELECT id FROM foo WHERE id=?;");
+        assertSelectWhereEquals(binding, "SELECT id FROM foo WHERE id=?");
     }
 
     @Test
