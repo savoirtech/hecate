@@ -19,7 +19,7 @@
     <parent>
         <artifactId>hecate-parent</artifactId>
         <groupId>com.savoirtech.hecate</groupId>
-        <version>4.2.0-SNAPSHOT</version>
+        <version>5.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

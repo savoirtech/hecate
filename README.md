@@ -34,4 +34,8 @@ was completely rewritten using the [Java Driver for Apache Cassandra](https://gi
 Hecate is a Greek goddess often associated with magic and witchcraft.  The majority of Hecate's (the library, 
 not the goddess) magic resides in the [POJO](pojo/README.md) library.
 
+## Dev notes
+
+5.x versions require Docker installed in order to run Cassandra and testcontainers
+See:  https://www.testcontainers.org/
 
