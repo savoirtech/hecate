@@ -17,177 +17,304 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.savoirtech</groupId>
-        <artifactId>savoir-parent</artifactId>
-        <version>1.0.3</version>
-    </parent>
+  <parent>
+    <groupId>com.savoirtech</groupId>
+    <artifactId>savoir-parent</artifactId>
+    <version>1.0.3</version>
+  </parent>
 
-    <groupId>com.savoirtech.hecate</groupId>
-    <artifactId>hecate-parent</artifactId>
-    <packaging>pom</packaging>
-    <version>5.0.0-SNAPSHOT</version>
-    <name>SavoirTech ::: Hecate ::: Parent</name>
+  <groupId>com.savoirtech.hecate</groupId>
+  <artifactId>hecate-parent</artifactId>
+  <packaging>pom</packaging>
+  <version>5.0.0-SNAPSHOT</version>
+  <name>SavoirTech ::: Hecate ::: Parent</name>
 
-    <inceptionYear>2012</inceptionYear>
+  <inceptionYear>2012</inceptionYear>
 
-    <modules>
-        <module>test</module>
-        <module>annotation</module>
-        <module>core</module>
-        <module>pojo</module>
-        <module>gson</module>
-        <module>joda-time</module>
-    </modules>
+  <modules>
+    <module>test</module>
+    <module>annotation</module>
+    <module>core</module>
+    <module>pojo</module>
+    <module>gson</module>
+    <module>joda-time</module>
+  </modules>
 
-    <scm>
-        <url>https://github.com/savoirtech/hecate</url>
-        <connection>scm:git:git@github.com:savoirtech/hecate.git</connection>
-        <developerConnection>scm:git:git@github.com:savoirtech/hecate.git</developerConnection>
-    </scm>
+  <scm>
+    <url>https://github.com/savoirtech/hecate</url>
+    <connection>scm:git:git@github.com:savoirtech/hecate.git</connection>
+    <developerConnection>scm:git:git@github.com:savoirtech/hecate.git</developerConnection>
+  </scm>
 
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-
-
-        <!-- Dependency Versions -->
-        <cassandra.driver.version>4.4.0</cassandra.driver.version>
-        <commons.codec.version>1.14</commons.codec.version>
-        <commons.lang3.version>3.9</commons.lang3.version>
-        <guava.version>18.0</guava.version>
-        <gson.version>2.8.5</gson.version>
-        <joda.time.version>2.10.5</joda.time.version>
-        <junit.version>4.11</junit.version>
-        <karaf.version>4.2.0</karaf.version>
-        <metrics.version>4.0.5</metrics.version>
-        <mockito.version>1.10.19</mockito.version>
-        <netty.version>4.1.45.Final</netty.version>
-        <osgi.version>6.0.0</osgi.version>
-        <pax.exam.version>4.5.0</pax.exam.version>
-        <slf4j.version>1.7.7</slf4j.version>
-        <eaio.uuid.version>3.2</eaio.uuid.version>
-
-        <logback.version>1.2.3</logback.version>
-        <testcontainer.version>1.12.5</testcontainer.version>
-    </properties>
-
-    <dependencyManagement>
-        <dependencies>
-
-            <dependency>
-                <groupId>com.datastax.oss</groupId>
-                <artifactId>java-driver-core</artifactId>
-                <version>${cassandra.driver.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.datastax.oss</groupId>
-                <artifactId>java-driver-query-builder</artifactId>
-                <version>${cassandra.driver.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.dropwizard.metrics</groupId>
-                <artifactId>metrics-core</artifactId>
-                <version>${metrics.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-buffer</artifactId>
-                <version>${netty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec</artifactId>
-                <version>${netty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-common</artifactId>
-                <version>${netty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-handler</artifactId>
-                <version>${netty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport</artifactId>
-                <version>${netty.version}</version>
-            </dependency>
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
 
 
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
+    <!-- Dependency Versions -->
+    <cassandra.driver.version>4.4.0</cassandra.driver.version>
+    <commons.codec.version>1.14</commons.codec.version>
+    <commons.lang3.version>3.9</commons.lang3.version>
+    <guava.version>18.0</guava.version>
+    <gson.version>2.8.5</gson.version>
+    <joda.time.version>2.10.5</joda.time.version>
+    <junit.version>4.11</junit.version>
+    <karaf.version>4.2.0</karaf.version>
+    <metrics.version>4.0.5</metrics.version>
+    <mockito.version>1.10.19</mockito.version>
+    <netty.version>4.1.45.Final</netty.version>
+    <osgi.version>6.0.0</osgi.version>
+    <pax.exam.version>4.5.0</pax.exam.version>
+    <slf4j.version>1.7.7</slf4j.version>
+    <eaio.uuid.version>3.2</eaio.uuid.version>
 
-            <dependency>
-                <groupId>joda-time</groupId>
-                <artifactId>joda-time</artifactId>
-                <version>${joda.time.version}</version>
-            </dependency>
+    <logback.version>1.2.3</logback.version>
+    <testcontainer.version>1.12.5</testcontainer.version>
+  </properties>
 
-            <dependency>
-                <groupId>com.google.code.gson</groupId>
-                <artifactId>gson</artifactId>
-                <version>${gson.version}</version>
-            </dependency>
-
-            <dependency>
-                <artifactId>junit</artifactId>
-                <groupId>junit</groupId>
-                <version>${junit.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>${mockito.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers</artifactId>
-                <version>${testcontainer.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>cassandra</artifactId>
-                <version>${testcontainer.version}</version>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
-
+  <dependencyManagement>
     <dependencies>
-        <!--
-        Global Dependencies
-        -->
 
-        <!--
-        Global Testing Dependencies
-        -->
-        <dependency>
-            <artifactId>junit</artifactId>
-            <groupId>junit</groupId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        
+      <dependency>
+        <groupId>com.datastax.oss</groupId>
+        <artifactId>java-driver-core</artifactId>
+        <version>${cassandra.driver.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.datastax.oss</groupId>
+        <artifactId>java-driver-query-builder</artifactId>
+        <version>${cassandra.driver.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-core</artifactId>
+        <version>${metrics.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-buffer</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-codec</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-common</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-handler</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+
+
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <version>${joda.time.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>${gson.version}</version>
+      </dependency>
+
+      <dependency>
+        <artifactId>junit</artifactId>
+        <groupId>junit</groupId>
+        <version>${junit.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>${testcontainer.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>cassandra</artifactId>
+        <version>${testcontainer.version}</version>
+      </dependency>
+
     </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!--
+    Global Dependencies
+    -->
+
+    <!--
+    Global Testing Dependencies
+    -->
+    <dependency>
+      <artifactId>junit</artifactId>
+      <groupId>junit</groupId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Release dependencies -->
+    <dependency>
+      <groupId>org.apache.maven.scm</groupId>
+      <artifactId>maven-scm-provider-gitexe</artifactId>
+      <version>1.9.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-gpg-plugin</artifactId>
+      <version>1.6</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${build.helper.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${resources.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>${deploy.plugin.version}</version>
+          <executions>
+            <execution>
+              <id>default-deploy</id>
+              <phase>deploy</phase>
+              <goals>
+                <goal>deploy</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <retryFailedDeploymentCount>3</retryFailedDeploymentCount>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.5.3</version>
+          <configuration>
+            <localCheckout>true</localCheckout>
+            <pushChanges>false</pushChanges>
+            <mavenExecutorId>forked-path</mavenExecutorId>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.scm</groupId>
+              <artifactId>maven-scm-provider-gitexe</artifactId>
+              <version>1.9.5</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.6.7</version>
+          <extensions>true</extensions>
+          <configuration>
+            <serverId>ossrh</serverId>
+            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.10.4</version>
+          <configuration>
+            <encoding>UTF-8</encoding>
+          </configuration>
+          <executions>
+            <execution>
+              <id>attach-javadoc</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <!-- GPG Signature on release -->
+    <profile>
+      <id>release-sign-artifacts</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>
