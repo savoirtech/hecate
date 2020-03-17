@@ -24,6 +24,8 @@
   <packaging>pom</packaging>
   <version>5.0.0-SNAPSHOT</version>
   <name>SavoirTech ::: Hecate ::: Parent</name>
+  <description>A general-purpose utilities library for Apache Cassandra</description>
+  <url>https://github.com/savoirtech/hecate</url>
 
   <inceptionYear>2012</inceptionYear>
 
@@ -109,8 +111,23 @@
 
   <organization>
     <name>Savoir Technologies, Inc.</name>
-    <url>http://www.savoirtech.com</url>
+    <url>https://www.savoirtech.com</url>
   </organization>
+
+  <developers>
+    <developer>
+      <name>Matt Rogghe</name>
+      <email>mrogghe@gmail.com</email>
+      <organization>Savoir Technologies, Inc.</organization>
+      <organizationUrl>https://www.savoirtech.com</organizationUrl>
+    </developer>
+    <developer>
+      <name>Johan Edstrom</name>
+      <email>joed@apache.org</email>
+      <organization>Savoir Technologies, Inc.</organization>
+      <organizationUrl>https://www.savoirtech.com</organizationUrl>
+    </developer>
+  </developers>
 
   <licenses>
     <license>
