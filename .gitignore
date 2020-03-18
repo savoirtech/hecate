@@ -1,37 +1,12 @@
-target/
-test-output
-bin
-.gradle
-build
-.DS_Store
-target
-*/target/**
-META-INF
-activemq-data/
-*.log
-*.log.*
-*.ipr
-*.iws
+# IDEA Files
+.idea
 *.iml
-*.launch
-*.versionsBackup
-out
+
+# Maven Files
+pom.xml.versionsBackup
+target
+
+# Eclipse Files
+.settings
 .project
 .classpath
-.settings
-.metadata
-.idea
-.idea*
-.DS_Store
-dependency-reduced-pom.xml
-junit*.properties
-projectFilesBackup
-target
-.externalToolBuilders
-maven-eclipse.xml
-bin-groovy
-atlassian-ide-plugin.private.xml
-atlassian-ide-plugin.xml
-
-
-

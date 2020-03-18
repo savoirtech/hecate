@@ -6,7 +6,7 @@
   ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
   ~
-  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~      http://www.apache.org/licenses/LICENSE-2.0
   ~
   ~ Unless required by applicable law or agreed to in writing, software
   ~ distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,142 +15,462 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.savoirtech</groupId>
-        <artifactId>osgi-parent</artifactId>
-        <version>1.0.0</version>
-    </parent>
+  <groupId>com.savoirtech.hecate</groupId>
+  <artifactId>hecate-parent</artifactId>
+  <packaging>pom</packaging>
+  <version>5.0.1-SNAPSHOT</version>
+  <name>SavoirTech ::: Hecate ::: Parent</name>
+  <description>A general-purpose utilities library for Apache Cassandra</description>
+  <url>https://github.com/savoirtech/hecate</url>
 
-    <groupId>com.savoirtech.hecate</groupId>
-    <artifactId>hecate-parent</artifactId>
-    <packaging>pom</packaging>
-    <version>2.0.0-SNAPSHOT</version>
-    <name>SavoirTech ::: Hecate ::: Parent</name>
+  <inceptionYear>2012</inceptionYear>
 
-    <inceptionYear>2012</inceptionYear>
+  <modules>
+    <module>test</module>
+    <module>annotation</module>
+    <module>core</module>
+    <module>pojo</module>
+    <module>gson</module>
+    <module>joda-time</module>
+  </modules>
 
-    <modules>
-        <module>hecate-cql3</module>
-        <module>hecate-osgi</module>
-    </modules>
+  <scm>
+    <url>https://github.com/savoirtech/hecate</url>
+    <connection>scm:git:git@github.com:savoirtech/hecate.git</connection>
+    <developerConnection>scm:git:git@github.com:savoirtech/hecate.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
 
-    <scm>
-        <url>https://github.com/savoirtech/hecate</url>
-        <connection>scm:git:git@github.com:savoirtech/hecate.git</connection>
-        <developerConnection>scm:git:git@github.com:savoirtech/hecate.git</developerConnection>
-        <tag>hecate-parent-1.0.25</tag>
-    </scm>
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 
-    <properties>
-        <cassandra-driver-version>2.1.1</cassandra-driver-version>
-        <cassandra-version>2.1.2</cassandra-version>
-        <cassandra-unit-version>2.0.2.2</cassandra-unit-version>
-        <codahale-metrics-version>3.0.2</codahale-metrics-version>
-        <commons-beanutils-version>1.9.2</commons-beanutils-version>
-        <commons-collections-version>3.2.1</commons-collections-version>
-        <commons-lang3-version>3.1</commons-lang3-version>
-        <guava-version>16.0</guava-version>
-        <junit-version>4.12</junit-version>
-        <slf4j-version>1.7.7</slf4j-version>
-    </properties>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <dependencyManagement>
-        <dependencies>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
 
-            <!-- CQL3 - Driver -->
+    <!-- Dependency Versions -->
+    <cassandra.driver.version>4.4.0</cassandra.driver.version>
+    <commons.codec.version>1.14</commons.codec.version>
+    <commons.lang3.version>3.9</commons.lang3.version>
+    <guava.version>18.0</guava.version>
+    <gson.version>2.8.5</gson.version>
+    <joda.time.version>2.10.5</joda.time.version>
+    <junit.version>4.11</junit.version>
+    <karaf.version>4.2.0</karaf.version>
+    <metrics.version>4.0.5</metrics.version>
+    <mockito.version>1.10.19</mockito.version>
+    <netty.version>4.1.45.Final</netty.version>
+    <osgi.version>6.0.0</osgi.version>
+    <pax.exam.version>4.5.0</pax.exam.version>
+    <slf4j.version>1.7.7</slf4j.version>
+    <eaio.uuid.version>3.2</eaio.uuid.version>
 
-            <dependency>
-                <groupId>com.datastax.cassandra</groupId>
-                <artifactId>cassandra-driver-core</artifactId>
-                <version>${cassandra-driver-version}</version>
-            </dependency>
+    <logback.version>1.2.3</logback.version>
+    <testcontainer.version>1.12.5</testcontainer.version>
 
-            <!-- Infrastructure -->
-            <dependency>
-                <groupId>commons-beanutils</groupId>
-                <artifactId>commons-beanutils</artifactId>
-                <version>${commons-beanutils-version}</version>
-            </dependency>
+    <!--
+    Maven Plugin Versions
+    -->
+    <build.helper.plugin.version>1.9.1</build.helper.plugin.version>
+    <bundle.plugin.version>2.5.4</bundle.plugin.version>
+    <deploy.plugin.version>2.8.2</deploy.plugin.version>
+    <failsafe.plugin.version>2.18.1</failsafe.plugin.version>
+    <jacoco.plugin.version>0.7.4.201502262128</jacoco.plugin.version>
+    <jar.plugin.version>2.6</jar.plugin.version>
+    <resources.plugin.version>2.7</resources.plugin.version>
+    <source.plugin.version>2.4</source.plugin.version>
+    <surefire.plugin.version>2.18.1</surefire.plugin.version>
+    <war.plugin.version>2.6</war.plugin.version>
+    <javadoc.plugin.version>2.10.4</javadoc.plugin.version>
+    <nexus.staging.plugin.version>1.6.8</nexus.staging.plugin.version>
+    <release.plugin.version>2.5.3</release.plugin.version>
+    <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
+    <maven.scm.gitexe.version>1.9.5</maven.scm.gitexe.version>
 
-            <dependency>
-                <groupId>commons-collections</groupId>
-                <artifactId>commons-collections</artifactId>
-                <version>${commons-collections-version}</version>
-            </dependency>
+    <!--
+    OSGi Manifest Properties
+    -->
+    <osgi.export>{local-packages};-split-package:=error</osgi.export>
+    <osgi.import>*</osgi.import>
+    <osgi.private>{local-packages}</osgi.private>
+    <osgi.embed />
+    <osgi.embed.dir>lib</osgi.embed.dir>
+    <osgi.activator />
+    <osgi.dynamic />
+  </properties>
 
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3-version}</version>
-            </dependency>
+  <organization>
+    <name>Savoir Technologies, Inc.</name>
+    <url>https://www.savoirtech.com</url>
+  </organization>
 
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava-version}</version>
-            </dependency>
+  <developers>
+    <developer>
+      <name>Matt Rogghe</name>
+      <email>mrogghe@gmail.com</email>
+      <organization>Savoir Technologies, Inc.</organization>
+      <organizationUrl>https://www.savoirtech.com</organizationUrl>
+    </developer>
+    <developer>
+      <name>Johan Edstrom</name>
+      <email>joed@apache.org</email>
+      <organization>Savoir Technologies, Inc.</organization>
+      <organizationUrl>https://www.savoirtech.com</organizationUrl>
+    </developer>
+  </developers>
 
-            <dependency>
-                <groupId>com.codahale.metrics</groupId>
-                <artifactId>metrics-core</artifactId>
-                <version>${codahale-metrics-version}</version>
-            </dependency>
+  <licenses>
+    <license>
+      <name>Apache 2</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
 
-        </dependencies>
-    </dependencyManagement>
-
+  <dependencyManagement>
     <dependencies>
-        <!--
-        Global Dependencies
-        -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j-version}</version>
-        </dependency>
 
-        <!--
-        Global Testing Dependencies
-        -->
-        <dependency>
-            <artifactId>junit</artifactId>
-            <groupId>junit</groupId>
-            <version>${junit-version}</version>
-            <scope>test</scope>
-        </dependency>
+      <dependency>
+        <groupId>com.datastax.oss</groupId>
+        <artifactId>java-driver-core</artifactId>
+        <version>${cassandra.driver.version}</version>
+      </dependency>
 
-        <dependency>
-            <groupId>org.cassandraunit</groupId>
-            <artifactId>cassandra-unit</artifactId>
-            <version>${cassandra-unit-version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+      <dependency>
+        <groupId>com.datastax.oss</groupId>
+        <artifactId>java-driver-query-builder</artifactId>
+        <version>${cassandra.driver.version}</version>
+      </dependency>
 
-        <dependency>
-            <groupId>org.apache.cassandra</groupId>
-            <artifactId>cassandra-all</artifactId>
-            <version>${cassandra-version}</version>
-            <scope>test</scope>
-        </dependency>
+      <dependency>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-core</artifactId>
+        <version>${metrics.version}</version>
+      </dependency>
 
-        <dependency>
-            <groupId>org.apache.cassandra</groupId>
-            <artifactId>cassandra-thrift</artifactId>
-            <version>${cassandra-version}</version>
-            <scope>test</scope>
-        </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-buffer</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-codec</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-common</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-handler</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <version>${joda.time.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>${gson.version}</version>
+      </dependency>
+
+      <dependency>
+        <artifactId>junit</artifactId>
+        <groupId>junit</groupId>
+        <version>${junit.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>${testcontainer.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>cassandra</artifactId>
+        <version>${testcontainer.version}</version>
+      </dependency>
 
     </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!--
+    Global Dependencies
+    -->
+
+    <!--
+    Global Testing Dependencies
+    -->
+    <dependency>
+      <artifactId>junit</artifactId>
+      <groupId>junit</groupId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Release dependencies -->
+<!--    <dependency>-->
+<!--      <groupId>org.apache.maven.scm</groupId>-->
+<!--      <artifactId>maven-scm-provider-gitexe</artifactId>-->
+<!--      <version>${maven.scm.gitexe.version}</version>-->
+<!--    </dependency>-->
+
+<!--    <dependency>-->
+<!--      <groupId>org.apache.maven.plugins</groupId>-->
+<!--      <artifactId>maven-gpg-plugin</artifactId>-->
+<!--      <version>${maven.gpg.plugin.version}</version>-->
+<!--    </dependency>-->
+
+  </dependencies>
+
+  <build>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${build.helper.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${resources.plugin.version}</version>
+        </plugin>
+
+<!--        <plugin>-->
+<!--          <groupId>org.apache.maven.plugins</groupId>-->
+<!--          <artifactId>maven-deploy-plugin</artifactId>-->
+<!--          <version>${deploy.plugin.version}</version>-->
+<!--          <executions>-->
+<!--            <execution>-->
+<!--              <id>default-deploy</id>-->
+<!--              <phase>deploy</phase>-->
+<!--              <goals>-->
+<!--                <goal>deploy</goal>-->
+<!--              </goals>-->
+<!--            </execution>-->
+<!--          </executions>-->
+<!--          <configuration>-->
+<!--            <retryFailedDeploymentCount>3</retryFailedDeploymentCount>-->
+<!--          </configuration>-->
+<!--        </plugin>-->
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>${release.plugin.version}</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+            <useReleaseProfile>false</useReleaseProfile>
+            <releaseProfiles>release</releaseProfiles>
+            <goals>deploy</goals>
+            <localCheckout>true</localCheckout>
+            <pushChanges>false</pushChanges>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.scm</groupId>
+              <artifactId>maven-scm-provider-gitexe</artifactId>
+              <version>${maven.scm.gitexe.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>${nexus.staging.plugin.version}</version>
+          <extensions>true</extensions>
+          <configuration>
+            <serverId>ossrh</serverId>
+            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${surefire.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${failsafe.plugin.version}</version>
+          <executions>
+            <execution>
+              <id>verify</id>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${jar.plugin.version}</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              </manifest>
+              <manifestEntries>
+                <Build-Time>${maven.build.timestamp}</Build-Time>
+              </manifestEntries>
+            </archive>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>${bundle.plugin.version}</version>
+          <extensions>true</extensions>
+          <configuration>
+            <niceManifest>true</niceManifest>
+            <instructions>
+              <Import-Package>${osgi.import}</Import-Package>
+              <Export-Package>${osgi.export}</Export-Package>
+              <Private-Package>${osgi.private}</Private-Package>
+              <Embed-Dependency>${osgi.embed}</Embed-Dependency>
+              <Embed-Directory>${osgi.embed.dir}</Embed-Directory>
+              <DynamicImport-Package>${osgi.dynamic}</DynamicImport-Package>
+              <Bundle-Activator>${osgi.activator}</Bundle-Activator>
+              <Build-Time>${maven.build.timestamp}</Build-Time>
+              <Specification-Title>${project.name}</Specification-Title>
+              <Specification-Version>${project.version}</Specification-Version>
+              <Specification-Vendor>${project.organization.name}</Specification-Vendor>
+              <Implementation-Title>${project.name}</Implementation-Title>
+              <Implementation-Version>${project.version}</Implementation-Version>
+              <Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
+              <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
+            </instructions>
+          </configuration>
+          <executions>
+            <execution>
+              <id>bundle-manifest</id>
+              <phase>process-classes</phase>
+              <goals>
+                <goal>manifest</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+      </plugins>
+  </build>
+
+  <profiles>
+    <!-- GPG Signature, source and javadoc on release -->
+    <profile>
+      <id>release</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${maven.gpg.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${source.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${javadoc.plugin.version}</version>
+            <configuration>
+              <encoding>UTF-8</encoding>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>
