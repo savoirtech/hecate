@@ -117,6 +117,16 @@
 
   <developers>
     <developer>
+      <name>Jeff Genender</name>
+      <email>jgenender@apache.org</email>
+      <organization>Savoir Technologies, Inc.</organization>
+      <organizationUrl>https://www.savoirtech.com</organizationUrl>
+    </developer>
+    <developer>
+      <name>James Carman</name>
+      <email>jcarman@apache.org</email>
+    </developer>
+    <developer>
       <name>Matt Rogghe</name>
       <email>mrogghe@gmail.com</email>
       <organization>Savoir Technologies, Inc.</organization>
@@ -252,19 +262,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Release dependencies -->
-<!--    <dependency>-->
-<!--      <groupId>org.apache.maven.scm</groupId>-->
-<!--      <artifactId>maven-scm-provider-gitexe</artifactId>-->
-<!--      <version>${maven.scm.gitexe.version}</version>-->
-<!--    </dependency>-->
-
-<!--    <dependency>-->
-<!--      <groupId>org.apache.maven.plugins</groupId>-->
-<!--      <artifactId>maven-gpg-plugin</artifactId>-->
-<!--      <version>${maven.gpg.plugin.version}</version>-->
-<!--    </dependency>-->
-
   </dependencies>
 
   <build>
@@ -280,24 +277,6 @@
           <artifactId>maven-resources-plugin</artifactId>
           <version>${resources.plugin.version}</version>
         </plugin>
-
-<!--        <plugin>-->
-<!--          <groupId>org.apache.maven.plugins</groupId>-->
-<!--          <artifactId>maven-deploy-plugin</artifactId>-->
-<!--          <version>${deploy.plugin.version}</version>-->
-<!--          <executions>-->
-<!--            <execution>-->
-<!--              <id>default-deploy</id>-->
-<!--              <phase>deploy</phase>-->
-<!--              <goals>-->
-<!--                <goal>deploy</goal>-->
-<!--              </goals>-->
-<!--            </execution>-->
-<!--          </executions>-->
-<!--          <configuration>-->
-<!--            <retryFailedDeploymentCount>3</retryFailedDeploymentCount>-->
-<!--          </configuration>-->
-<!--        </plugin>-->
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
