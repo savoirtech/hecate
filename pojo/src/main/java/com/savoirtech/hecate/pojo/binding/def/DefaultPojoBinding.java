@@ -153,7 +153,7 @@ public class DefaultPojoBinding<P> implements PojoBinding<P> {
 
     @Override
     public Select selectFromByKey(String tableName) {
-        Select select = QueryBuilder.selectFrom(tableName).all();
+        Select select = selectFrom(tableName);
         return keyBinding.selectWhere(select);
     }
 
